@@ -4,3 +4,4 @@ weekly_report
 
 황유림 23/09/16 : 리포지토리 생성
 이시영 23/09/16 : 리포지토리 클론 확인
+엄미영 23/09/16 : repository clone check
