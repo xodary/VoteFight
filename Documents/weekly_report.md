@@ -24,7 +24,8 @@ __09/26 professor's advise: STEEP 분석해서 만들 게임에 대한 논리 �
 ---
 
 ## 23/09/26 ~ 23/10/03(추석) weekly plan
-- [ ] 황유림:  
+- 공동 작업: STEEP 분석 / 개인별로 STEEP 작업하기
+- [ ] 황유림: DX3D: 터레인, 애니메이션 공부
 - [ ] 이시영: 
 - [ ] 엄미영: Server : multi-thread study
 
