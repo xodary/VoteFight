@@ -23,9 +23,9 @@ __09/26 professor's advise: STEEP 분석__
 ---
 
 ## 23/09/26 ~ 23/10/03(추석) weekly plan
-- [] 황유림:  
-- [] 이시영: 
-- [] 엄미영: Server : multi-thread study
+- [ ] 황유림:  
+- [ ] 이시영: 
+- [ ] 엄미영: Server : multi-thread study
 
 ## 23/09/26 ~ 23/10/03 weekly report
 * 황유림 : 
