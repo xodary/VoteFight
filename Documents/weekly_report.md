@@ -29,15 +29,10 @@ __09/26 professor's advise: STEEP 분석해서 만들 게임에 대한 논리 �
 - [ ] 이시영: 
 - [X] 엄미영: Server : multi-thread study
 
-<<<<<<< HEAD
 #### 23/10/06 14:00 - 16:00 회의 진행 [231006회의록](Meeting_report/report_231006.md)
 
 ## 23/09/26 ~ 23/10/10 weekly report
-* 황유림 : 교수님의 코드 분석
-=======
-## 23/09/26 ~ 23/10/10 weekly report
 - 공동 작업: STEEP 분석 / 이를 기반한 새로운 게임에 대한 구상
-* 황유림 : 
->>>>>>> 7be763600f1fa9221fa5ad78948955830434a0b6
+* 황유림 : 교수님의 코드 분석
 * 이시영 : 
 * 엄미영 : 멀티쓰레드 atomic, lock에 대한 공부
