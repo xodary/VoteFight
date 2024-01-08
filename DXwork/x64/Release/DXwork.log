@@ -1,0 +1,37 @@
+﻿  Camera.cpp
+  DDSTextureLoader12.cpp
+  DXwork.cpp
+  GameFramework.cpp
+C:\Users\gram\source\repos\DXwork\DXwork\GameFramework.cpp(477,8): warning C4101: 'pstrOutputText' :참조되지 않은 지역 변수입니다.
+  Mesh.cpp
+C:\Users\gram\source\repos\DXwork\DXwork\Mesh.cpp(1027,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Mesh.cpp(1110,21): warning C4018: '<': signed 또는 unsigned가 일치하지 않습니다.
+  Object.cpp
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1141,68): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1387,79): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1387,61): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1387,49): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1451,23): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1451,62): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1452,30): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1452,68): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1453,36): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Object.cpp(1453,74): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Player.cpp
+C:\Users\gram\source\repos\DXwork\DXwork\Player.cpp(343,69): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Player.cpp(439,12): warning C4244: '초기화 중': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Scene.cpp
+C:\Users\gram\source\repos\DXwork\DXwork\Scene.cpp(500,16): warning C4244: '초기화 중': 'UINT'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Shader.cpp
+C:\Users\gram\source\repos\DXwork\DXwork\Shader.cpp(1767,108): warning C4244: '인수': 'UINT'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Shader.cpp(1767,96): warning C4244: '인수': 'UINT'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\Users\gram\source\repos\DXwork\DXwork\Shader.cpp(1767,84): warning C4244: '인수': 'UINT'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  stdafx.cpp
+  Timer.cpp
+  UILayer.cpp
+  코드를 생성하고 있습니다.
+  Previous IPDB not found, fall back to full compilation.
+C:\Users\gram\source\repos\DXwork\DXwork\Shader.cpp(1128): warning C4717: 'CTexturedShader::ReleaseShaderVariables': 모든 제어 경로에서 재귀적입니다. 함수로 인해 런타임 스택 오버플로가 발생합니다.
+  All 848 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  코드를 생성했습니다.
+  DXwork.vcxproj -> C:\Users\gram\source\repos\DXwork\x64\Release\DXwork.exe
