@@ -77,7 +77,8 @@ void CPlayer::Move(const XMFLOAT3& xmf3Shift, bool bUpdateVelocity)
 	}
 	else
 	{
-		m_xmf3Position = Vector3::Add(m_xmf3Position, xmf3Shift);
+		//m_xmf3Position = Vector3::Add(m_xmf3Position, xmf3Shift);
+		m_xmf3AnimatePosition = Vector3::Add(m_xmf3AnimatePosition, xmf3Shift);
 		m_pCamera->Move(xmf3Shift);
 	}
 }
@@ -161,9 +162,9 @@ void CPlayer::Update(float fTimeElapsed)
 	if (m_pPlayerUpdatedContext) OnPlayerUpdateCallback(fTimeElapsed);
 
 	DWORD nCurrentCameraMode = m_pCamera->GetMode();
-	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->Update(m_xmf3Position, fTimeElapsed);
+	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->Update(m_xmf3AnimatePosition, fTimeElapsed);
 	if (m_pCameraUpdatedContext) OnCameraUpdateCallback(fTimeElapsed);
-	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->SetLookAt(m_xmf3Position);
+	if (nCurrentCameraMode == THIRD_PERSON_CAMERA) m_pCamera->SetLookAt(m_xmf3AnimatePosition);
 	m_pCamera->RegenerateViewMatrix();
 
 	fLength = Vector3::Length(m_xmf3Velocity);
@@ -228,7 +229,7 @@ void CPlayer::OnPrepareRender()
 
 void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
 {
-	//UpdateTransform(NULL);
+	UpdateTransform(NULL);
 	DWORD nCameraMode = (pCamera) ? pCamera->GetMode() : 0x00;
 	if (nCameraMode == THIRD_PERSON_CAMERA) CGameObject::Render(pd3dCommandList, pCamera);
 }
@@ -325,7 +326,7 @@ CCamera *CAirplanePlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 		default:
 			break;
 	}
-	m_pCamera->SetPosition(Vector3::Add(m_xmf3Position, m_pCamera->GetOffset()));
+	m_pCamera->SetPosition(Vector3::Add(m_xmf3AnimatePosition, m_pCamera->GetOffset()));
 	Update(fTimeElapsed);
 
 	return(m_pCamera);
@@ -358,15 +359,13 @@ CTerrainPlayer::CTerrainPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandLi
 	SetChild(pSimpsonModel->m_pModelRootObject, true);
 
 	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 2, pSimpsonModel);
-
 	m_pSkinnedAnimationController->m_pRootMotionObject = pSimpsonModel->m_pModelRootObject->FindFrame("mixamorig:Hips");
-
 	SetRootMotion(true);
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
 	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);
 
-	m_pSkinnedAnimationController->SetTrackWeight(0, idle); // idle
+	m_pSkinnedAnimationController->SetTrackWeight(0, idle);		// idle
 	m_pSkinnedAnimationController->SetTrackWeight(1, dance);	// dance
 
 	m_pSkinnedAnimationController->SetTrackEnable(1, false);
@@ -390,7 +389,9 @@ CTerrainPlayer::CTerrainPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandLi
 	SetCameraUpdatedContext(pContext);
 
 	CHeightMapTerrain *pTerrain = (CHeightMapTerrain *)pContext;
-	SetPosition(XMFLOAT3(310.0f, pTerrain->GetHeight(310.0f, 590.0f), 590.0f));
+	m_xmf3Position = XMFLOAT3(310.0f, pTerrain->GetHeight(310.0f, 590.0f), 590.0f);
+	prepos = m_xmf3AnimatePosition = m_xmf3Position;
+	//m_xmf3AnimatePosition = XMFLOAT3(310.0f, pTerrain->GetHeight(310.0f, 590.0f), 590.0f);
 	SetScale(XMFLOAT3(10.0f, 10.0f, 10.0f));
 
 	if (pSimpsonModel) delete pSimpsonModel;
@@ -437,7 +438,7 @@ CCamera *CTerrainPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 			SetMaxVelocityY(400.0f);
 			m_pCamera = OnChangeCamera(THIRD_PERSON_CAMERA, nCurrentCameraMode);
 			m_pCamera->SetTimeLag(0.25f);
-			m_pCamera->SetOffset(XMFLOAT3(0.0f, 20.0f, -50.0f));
+			m_pCamera->SetOffset(XMFLOAT3(0.0f, 30.0f, -50.0f));
 			m_pCamera->GenerateProjectionMatrix(1.01f, 5000.0f, ASPECT_RATIO, 60.0f);
 			m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
 			m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
@@ -445,7 +446,7 @@ CCamera *CTerrainPlayer::ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed)
 		default:
 			break;
 	}
-	m_pCamera->SetPosition(Vector3::Add(m_xmf3Position, m_pCamera->GetOffset()));
+	m_pCamera->SetPosition(Vector3::Add(m_xmf3AnimatePosition, m_pCamera->GetOffset()));
 	Update(fTimeElapsed);
 
 	return(m_pCamera);
@@ -455,7 +456,7 @@ void CTerrainPlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 {
 	CHeightMapTerrain *pTerrain = (CHeightMapTerrain *)m_pPlayerUpdatedContext;
 	XMFLOAT3 xmf3Scale = pTerrain->GetScale();
-	XMFLOAT3 xmf3PlayerPosition = GetPosition();
+	XMFLOAT3 xmf3PlayerPosition = m_xmf3AnimatePosition;
 	int z = (int)(xmf3PlayerPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
 	float fHeight = pTerrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 0.0f;
@@ -484,7 +485,7 @@ void CTerrainPlayer::OnCameraUpdateCallback(float fTimeElapsed)
 		if (m_pCamera->GetMode() == THIRD_PERSON_CAMERA)
 		{
 			CThirdPersonCamera *p3rdPersonCamera = (CThirdPersonCamera *)m_pCamera;
-			p3rdPersonCamera->SetLookAt(GetPosition());
+			p3rdPersonCamera->SetLookAt(m_xmf3AnimatePosition);
 		}
 	}
 }
@@ -513,19 +514,24 @@ void CTerrainPlayer::Update(float fTimeElapsed)
 	if (m_pSkinnedAnimationController)
 	{
 		float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
-		//if (::IsZero(fLength))
 		if (moving)
 		{
 			m_pSkinnedAnimationController->SetTrackEnable(1, true);
 			dance = min(1.0f, dance + 0.1f);
 			idle = 1.f - dance;
+			up = false;
+			AnimatePosition();
 		}
 		else
 		{
+			if (!up)
+			{
+				UpdatePosition();
+				up = true;
+			}
+			// SetPosition(m_pSkinnedAnimationController->m_pRootMotionObject->GetPosition());
 			idle = min(1.0f, idle + 0.1f);
 			dance = 1.f - idle;
-			// m_pSkinnedAnimationController->SetTrackPosition(1, 0.0f);
-			// m_pSkinnedAnimationController->SetTrackPosition(1, 0.0f);
 		}
 		if (idle == 1.0f)
 		{
@@ -537,3 +543,21 @@ void CTerrainPlayer::Update(float fTimeElapsed)
 	}
 }
 
+void CTerrainPlayer::UpdatePosition()
+{
+	m_xmf3Position = m_xmf3AnimatePosition;
+}
+
+void CTerrainPlayer::AnimatePosition()
+{
+	XMFLOAT3 xmf3Position = m_pSkinnedAnimationController->m_pRootMotionObject->GetPosition();
+	XMFLOAT3 xmf3Offset = Vector3::Subtract(xmf3Position, prepos);
+	m_xmf3AnimatePosition.x += xmf3Offset.x;
+	m_xmf3AnimatePosition.y += xmf3Offset.y;
+	m_xmf3AnimatePosition.z += xmf3Offset.z;
+	prepos = xmf3Position;
+	printf("Animate Pos: %.2f, %.2f, %.2f /", m_xmf3AnimatePosition.x, m_xmf3AnimatePosition.y, m_xmf3AnimatePosition.z);
+	// printf("Offset: %.2f, %.2f, %.2f\n", xmf3Offset.x, xmf3Offset.y, xmf3Offset.z);
+	// printf("Pos: %.2f, %.2f, %.2f \n", m_xmf3Position.x, m_xmf3Position.y, m_xmf3Position.z);
+	printf("Pos: %.2f, %.2f, %.2f \n", m_pCamera->GetPosition().x, m_pCamera->GetPosition().y, m_pCamera->GetPosition().z);
+}
