@@ -14,7 +14,6 @@ class CPlayer : public CGameObject
 {
 public:
 	XMFLOAT3					m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3					m_xmf3AnimatePosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	XMFLOAT3					m_xmf3Right = XMFLOAT3(1.0f, 0.0f, 0.0f);
 	XMFLOAT3					m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	XMFLOAT3					m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
@@ -36,10 +35,13 @@ public:
 
 	CCamera						*m_pCamera = NULL;
 
-	bool						up = false;
+	float						dance = 0.0f;
+	float						idle = 1.0f;
+
+	bool						moving = false;
 
 public:
-	CPlayer();
+	CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, void* pContext = NULL);
 	virtual ~CPlayer();
 
 	XMFLOAT3 GetPosition() { return(m_xmf3Position); }
@@ -52,7 +54,7 @@ public:
 	void SetMaxVelocityXZ(float fMaxVelocity) { m_fMaxVelocityXZ = fMaxVelocity; }
 	void SetMaxVelocityY(float fMaxVelocity) { m_fMaxVelocityY = fMaxVelocity; }
 	void SetVelocity(const XMFLOAT3& xmf3Velocity) { m_xmf3Velocity = xmf3Velocity; }
-	void SetPosition(const XMFLOAT3& xmf3Position) { Move(XMFLOAT3(xmf3Position.x - m_xmf3AnimatePosition.x, xmf3Position.y - m_xmf3AnimatePosition.y, xmf3Position.z - m_xmf3AnimatePosition.z), false); }
+	void SetPosition(const XMFLOAT3& xmf3Position) { Move(XMFLOAT3(xmf3Position.x - m_xmf3Position.x, xmf3Position.y - m_xmf3Position.y, xmf3Position.z - m_xmf3Position.z), false); }
 
 	void SetScale(XMFLOAT3& xmf3Scale) { m_xmf3Scale = xmf3Scale; }
 
@@ -71,42 +73,19 @@ public:
 
 	virtual void Update(float fTimeElapsed);
 
-	virtual void OnPlayerUpdateCallback(float fTimeElapsed) { }
+	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
 	void SetPlayerUpdatedContext(LPVOID pContext) { m_pPlayerUpdatedContext = pContext; }
 
-	virtual void OnCameraUpdateCallback(float fTimeElapsed) { }
+	virtual void OnCameraUpdateCallback(float fTimeElapsed);
 	void SetCameraUpdatedContext(LPVOID pContext) { m_pCameraUpdatedContext = pContext; }
 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList);
 	virtual void ReleaseShaderVariables();
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList);
 
-	CCamera *OnChangeCamera(DWORD nNewCameraMode, DWORD nCurrentCameraMode);
-
-	virtual CCamera *ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed) { return(NULL); }
+	virtual CCamera* CreateCamera(float fTimeElapsed);
 	virtual void OnPrepareRender();
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera = NULL);
-
-	virtual void UpdatePosition() { }
-	virtual void AnimatePosition() { }
-};
-
-class CAirplanePlayer : public CPlayer
-{
-public:
-	CAirplanePlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext=NULL);
-	virtual ~CAirplanePlayer();
-
-	CGameObject					*m_pMainRotorFrame = NULL;
-	CGameObject					*m_pTailRotorFrame = NULL;
-
-private:
-	virtual void OnPrepareAnimate();
-	virtual void Animate(float fTimeElapsed);
-
-public:
-	virtual CCamera *ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
-	virtual void OnPrepareRender();
 };
 
 class CSoundCallbackHandler : public CAnimationCallbackHandler
@@ -118,30 +97,3 @@ public:
 public:
 	virtual void HandleCallback(void *pCallbackData, float fTrackPosition); 
 };
-
-class CTerrainPlayer : public CPlayer
-{
-public:
-	CTerrainPlayer(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, void *pContext=NULL);
-	virtual ~CTerrainPlayer();
-
-	float						dance = 0.0f;
-	float						idle = 1.0f;
-
-	XMFLOAT3					prepos = XMFLOAT3(0, 0, 0);
-
-	bool moving = false;
-
-public:
-	virtual CCamera *ChangeCamera(DWORD nNewCameraMode, float fTimeElapsed);
-
-	virtual void OnPlayerUpdateCallback(float fTimeElapsed);
-	virtual void OnCameraUpdateCallback(float fTimeElapsed);
-
-	virtual void Move(ULONG nDirection, float fDistance, bool bVelocity = false);
-
-	virtual void Update(float fTimeElapsed);
-	virtual void UpdatePosition();
-	virtual void AnimatePosition();
-};
-

@@ -346,14 +346,14 @@ public:
 	void Release();
 
 public:
-	CGameObject();
-	CGameObject(int nMaterials);
+	CGameObject(int nMeshes=0, int nMaterials=0);
     virtual ~CGameObject();
 
 public:
 	char							m_pstrFrameName[64];
 
-	CMesh							*m_pMesh = NULL;
+	int								m_nMeshes = 0;
+	CMesh							**m_ppMeshes = NULL;
 
 	int								m_nMaterials = 0;
 	CMaterial						**m_ppMaterials = NULL;
@@ -367,7 +367,11 @@ public:
 
 	CAnimationController*			m_pSkinnedAnimationController = NULL;
 
-	void SetMesh(CMesh *pMesh);
+	BoundingOrientedBox				*m_pxmBoundingBoxes;
+	CBoundingBoxMesh				**m_ppBoundingBoxMeshes = NULL;
+	BoundingSphere					*m_xmBoundingSpheres;
+
+	void SetMesh(int nIndex, CMesh* pMesh);
 	void SetShader(CShader *pShader);
 	void SetShader(int nMaterial, CShader *pShader);
 	void SetMaterial(int nMaterial, CMaterial *pMaterial);
@@ -419,7 +423,7 @@ public:
 
 	CTexture *FindReplicatedTexture(_TCHAR *pstrTextureName);
 
-	UINT GetMeshType() { return((m_pMesh) ? m_pMesh->GetType() : 0x00); }
+	UINT GetMeshType(UINT nIndex) { return((m_ppMeshes[nIndex]) ? m_ppMeshes[nIndex]->GetType() : 0x00); }
 
 public:
 	CSkinnedMesh *FindSkinnedMesh(char *pstrSkinnedMeshName);
@@ -438,6 +442,9 @@ public:
 	static CLoadedModelInfo *LoadGeometryAndAnimationFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, char *pstrFileName, CShader *pShader);
 
 	static void PrintFrameInfo(CGameObject *pGameObject, CGameObject *pParent);
+
+	void GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection);
+	BOOL PickObjectByRayIntersection(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, XMFLOAT3& xmf3GroundSpot, float* pfHitDistance);
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -479,166 +486,11 @@ public:
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera = NULL);
 };
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CSuperCobraObject : public CGameObject
-{
-public:
-	CSuperCobraObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature);
-	virtual ~CSuperCobraObject();
-
-private:
-	CGameObject					*m_pMainRotorFrame = NULL;
-	CGameObject					*m_pTailRotorFrame = NULL;
-
-public:
-	virtual void OnPrepareAnimate();
-	virtual void Animate(float fTimeElapsed);
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CGunshipObject : public CGameObject
-{
-public:
-	CGunshipObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature);
-	virtual ~CGunshipObject();
-
-private:
-	CGameObject					*m_pMainRotorFrame = NULL;
-	CGameObject					*m_pTailRotorFrame = NULL;
-
-public:
-	virtual void OnPrepareAnimate();
-	virtual void Animate(float fTimeElapsed);
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CMi24Object : public CGameObject
-{
-public:
-	CMi24Object(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature);
-	virtual ~CMi24Object();
-
-private:
-	CGameObject					*m_pMainRotorFrame = NULL;
-	CGameObject					*m_pTailRotorFrame = NULL;
-
-public:
-	virtual void OnPrepareAnimate();
-	virtual void Animate(float fTimeElapsed);
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CAngrybotAnimationController : public CAnimationController
-{
-public:
-	CAngrybotAnimationController(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int nAnimationTracks, CLoadedModelInfo* pModel);
-	~CAngrybotAnimationController();
-
-	virtual void OnRootMotion(CGameObject* pRootGameObject);
-};
-
-class CAngrybotObject : public CGameObject
-{
-public:
-	CAngrybotObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, int nAnimationTracks);
-	virtual ~CAngrybotObject();
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CMonsterObject : public CGameObject
-{
-public:
-	CMonsterObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, int nAnimationTracks);
-	virtual ~CMonsterObject();
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CHumanoidObject : public CGameObject
-{
-public:
-	CHumanoidObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, int nAnimationTracks);
-	virtual ~CHumanoidObject();
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CRootMotionCallbackHandler : public CAnimationCallbackHandler
-{
-public:
-	CRootMotionCallbackHandler() { }
-	~CRootMotionCallbackHandler() { }
-
-public:
-	virtual void HandleCallback(void* pCallbackData, float fTrackPosition);
-};
-
-class CEthanAnimationController : public CAnimationController
-{
-public:
-	CEthanAnimationController(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int nAnimationTracks, CLoadedModelInfo* pModel);
-	~CEthanAnimationController();
-
-	virtual void OnRootMotion(CGameObject* pRootGameObject);
-};
-
-class CEthanObject : public CGameObject
-{
-public:
-	CEthanObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, int nAnimationTracks);
-	virtual ~CEthanObject();
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CLionObject : public CGameObject
-{
-public:
-	CLionObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, int nAnimationTracks);
-	virtual ~CLionObject();
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CZebraObject : public CGameObject
-{
-public:
-	CZebraObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, int nAnimationTracks);
-	virtual ~CZebraObject();
-};
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-class CEagleAnimationController : public CAnimationController
-{
-public:
-	CEagleAnimationController(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int nAnimationTracks, CLoadedModelInfo* pModel);
-	~CEagleAnimationController();
-
-	virtual void OnRootMotion(CGameObject* pRootGameObject);
-};
-
-class CEagleObject : public CGameObject
-{
-public:
-	CEagleObject(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, int nAnimationTracks);
-	virtual ~CEagleObject();
-
-	virtual void SetPosition(float x, float y, float z);
-
-	XMFLOAT3				m_xmf3StartPosition = XMFLOAT3(0.0f, 0.0f, 0.0f);
-};
-
 class CPlayerAnimationController : public CAnimationController
 {
 public:
 	CPlayerAnimationController(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int nAnimationTracks, CLoadedModelInfo* pModel);
 	~CPlayerAnimationController();
 
-	virtual void OnRootMotion(CGameObject* pRootGameObject);
+	//virtual void OnRootMotion(CGameObject* pRootGameObject);
 };

@@ -292,6 +292,19 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 		case WM_RBUTTONDOWN:
 			::SetCapture(hWnd);
 			::GetCursorPos(&m_ptOldCursorPos);
+			if (nMessageID == WM_LBUTTONDOWN)
+			{
+				XMFLOAT3 pxmf3GoundSpot;
+				BOOL hit = m_pScene->PointGroundByCursor(LOWORD(lParam), HIWORD(lParam), m_pPlayer->m_pCamera, pxmf3GoundSpot);
+				if(hit) 
+					printf("( %.2f, %.2f, %.2f )\n", pxmf3GoundSpot.x, pxmf3GoundSpot.y, pxmf3GoundSpot.z);
+			}
+			if (nMessageID == WM_RBUTTONDOWN)
+			{
+				CGameObject* object = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pPlayer->m_pCamera);
+				if (object != NULL)
+					printf("( %.2f, %.2f, %.2f )\n", object->GetPosition().x, object->GetPosition().y, object->GetPosition().z);
+			}
 			break;
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
@@ -320,7 +333,6 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 				case VK_F1:
 				case VK_F2:
 				case VK_F3:
-					m_pCamera = m_pPlayer->ChangeCamera((DWORD)(wParam - VK_F1 + 1), m_GameTimer.GetTimeElapsed());
 					break;
 				case VK_F9:
 					ChangeSwapChainState();
@@ -394,8 +406,6 @@ void CGameFramework::OnDestroy()
 #endif
 }
 
-#define _WITH_TERRAIN_PLAYER
-
 void CGameFramework::BuildObjects()
 {
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
@@ -403,12 +413,7 @@ void CGameFramework::BuildObjects()
 	m_pScene = new CScene();
 	if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 
-#ifdef _WITH_TERRAIN_PLAYER
-	CTerrainPlayer *pPlayer = new CTerrainPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), m_pScene->m_pTerrain);
-#else
-	CAirplanePlayer *pPlayer = new CAirplanePlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), NULL);
-	pPlayer->SetPosition(XMFLOAT3(425.0f, 240.0f, 640.0f));
-#endif
+	CPlayer *pPlayer = new CPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), m_pScene->m_pTerrain);
 
 	m_pScene->m_pPlayer = m_pPlayer = pPlayer;
 	m_pCamera = m_pPlayer->GetCamera();
@@ -470,11 +475,11 @@ void CGameFramework::ProcessInput()
 			}
 			if (dwDirection)
 			{
-				//m_pPlayer->Move(dwDirection, 4.f, false);
-				((CTerrainPlayer*)m_pPlayer)->moving = true;
+				m_pPlayer->Move(dwDirection, 5.f, true);
+				m_pPlayer->moving = true;
 			}
 		}
-		if (!dwDirection) ((CTerrainPlayer*)m_pPlayer)->moving = false;
+		if (!dwDirection) m_pPlayer->moving = false;
 	}
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 }

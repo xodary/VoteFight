@@ -75,6 +75,96 @@ void CMesh::OnPostRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pCont
 {
 }
 
+// 레이와 삼각형의 충돌 지점 계산 함수
+BOOL CMesh::RayIntersectionByTriangle(const XMVECTOR& origin, const XMVECTOR& direction,
+	const XMFLOAT3& v0, const XMFLOAT3& v1, const XMFLOAT3& v2, XMFLOAT3& intersectionPoint, float* pfNearHitDistance)
+{
+	float fHitDistance;
+	XMVECTOR v00 = XMLoadFloat3(&v0);
+	XMVECTOR v11 = XMLoadFloat3(&v1);
+	XMVECTOR v22 = XMLoadFloat3(&v2);
+	BOOL bIntersected = ::TriangleTests::Intersects(origin, direction, v00, v11, v22, fHitDistance);
+	if (bIntersected)
+	{
+		if (fHitDistance < *pfNearHitDistance)
+			*pfNearHitDistance = fHitDistance;
+
+		XMFLOAT3 e1 = XMFLOAT3(v1.x - v0.x, v1.y - v0.y, v1.z - v0.z);
+		XMFLOAT3 e2 = XMFLOAT3(v2.x - v0.x, v2.y - v0.y, v2.z - v0.z);
+
+		XMVECTOR h = XMVector3Cross(direction, XMLoadFloat3(&e2));
+		float a = XMVectorGetX(XMVector3Dot(XMLoadFloat3(&e1), h));
+
+		if (a > -EPSILON && a < EPSILON)
+			return false;
+
+		float f = 1.0f / a;
+		XMFLOAT3 s;
+		XMStoreFloat3(&s, XMVectorSubtract(origin, XMLoadFloat3(&v0)));
+		float u = f * XMVectorGetX(XMVector3Dot(XMLoadFloat3(&s), h));
+
+		if (u < 0.0f || u > 1.0f)
+			return false;
+
+		XMVECTOR q = XMVector3Cross(XMLoadFloat3(&s), XMLoadFloat3(&e1));
+		float v = f * XMVectorGetX(XMVector3Dot(direction, q));
+
+		if (v < 0.0f || u + v > 1.0f)
+			return false;
+
+		float t = f * XMVectorGetX(XMVector3Dot(XMLoadFloat3(&e2), q));
+
+		if (t > EPSILON)
+		{
+			XMStoreFloat3(&intersectionPoint, XMVectorAdd(origin, XMVectorScale(direction, t)));
+		}
+	}
+	return(bIntersected);
+}
+
+int CMesh::CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, XMFLOAT3& xmf3hitpoint, float* pfHitDistance)
+{
+	XMFLOAT3 hitPoint = {};
+	// bool bIntersected = m_xmOOBB.Intersects(xmvPickRayOrigin, xmvPickRayDirection, *pfNearHitDistance);
+	float distance;
+	int nIntersections = 0;
+	bool bIntersected = true;
+	if (bIntersected)
+	{
+		switch (m_d3dPrimitiveTopology)
+		{
+		case D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+			for (int i = 2; i < m_nVertices; ++i)
+			{
+				XMFLOAT3 v0;
+				XMFLOAT3 v1;
+				XMFLOAT3 v2;
+				if (i % 2 == 0)
+				{
+					// 짝수번째 정점은 이전 정점1, 이전 정점2, 현재 정점으로 구성된 삼각형
+					v0 = m_pxmf3Positions[i - 2];
+					v1 = m_pxmf3Positions[i - 1];
+					v2 = m_pxmf3Positions[i];
+				}
+				else
+				{
+					// 홀수번째 정점은 이전 정점2, 이전 정점1, 현재 정점으로 구성된 삼각형
+					v0 = m_pxmf3Positions[i - 2];
+					v1 = m_pxmf3Positions[i];
+					v2 = m_pxmf3Positions[i - 1];
+				}
+
+				BOOL bIntersected = RayIntersectionByTriangle(xmvPickRayOrigin, xmvPickRayDirection, v0, v1, v2, xmf3hitpoint, pfHitDistance);
+				if (bIntersected) 
+					nIntersections++;
+			}
+			break;
+		}
+	}
+	return(nIntersections);
+}
+
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // 
 CHeightMapImage::CHeightMapImage(LPCTSTR pFileName, int nWidth, int nLength, XMFLOAT3 xmf3Scale)
@@ -760,4 +850,82 @@ void CSkinnedMesh::OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList, void 
 {
 	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[7] = { m_d3dPositionBufferView, m_d3dTextureCoord0BufferView, m_d3dNormalBufferView, m_d3dTangentBufferView, m_d3dBiTangentBufferView, m_d3dBoneIndexBufferView, m_d3dBoneWeightBufferView };
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 7, pVertexBufferViews);
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+//
+CBoundingBoxMesh::CBoundingBoxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList) : CMesh(pd3dDevice, pd3dCommandList)
+{
+	m_nVertices = 12 * 2;
+	m_nStride = sizeof(XMFLOAT3);
+	m_nOffset = 0;
+	m_nSlot = 0;
+	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+
+	m_pd3dPositionBuffer = CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, m_nStride * m_nVertices, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+	m_pd3dPositionBuffer->Map(0, NULL, (void**)&m_pcbMappedPositions);
+
+	m_d3dPositionBufferView.BufferLocation = m_pd3dPositionBuffer->GetGPUVirtualAddress();
+	m_d3dPositionBufferView.StrideInBytes = sizeof(XMFLOAT3);
+	m_d3dPositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
+}
+
+CBoundingBoxMesh::~CBoundingBoxMesh()
+{
+	if (m_pd3dPositionBuffer) m_pd3dPositionBuffer->Unmap(0, NULL);
+}
+
+void CBoundingBoxMesh::UpdateVertexPosition(BoundingOrientedBox* pxmBoundingBox)
+{
+	// std::cout << "CBoundingBoxMesh::UpdateVertexPosition 함수 진입" << std::endl;
+
+	XMFLOAT3 xmf3Corners[8];
+	pxmBoundingBox->GetCorners(xmf3Corners);
+
+	int i = 0;
+
+	m_pcbMappedPositions[i++] = xmf3Corners[0];
+	m_pcbMappedPositions[i++] = xmf3Corners[1];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[1];
+	m_pcbMappedPositions[i++] = xmf3Corners[2];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[2];
+	m_pcbMappedPositions[i++] = xmf3Corners[3];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[3];
+	m_pcbMappedPositions[i++] = xmf3Corners[0];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[4];
+	m_pcbMappedPositions[i++] = xmf3Corners[5];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[5];
+	m_pcbMappedPositions[i++] = xmf3Corners[6];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[6];
+	m_pcbMappedPositions[i++] = xmf3Corners[7];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[7];
+	m_pcbMappedPositions[i++] = xmf3Corners[4];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[0];
+	m_pcbMappedPositions[i++] = xmf3Corners[4];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[1];
+	m_pcbMappedPositions[i++] = xmf3Corners[5];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[2];
+	m_pcbMappedPositions[i++] = xmf3Corners[6];
+
+	m_pcbMappedPositions[i++] = xmf3Corners[3];
+	m_pcbMappedPositions[i++] = xmf3Corners[7];
+
+}
+
+void CBoundingBoxMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
+	pd3dCommandList->IASetVertexBuffers(m_nSlot, 1, &m_d3dPositionBufferView);
+
+	pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
 }

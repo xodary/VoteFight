@@ -51,6 +51,7 @@ protected:
 	D3D12_PRIMITIVE_TOPOLOGY		m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 	UINT							m_nSlot = 0;
 	UINT							m_nOffset = 0;
+	UINT							m_nStride = 0;
 
 protected:
 	int								m_nVertices = 0;
@@ -70,6 +71,10 @@ protected:
 	D3D12_INDEX_BUFFER_VIEW			*m_pd3dSubSetIndexBufferViews = NULL;
 
 public:
+	BoundingOrientedBox				m_xmBoundingBox = BoundingOrientedBox(XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.1f, 0.1f, 0.1f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f));
+	BoundingSphere					m_xmBoundingSphere = BoundingSphere(XMFLOAT3(0.0f, 0.0f, 0.0f), 0.1f);
+
+public:
 	UINT GetType() { return(m_nType); }
 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList) { }
@@ -81,6 +86,13 @@ public:
 	virtual void OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pContext);
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, int nSubSet);
 	virtual void OnPostRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pContext);
+
+	BoundingOrientedBox GetBoundingBox() { return(m_xmBoundingBox); }
+	BoundingSphere GetBoundingSphere() { return(m_xmBoundingSphere); }
+
+	BOOL RayIntersectionByTriangle(const XMVECTOR& origin, const XMVECTOR& direction,
+		const XMFLOAT3& v0, const XMFLOAT3& v1, const XMFLOAT3& v2, XMFLOAT3& intersectionPoint, float* pfNearHitDistance);
+	int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, XMFLOAT3& xmf3hitpoint, float* pfHitDistance);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -251,4 +263,18 @@ public:
 	virtual void ReleaseUploadBuffers();
 
 	virtual void OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pContext);
+};
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+class CBoundingBoxMesh : public CMesh
+{
+public:
+	CBoundingBoxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	virtual ~CBoundingBoxMesh();
+
+	XMFLOAT3* m_pcbMappedPositions = NULL;
+
+	void UpdateVertexPosition(BoundingOrientedBox* pxmBoundingBox);
+	void Render(ID3D12GraphicsCommandList* pd3dCommandList);
 };

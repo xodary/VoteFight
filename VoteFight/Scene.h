@@ -63,6 +63,9 @@ public:
 
 	void ReleaseUploadBuffers();
 
+	CGameObject* PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera);
+	BOOL PointGroundByCursor(int xClient, int yClient, CCamera* pCamera, XMFLOAT3& xmf3GroundSpot);
+
 	CPlayer								*m_pPlayer = NULL;
 
 protected:
@@ -71,6 +74,9 @@ protected:
 public:
 
 	float								m_fElapsedTime = 0.0f;
+
+	int									m_nItemObjects;
+	CGameObject							**m_ppItemObjects;
 
 	int									m_nGameObjects = 0;
 	CGameObject							**m_ppGameObjects = NULL;
