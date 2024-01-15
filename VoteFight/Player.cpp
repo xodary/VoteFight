@@ -221,27 +221,33 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 
 		m_pSkinnedAnimationController->SetTrackWeight(0, idle);
 		m_pSkinnedAnimationController->SetTrackWeight(1, dance);
-
-		//m_pSkinnedAnimationController->SetTrackEnable(0, false);
-		//m_pSkinnedAnimationController->SetTrackEnable(1, true);
 	}
 
 	if (dwDirection)
 	{
 		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
-		if (dwDirection & DIR_FORWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Look, fDistance);
-		if (dwDirection & DIR_BACKWARD) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Look, -fDistance);
-		if (dwDirection & DIR_RIGHT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, fDistance);
-		if (dwDirection & DIR_LEFT) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Right, -fDistance);
-		if (dwDirection & DIR_UP) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, fDistance);
-		if (dwDirection & DIR_DOWN) xmf3Shift = Vector3::Add(xmf3Shift, m_xmf3Up, -fDistance);
+		if (dwDirection & DIR_FORWARD) xmf3Shift.z += 1;
+		if (dwDirection & DIR_BACKWARD) xmf3Shift.z -= 1;		
+		if (dwDirection & DIR_RIGHT) xmf3Shift.x += 1;
+		if (dwDirection & DIR_LEFT) xmf3Shift.x -= 1;
 
+		xmf3Shift = Vector3::Normalize(xmf3Shift);
+		SetLookEnd(xmf3Shift);
+		xmf3Shift = Vector3::Add(xmf3Shift, xmf3Shift, fDistance);
 		Move(xmf3Shift, bUpdateVelocity);
 	}
 }
 
 void CPlayer::Update(float fTimeElapsed)
 {
+	XMVECTOR now = XMLoadFloat3(&m_xmf3Look);
+	XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
+
+	m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 10)));
+
+	
+	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
+
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, m_xmf3Gravity);
 	float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
 	float fMaxVelocityXZ = m_fMaxVelocityXZ;

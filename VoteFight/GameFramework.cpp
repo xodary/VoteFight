@@ -285,13 +285,15 @@ void CGameFramework::ChangeSwapChainState()
 
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
+	static bool isDragging = false; // 드래그 중인지 여부
+
 	if (m_pScene) m_pScene->OnProcessingMouseMessage(hWnd, nMessageID, wParam, lParam);
 	switch (nMessageID)
 	{
 		case WM_LBUTTONDOWN:
 		case WM_RBUTTONDOWN:
-			::SetCapture(hWnd);
-			::GetCursorPos(&m_ptOldCursorPos);
+			//::SetCapture(hWnd);
+			// ::GetCursorPos(&m_ptOldCursorPos);
 			if (nMessageID == WM_LBUTTONDOWN)
 			{
 				XMFLOAT3 pxmf3GoundSpot;
@@ -301,17 +303,40 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 			}
 			if (nMessageID == WM_RBUTTONDOWN)
 			{
-				CGameObject* object = m_pScene->PickObjectPointedByCursor(LOWORD(lParam), HIWORD(lParam), m_pPlayer->m_pCamera);
-				if (object != NULL)
-					printf("( %.2f, %.2f, %.2f )\n", object->GetPosition().x, object->GetPosition().y, object->GetPosition().z);
+				isDragging = true;
+
+				int clickX = LOWORD(lParam);
+				int clickY = HIWORD(lParam);
+				int centerX = FRAME_BUFFER_WIDTH / 2;
+				int centerY = FRAME_BUFFER_HEIGHT / 2;
+				int x = clickX - centerX;
+				int y = clickY - centerY;
+
+				XMFLOAT3 xmf3Look = Vector3::Normalize(XMFLOAT3(x, 0, -y));
+				m_pPlayer->SetLookEnd(xmf3Look);
 			}
 			break;
 		case WM_LBUTTONUP:
 		case WM_RBUTTONUP:
+			isDragging = false;
 			::ReleaseCapture();
 			break;
 		case WM_MOUSEMOVE:
+		{
+			if (isDragging)
+			{
+				int clickX = LOWORD(lParam);
+				int clickY = HIWORD(lParam);
+				int centerX = FRAME_BUFFER_WIDTH / 2;
+				int centerY = FRAME_BUFFER_HEIGHT / 2;
+				int x = clickX - centerX;
+				int y = clickY - centerY;
+
+				XMFLOAT3 xmf3Look = Vector3::Normalize(XMFLOAT3(x, 0, -y));
+				m_pPlayer->SetLookEnd(xmf3Look);
+			}
 			break;
+		}
 		default:
 			break;
 	}
