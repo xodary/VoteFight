@@ -501,10 +501,10 @@ void CGameFramework::ProcessInput()
 			if (dwDirection)
 			{
 				m_pPlayer->Move(dwDirection, 5.f, true);
-				m_pPlayer->moving = true;
+				m_pPlayer->m_bMoving = true;
 			}
 		}
-		if (!dwDirection) m_pPlayer->moving = false;
+		if (!dwDirection) m_pPlayer->m_bMoving = false;
 	}
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 }

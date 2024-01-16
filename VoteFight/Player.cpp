@@ -240,14 +240,23 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 
 void CPlayer::Update(float fTimeElapsed)
 {
+	// now 는 현재, end는 목표 방향 벡터.
+	// Look 벡터를 선형보간을 통해 부드럽게 회전.
 	XMVECTOR now = XMLoadFloat3(&m_xmf3Look);
 	XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
-
-	m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 10)));
-
-	
+	if (XMConvertToDegrees(std::acos(Vector3::DotProduct(m_xmf3Look, m_xmf3LookEnd))) > 90 )
+	{
+		// 180도 회전할 떄 선형보간으로 하면 회전이 어색해짐. 아예 90도 이상 회전할 때는 선형보간 말고 직접 회전으로 처리
+		float angleInDegrees = fTimeElapsed * 50000;
+		float angleInRadians = XMConvertToRadians(angleInDegrees);
+		XMFLOAT4X4 rotationMatrix = Matrix4x4::Rotate(0, angleInRadians, 0);
+		m_xmf3Look = Vector3::TransformCoord(m_xmf3Look, rotationMatrix);
+	}
+	else
+		m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 10)));
 	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
 
+	// 중력, 이동 속력 계산
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, m_xmf3Gravity);
 	float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
 	float fMaxVelocityXZ = m_fMaxVelocityXZ;
@@ -259,38 +268,38 @@ void CPlayer::Update(float fTimeElapsed)
 	float fMaxVelocityY = m_fMaxVelocityY;
 	fLength = sqrtf(m_xmf3Velocity.y * m_xmf3Velocity.y);
 	if (fLength > m_fMaxVelocityY) m_xmf3Velocity.y *= (fMaxVelocityY / fLength);
-
 	XMFLOAT3 xmf3Velocity = Vector3::ScalarProduct(m_xmf3Velocity, fTimeElapsed, false);
 	Move(xmf3Velocity, false);
 
+	// Terrain에서 Player와 Camera 계산
 	if (m_pPlayerUpdatedContext) OnPlayerUpdateCallback(fTimeElapsed);
-
-	DWORD nCurrentCameraMode = m_pCamera->GetMode();
 	m_pCamera->Update(m_xmf3Position, fTimeElapsed);
 	if (m_pCameraUpdatedContext) OnCameraUpdateCallback(fTimeElapsed);
 	m_pCamera->SetLookAt(m_xmf3Position);
 	m_pCamera->RegenerateViewMatrix();
 
+	// 마찰력
 	fLength = Vector3::Length(m_xmf3Velocity);
 	float fDeceleration = (m_fFriction * fTimeElapsed);
 	if (fDeceleration > fLength) fDeceleration = fLength;
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
 
+	// 애니메이션 블렌딩
 	if (m_pSkinnedAnimationController)
 	{
 		float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
-		if (moving)
+		if (m_bMoving)
 		{
 			m_pSkinnedAnimationController->SetTrackEnable(1, true);
-			dance = min(1.0f, dance + 0.1f);
+			dance = min(1.f, dance + 10.f * fTimeElapsed);
 			idle = 1.f - dance;
 		}
 		else
 		{
-			idle = min(1.0f, idle + 0.1f);
+			idle = min(1.f, idle + 10.f * fTimeElapsed);
 			dance = 1.f - idle;
 		}
-		if (idle == 1.0f)
+		if (idle == 1.f)
 		{
 			m_pSkinnedAnimationController->SetTrackEnable(1, false);
 			m_pSkinnedAnimationController->SetTrackPosition(1, 0.0f);
