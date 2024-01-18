@@ -14,15 +14,17 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	m_pCamera = CreateCamera(0.0f);
 
 	CLoadedModelInfo* pSimpsonModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/hugo_idle.bin", NULL);
-	// CLoadedModelInfo* pPointer = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/pointer.bin", NULL);
 	SetChild(pSimpsonModel->m_pModelRootObject, true);
 
 	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 2, pSimpsonModel);
-	//m_pSkinnedAnimationController->m_pRootMotionObject = pSimpsonModel->m_pModelRootObject->FindFrame("mixamorig:Hips");
+	m_pSkinnedAnimationController->m_pRootMotionObject = pSimpsonModel->m_pModelRootObject->FindFrame("mixamorig:Hips");
 	SetRootMotion(true);
 
-	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);
-	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);
+	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);	// idle
+	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);	// walk
+	m_pSkinnedAnimationController->SetTrackAnimationSet(2, 2);	// Run
+	m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// sidewalk_left
+	m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// sidewalk_right 
 
 	m_pSkinnedAnimationController->SetTrackWeight(0, idle);		// idle
 	m_pSkinnedAnimationController->SetTrackWeight(1, dance);	// dance
@@ -216,15 +218,6 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 {
 	if (dwDirection)
 	{
-		dance = min(1.0f, dance + 0.1f);
-		idle = 1.f - dance;
-
-		m_pSkinnedAnimationController->SetTrackWeight(0, idle);
-		m_pSkinnedAnimationController->SetTrackWeight(1, dance);
-	}
-
-	if (dwDirection)
-	{
 		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
 		if (dwDirection & DIR_FORWARD) xmf3Shift.z += 1;
 		if (dwDirection & DIR_BACKWARD) xmf3Shift.z -= 1;		
@@ -244,17 +237,20 @@ void CPlayer::Update(float fTimeElapsed)
 	// Look 벡터를 선형보간을 통해 부드럽게 회전.
 	XMVECTOR now = XMLoadFloat3(&m_xmf3Look);
 	XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
-	if (XMConvertToDegrees(std::acos(Vector3::DotProduct(m_xmf3Look, m_xmf3LookEnd))) > 90 )
+	float degree = XMConvertToDegrees(std::acos(Vector3::DotProduct(m_xmf3Look, m_xmf3LookEnd)));
+	// 180도 회전할 떄 선형보간으로 하면 회전이 어색해짐. 아예 90도 이상 회전할 때는 선형보간 말고 직접 회전으로 처리
+	if (degree == 180)
 	{
-		// 180도 회전할 떄 선형보간으로 하면 회전이 어색해짐. 아예 90도 이상 회전할 때는 선형보간 말고 직접 회전으로 처리
 		float angleInDegrees = fTimeElapsed * 50000;
 		float angleInRadians = XMConvertToRadians(angleInDegrees);
 		XMFLOAT4X4 rotationMatrix = Matrix4x4::Rotate(0, angleInRadians, 0);
 		m_xmf3Look = Vector3::TransformCoord(m_xmf3Look, rotationMatrix);
 	}
 	else
+	{
 		m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 10)));
-	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
+		m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
+	}
 
 	// 중력, 이동 속력 계산
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, m_xmf3Gravity);
@@ -291,12 +287,12 @@ void CPlayer::Update(float fTimeElapsed)
 		if (m_bMoving)
 		{
 			m_pSkinnedAnimationController->SetTrackEnable(1, true);
-			dance = min(1.f, dance + 10.f * fTimeElapsed);
+			dance = min(1.f, dance + 5.f * fTimeElapsed);
 			idle = 1.f - dance;
 		}
 		else
 		{
-			idle = min(1.f, idle + 10.f * fTimeElapsed);
+			idle = min(1.f, idle + 5.f * fTimeElapsed);
 			dance = 1.f - idle;
 		}
 		if (idle == 1.f)

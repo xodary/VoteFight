@@ -73,6 +73,11 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 {
 	m_pd3dGraphicsRootSignature = CreateGraphicsRootSignature(pd3dDevice);
 
+	m_pBoundingBoxShader = new CBoundingBoxShader();
+	m_pBoundingBoxShader->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE_LINE);
+	m_nCollisionObject = 1;
+	m_ppCollisionObjects = new CGameObject * [m_nCollisionObject];
+
 	// CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 76); //SuperCobra(17), Gunship(2), Player:Mi24(1), Angrybot()
 
 	CMaterial::PrepareShaders(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature); 
@@ -406,6 +411,7 @@ void CScene::AnimateObjects(float fTimeElapsed)
 
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->Animate(fTimeElapsed);
 	for (int i = 0; i < m_nShaders; i++) if (m_ppShaders[i]) m_ppShaders[i]->AnimateObjects(fTimeElapsed);
+	for (int i = 0; i < m_nCollisionObject; i++) m_ppCollisionObjects[i]->UpdateBoundingBox();
 
 	if (m_pLights)
 	{
@@ -426,6 +432,19 @@ void CScene::AnimateObjects(float fTimeElapsed)
 	//m_ppHierarchicalGameObjects[11]->m_xmf4x4ToParent = Matrix4x4::AffineTransformation(XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 0.0f), XMFLOAT3(0.0f, -fAngle, 0.0f), Vector3::Add(m_xmf3RotatePosition, xmf3Position));
 	//m_ppHierarchicalGameObjects[11]->Rotate(0.0f, -1.5f, 0.0f);
 	//**/
+}
+
+void CScene::RenderBoundingBox(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+{
+	m_pBoundingBoxShader->Render(pd3dCommandList, pCamera);
+	for (int i = 0; i < m_nCollisionObject; i++)
+	{
+		if (m_ppCollisionObjects[i])
+		{
+			m_ppCollisionObjects[i]->RenderBoundingBox(pd3dCommandList, pCamera);
+		}
+	}
+	m_pPlayer->RenderBoundingBox(pd3dCommandList, pCamera);
 }
 
 CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera)

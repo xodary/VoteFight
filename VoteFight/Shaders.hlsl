@@ -243,3 +243,29 @@ float4 PSSkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 
 	return(cColor);
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+struct VS_BOUNDINGBOX_INPUT
+{
+    float3 position : POSITION;
+};
+
+struct VS_BOUNDINGBOX_OUTPUT
+{
+    float4 positionH : SV_POSITION;
+};
+
+VS_BOUNDINGBOX_OUTPUT VSBoundingBox(VS_BOUNDINGBOX_INPUT input)
+{
+    VS_BOUNDINGBOX_OUTPUT output;
+	
+    output.positionH = mul(mul(float4(input.position, 1.0f), gmtxView), gmtxProjection);
+    //output.positionH = float4(input.position, 1.0f);
+    return (output);
+}
+
+float4 PSBoundingBox(VS_BOUNDINGBOX_OUTPUT input) : SV_TARGET
+{
+    return (float4(1.0f, 0.0f, 0.0f, 1.0f));
+}

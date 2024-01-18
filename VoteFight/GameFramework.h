@@ -82,6 +82,8 @@ private:
 	CPlayer						*m_pPlayer = NULL;
 	CCamera						*m_pCamera = NULL;
 
+	bool						m_bRenderBoundingBox = false;
+
 	POINT						m_ptOldCursorPos;
 
 	_TCHAR						m_pszFrameRate[70];

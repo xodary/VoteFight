@@ -787,6 +787,29 @@ void CGameObject::SetMesh(int nIndex, CMesh *pMesh)
 	}
 }
 
+void CGameObject::SetBoundingBoxMesh(int nIndex, CBoundingBoxMesh* pMesh)
+{
+	if (m_ppBoundingBoxMeshes)
+	{
+		if (m_ppBoundingBoxMeshes[nIndex]) m_ppBoundingBoxMeshes[nIndex]->Release();
+		m_ppBoundingBoxMeshes[nIndex] = pMesh;
+		if (pMesh) pMesh->AddRef();
+	}
+}
+
+void CGameObject::RenderBoundingBox(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+{
+	for (int i = 0; i < m_nMeshes; ++i) {
+		if (m_ppBoundingBoxMeshes[i])
+		{
+			m_ppBoundingBoxMeshes[i]->UpdateVertexPosition(&m_pxmBoundingBoxes[i]);
+			m_ppBoundingBoxMeshes[i]->Render(pd3dCommandList);
+		}
+	}
+	if (m_pSibling) m_pSibling->RenderBoundingBox(pd3dCommandList, pCamera);
+	if (m_pChild) m_pChild->RenderBoundingBox(pd3dCommandList, pCamera);
+}
+
 void CGameObject::SetShader(CShader *pShader)
 {
 	m_nMaterials = 1;
@@ -1059,6 +1082,16 @@ void CGameObject::Rotate(XMFLOAT4 *pxmf4Quaternion)
 	UpdateTransform(NULL);
 }
 
+void CGameObject::UpdateBoundingBox()
+{
+	for (int i = 0; i < m_nMeshes; ++i) {
+		m_ppMeshes[i]->m_xmBoundingBox.Transform(m_pxmBoundingBoxes[i], XMLoadFloat4x4(&m_xmf4x4World));
+		XMStoreFloat4(&m_pxmBoundingBoxes[i].Orientation, XMQuaternionNormalize(XMLoadFloat4(&m_pxmBoundingBoxes[i].Orientation)));
+	}
+	if (m_pSibling) m_pSibling->UpdateBoundingBox();
+	if (m_pChild) m_pChild->UpdateBoundingBox();
+}
+
 //#define _WITH_DEBUG_FRAME_HIERARCHY
 
 CTexture *CGameObject::FindReplicatedTexture(_TCHAR *pstrTextureName)
@@ -1267,6 +1300,8 @@ CGameObject *CGameObject::LoadFrameHierarchyFromFile(ID3D12Device *pd3dDevice, I
 			CStandardMesh *pMesh = new CStandardMesh(pd3dDevice, pd3dCommandList);
 			pMesh->LoadMeshFromFile(pd3dDevice, pd3dCommandList, pInFile);
 			pGameObject->SetMesh(0, pMesh);
+			CBoundingBoxMesh* pBoundingBoxMesh = new CBoundingBoxMesh(pd3dDevice, pd3dCommandList);
+			pGameObject->SetBoundingBoxMesh(0, pBoundingBoxMesh);
 		}
 		else if (!strcmp(pstrToken, "<SkinningInfo>:"))
 		{
@@ -1294,6 +1329,8 @@ CGameObject *CGameObject::LoadFrameHierarchyFromFile(ID3D12Device *pd3dDevice, I
 			if (!strcmp(pstrToken, "<Mesh>:")) pSkinnedMesh->LoadMeshFromFile(pd3dDevice, pd3dCommandList, pInFile);
 
 			pGameObject->SetMesh(0, pSkinnedMesh);
+			CBoundingBoxMesh* pBoundingBoxMesh = new CBoundingBoxMesh(pd3dDevice, pd3dCommandList);
+			pGameObject->SetBoundingBoxMesh(0, pBoundingBoxMesh);
 		}
 		else if (!strcmp(pstrToken, "<Materials>:"))
 		{

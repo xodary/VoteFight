@@ -372,6 +372,8 @@ public:
 	BoundingSphere					*m_xmBoundingSpheres;
 
 	void SetMesh(int nIndex, CMesh* pMesh);
+	void SetBoundingBoxMesh(int nIndex, CBoundingBoxMesh* pMesh);
+	void RenderBoundingBox(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
 	void SetShader(CShader *pShader);
 	void SetShader(int nMaterial, CShader *pShader);
 	void SetMaterial(int nMaterial, CMaterial *pMaterial);
@@ -407,7 +409,8 @@ public:
 
 	virtual void SetPosition(float x, float y, float z);
 	virtual void SetPosition(XMFLOAT3 xmf3Position);
-	void SetScale(float x, float y, float z);
+	virtual void UpdateBoundingBox();
+	virtual void SetScale(float x, float y, float z);
 
 	void MoveStrafe(float fDistance = 1.0f);
 	void MoveUp(float fDistance = 1.0f);
