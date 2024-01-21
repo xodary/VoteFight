@@ -778,16 +778,22 @@ void CSkinnedMesh::LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12Graphics
 		else if (!strcmp(pstrToken, "<BoneNames>:"))
 		{
 			m_nSkinningBones = ::ReadIntegerFromFile(pInFile);
-			if (m_nSkinningBones > 0) 
+			if (m_nSkinningBones > 0)
 			{
 				m_ppstrSkinningBoneNames = new char[m_nSkinningBones][64];
-				m_ppSkinningBoneFrameCaches = new CGameObject*[m_nSkinningBones];
+				m_ppSkinningBoneFrameCaches = new CGameObject * [m_nSkinningBones];
 				for (int i = 0; i < m_nSkinningBones; i++)
 				{
 					::ReadStringFromFile(pInFile, m_ppstrSkinningBoneNames[i]);
 					m_ppSkinningBoneFrameCaches[i] = NULL;
 				}
 			}
+		}
+		else if (!strcmp(pstrToken, "<BoneHierarchy>:"))
+		{
+			m_pBoneHierarchy = new BoneHierarchy();
+			::ReadStringFromFile(pInFile, m_pBoneHierarchy->name);
+			SetBoneHierarchy(m_pBoneHierarchy, pInFile);
 		}
 		else if (!strcmp(pstrToken, "<BoneOffsets>:"))
 		{
@@ -846,6 +852,35 @@ void CSkinnedMesh::LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12Graphics
 			break;
 		}
 	}
+}
+
+void CSkinnedMesh::SetBoneHierarchy(BoneHierarchy* root, FILE* pInFile)
+{
+	// 3 받고 자식 3개 만들기
+	int childs = ::ReadIntegerFromFile(pInFile);
+	cout << root->name << "의 자식의 수: " << childs << endl;
+	if (childs == 0) return;
+	root->child = new BoneHierarchy();
+	BoneHierarchy* temp = root->child;
+	for (int i = 0; i < childs; ++i)
+	{
+		::ReadStringFromFile(pInFile, temp->name);
+		if (i != childs - 1) temp->sibling = new BoneHierarchy();
+		temp = temp->sibling;
+	}
+
+	// 다음 나오는 이름보고 위치 찾기
+	char parant[64];
+	::ReadStringFromFile(pInFile, parant);
+	SetBoneHierarchy(FindBone(m_pBoneHierarchy, parant), pInFile);
+}
+
+BoneHierarchy* CSkinnedMesh::FindBone(BoneHierarchy* root, char* cBoneName)
+{
+	if (!strcmp(root->name, cBoneName)) return root;
+
+	if (root->child) FindBone(root->child, cBoneName);
+	if (root->sibling) FindBone(root->sibling, cBoneName);
 }
 
 void CSkinnedMesh::OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pContext)

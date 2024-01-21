@@ -314,7 +314,7 @@ void CMaterial::LoadTextureFromFile(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
-CAnimationSet::CAnimationSet(float fLength, int nFramesPerSecond, int nKeyFrames, int nAnimatedBones, char *pstrName)
+CAnimationSet::CAnimationSet(float fLength, int nFramesPerSecond, int nKeyFrames, int nAnimatedBones, char *pstrName, int nMaskFrames)
 {
 	m_fLength = fLength;
 	m_nFramesPerSecond = nFramesPerSecond;
@@ -322,26 +322,9 @@ CAnimationSet::CAnimationSet(float fLength, int nFramesPerSecond, int nKeyFrames
 
 	strcpy_s(m_pstrAnimationSetName, 64, pstrName);
 
-#ifdef _WITH_ANIMATION_SRT
-	m_nKeyFrameTranslations = nKeyFrames;
-	m_pfKeyFrameTranslationTimes = new float[m_nKeyFrameTranslations];
-	m_ppxmf3KeyFrameTranslations = new XMFLOAT3 * [m_nKeyFrameTranslations];
-	for (int i = 0; i < m_nKeyFrameTranslations; i++) m_ppxmf3KeyFrameTranslations[i] = new XMFLOAT4X4[nAnimatedBones];
-
-	m_nKeyFrameScales = nKeyFrames;
-	m_pfKeyFrameScaleTimes = new float[m_nKeyFrameScales];
-	m_ppxmf3KeyFrameScales = new XMFLOAT3 * [m_nKeyFrameScales];
-	for (int i = 0; i < m_nKeyFrameScales; i++) m_ppxmf3KeyFrameScales[i] = new XMFLOAT4X4[nAnimatedBones];
-
-	m_nKeyFrameRotations = nKeyFrames;
-	m_pfKeyFrameRotationTimes = new float[m_nKeyFrameRotations];
-	m_ppxmf4KeyFrameRotations = new XMFLOAT3 * [m_nKeyFrameRotations];
-	for (int i = 0; i < m_nKeyFrameRotations; i++) m_ppxmf4KeyFrameRotations[i] = new XMFLOAT4X4[nAnimatedBones];
-#else
 	m_pfKeyFrameTimes = new float[nKeyFrames];
 	m_ppxmf4x4KeyFrameTransforms = new XMFLOAT4X4*[nKeyFrames];
 	for (int i = 0; i < nKeyFrames; i++) m_ppxmf4x4KeyFrameTransforms[i] = new XMFLOAT4X4[nAnimatedBones];
-#endif
 }
 
 CAnimationSet::~CAnimationSet()
@@ -588,6 +571,17 @@ void CAnimationController::SetTrackWeight(int nAnimationTrack, float fWeight)
 	if (m_pAnimationTracks) m_pAnimationTracks[nAnimationTrack].SetWeight(fWeight);
 }
 
+void CAnimationController::SetTrackMaskNum(int nAnimationTrack, int n)
+{
+	m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[nAnimationTrack].m_nAnimationSet]->SetMaskedFrameNum(n);
+}
+
+void CAnimationController::SetTrackMaskFrame(int nAnimationTrack, int nMaskIndex, char cMaskedFrameName[64])
+{
+	// if (m_pAnimationTracks) m_pAnimationTracks[nAnimationTrack].SetMasked(cMaskedFrameName);
+	m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[nAnimationTrack].m_nAnimationSet]->SetMaskedFrameName(nMaskIndex, cMaskedFrameName);
+}
+
 void CAnimationController::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
 {
 	for (int i = 0; i < m_nSkinnedMeshes; i++)
@@ -596,40 +590,7 @@ void CAnimationController::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3d
 		m_ppSkinnedMeshes[i]->m_pcbxmf4x4MappedSkinningBoneTransforms = m_ppcbxmf4x4MappedSkinningBoneTransforms[i];
 	}
 }
-/*
-void CAnimationController::AdvanceTime(float fTimeElapsed, CGameObject *pRootGameObject) 
-{
-	m_fTime += fTimeElapsed; 
-	if (m_pAnimationTracks)
-	{
-//		for (int k = 0; k < m_nAnimationTracks; k++) m_pAnimationTracks[k].m_fPosition += (fTimeElapsed * m_pAnimationTracks[k].m_fSpeed);
-		for (int k = 0; k < m_nAnimationTracks; k++) m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[k].m_nAnimationSet]->UpdatePosition(fTimeElapsed * m_pAnimationTracks[k].m_fSpeed);
 
-		for (int j = 0; j < m_pAnimationSets->m_nBoneFrames; j++)
-		{
-			XMFLOAT4X4 xmf4x4Transform = Matrix4x4::Zero();
-			for (int k = 0; k < m_nAnimationTracks; k++)
-			{
-				if (m_pAnimationTracks[k].m_bEnable)
-				{
-					CAnimationSet *pAnimationSet = m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[k].m_nAnimationSet];
-					XMFLOAT4X4 xmf4x4TrackTransform = pAnimationSet->GetSRT(j);
-					xmf4x4Transform = Matrix4x4::Add(xmf4x4Transform, Matrix4x4::Scale(xmf4x4TrackTransform, m_pAnimationTracks[k].m_fWeight));
-				}
-			}
-			m_pAnimationSets->m_ppBoneFrameCaches[j]->m_xmf4x4ToParent = xmf4x4Transform;
-		}
-
-		pRootGameObject->UpdateTransform(NULL);
-
-		for (int k = 0; k < m_nAnimationTracks; k++)
-		{
-			if (m_pAnimationTracks[k].m_bEnable) m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[k].m_nAnimationSet]->HandleCallback();
-		}
-	}
-} 
-//*/
-//*
 void CAnimationController::AdvanceTime(float fTimeElapsed, CGameObject* pRootGameObject)
 {
 	m_fTime += fTimeElapsed;
@@ -645,6 +606,14 @@ void CAnimationController::AdvanceTime(float fTimeElapsed, CGameObject* pRootGam
 				float fPosition = m_pAnimationTracks[k].UpdatePosition(m_pAnimationTracks[k].m_fPosition, fTimeElapsed, pAnimationSet->m_fLength);
 				for (int j = 0; j < m_pAnimationSets->m_nBoneFrames; j++)
 				{
+					int nMaskFrames = pAnimationSet->m_nMaskedFrameName;
+					bool bMasked = false;
+					for (int i = 0; i < nMaskFrames; ++i)
+					{
+						if (!strncmp(m_pAnimationSets->m_ppBoneFrameCaches[j]->m_pstrFrameName, pAnimationSet->m_pMaskedFrameNames[i], strlen(pAnimationSet->m_pMaskedFrameNames[i])))
+							bMasked = true;
+					}
+					if (bMasked) continue;
 					XMFLOAT4X4 xmf4x4Transform = m_pAnimationSets->m_ppBoneFrameCaches[j]->m_xmf4x4ToParent;
 					XMFLOAT4X4 xmf4x4TrackTransform = pAnimationSet->GetSRT(j, fPosition);
 					xmf4x4Transform = Matrix4x4::Add(xmf4x4Transform, Matrix4x4::Scale(xmf4x4TrackTransform, m_pAnimationTracks[k].m_fWeight));
@@ -1419,7 +1388,7 @@ void CGameObject::LoadAnimationFromFile(FILE *pInFile, CLoadedModelInfo *pLoaded
 			int nFramesPerSecond = ::ReadIntegerFromFile(pInFile);
 			int nKeyFrames = ::ReadIntegerFromFile(pInFile);
 
-			pLoadedModel->m_pAnimationSets->m_pAnimationSets[nAnimationSet] = new CAnimationSet(fLength, nFramesPerSecond, nKeyFrames, pLoadedModel->m_pAnimationSets->m_nBoneFrames, pstrToken);
+			pLoadedModel->m_pAnimationSets->m_pAnimationSets[nAnimationSet] = new CAnimationSet(fLength, nFramesPerSecond, nKeyFrames, pLoadedModel->m_pAnimationSets->m_nBoneFrames, pstrToken, 1);
 
 			for (int i = 0; i < nKeyFrames; i++)
 			{

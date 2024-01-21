@@ -214,6 +214,12 @@ public:
 //
 #define SKINNED_ANIMATION_BONES		256
 
+struct BoneHierarchy {
+	char name[64];
+	BoneHierarchy* sibling;
+	BoneHierarchy* child;
+};
+
 class CSkinnedMesh : public CStandardMesh
 {
 public:
@@ -249,9 +255,12 @@ public:
 	ID3D12Resource					*m_pd3dcbSkinningBoneTransforms = NULL; //[m_nSkinningBones], Pointer Only
 	XMFLOAT4X4						*m_pcbxmf4x4MappedSkinningBoneTransforms = NULL; //[m_nSkinningBones]
 
+	BoneHierarchy					*m_pBoneHierarchy;
 public:
 	void PrepareSkinning(CGameObject *pModelRootObject);
 	void LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, FILE *pInFile);
+	void SetBoneHierarchy(BoneHierarchy* root, FILE* pInFile);
+	BoneHierarchy* FindBone(BoneHierarchy* root, char* cBoneName);
 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList);
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList);

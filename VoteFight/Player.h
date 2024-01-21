@@ -7,6 +7,12 @@
 #define DIR_UP					0x10
 #define DIR_DOWN				0x20
 
+#define IDLE					0
+#define WALK					1
+#define UPPER_GUN				2
+#define HUGO_WALK				2
+#define LEG_WALK				5
+
 #include "Object.h"
 #include "Camera.h"
 
@@ -36,7 +42,7 @@ public:
 
 	CCamera						*m_pCamera = NULL;
 
-	float						dance = 0.0f;
+	float						walk = 0.0f;
 	float						idle = 1.0f;
 
 	bool						m_bMoving = false;

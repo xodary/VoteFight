@@ -180,7 +180,7 @@ public:
 class CAnimationSet
 {
 public:
-	CAnimationSet(float fLength, int nFramesPerSecond, int nKeyFrameTransforms, int nSkinningBones, char *pstrName);
+	CAnimationSet(float fLength, int nFramesPerSecond, int nKeyFrameTransforms, int nSkinningBones, char *pstrName, int nMaskFrames);
 	~CAnimationSet();
 
 public:
@@ -193,20 +193,13 @@ public:
 	float							*m_pfKeyFrameTimes = NULL;
 	XMFLOAT4X4						**m_ppxmf4x4KeyFrameTransforms = NULL;
 
-#ifdef _WITH_ANIMATION_SRT
-	int								m_nKeyFrameScales = 0;
-	float							*m_pfKeyFrameScaleTimes = NULL;
-	XMFLOAT3						**m_ppxmf3KeyFrameScales = NULL;
-	int								m_nKeyFrameRotations = 0;
-	float							*m_pfKeyFrameRotationTimes = NULL;
-	XMFLOAT4						**m_ppxmf4KeyFrameRotations = NULL;
-	int								m_nKeyFrameTranslations = 0;
-	float							*m_pfKeyFrameTranslationTimes = NULL;
-	XMFLOAT3						**m_ppxmf3KeyFrameTranslations = NULL;
-#endif
+	int								m_nMaskedFrameName = 0;
+	char**							m_pMaskedFrameNames;
 
 public:
 	XMFLOAT4X4 GetSRT(int nBone, float fPosition);
+	void SetMaskedFrameNum(int n) { m_nMaskedFrameName = n; m_pMaskedFrameNames = new char* [m_nMaskedFrameName]; }
+	void SetMaskedFrameName(int nIndex,char cMaskedFrameName[64]) { strcpy(m_pMaskedFrameNames[nIndex], cMaskedFrameName); }
 };
 
 class CAnimationSets
@@ -314,6 +307,8 @@ public:
 	void SetTrackPosition(int nAnimationTrack, float fPosition);
 	void SetTrackSpeed(int nAnimationTrack, float fSpeed);
 	void SetTrackWeight(int nAnimationTrack, float fWeight);
+	void SetTrackMaskNum(int nAnimationTrack, int n);
+	void SetTrackMaskFrame(int nAnimationTrack, int nMaskIndex, char cMaskedFrameName[64]);
 
 	void SetCallbackKeys(int nAnimationTrack, int nCallbackKeys);
 	void SetCallbackKey(int nAnimationTrack, int nKeyIndex, float fTime, void *pData);

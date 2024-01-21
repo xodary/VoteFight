@@ -21,15 +21,24 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	SetRootMotion(true);
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);	// idle
-	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);	// walk
-	m_pSkinnedAnimationController->SetTrackAnimationSet(2, 2);	// Run
-	m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// sidewalk_left
-	m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// sidewalk_right 
+	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);	// leg walk
+	//m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// sidewalk_left
+	//m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// sidewalk_right 
+	//m_pSkinnedAnimationController->SetTrackAnimationSet(5, 5);	// leg walk 
 
-	m_pSkinnedAnimationController->SetTrackWeight(0, idle);		// idle
-	m_pSkinnedAnimationController->SetTrackWeight(1, dance);	// dance
+	m_pSkinnedAnimationController->SetTrackWeight(0, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(1, 1);
+	//m_pSkinnedAnimationController->SetTrackWeight(4, 4);
+	//m_pSkinnedAnimationController->SetTrackWeight(5, 5);
 
+	m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
+	m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
+
+	//"mixamorig:LeftHandIndex2 mixamorig:LeftHand mixamorig:LeftHandThumb2 mixamorig:LeftHandThumb3 mixamorig:LeftHandIndex3 mixamorig:RightForeArm mixamorig:RightHand mixamorig:RightHandIndex1 mixamorig:RightHandIndex2 mixamorig:RightHandIndex3 mixamorig:RightHandThumb1 mixamorig:RightHandThumb2 mixamorig:RightHandThumb3 mixamorig:Spine1 mixamorig:LeftForeArm"
+	m_pSkinnedAnimationController->SetTrackEnable(0, true);
 	m_pSkinnedAnimationController->SetTrackEnable(1, false);
+	//m_pSkinnedAnimationController->SetTrackEnable(4, false);
+	//m_pSkinnedAnimationController->SetTrackEnable(5, false);
 
 	m_pSkinnedAnimationController->SetCallbackKeys(1, 2);
 #ifdef _WITH_SOUND_RESOURCE
@@ -286,21 +295,25 @@ void CPlayer::Update(float fTimeElapsed)
 		float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
 		if (m_bMoving)
 		{
-			m_pSkinnedAnimationController->SetTrackEnable(1, true);
-			dance = min(1.f, dance + 5.f * fTimeElapsed);
-			idle = 1.f - dance;
+			m_pSkinnedAnimationController->SetTrackEnable(WALK, true);
+			// m_pSkinnedAnimationController->SetTrackEnable(UPPER_GUN, true);
+			walk = min(1.f, walk + 5.f * fTimeElapsed);
+			idle = 1.f - walk;
 		}
 		else
 		{
 			idle = min(1.f, idle + 5.f * fTimeElapsed);
-			dance = 1.f - idle;
+			walk = 1.f - idle;
 		}
 		if (idle == 1.f)
 		{
-			m_pSkinnedAnimationController->SetTrackEnable(1, false);
-			m_pSkinnedAnimationController->SetTrackPosition(1, 0.0f);
+			m_pSkinnedAnimationController->SetTrackEnable(WALK, false);
+			m_pSkinnedAnimationController->SetTrackPosition(WALK, 0.0f);
+			// m_pSkinnedAnimationController->SetTrackEnable(UPPER_GUN, false);
+			// m_pSkinnedAnimationController->SetTrackPosition(UPPER_GUN, 0.0f);
 		}
-		m_pSkinnedAnimationController->SetTrackWeight(0, idle);
-		m_pSkinnedAnimationController->SetTrackWeight(1, dance);
+		m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
+		m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
+		// m_pSkinnedAnimationController->SetTrackWeight(UPPER_GUN, walk);
 	}
 }

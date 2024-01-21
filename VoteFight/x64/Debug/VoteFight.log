@@ -1,3 +1,25 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: 중간 디렉터리(x64\Debug\)에 다른 프로젝트(LabProject07-9-8.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
+  Camera.cpp
+C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  GameFramework.cpp
+C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\directX_work\VoteFight\GameFramework.cpp(315,59): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight\GameFramework.cpp(315,53): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight\GameFramework.cpp(335,59): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight\GameFramework.cpp(335,53): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Mesh.cpp
+C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+C:\directX_work\VoteFight\Mesh.cpp(129,8): warning C4101: 'distance' :참조되지 않은 지역 변수입니다.
   Object.cpp
+C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  Player.cpp
+C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  Scene.cpp
+C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  Shader.cpp
+C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  VoteFight.cpp
+C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+  코드를 생성하고 있습니다...
+C:\directX_work\VoteFight\Mesh.cpp(884): warning C4715: 'CSkinnedMesh::FindBone': 모든 제어 경로에서 값을 반환하지는 않습니다.
   VoteFight.vcxproj -> C:\directX_work\x64\Debug\VoteFight.exe
