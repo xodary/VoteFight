@@ -193,13 +193,14 @@ public:
 	float							*m_pfKeyFrameTimes = NULL;
 	XMFLOAT4X4						**m_ppxmf4x4KeyFrameTransforms = NULL;
 
-	int								m_nMaskedFrameName = 0;
-	char**							m_pMaskedFrameNames;
+	int								m_nMaskedBone;
+	BoneHierarchy					**m_ppMaskedBones;
+
+	bool							m_bReverse = false;
 
 public:
 	XMFLOAT4X4 GetSRT(int nBone, float fPosition);
-	void SetMaskedFrameNum(int n) { m_nMaskedFrameName = n; m_pMaskedFrameNames = new char* [m_nMaskedFrameName]; }
-	void SetMaskedFrameName(int nIndex,char cMaskedFrameName[64]) { strcpy(m_pMaskedFrameNames[nIndex], cMaskedFrameName); }
+	void SetMaskedBone(int nIndex, BoneHierarchy* pBone) { m_ppMaskedBones[nIndex] = pBone; }
 };
 
 class CAnimationSets
@@ -307,8 +308,8 @@ public:
 	void SetTrackPosition(int nAnimationTrack, float fPosition);
 	void SetTrackSpeed(int nAnimationTrack, float fSpeed);
 	void SetTrackWeight(int nAnimationTrack, float fWeight);
-	void SetTrackMaskNum(int nAnimationTrack, int n);
-	void SetTrackMaskFrame(int nAnimationTrack, int nMaskIndex, char cMaskedFrameName[64]);
+	void CreateMaskBones(int nAnimationTrack, int num, bool bReverse);
+	void SetMaskBone(int nAnimationTrack, int nMaskIndex, char* pstrBoneName);
 
 	void SetCallbackKeys(int nAnimationTrack, int nCallbackKeys);
 	void SetCallbackKey(int nAnimationTrack, int nKeyIndex, float fTime, void *pData);

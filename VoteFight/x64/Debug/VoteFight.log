@@ -1,6 +1,3 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: 중간 디렉터리(x64\Debug\)에 다른 프로젝트(LabProject07-9-8.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
-  Mesh.cpp
-C:\directX_work\VoteFight\Object.h(202,66): warning C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-C:\directX_work\VoteFight\Mesh.cpp(129,8): warning C4101: 'distance' :참조되지 않은 지역 변수입니다.
-C:\directX_work\VoteFight\Mesh.cpp(905): warning C4715: 'CSkinnedMesh::FindBone': 모든 제어 경로에서 값을 반환하지는 않습니다.
+  Object.cpp
   VoteFight.vcxproj -> C:\directX_work\x64\Debug\VoteFight.exe

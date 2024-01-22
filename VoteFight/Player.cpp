@@ -18,25 +18,33 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 
 	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 2, pSimpsonModel);
 	m_pSkinnedAnimationController->m_pRootMotionObject = pSimpsonModel->m_pModelRootObject->FindFrame("mixamorig:Hips");
-	SetRootMotion(true);
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);	// idle
 	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);	// leg walk
+
+	m_pSkinnedAnimationController->CreateMaskBones(0, 2, false);
+	m_pSkinnedAnimationController->CreateMaskBones(1, 2, true);
+
+	m_pSkinnedAnimationController->SetMaskBone(0, 0, "mixamorig:LeftUpLeg");
+	m_pSkinnedAnimationController->SetMaskBone(0, 1, "mixamorig:RightUpLeg");
+
+	m_pSkinnedAnimationController->SetMaskBone(1, 0, "mixamorig:LeftUpLeg");
+	m_pSkinnedAnimationController->SetMaskBone(1, 1, "mixamorig:RightUpLeg");
+	SetRootMotion(true);
+
 	//m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// sidewalk_left
 	//m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// sidewalk_right 
 	//m_pSkinnedAnimationController->SetTrackAnimationSet(5, 5);	// leg walk 
 
-	m_pSkinnedAnimationController->SetTrackWeight(0, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(0, 1);
 	m_pSkinnedAnimationController->SetTrackWeight(1, 1);
-	//m_pSkinnedAnimationController->SetTrackWeight(4, 4);
-	//m_pSkinnedAnimationController->SetTrackWeight(5, 5);
 
-	m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
-	m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
+	//m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
+	//m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
 
 	//"mixamorig:LeftHandIndex2 mixamorig:LeftHand mixamorig:LeftHandThumb2 mixamorig:LeftHandThumb3 mixamorig:LeftHandIndex3 mixamorig:RightForeArm mixamorig:RightHand mixamorig:RightHandIndex1 mixamorig:RightHandIndex2 mixamorig:RightHandIndex3 mixamorig:RightHandThumb1 mixamorig:RightHandThumb2 mixamorig:RightHandThumb3 mixamorig:Spine1 mixamorig:LeftForeArm"
 	m_pSkinnedAnimationController->SetTrackEnable(0, true);
-	m_pSkinnedAnimationController->SetTrackEnable(1, false);
+	m_pSkinnedAnimationController->SetTrackEnable(1, true);
 	//m_pSkinnedAnimationController->SetTrackEnable(4, false);
 	//m_pSkinnedAnimationController->SetTrackEnable(5, false);
 
@@ -307,13 +315,10 @@ void CPlayer::Update(float fTimeElapsed)
 		}
 		if (idle == 1.f)
 		{
-			m_pSkinnedAnimationController->SetTrackEnable(WALK, false);
-			m_pSkinnedAnimationController->SetTrackPosition(WALK, 0.0f);
-			// m_pSkinnedAnimationController->SetTrackEnable(UPPER_GUN, false);
-			// m_pSkinnedAnimationController->SetTrackPosition(UPPER_GUN, 0.0f);
+			//m_pSkinnedAnimationController->SetTrackEnable(WALK, false);
+			//m_pSkinnedAnimationController->SetTrackPosition(WALK, 0.0f);
 		}
-		m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
-		m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
-		// m_pSkinnedAnimationController->SetTrackWeight(UPPER_GUN, walk);
+		//m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
+		//m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
 	}
 }

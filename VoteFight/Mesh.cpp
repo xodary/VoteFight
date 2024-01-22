@@ -868,11 +868,11 @@ void CSkinnedMesh::SetBoneHierarchy(FILE* pInFile)
 		{
 			array[i] = new BoneHierarchy();
 			::ReadStringFromFile(pInFile, array[i]->name);
-			if (root->child) {
-				array[i]->sibling = root->child->sibling;
-				root->child->sibling = array[i];
+			if (root->m_pChild) {
+				array[i]->m_pSibling = root->m_pChild->m_pSibling;
+				root->m_pChild->m_pSibling = array[i];
 			}
-			else root->child = array[i];
+			else root->m_pChild = array[i];
 		}
 		for (int i = num - 1; i >= 0; --i)
 		{
@@ -900,8 +900,8 @@ BoneHierarchy* CSkinnedMesh::FindBone(BoneHierarchy* root, char* cBoneName)
 {
 	if (!strcmp(root->name, cBoneName)) return root;
 
-	if (root->child) FindBone(root->child, cBoneName);
-	if (root->sibling) FindBone(root->sibling, cBoneName);
+	if (root->m_pChild) FindBone(root->m_pChild, cBoneName);
+	if (root->m_pSibling) FindBone(root->m_pSibling, cBoneName);
 }
 
 void CSkinnedMesh::OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pContext)

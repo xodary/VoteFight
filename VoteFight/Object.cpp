@@ -571,15 +571,17 @@ void CAnimationController::SetTrackWeight(int nAnimationTrack, float fWeight)
 	if (m_pAnimationTracks) m_pAnimationTracks[nAnimationTrack].SetWeight(fWeight);
 }
 
-void CAnimationController::SetTrackMaskNum(int nAnimationTrack, int n)
+void CAnimationController::CreateMaskBones(int nAnimationTrack, int nBones, bool bReverse)
 {
-	m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[nAnimationTrack].m_nAnimationSet]->SetMaskedFrameNum(n);
+	m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[nAnimationTrack].m_nAnimationSet]->m_bReverse = bReverse;
+	m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[nAnimationTrack].m_nAnimationSet]->m_nMaskedBone = nBones;
+	m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[nAnimationTrack].m_nAnimationSet]->m_ppMaskedBones = new BoneHierarchy * [nBones];
 }
 
-void CAnimationController::SetTrackMaskFrame(int nAnimationTrack, int nMaskIndex, char cMaskedFrameName[64])
+void CAnimationController::SetMaskBone(int nAnimationTrack, int nMaskIndex, char* pstrBoneName)
 {
-	// if (m_pAnimationTracks) m_pAnimationTracks[nAnimationTrack].SetMasked(cMaskedFrameName);
-	m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[nAnimationTrack].m_nAnimationSet]->SetMaskedFrameName(nMaskIndex, cMaskedFrameName);
+	BoneHierarchy* pBone = m_ppSkinnedMeshes[0]->m_pBoneHierarchy->FindFrame(pstrBoneName);
+	m_pAnimationSets->m_pAnimationSets[m_pAnimationTracks[nAnimationTrack].m_nAnimationSet]->SetMaskedBone(nMaskIndex, pBone);
 }
 
 void CAnimationController::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
@@ -606,14 +608,21 @@ void CAnimationController::AdvanceTime(float fTimeElapsed, CGameObject* pRootGam
 				float fPosition = m_pAnimationTracks[k].UpdatePosition(m_pAnimationTracks[k].m_fPosition, fTimeElapsed, pAnimationSet->m_fLength);
 				for (int j = 0; j < m_pAnimationSets->m_nBoneFrames; j++)
 				{
-					int nMaskFrames = pAnimationSet->m_nMaskedFrameName;
-					bool bMasked = false;
-					for (int i = 0; i < nMaskFrames; ++i)
+					int nMasked = 0;
+					for (int i = 0; i < pAnimationSet->m_nMaskedBone; ++i)
 					{
-						if (!strncmp(m_pAnimationSets->m_ppBoneFrameCaches[j]->m_pstrFrameName, pAnimationSet->m_pMaskedFrameNames[i], strlen(pAnimationSet->m_pMaskedFrameNames[i])))
-							bMasked = true;
+						if (pAnimationSet->m_bReverse != pAnimationSet->m_ppMaskedBones[i]->IsMasked(m_pAnimationSets->m_ppBoneFrameCaches[j]->m_pstrFrameName))
+							nMasked += 1;
 					}
-					if (bMasked) continue;
+					
+					if (!pAnimationSet->m_bReverse) {
+						if (nMasked > 0)
+							continue;
+					}
+					else {
+						if (nMasked == pAnimationSet->m_nMaskedBone)
+							continue;
+					}
 					XMFLOAT4X4 xmf4x4Transform = m_pAnimationSets->m_ppBoneFrameCaches[j]->m_xmf4x4ToParent;
 					XMFLOAT4X4 xmf4x4TrackTransform = pAnimationSet->GetSRT(j, fPosition);
 					xmf4x4Transform = Matrix4x4::Add(xmf4x4Transform, Matrix4x4::Scale(xmf4x4TrackTransform, m_pAnimationTracks[k].m_fWeight));

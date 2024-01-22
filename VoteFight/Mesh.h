@@ -214,10 +214,40 @@ public:
 //
 #define SKINNED_ANIMATION_BONES		256
 
-struct BoneHierarchy {
+class BoneHierarchy {
+public:
 	char name[64];
-	BoneHierarchy* sibling;
-	BoneHierarchy* child;
+	BoneHierarchy* m_pSibling;
+	BoneHierarchy* m_pChild;
+
+	BoneHierarchy* FindFrame(char* pstrFrameName)
+	{
+		BoneHierarchy* pFrameObject = NULL;
+		if (!strncmp(name, pstrFrameName, strlen(pstrFrameName))) return(this);
+
+		if (m_pSibling) if (pFrameObject = m_pSibling->FindFrame(pstrFrameName)) return(pFrameObject);
+		if (m_pChild) if (pFrameObject = m_pChild->FindFrame(pstrFrameName)) return(pFrameObject);
+
+		return(NULL);
+	}
+
+	bool IsMasked(char* pstrFrameName)
+	{
+		if (!strncmp(name, pstrFrameName, strlen(pstrFrameName))) return true;
+		if (m_pChild) return(m_pChild->IsMaskedRecursion(pstrFrameName));
+		return false;
+	}
+
+	bool IsMaskedRecursion(char* pstrFrameName)
+	{
+		if (!strncmp(name, pstrFrameName, strlen(pstrFrameName))) return true;
+
+		if (m_pSibling) return(m_pSibling->IsMaskedRecursion(pstrFrameName));
+		if (m_pChild) return(m_pChild->IsMaskedRecursion(pstrFrameName));
+
+		return(false);
+	}
+
 };
 
 class CSkinnedMesh : public CStandardMesh
@@ -256,6 +286,7 @@ public:
 	XMFLOAT4X4						*m_pcbxmf4x4MappedSkinningBoneTransforms = NULL; //[m_nSkinningBones]
 
 	BoneHierarchy					*m_pBoneHierarchy;
+
 public:
 	void PrepareSkinning(CGameObject *pModelRootObject);
 	void LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, FILE *pInFile);
