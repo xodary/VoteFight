@@ -259,7 +259,7 @@ public:
 public:
 	void PrepareSkinning(CGameObject *pModelRootObject);
 	void LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, FILE *pInFile);
-	void SetBoneHierarchy(BoneHierarchy* root, FILE* pInFile);
+	void SetBoneHierarchy(FILE* pInFile);
 	BoneHierarchy* FindBone(BoneHierarchy* root, char* cBoneName);
 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList);

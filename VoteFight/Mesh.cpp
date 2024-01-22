@@ -791,9 +791,7 @@ void CSkinnedMesh::LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12Graphics
 		}
 		else if (!strcmp(pstrToken, "<BoneHierarchy>:"))
 		{
-			m_pBoneHierarchy = new BoneHierarchy();
-			::ReadStringFromFile(pInFile, m_pBoneHierarchy->name);
-			SetBoneHierarchy(m_pBoneHierarchy, pInFile);
+			SetBoneHierarchy(pInFile);
 		}
 		else if (!strcmp(pstrToken, "<BoneOffsets>:"))
 		{
@@ -854,25 +852,48 @@ void CSkinnedMesh::LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12Graphics
 	}
 }
 
-void CSkinnedMesh::SetBoneHierarchy(BoneHierarchy* root, FILE* pInFile)
+void CSkinnedMesh::SetBoneHierarchy(FILE* pInFile)
 {
-	// 3 받고 자식 3개 만들기
-	int childs = ::ReadIntegerFromFile(pInFile);
-	cout << root->name << "의 자식의 수: " << childs << endl;
-	if (childs == 0) return;
-	root->child = new BoneHierarchy();
-	BoneHierarchy* temp = root->child;
-	for (int i = 0; i < childs; ++i)
+	m_pBoneHierarchy = new BoneHierarchy();
+	vector<BoneHierarchy*> stack;
+	::ReadStringFromFile(pInFile, m_pBoneHierarchy->name);
+	stack.push_back(m_pBoneHierarchy);
+	BoneHierarchy* root = m_pBoneHierarchy;
+	while (1)
 	{
-		::ReadStringFromFile(pInFile, temp->name);
-		if (i != childs - 1) temp->sibling = new BoneHierarchy();
-		temp = temp->sibling;
-	}
+		int num = ::ReadIntegerFromFile(pInFile);
+		cout << root->name << "의 자식 수: " << num << endl;
+		BoneHierarchy** array = new BoneHierarchy * [num];
+		for (int i = 0; i < num; ++i)
+		{
+			array[i] = new BoneHierarchy();
+			::ReadStringFromFile(pInFile, array[i]->name);
+			if (root->child) {
+				array[i]->sibling = root->child->sibling;
+				root->child->sibling = array[i];
+			}
+			else root->child = array[i];
+		}
+		for (int i = num - 1; i >= 0; --i)
+		{
+			stack.push_back(array[i]);
+		}
 
-	// 다음 나오는 이름보고 위치 찾기
-	char parant[64];
-	::ReadStringFromFile(pInFile, parant);
-	SetBoneHierarchy(FindBone(m_pBoneHierarchy, parant), pInFile);
+		char findBoneName[64];
+		::ReadStringFromFile(pInFile, findBoneName);
+		if (!strcmp(findBoneName, "</BoneHierarchy>:"))
+			break;
+		BoneHierarchy* popBone;
+		while (1)
+		{
+			popBone = stack.back();
+			stack.pop_back();
+			if (!strcmp(findBoneName, popBone->name)) {
+				root = popBone;
+				break;
+			}
+		}
+	}
 }
 
 BoneHierarchy* CSkinnedMesh::FindBone(BoneHierarchy* root, char* cBoneName)
