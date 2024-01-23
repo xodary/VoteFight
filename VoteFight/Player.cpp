@@ -22,14 +22,12 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);	// idle
 	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);	// leg walk
 
-	m_pSkinnedAnimationController->CreateMaskBones(0, 2, false);
-	m_pSkinnedAnimationController->CreateMaskBones(1, 2, true);
-
-	m_pSkinnedAnimationController->SetMaskBone(0, 0, "mixamorig:LeftUpLeg");
-	m_pSkinnedAnimationController->SetMaskBone(0, 1, "mixamorig:RightUpLeg");
-
-	m_pSkinnedAnimationController->SetMaskBone(1, 0, "mixamorig:LeftUpLeg");
-	m_pSkinnedAnimationController->SetMaskBone(1, 1, "mixamorig:RightUpLeg");
+	m_pSkinnedAnimationController->CreateMaskBones(0, 1, true);
+	m_pSkinnedAnimationController->CreateMaskBones(1, 1, false);
+	
+	m_pSkinnedAnimationController->SetMaskBone(0, 0, "mixamorig:Spine");
+	
+	m_pSkinnedAnimationController->SetMaskBone(1, 0, "mixamorig:Spine");
 	SetRootMotion(true);
 
 	//m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// sidewalk_left

@@ -234,7 +234,7 @@ public:
 	bool IsMasked(char* pstrFrameName)
 	{
 		if (!strncmp(name, pstrFrameName, strlen(pstrFrameName))) return true;
-		if (m_pChild) return(m_pChild->IsMaskedRecursion(pstrFrameName));
+		if (m_pChild) if (m_pChild->IsMaskedRecursion(pstrFrameName)) return true;
 		return false;
 	}
 
@@ -242,8 +242,8 @@ public:
 	{
 		if (!strncmp(name, pstrFrameName, strlen(pstrFrameName))) return true;
 
-		if (m_pSibling) return(m_pSibling->IsMaskedRecursion(pstrFrameName));
-		if (m_pChild) return(m_pChild->IsMaskedRecursion(pstrFrameName));
+		if (m_pSibling) if (m_pSibling->IsMaskedRecursion(pstrFrameName)) return(true);
+		if (m_pChild) if (m_pChild->IsMaskedRecursion(pstrFrameName)) return(true);
 
 		return(false);
 	}
