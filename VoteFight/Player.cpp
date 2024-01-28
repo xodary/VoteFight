@@ -16,35 +16,39 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	CLoadedModelInfo* pSimpsonModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/hugo_idle.bin", NULL);
 	SetChild(pSimpsonModel->m_pModelRootObject, true);
 
-	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 2, pSimpsonModel);
+	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 4, pSimpsonModel);
 	m_pSkinnedAnimationController->m_pRootMotionObject = pSimpsonModel->m_pModelRootObject->FindFrame("mixamorig:Hips");
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);	// idle
-	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);	// leg walk
 
-	m_pSkinnedAnimationController->CreateMaskBones(0, 1, true);
-	m_pSkinnedAnimationController->CreateMaskBones(1, 1, false);
-	
-	m_pSkinnedAnimationController->SetMaskBone(0, 0, "mixamorig:Spine");
-	
-	m_pSkinnedAnimationController->SetMaskBone(1, 0, "mixamorig:Spine");
+	m_pSkinnedAnimationController->SetTrackAnimationSet(1, 1);	// turnRight
+	m_pSkinnedAnimationController->SetTrackSpeed(1, TURNSPEED);
+
+	m_pSkinnedAnimationController->SetTrackAnimationSet(2, 2);	// turnLeft
+	m_pSkinnedAnimationController->SetTrackSpeed(2, TURNSPEED);
+
+	m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// Walk
+
+	// 애니메이션 상하체 분리
+	// m_pSkinnedAnimationController->CreateMaskBones(0, 1, true);
+	// m_pSkinnedAnimationController->CreateMaskBones(1, 1, false);
+	// m_pSkinnedAnimationController->SetMaskBone(0, 0, "mixamorig:Spine");
+	// m_pSkinnedAnimationController->SetMaskBone(1, 0, "mixamorig:Spine");
+
 	SetRootMotion(true);
 
-	//m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// sidewalk_left
-	//m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// sidewalk_right 
-	//m_pSkinnedAnimationController->SetTrackAnimationSet(5, 5);	// leg walk 
-
 	m_pSkinnedAnimationController->SetTrackWeight(0, 1);
-	m_pSkinnedAnimationController->SetTrackWeight(1, 1);
+	m_pSkinnedAnimationController->SetTrackWeight(1, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(2, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(3, 0);
 
-	//m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
-	//m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
+	m_pSkinnedAnimationController->m_pAnimationTracks[1].m_nType = ANIMATION_TYPE_ONCE;
+	m_pSkinnedAnimationController->m_pAnimationTracks[2].m_nType = ANIMATION_TYPE_ONCE;
 
-	//"mixamorig:LeftHandIndex2 mixamorig:LeftHand mixamorig:LeftHandThumb2 mixamorig:LeftHandThumb3 mixamorig:LeftHandIndex3 mixamorig:RightForeArm mixamorig:RightHand mixamorig:RightHandIndex1 mixamorig:RightHandIndex2 mixamorig:RightHandIndex3 mixamorig:RightHandThumb1 mixamorig:RightHandThumb2 mixamorig:RightHandThumb3 mixamorig:Spine1 mixamorig:LeftForeArm"
 	m_pSkinnedAnimationController->SetTrackEnable(0, true);
-	m_pSkinnedAnimationController->SetTrackEnable(1, true);
-	//m_pSkinnedAnimationController->SetTrackEnable(4, false);
-	//m_pSkinnedAnimationController->SetTrackEnable(5, false);
+	m_pSkinnedAnimationController->SetTrackEnable(1, false);
+	m_pSkinnedAnimationController->SetTrackEnable(2, false);
+	m_pSkinnedAnimationController->SetTrackEnable(3, false);
 
 	m_pSkinnedAnimationController->SetCallbackKeys(1, 2);
 #ifdef _WITH_SOUND_RESOURCE
@@ -67,6 +71,8 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
 	m_xmf3Position = XMFLOAT3(310.0f, pTerrain->GetHeight(310.0f, 590.0f) + 100.f, 590.0f);
 	SetScale(XMFLOAT3(10.0f, 10.0f, 10.0f));
+
+	m_pCrntState = new playerState::Idle(this);
 
 	if (pSimpsonModel) delete pSimpsonModel;
 }
@@ -125,7 +131,6 @@ void CPlayer::Rotate(float x, float y, float z)
 		if (m_fRoll > +20.0f) { z -= (m_fRoll - 20.0f); m_fRoll = +20.0f; }
 		if (m_fRoll < -20.0f) { z -= (m_fRoll + 20.0f); m_fRoll = -20.0f; }
 	}
-	m_pCamera->Rotate(x, y, z);
 	if (y != 0.0f)
 	{
 		XMMATRIX xmmtxRotate = XMMatrixRotationAxis(XMLoadFloat3(&m_xmf3Up), XMConvertToRadians(y));
@@ -145,6 +150,16 @@ void CPlayer::OnPrepareRender()
 	m_xmf4x4ToParent._41 = m_xmf3Position.x; m_xmf4x4ToParent._42 = m_xmf3Position.y; m_xmf4x4ToParent._43 = m_xmf3Position.z;
 
 	m_xmf4x4ToParent = Matrix4x4::Multiply(XMMatrixScaling(m_xmf3Scale.x, m_xmf3Scale.y, m_xmf3Scale.z), m_xmf4x4ToParent);
+}
+
+void CPlayer::Animate(float fTimeElapsed)
+{
+	CGameObject::Animate(fTimeElapsed);
+	/*if (m_pCrntState)
+	{
+		m_pCrntState->Update(fTimeElapsed);
+		BlendAnimation(fTimeElapsed);
+	}*/
 }
 
 void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
@@ -229,15 +244,15 @@ void CPlayer::OnCameraUpdateCallback(float fTimeElapsed)
 	}
 }
 
-void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
+void CPlayer::Move(DWORD xmf3Direction, float fDistance, bool bUpdateVelocity)
 {
-	if (dwDirection)
+	if (xmf3Direction)
 	{
 		XMFLOAT3 xmf3Shift = XMFLOAT3(0, 0, 0);
-		if (dwDirection & DIR_FORWARD) xmf3Shift.z += 1;
-		if (dwDirection & DIR_BACKWARD) xmf3Shift.z -= 1;		
-		if (dwDirection & DIR_RIGHT) xmf3Shift.x += 1;
-		if (dwDirection & DIR_LEFT) xmf3Shift.x -= 1;
+		if (xmf3Direction & DIR_FORWARD) xmf3Shift.z += 1;
+		if (xmf3Direction & DIR_BACKWARD) xmf3Shift.z -= 1;		
+		if (xmf3Direction & DIR_RIGHT) xmf3Shift.x += 1;
+		if (xmf3Direction & DIR_LEFT) xmf3Shift.x -= 1;
 
 		xmf3Shift = Vector3::Normalize(xmf3Shift);
 		SetLookEnd(xmf3Shift);
@@ -248,25 +263,26 @@ void CPlayer::Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity)
 
 void CPlayer::Update(float fTimeElapsed)
 {
-	// now 는 현재, end는 목표 방향 벡터.
-	// Look 벡터를 선형보간을 통해 부드럽게 회전.
-	XMVECTOR now = XMLoadFloat3(&m_xmf3Look);
-	XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
-	float degree = XMConvertToDegrees(std::acos(Vector3::DotProduct(m_xmf3Look, m_xmf3LookEnd)));
-	// 180도 회전할 떄 선형보간으로 하면 회전이 어색해짐. 아예 90도 이상 회전할 때는 선형보간 말고 직접 회전으로 처리
-	if (degree == 180)
-	{
-		float angleInDegrees = fTimeElapsed * 50000;
-		float angleInRadians = XMConvertToRadians(angleInDegrees);
-		XMFLOAT4X4 rotationMatrix = Matrix4x4::Rotate(0, angleInRadians, 0);
-		m_xmf3Look = Vector3::TransformCoord(m_xmf3Look, rotationMatrix);
-	}
-	else
-	{
-		m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 10)));
-		m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
-	}
+	//// now 는 현재, end는 목표 방향 벡터.
+	//// Look 벡터를 선형보간을 통해 부드럽게 회전.
+	//XMVECTOR now = XMLoadFloat3(&m_xmf3Look);
+	//XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
+	//float degree = XMConvertToDegrees(std::acos(Vector3::DotProduct(m_xmf3Look, m_xmf3LookEnd)));
+	//// 180도 회전할 떄 선형보간으로 하면 회전이 어색해짐. 아예 90도 이상 회전할 때는 선형보간 말고 직접 회전으로 처리
+	//if (degree == 180)
+	//{
+	//	float angleInDegrees = fTimeElapsed * 50000;
+	//	float angleInRadians = XMConvertToRadians(angleInDegrees);
+	//	XMFLOAT4X4 rotationMatrix = Matrix4x4::Rotate(0, angleInRadians, 0);
+	//	m_xmf3Look = Vector3::TransformCoord(m_xmf3Look, rotationMatrix);
+	//}
+	//else
+	//{
+	//	m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 10)));
+	//	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
+	//}
 
+	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
 	// 중력, 이동 속력 계산
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, m_xmf3Gravity);
 	float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
@@ -298,25 +314,304 @@ void CPlayer::Update(float fTimeElapsed)
 	// 애니메이션 블렌딩
 	if (m_pSkinnedAnimationController)
 	{
-		float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
-		if (m_bMoving)
-		{
-			m_pSkinnedAnimationController->SetTrackEnable(WALK, true);
-			// m_pSkinnedAnimationController->SetTrackEnable(UPPER_GUN, true);
-			walk = min(1.f, walk + 5.f * fTimeElapsed);
-			idle = 1.f - walk;
-		}
-		else
-		{
-			idle = min(1.f, idle + 5.f * fTimeElapsed);
-			walk = 1.f - idle;
-		}
-		if (idle == 1.f)
-		{
-			//m_pSkinnedAnimationController->SetTrackEnable(WALK, false);
-			//m_pSkinnedAnimationController->SetTrackPosition(WALK, 0.0f);
-		}
+		//if (m_bMoving)
+		//{
+		//	m_pSkinnedAnimationController->SetTrackEnable(WALK, true);
+		//	walk = min(1.f, walk + 5.f * fTimeElapsed);
+		//	idle = 1.f - walk;
+		//}
+		//else
+		//{
+		//	idle = min(1.f, idle + 5.f * fTimeElapsed);
+		//	walk = 1.f - idle;
+		//}
+		//if (idle == 1.f)
+		//{
+		//	m_pSkinnedAnimationController->SetTrackEnable(WALK, false);
+		//	m_pSkinnedAnimationController->SetTrackPosition(WALK, 0.0f);
+		//}
 		//m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
 		//m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
 	}
+	if (m_pCrntState)
+	{
+		m_pCrntState->Update(fTimeElapsed);
+		BlendAnimation(fTimeElapsed);
+	}
+}
+
+using namespace playerState;
+
+void CPlayer::ChangeState(const playerState::State& playerState, const Event& e, const XMFLOAT3& xmf3Direction)
+{
+	if (m_pCrntState != nullptr)
+	{
+		m_pCrntState->Exit(playerState);
+		delete m_pCrntState;
+	}
+
+	switch (playerState)
+	{
+	case State::Idle:
+		m_pCrntState = new playerState::Idle(this);
+		break;
+	case State::Walk:
+		m_pCrntState = new playerState::Walk(this);
+		break;
+	case State::TurnRight:
+		m_pCrntState = new playerState::TurnRight(this);
+		break;
+	case State::TurnLeft:
+		m_pCrntState = new playerState::TurnLeft(this);
+		break;
+	default:
+		assert(0);
+	}
+
+	m_pCrntState->Enter(e, xmf3Direction);
+}
+
+void CPlayer::BlendAnimation(float fTimeElapsed)
+{
+	if (m_bBlending)
+	{
+		m_fUpState = min(1.f, m_fUpState + 5.f * fTimeElapsed);
+		m_fDownState = 1.0f - m_fUpState;
+
+		if (m_fDownState <= 0.0f)
+		{
+			m_pSkinnedAnimationController->SetTrackEnable(m_nDownState, false);
+			m_fDownState = 0.0f;
+			m_fUpState = 1.0f;
+			m_pSkinnedAnimationController->SetTrackWeight(m_nUpState, m_fUpState);
+			m_pSkinnedAnimationController->SetTrackWeight(m_nDownState, m_fDownState);
+			m_bBlending = false;
+		}
+
+		m_pSkinnedAnimationController->SetTrackWeight(m_nUpState, m_fUpState);
+		m_pSkinnedAnimationController->SetTrackWeight(m_nDownState, m_fDownState);
+	}
+}
+
+
+/********** [ IDLE ] **********/
+void playerState::Idle::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
+{
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(IDLE, true);
+}
+
+void playerState::Idle::Exit(const State& playerState)
+{
+	m_pPlayer->m_nUpState = int(playerState);
+	m_pPlayer->m_nDownState = IDLE;
+	for (int i = 0; i < 4; ++i)
+	{
+		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
+			continue;
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackWeight(i, 0);
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(i, false);
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(i, ANIMATION_CALLBACK_EPSILON);
+	}
+	m_pPlayer->m_fUpState = 0.0f;
+	m_pPlayer->m_bBlending = true;
+}
+
+void playerState::Idle::Update(float fTimeElapsed)
+{
+}
+
+void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
+{
+	XMFLOAT3 xmf3SubDirection = xmf3Direction;
+	float dotProduct = Vector3::DotProduct(xmf3SubDirection, m_pPlayer->m_xmf3Look);
+	float angleInDegrees = XMConvertToDegrees(acos(dotProduct));
+	XMFLOAT3 crossProduct = Vector3::CrossProduct(xmf3SubDirection, m_pPlayer->m_xmf3Look);
+	if (crossProduct.y > 0)
+		angleInDegrees = -angleInDegrees;
+	std::cout << "각도 (도): " << angleInDegrees << std::endl;
+
+	if (angleInDegrees >= 45)
+	{
+		m_pPlayer->ChangeState(State::TurnRight, e, xmf3SubDirection);
+	}
+	else if (angleInDegrees <= -45)
+	{
+		m_pPlayer->ChangeState(State::TurnLeft, e, xmf3SubDirection);
+	}
+	else
+	{
+		m_pPlayer->ChangeState(State::Walk, e, xmf3SubDirection);
+	}
+}
+
+/********** [ WALK ] **********/
+void playerState::Walk::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
+{
+	//switch (e)
+	//{
+	//case Event::KeyDown:
+	//	m_pPlayer->Move(xmf3Direction, true);
+	//	break;
+	//case Event::KeyUp:
+	//	m_pPlayer->Move(xmf3Direction, true);	// ??
+	//	break;
+	//default:
+	//	break;
+	//}
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNRIGHT, false);
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNLEFT, false);
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(WALK, true);
+	m_xmf3Direction = xmf3Direction;
+}
+
+void playerState::Walk::Exit(const State& playerState)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
+			continue;
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackWeight(i, 0);
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(i, false);
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(i, ANIMATION_CALLBACK_EPSILON);
+	}
+	m_pPlayer->m_nUpState = int(playerState);
+	m_pPlayer->m_nDownState = WALK;
+	m_pPlayer->m_fUpState = 0.0f;
+	m_pPlayer->m_bBlending = true;
+}
+
+void playerState::Walk::Update(float fTimeElapsed)
+{
+	m_pPlayer->Move(Vector3::ScalarProduct(m_xmf3Direction, fTimeElapsed * 1000), true);
+}
+
+void playerState::Walk::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
+{
+	switch (e)
+	{
+	case Event::KeyDown:
+
+		if (m_pPlayer->m_xmf3Velocity.x == 0 && m_pPlayer->m_xmf3Velocity.z == 0)
+			m_pPlayer->ChangeState(State::Idle, e, xmf3Direction);
+		else
+		{
+			m_xmf3Direction = xmf3Direction;
+			m_pPlayer->m_xmf3Look = Vector3::Interpolation(m_pPlayer->m_xmf3Look, m_xmf3Direction, 0.1);
+			m_pPlayer->m_xmf3Look = Vector3::Normalize(m_pPlayer->m_xmf3Look);
+		}
+
+		/*
+		if (m_pPlayer->GetDirX() == 0 && m_pPlayer->GetDirZ() == 0)
+		{
+			m_pPlayer->ChangeState(CPlayer::State::Idle, e, key);
+		}
+		else if (key == GLUT_KEY_SHIFT_L)
+		{
+			m_pPlayer->Run();
+		}*/
+		break;
+	case Event::KeyUp:
+		//if (movKeys.find(key) != movKeys.end())
+		//{
+		//	m_pPlayer->SubDir(key);
+		//}
+
+		m_pPlayer->ChangeState(State::Idle, e, xmf3Direction);
+
+		//else if (key == GLUT_KEY_SHIFT_L)
+		//{
+		//	m_pPlayer->StopRun();
+		//}
+		break;
+	}
+}
+
+void playerState::TurnRight::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
+{
+	m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNRIGHT].m_bAnimationOnceDone = false;
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(TURNRIGHT, ANIMATION_CALLBACK_EPSILON);
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNRIGHT, true);
+	m_xmf3Direction = xmf3Direction;
+	float dotProduct = Vector3::DotProduct(m_xmf3Direction, m_pPlayer->m_xmf3Look);
+	float angleInDegrees = XMConvertToDegrees(acos(dotProduct));
+	m_nTurn = (int)(angleInDegrees / 45);
+}
+
+void playerState::TurnRight::Exit(const State& playerState)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
+			continue;
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackWeight(i, 0);
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(i, false);
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(i, ANIMATION_CALLBACK_EPSILON);
+	}
+	m_pPlayer->m_nUpState = int(playerState);
+	m_pPlayer->m_nDownState = TURNRIGHT;
+	m_pPlayer->m_fUpState = 0.0f;
+	m_pPlayer->m_bBlending = true;
+}
+
+void playerState::TurnRight::Update(float fTimeElapsed)
+{
+	float time = m_pPlayer->m_pSkinnedAnimationController->m_pAnimationSets->m_pAnimationSets[TURNLEFT]->m_fLength / TURNSPEED;
+	float fRotateAngle = m_nTurn * 45 / time * fTimeElapsed;	
+	m_pPlayer->Rotate(0, fRotateAngle, 0);
+
+	if (m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNRIGHT].m_bAnimationOnceDone)
+	{
+		m_pPlayer->m_xmf3Look = m_xmf3Direction;
+		m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNRIGHT].m_bAnimationOnceDone = false;
+		m_pPlayer->ChangeState(State::Idle, Event::TurnDone, m_pPlayer->m_xmf3Look);
+	}
+}
+
+void playerState::TurnRight::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
+{
+}
+
+void playerState::TurnLeft::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
+{
+	m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNLEFT].m_bAnimationOnceDone = false;
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(TURNLEFT, ANIMATION_CALLBACK_EPSILON);
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNLEFT, true);
+	m_xmf3Direction = xmf3Direction;
+	float dotProduct = Vector3::DotProduct(m_xmf3Direction, m_pPlayer->m_xmf3Look);
+	float angleInDegrees = XMConvertToDegrees(acos(dotProduct));
+	m_nTurn = (int)(angleInDegrees / 45);
+}
+
+void playerState::TurnLeft::Exit(const State& playerState)
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
+			continue;
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackWeight(i, 0);
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(i, false);
+		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(i, ANIMATION_CALLBACK_EPSILON);
+	}
+	m_pPlayer->m_nUpState = int(playerState);
+	m_pPlayer->m_nDownState = TURNLEFT;
+	m_pPlayer->m_fUpState = 0.0f;
+	m_pPlayer->m_bBlending = true;
+}
+
+void playerState::TurnLeft::Update(float fTimeElapsed)
+{
+	float time = m_pPlayer->m_pSkinnedAnimationController->m_pAnimationSets->m_pAnimationSets[TURNLEFT]->m_fLength / TURNSPEED;
+	float fRotateAngle = m_nTurn * 45 / time * fTimeElapsed;
+	m_pPlayer->Rotate(0, -fRotateAngle, 0);
+
+	if (m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNLEFT].m_bAnimationOnceDone)
+	{
+		m_pPlayer->m_xmf3Look = m_xmf3Direction; 
+		m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNLEFT].m_bAnimationOnceDone = false;
+		m_pPlayer->ChangeState(State::Idle, Event::TurnDone, m_pPlayer->m_xmf3Look);
+	}
+}
+
+void playerState::TurnLeft::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
+{
 }

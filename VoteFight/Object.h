@@ -232,6 +232,7 @@ public:
 
 public:
     BOOL 							m_bEnable = true;
+    BOOL 							m_bAnimationOnceDone = false;
     float 							m_fSpeed = 1.0f;
     float 							m_fPosition = -ANIMATION_CALLBACK_EPSILON;
 	float 							m_fWeight = 1.0f;
@@ -491,5 +492,5 @@ public:
 	CPlayerAnimationController(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int nAnimationTracks, CLoadedModelInfo* pModel);
 	~CPlayerAnimationController();
 
-	//virtual void OnRootMotion(CGameObject* pRootGameObject);
+	virtual void OnRootMotion(CGameObject* pRootGameObject);
 };

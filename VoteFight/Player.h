@@ -8,13 +8,71 @@
 #define DIR_DOWN				0x20
 
 #define IDLE					0
-#define WALK					1
-#define UPPER_GUN				2
-#define HUGO_WALK				2
-#define LEG_WALK				5
+#define TURNRIGHT				1
+#define TURNLEFT				2
+#define WALK					3
+
+#define TURNSPEED				4.0f
 
 #include "Object.h"
 #include "Camera.h"
+
+namespace playerState {
+	// state
+	enum class State { Idle = 0, TurnRight, TurnLeft, Walk};
+
+	/* ±âº» State  */
+	class PlayerState abstract {
+	protected:
+		CPlayer* m_pPlayer = nullptr;
+		XMFLOAT3 m_xmf3Direction = XMFLOAT3(0, 0, 0);
+		int m_nTurn = 0;
+	public:
+		PlayerState(CPlayer* player) { m_pPlayer = player; }
+		virtual void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0,0,0)) abstract;
+		virtual void Exit(const State& playerState) abstract;
+		virtual void Update(float fTimeElapsed) abstract;
+		virtual void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) abstract;
+	};
+
+	class Idle : public PlayerState {
+	public:
+		Idle(CPlayer* player) : PlayerState(player) {};
+		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
+		void Exit(const State& playerState) override;
+		void Update(float fTimeElapsed) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) override;
+	};
+
+	class Walk : public PlayerState {
+	public:
+		Walk(CPlayer* player) : PlayerState(player) {};
+		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
+		void Exit(const State& playerState) override;
+		void Update(float fTimeElapsed) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) override;
+	};
+
+	class TurnRight : public PlayerState {
+	public:
+		TurnRight(CPlayer* player) : PlayerState(player) {};
+		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
+		void Exit(const State& playerState) override;
+		void Update(float fTimeElapsed) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) override;
+	};
+
+	class TurnLeft : public PlayerState {
+	public:
+		TurnLeft(CPlayer* player) : PlayerState(player) {};
+		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
+		void Exit(const State& playerState) override;
+		void Update(float fTimeElapsed) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) override;
+	};
+
+}
+
 
 class CPlayer : public CGameObject
 {
@@ -46,6 +104,15 @@ public:
 	float						idle = 1.0f;
 
 	bool						m_bMoving = false;
+	bool						m_bBlending = false;
+	
+	// state
+	playerState::PlayerState*	m_pCrntState = nullptr;
+
+	int							m_nUpState = -1;
+	int							m_nDownState = -1;
+	float						m_fUpState = 0.0f;
+	float						m_fDownState = 0.0f;
 
 public:
 	CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, void* pContext = NULL);
@@ -74,7 +141,7 @@ public:
 	void SetCamera(CCamera *pCamera) { m_pCamera = pCamera; }
 	void SetLookEnd(const XMFLOAT3& xmf3Look) { m_xmf3LookEnd = xmf3Look; }
 
-	void Move(DWORD dwDirection, float fDistance, bool bUpdateVelocity = false);
+	void Move(DWORD xmf3Direction, float fDistance, bool bUpdateVelocity = false);
 	void Move(const XMFLOAT3& xmf3Shift, bool bVelocity = false);
 
 	void Rotate(float x, float y, float z);
@@ -93,7 +160,12 @@ public:
 
 	virtual CCamera* CreateCamera(float fTimeElapsed);
 	virtual void OnPrepareRender();
+	virtual void Animate(float fTimeElapsed);
 	virtual void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera = NULL);
+
+	void ChangeState(const playerState::State& playerState, const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0,0,0));
+
+	void BlendAnimation(float fTimeElapsed);
 };
 
 class CSoundCallbackHandler : public CAnimationCallbackHandler

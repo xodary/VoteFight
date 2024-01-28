@@ -27,6 +27,9 @@
 #include <vector>
 
 using namespace std;
+#include <set>
+
+enum class Event { None, KeyDown, KeyUp, TurnDone };
 
 #include <d3d12.h>
 #include <dxgi1_4.h>
@@ -53,6 +56,42 @@ extern HINSTANCE						ghAppInstance;
 
 #define FRAME_BUFFER_WIDTH				640 * 2
 #define FRAME_BUFFER_HEIGHT				480 * 2
+
+// key values for window
+#define KEY_CTRL 0x11
+#define KEY_SPACE 0x20
+#define KEY_A 0x41
+#define KEY_B 0x42
+#define KEY_C 0x43
+#define KEY_D 0x44
+#define KEY_E 0x45
+#define KEY_F 0x46
+#define KEY_G 0x47
+#define KEY_H 0x48
+#define KEY_I 0x49
+#define KEY_J 0x4A
+#define KEY_K 0x4B
+#define KEY_L 0x4C
+#define KEY_M 0x4D
+#define KEY_N 0x4E
+#define KEY_O 0x4F
+#define KEY_P 0x50
+#define KEY_Q 0x51
+#define KEY_R 0x52
+#define KEY_S 0x53
+#define KEY_T 0x54
+#define KEY_U 0x55
+#define KEY_V 0x56
+#define KEY_W 0x57
+#define KEY_X 0x58
+#define KEY_Y 0x59
+#define KEY_Z 0x5A
+#define KEY_UP VK_UP
+#define KEY_DOWN VK_DOWN
+#define KEY_LEFT VK_LEFT
+#define KEY_RIGHT VK_RIGHT
+#define KEY_SPACEBAR 32
+#define KEY_ESCAPE 27
 
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
@@ -209,6 +248,13 @@ namespace Vector3
 	inline XMFLOAT3 TransformCoord(XMFLOAT3& xmf3Vector, XMFLOAT4X4& xmmtx4x4Matrix)
 	{
 		return(TransformCoord(xmf3Vector, XMLoadFloat4x4(&xmmtx4x4Matrix)));
+	}
+
+	inline XMFLOAT3 Interpolation(XMFLOAT3& xmf3Vector1, XMFLOAT3& xmf3Vector2, float t)
+	{
+		XMFLOAT3 result;
+		XMStoreFloat3(&result, XMVectorLerp(XMLoadFloat3(&xmf3Vector1), XMLoadFloat3(&xmf3Vector2), t));
+		return(result);
 	}
 }
 

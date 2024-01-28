@@ -478,7 +478,11 @@ float CAnimationTrack::UpdatePosition(float fTrackPosition, float fElapsedTime, 
 	}
 	case ANIMATION_TYPE_ONCE:
 		m_fPosition = fTrackPosition + fTrackElapsedTime;
-		if (m_fPosition > fAnimationLength) m_fPosition = fAnimationLength;
+		if (m_fPosition > fAnimationLength && !m_bAnimationOnceDone)
+		{
+			m_fPosition = fAnimationLength;
+			m_bAnimationOnceDone = true;
+		}
 		break;
 	case ANIMATION_TYPE_PINGPONG:
 		break;
@@ -1593,4 +1597,17 @@ CPlayerAnimationController::CPlayerAnimationController(ID3D12Device* pd3dDevice,
 
 CPlayerAnimationController::~CPlayerAnimationController()
 {
+}
+
+void CPlayerAnimationController::OnRootMotion(CGameObject* pRootGameObject)
+{
+	//if (m_pAnimationTracks[TURNRIGHT].m_fPosition == 0.0f)
+	//{
+	//	m_xmf3FirstRootMotionPosition = m_pRootMotionObject->GetPosition();
+	//}
+	//else if (m_pAnimationTracks[TURNRIGHT].m_fPosition < 0.0f)
+	//{
+	//	((CPlayer*)pRootGameObject)->m_xmf3Look = ((CPlayer*)pRootGameObject)->m_xmf3LookEnd;
+	//	((CPlayer*)pRootGameObject)->ChangeState(playerState::State::Walk, Event::TurnDone, ((CPlayer*)pRootGameObject)->m_xmf3Look);
+	//}
 }
