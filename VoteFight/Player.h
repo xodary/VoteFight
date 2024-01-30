@@ -23,11 +23,12 @@ namespace playerState {
 
 	/* ±âº» State  */
 	class PlayerState abstract {
-	protected:
-		CPlayer* m_pPlayer = nullptr;
-		XMFLOAT3 m_xmf3Direction = XMFLOAT3(0, 0, 0);
-		int m_nTurn = 0;
 	public:
+		CPlayer* m_pPlayer = nullptr;
+		XMFLOAT3 m_xmf3Direction = XMFLOAT3(0, 0, 1);
+		XMFLOAT3 m_xmf3Origin = XMFLOAT3(0, 0, 1);
+		int m_nTurn = 0;
+
 		PlayerState(CPlayer* player) { m_pPlayer = player; }
 		virtual void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0,0,0)) abstract;
 		virtual void Exit(const State& playerState) abstract;
@@ -82,6 +83,9 @@ public:
 	XMFLOAT3					m_xmf3Up = XMFLOAT3(0.0f, 1.0f, 0.0f);
 	XMFLOAT3					m_xmf3Look = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	XMFLOAT3					m_xmf3LookEnd = XMFLOAT3(0.0f, 0.0f, 1.0f);
+
+	float						m_fFullAngle = 0.0f;
+	float						m_fAngle = 0.0f;
 
 	XMFLOAT3					m_xmf3Scale = XMFLOAT3(1.0f, 1.0f, 1.0f);
 

@@ -18,6 +18,7 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 
 	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 4, pSimpsonModel);
 	m_pSkinnedAnimationController->m_pRootMotionObject = pSimpsonModel->m_pModelRootObject->FindFrame("mixamorig:Hips");
+	m_pSkinnedAnimationController->m_pRootMotionObject->FindFrame("mixamorig:Spine")->Rotate(0, 20, 0);
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);	// idle
 
@@ -49,6 +50,7 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	m_pSkinnedAnimationController->SetTrackEnable(1, false);
 	m_pSkinnedAnimationController->SetTrackEnable(2, false);
 	m_pSkinnedAnimationController->SetTrackEnable(3, false);
+
 
 	m_pSkinnedAnimationController->SetCallbackKeys(1, 2);
 #ifdef _WITH_SOUND_RESOURCE
@@ -263,26 +265,14 @@ void CPlayer::Move(DWORD xmf3Direction, float fDistance, bool bUpdateVelocity)
 
 void CPlayer::Update(float fTimeElapsed)
 {
-	//// now 는 현재, end는 목표 방향 벡터.
-	//// Look 벡터를 선형보간을 통해 부드럽게 회전.
-	//XMVECTOR now = XMLoadFloat3(&m_xmf3Look);
-	//XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
-	//float degree = XMConvertToDegrees(std::acos(Vector3::DotProduct(m_xmf3Look, m_xmf3LookEnd)));
-	//// 180도 회전할 떄 선형보간으로 하면 회전이 어색해짐. 아예 90도 이상 회전할 때는 선형보간 말고 직접 회전으로 처리
-	//if (degree == 180)
-	//{
-	//	float angleInDegrees = fTimeElapsed * 50000;
-	//	float angleInRadians = XMConvertToRadians(angleInDegrees);
-	//	XMFLOAT4X4 rotationMatrix = Matrix4x4::Rotate(0, angleInRadians, 0);
-	//	m_xmf3Look = Vector3::TransformCoord(m_xmf3Look, rotationMatrix);
-	//}
-	//else
-	//{
-	//	m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 10)));
-	//	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
-	//}
-
+	// // now 는 현재, end는 목표 방향 벡터.
+	// // Look 벡터를 선형보간을 통해 부드럽게 회전.
+	// XMVECTOR now = XMLoadFloat3(&m_xmf3Look);
+	// XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
+	// m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 20)));
+	
 	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
+	
 	// 중력, 이동 속력 계산
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, m_xmf3Gravity);
 	float fLength = sqrtf(m_xmf3Velocity.x * m_xmf3Velocity.x + m_xmf3Velocity.z * m_xmf3Velocity.z);
@@ -440,7 +430,8 @@ void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Directio
 	}
 	else
 	{
-		m_pPlayer->ChangeState(State::Walk, e, xmf3SubDirection);
+		if(e == Event::KeyDown)
+			m_pPlayer->ChangeState(State::Walk, e, xmf3SubDirection);
 	}
 }
 
@@ -532,7 +523,8 @@ void playerState::TurnRight::Enter(const Event& e, const XMFLOAT3& xmf3Direction
 	m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(TURNRIGHT, ANIMATION_CALLBACK_EPSILON);
 	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNRIGHT, true);
 	m_xmf3Direction = xmf3Direction;
-	float dotProduct = Vector3::DotProduct(m_xmf3Direction, m_pPlayer->m_xmf3Look);
+	m_xmf3Origin = m_pPlayer->m_xmf3Look;
+	float dotProduct = Vector3::DotProduct(m_xmf3Direction, m_xmf3Origin);
 	float angleInDegrees = XMConvertToDegrees(acos(dotProduct));
 	m_nTurn = (int)(angleInDegrees / 45);
 }
@@ -561,7 +553,7 @@ void playerState::TurnRight::Update(float fTimeElapsed)
 
 	if (m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNRIGHT].m_bAnimationOnceDone)
 	{
-		m_pPlayer->m_xmf3Look = m_xmf3Direction;
+		m_pPlayer->m_xmf3Look = Vector3::TransformCoord(m_xmf3Origin, Matrix4x4::Rotate(0, m_nTurn * 45, 0));
 		m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNRIGHT].m_bAnimationOnceDone = false;
 		m_pPlayer->ChangeState(State::Idle, Event::TurnDone, m_pPlayer->m_xmf3Look);
 	}
@@ -577,7 +569,8 @@ void playerState::TurnLeft::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
 		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(TURNLEFT, ANIMATION_CALLBACK_EPSILON);
 	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNLEFT, true);
 	m_xmf3Direction = xmf3Direction;
-	float dotProduct = Vector3::DotProduct(m_xmf3Direction, m_pPlayer->m_xmf3Look);
+	m_xmf3Origin = m_pPlayer->m_xmf3Look;
+	float dotProduct = Vector3::DotProduct(m_xmf3Direction, m_xmf3Origin);
 	float angleInDegrees = XMConvertToDegrees(acos(dotProduct));
 	m_nTurn = (int)(angleInDegrees / 45);
 }
@@ -606,7 +599,7 @@ void playerState::TurnLeft::Update(float fTimeElapsed)
 
 	if (m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNLEFT].m_bAnimationOnceDone)
 	{
-		m_pPlayer->m_xmf3Look = m_xmf3Direction; 
+		m_pPlayer->m_xmf3Look = Vector3::TransformCoord(m_xmf3Origin, Matrix4x4::Rotate(0, -m_nTurn * 45, 0));
 		m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNLEFT].m_bAnimationOnceDone = false;
 		m_pPlayer->ChangeState(State::Idle, Event::TurnDone, m_pPlayer->m_xmf3Look);
 	}

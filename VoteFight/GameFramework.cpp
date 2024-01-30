@@ -334,6 +334,24 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 				XMFLOAT3 xmf3Look = Vector3::Normalize(XMFLOAT3(x, 0, -y));
 				m_pPlayer->SetLookEnd(xmf3Look);
+
+				float dotProduct = Vector3::DotProduct(xmf3Look, m_pPlayer->m_xmf3Look);
+				float angleInDegrees = XMConvertToDegrees(acos(dotProduct));
+
+				if (angleInDegrees > 45)
+				{
+					m_pPlayer->m_pCrntState->HandleEvent(Event::Mouse, xmf3Look);
+				}
+
+				while (angleInDegrees >= 45)
+					angleInDegrees -= 45;
+				
+				XMFLOAT3 crossProduct = Vector3::CrossProduct(xmf3Look, m_pPlayer->m_xmf3Look);
+				if (crossProduct.y > 0)
+					angleInDegrees = -angleInDegrees;
+
+				cout << angleInDegrees << endl;
+				m_pPlayer->m_fFullAngle = angleInDegrees;
 			}
 			break;
 		}

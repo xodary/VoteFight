@@ -618,7 +618,7 @@ void CAnimationController::AdvanceTime(float fTimeElapsed, CGameObject* pRootGam
 						if (pAnimationSet->m_bReverse != pAnimationSet->m_ppMaskedBones[i]->IsMasked(m_pAnimationSets->m_ppBoneFrameCaches[j]->m_pstrFrameName))
 							nMasked += 1;
 					}
-					
+
 					if (!pAnimationSet->m_bReverse) {
 						if (nMasked > 0)
 							continue;
@@ -627,8 +627,16 @@ void CAnimationController::AdvanceTime(float fTimeElapsed, CGameObject* pRootGam
 						if (nMasked == pAnimationSet->m_nMaskedBone)
 							continue;
 					}
+
 					XMFLOAT4X4 xmf4x4Transform = m_pAnimationSets->m_ppBoneFrameCaches[j]->m_xmf4x4ToParent;
 					XMFLOAT4X4 xmf4x4TrackTransform = pAnimationSet->GetSRT(j, fPosition);
+					if (!strncmp(m_pAnimationSets->m_ppBoneFrameCaches[j]->m_pstrFrameName, "mixamorig:Spine", strlen("mixamorig:Spine")))
+					{
+						float angle = ((CPlayer*)m_pModelRootObject->m_pParent)->m_fFullAngle;
+						XMFLOAT4X4 rotate = Matrix4x4::Rotate(0, angle / 2, 0);
+						xmf4x4TrackTransform = Matrix4x4::Multiply(rotate, xmf4x4TrackTransform);
+					}
+
 					xmf4x4Transform = Matrix4x4::Add(xmf4x4Transform, Matrix4x4::Scale(xmf4x4TrackTransform, m_pAnimationTracks[k].m_fWeight));
 					m_pAnimationSets->m_ppBoneFrameCaches[j]->m_xmf4x4ToParent = xmf4x4Transform;
 				}

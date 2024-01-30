@@ -29,7 +29,7 @@
 using namespace std;
 #include <set>
 
-enum class Event { None, KeyDown, KeyUp, TurnDone };
+enum class Event { None, KeyDown, KeyUp, TurnDone, Mouse };
 
 #include <d3d12.h>
 #include <dxgi1_4.h>
