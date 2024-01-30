@@ -16,9 +16,8 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	CLoadedModelInfo* pSimpsonModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/hugo_idle.bin", NULL);
 	SetChild(pSimpsonModel->m_pModelRootObject, true);
 
-	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 4, pSimpsonModel);
+	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 5, pSimpsonModel);
 	m_pSkinnedAnimationController->m_pRootMotionObject = pSimpsonModel->m_pModelRootObject->FindFrame("mixamorig:Hips");
-	m_pSkinnedAnimationController->m_pRootMotionObject->FindFrame("mixamorig:Spine")->Rotate(0, 20, 0);
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);	// idle
 
@@ -30,26 +29,47 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// Walk
 
+	m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// Dance
+
+#ifdef UPPER_BODY
 	// 애니메이션 상하체 분리
-	// m_pSkinnedAnimationController->CreateMaskBones(0, 1, true);
-	// m_pSkinnedAnimationController->CreateMaskBones(1, 1, false);
-	// m_pSkinnedAnimationController->SetMaskBone(0, 0, "mixamorig:Spine");
-	// m_pSkinnedAnimationController->SetMaskBone(1, 0, "mixamorig:Spine");
+	m_pSkinnedAnimationController->CreateMaskBones(3, 1, false);	// Spine을 가린다
+	m_pSkinnedAnimationController->CreateMaskBones(4, 1, true);
+	m_pSkinnedAnimationController->SetMaskBone(3, 0, "mixamorig:Spine");
+	m_pSkinnedAnimationController->SetMaskBone(4, 0, "mixamorig:Spine");
+#endif
 
 	SetRootMotion(true);
+#ifdef UPPER_BODY
+	m_pSkinnedAnimationController->SetTrackWeight(0, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(1, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(2, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(3, 1);
+	m_pSkinnedAnimationController->SetTrackWeight(4, 1);
 
+	m_pSkinnedAnimationController->SetTrackEnable(0, false);
+	m_pSkinnedAnimationController->SetTrackEnable(1, false);
+	m_pSkinnedAnimationController->SetTrackEnable(2, false);
+	m_pSkinnedAnimationController->SetTrackEnable(3, true);
+	m_pSkinnedAnimationController->SetTrackEnable(4, true);
+
+#else
 	m_pSkinnedAnimationController->SetTrackWeight(0, 1);
 	m_pSkinnedAnimationController->SetTrackWeight(1, 0);
 	m_pSkinnedAnimationController->SetTrackWeight(2, 0);
 	m_pSkinnedAnimationController->SetTrackWeight(3, 0);
-
-	m_pSkinnedAnimationController->m_pAnimationTracks[1].m_nType = ANIMATION_TYPE_ONCE;
-	m_pSkinnedAnimationController->m_pAnimationTracks[2].m_nType = ANIMATION_TYPE_ONCE;
+	m_pSkinnedAnimationController->SetTrackWeight(4, 0);
 
 	m_pSkinnedAnimationController->SetTrackEnable(0, true);
 	m_pSkinnedAnimationController->SetTrackEnable(1, false);
 	m_pSkinnedAnimationController->SetTrackEnable(2, false);
 	m_pSkinnedAnimationController->SetTrackEnable(3, false);
+	m_pSkinnedAnimationController->SetTrackEnable(4, false);
+#endif
+
+	m_pSkinnedAnimationController->m_pAnimationTracks[1].m_nType = ANIMATION_TYPE_ONCE;
+	m_pSkinnedAnimationController->m_pAnimationTracks[2].m_nType = ANIMATION_TYPE_ONCE;
+
 
 
 	m_pSkinnedAnimationController->SetCallbackKeys(1, 2);
