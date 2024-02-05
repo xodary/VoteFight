@@ -987,3 +987,108 @@ void CBoundingBoxMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 
 	pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
 }
+
+//================================================
+
+CBitmapMesh::CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int width, int height) : CMesh(pd3dDevice, pd3dCommandList)
+{
+	m_nVertices = 6;
+	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+
+	m_pxmf3Positions = new XMFLOAT3[m_nVertices];
+	m_pxmf2Positions = new XMFLOAT2[m_nVertices];
+
+	m_nWidth = width;
+	m_nHeight = height;
+
+	UpdateBuffers(pd3dDevice, pd3dCommandList, 0, 0);
+}
+
+CBitmapMesh::~CBitmapMesh()
+{
+}
+
+void CBitmapMesh::UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int positionX, int positionY)
+{
+	float left, right, top, bottom;
+	D3D11_MAPPED_SUBRESOURCE mappedResource;
+	HRESULT result;
+
+	// Calculate the screen coordinates of the left side of the bitmap.
+	left = (float)((FRAME_BUFFER_WIDTH / 2) * -1) + (float)positionX;
+
+	// Calculate the screen coordinates of the right side of the bitmap.
+	right = left + (float)FRAME_BUFFER_WIDTH;
+
+	// Calculate the screen coordinates of the top of the bitmap.
+	top = (float)(FRAME_BUFFER_HEIGHT / 2) - (float)positionY;
+
+	// Calculate the screen coordinates of the bottom of the bitmap.
+	bottom = top - (float)FRAME_BUFFER_HEIGHT;
+
+	m_pxmf3Positions = new XMFLOAT3[m_nVertices];
+	m_pxmf2Positions = new XMFLOAT2[m_nVertices];
+
+	// First triangle.
+	m_pxmf3Positions[0] = XMFLOAT3(left, top, 0.0f);  // Top left.
+	m_pxmf2Positions[0] = XMFLOAT2(0.0f, 0.0f);
+
+	m_pxmf3Positions[1] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
+	m_pxmf2Positions[1] = XMFLOAT2(1.0f, 1.0f);
+
+	m_pxmf3Positions[2] = XMFLOAT3(left, bottom, 0.0f);  // Bottom left.
+	m_pxmf2Positions[2] = XMFLOAT2(0.0f, 1.0f);
+
+	// Second triangle.
+	m_pxmf3Positions[3] = XMFLOAT3(left, top, 0.0f);  // Top left.
+	m_pxmf2Positions[3] = XMFLOAT2(0.0f, 0.0f);
+
+	m_pxmf3Positions[4] = XMFLOAT3(right, top, 0.0f);  // Top right.
+	m_pxmf2Positions[4] = XMFLOAT2(1.0f, 0.0f);
+
+	m_pxmf3Positions[5] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
+	m_pxmf2Positions[5] = XMFLOAT2(1.0f, 1.0f);
+
+	m_pd3dPositionBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_pxmf3Positions, sizeof(XMFLOAT3) * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dPositionUploadBuffer);
+
+	m_d3dPositionBufferView.BufferLocation = m_pd3dPositionBuffer->GetGPUVirtualAddress();
+	m_d3dPositionBufferView.StrideInBytes = sizeof(XMFLOAT3);
+	m_d3dPositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
+
+	m_pd2dPositionBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_pxmf2Positions, sizeof(XMFLOAT2) * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd2dPositionUploadBuffer);
+
+	m_d2dPositionBufferView.BufferLocation = m_pd3dPositionBuffer->GetGPUVirtualAddress();
+	m_d2dPositionBufferView.StrideInBytes = sizeof(XMFLOAT2);
+	m_d2dPositionBufferView.SizeInBytes = sizeof(XMFLOAT2) * m_nVertices;
+
+	delete[] m_pxmf3Positions;
+	delete[] m_pxmf2Positions;
+
+	// // Lock the vertex buffer so it can be written to.
+	// result = m_pd3dPositionBuffer->Map(0, NULL, (void**)m_pd3dMappedPosition);
+	// result = m_pd2dPositionBuffer->Map(0, NULL, (void**)m_pd2dMappedPosition);
+	// if (FAILED(result))
+	// {
+	// 	return;
+	// }
+	// 
+	// // Copy the data into the vertex buffer.
+	// memcpy(m_pd3dMappedPosition, (void*)m_pxmf3Positions, (sizeof(XMFLOAT3) * m_nVertices));
+	// memcpy(m_pd2dMappedPosition, (void*)m_pxmf2Positions, (sizeof(XMFLOAT2) * m_nVertices));
+	// 
+	// // Unlock the vertex buffer.
+	// m_pd3dPositionBuffer->Unmap(0, NULL);
+	// m_pd2dPositionBuffer->Unmap(0, NULL);
+	// 
+	// // Release the vertex array as it is no longer needed.
+	// delete[] m_pxmf3Positions;
+	// delete[] m_pxmf2Positions;
+
+	return;
+}
+
+void CBitmapMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[2] = { m_d3dPositionBufferView, m_d2dPositionBufferView };
+	pd3dCommandList->IASetVertexBuffers(m_nSlot, 2, pVertexBufferViews);
+}

@@ -84,8 +84,11 @@ private:
 
 	bool						m_bRenderBoundingBox = false;
 
+
 	POINT						m_ptOldCursorPos;
 
 	_TCHAR						m_pszFrameRate[70];
+
+	CBitmap*					m_UILayer;
 };
 

@@ -269,3 +269,45 @@ float4 PSBoundingBox(VS_BOUNDINGBOX_OUTPUT input) : SV_TARGET
 {
     return (float4(1.0f, 0.0f, 0.0f, 1.0f));
 }
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+
+Texture2D bitmapTexture : register(t14);
+
+struct VS_BITMAP_INPUT
+{
+    float4 position : POSITION;
+    float2 tex : TEXCOORD0;
+};
+
+struct VS_BITMAP_OUTPUT
+{
+    float4 position : SV_POSITION;
+    float2 tex : TEXCOORD0;
+};
+
+VS_BITMAP_OUTPUT VSBitmap(VS_BITMAP_INPUT input)
+{
+    VS_BITMAP_OUTPUT output;
+    
+    input.position.w = 1.0f;
+
+    output.position = mul(input.position, gmtxGameObject);
+    output.position = mul(output.position, gmtxView);
+    output.position = mul(output.position, gmtxProjection);
+    
+    output.tex = input.tex;
+    
+    return output;
+}
+
+float4 PSBitmap(VS_BITMAP_OUTPUT input) : SV_TARGET
+{
+    float4 textureColor;
+	
+    // 이 텍스처 좌표 위치에서 샘플러를 사용하여 텍스처에서 픽셀 색상을 샘플링합니다.
+    textureColor = bitmapTexture.Sample(gssWrap, input.tex);
+
+    return textureColor;
+}

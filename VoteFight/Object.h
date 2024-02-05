@@ -494,3 +494,20 @@ public:
 
 	virtual void OnRootMotion(CGameObject* pRootGameObject);
 };
+
+class CBitmap
+{
+public:
+	CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature);
+	~CBitmap();
+
+	void Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int positionX, int positionY);
+
+
+	CTexture*					m_pTexture = NULL;
+	CMesh*						m_pMesh = NULL;
+	CShader*					m_pShader = NULL;
+
+	XMFLOAT3					m_xmf3Positon;
+	XMFLOAT2					m_xmf2Positon;
+};

@@ -29,7 +29,22 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// Walk
 
-	m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// Dance
+	// m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// Dance
+
+	m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// idle (upper-body)
+
+
+	// 애니메이션 상하체 분리
+	m_pSkinnedAnimationController->CreateMaskBones(0, 1, false);	
+	m_pSkinnedAnimationController->CreateMaskBones(1, 1, false);	// Spine을 가린다
+	m_pSkinnedAnimationController->CreateMaskBones(2, 1, false);	// Spine을 가린다
+	m_pSkinnedAnimationController->CreateMaskBones(3, 1, false);	// Spine을 가린다
+	m_pSkinnedAnimationController->CreateMaskBones(4, 1, true);	// Spine만 살리고 나머지를 가린다.
+	m_pSkinnedAnimationController->SetMaskBone(0, 0, "mixamorig:Spine");
+	m_pSkinnedAnimationController->SetMaskBone(1, 0, "mixamorig:Spine");
+	m_pSkinnedAnimationController->SetMaskBone(2, 0, "mixamorig:Spine");
+	m_pSkinnedAnimationController->SetMaskBone(3, 0, "mixamorig:Spine");
+	m_pSkinnedAnimationController->SetMaskBone(4, 0, "mixamorig:Spine");
 
 #ifdef UPPER_BODY
 	// 애니메이션 상하체 분리
@@ -58,13 +73,13 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	m_pSkinnedAnimationController->SetTrackWeight(1, 0);
 	m_pSkinnedAnimationController->SetTrackWeight(2, 0);
 	m_pSkinnedAnimationController->SetTrackWeight(3, 0);
-	m_pSkinnedAnimationController->SetTrackWeight(4, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(4, 1);
 
 	m_pSkinnedAnimationController->SetTrackEnable(0, true);
 	m_pSkinnedAnimationController->SetTrackEnable(1, false);
 	m_pSkinnedAnimationController->SetTrackEnable(2, false);
 	m_pSkinnedAnimationController->SetTrackEnable(3, false);
-	m_pSkinnedAnimationController->SetTrackEnable(4, false);
+	m_pSkinnedAnimationController->SetTrackEnable(4, true);
 #endif
 
 	m_pSkinnedAnimationController->m_pAnimationTracks[1].m_nType = ANIMATION_TYPE_ONCE;
@@ -90,8 +105,8 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	SetPlayerUpdatedContext(pContext);
 	SetCameraUpdatedContext(pContext);
 
-	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
-	m_xmf3Position = XMFLOAT3(310.0f, pTerrain->GetHeight(310.0f, 590.0f) + 100.f, 590.0f);
+	// CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
+	// m_xmf3Position = XMFLOAT3(310.0f, pTerrain->GetHeight(310.0f, 590.0f) + 100.f, 590.0f);
 	SetScale(XMFLOAT3(10.0f, 10.0f, 10.0f));
 
 	m_pCrntState = new playerState::Idle(this);
@@ -200,7 +215,7 @@ CCamera* CPlayer::CreateCamera(float fTimeElapsed)
 	m_pCamera = new CCamera(m_pCamera);
 	m_pCamera->SetPlayer(this);
 	m_pCamera->SetTimeLag(0.25f);
-	m_pCamera->SetOffset(XMFLOAT3(0.0f, 40.0f, -40.0f));
+	m_pCamera->SetOffset(XMFLOAT3(0.0f, 80.0f, -80.0f));
 	m_pCamera->GenerateProjectionMatrix(1.01f, 5000.0f, ASPECT_RATIO, 60.0f);
 	m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
 	m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
@@ -238,15 +253,15 @@ void CPlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 	XMFLOAT3 xmf3PlayerPosition = GetPosition();
 	int z = (int)(xmf3PlayerPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
-	float fHeight = pTerrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 10.0f;
-	if (xmf3PlayerPosition.y < fHeight)
-	{
-		XMFLOAT3 xmf3PlayerVelocity = GetVelocity();
-		xmf3PlayerVelocity.y = 0.0f;
-		SetVelocity(xmf3PlayerVelocity);
-		xmf3PlayerPosition.y = fHeight;
-		SetPosition(xmf3PlayerPosition);
-	}
+	// float fHeight = pTerrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 10.0f;
+	// if (xmf3PlayerPosition.y < fHeight)
+	// {
+	// 	XMFLOAT3 xmf3PlayerVelocity = GetVelocity();
+	// 	xmf3PlayerVelocity.y = 0.0f;
+	// 	SetVelocity(xmf3PlayerVelocity);
+	// 	xmf3PlayerPosition.y = fHeight;
+	// 	SetPosition(xmf3PlayerPosition);
+	// }
 }
 
 void CPlayer::OnCameraUpdateCallback(float fTimeElapsed)
@@ -256,14 +271,14 @@ void CPlayer::OnCameraUpdateCallback(float fTimeElapsed)
 	XMFLOAT3 xmf3CameraPosition = m_pCamera->GetPosition();
 	int z = (int)(xmf3CameraPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
-	float fHeight = pTerrain->GetHeight(xmf3CameraPosition.x, xmf3CameraPosition.z, bReverseQuad) + 5.0f;
-	if (xmf3CameraPosition.y <= fHeight)
-	{
-		xmf3CameraPosition.y = fHeight;
-		m_pCamera->SetPosition(xmf3CameraPosition);
-		CCamera* p3rdPersonCamera = m_pCamera;
-		p3rdPersonCamera->SetLookAt(GetPosition());
-	}
+	// float fHeight = pTerrain->GetHeight(xmf3CameraPosition.x, xmf3CameraPosition.z, bReverseQuad) + 5.0f;
+	// if (xmf3CameraPosition.y <= fHeight)
+	// {
+	// 	xmf3CameraPosition.y = fHeight;
+	// 	m_pCamera->SetPosition(xmf3CameraPosition);
+	// 	CCamera* p3rdPersonCamera = m_pCamera;
+	// 	p3rdPersonCamera->SetLookAt(GetPosition());
+	// }
 }
 
 void CPlayer::Move(DWORD xmf3Direction, float fDistance, bool bUpdateVelocity)
@@ -291,7 +306,9 @@ void CPlayer::Update(float fTimeElapsed)
 	// XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
 	// m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 20)));
 	
-	m_xmf3Right = Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true);
+	m_xmf3Look = Vector3::Normalize(m_xmf3Look);
+	m_xmf3Up = Vector3::Normalize(m_xmf3Up);
+	m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true));
 	
 	// 중력, 이동 속력 계산
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, m_xmf3Gravity);
@@ -438,7 +455,7 @@ void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Directio
 	XMFLOAT3 crossProduct = Vector3::CrossProduct(xmf3SubDirection, m_pPlayer->m_xmf3Look);
 	if (crossProduct.y > 0)
 		angleInDegrees = -angleInDegrees;
-	std::cout << "각도 (도): " << angleInDegrees << std::endl;
+	// std::cout << "각도 (도): " << angleInDegrees << std::endl;
 
 	if (angleInDegrees >= 45)
 	{

@@ -314,6 +314,24 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 				XMFLOAT3 xmf3Look = Vector3::Normalize(XMFLOAT3(x, 0, -y));
 				m_pPlayer->SetLookEnd(xmf3Look);
+
+				float dotProduct = Vector3::DotProduct(xmf3Look, m_pPlayer->m_xmf3Look);
+				float angleInDegrees = XMConvertToDegrees(acos(dotProduct));
+
+				if (angleInDegrees > 45)
+				{
+					m_pPlayer->m_pCrntState->HandleEvent(Event::Mouse, xmf3Look);
+				}
+
+				while (angleInDegrees >= 45)
+					angleInDegrees -= 45;
+
+				XMFLOAT3 crossProduct = Vector3::CrossProduct(xmf3Look, m_pPlayer->m_xmf3Look);
+				if (crossProduct.y > 0)
+					angleInDegrees = -angleInDegrees;
+
+				// cout << angleInDegrees << endl;
+				m_pPlayer->m_fFullAngle = angleInDegrees;
 			}
 			break;
 		case WM_LBUTTONUP:
@@ -350,7 +368,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 				if (crossProduct.y > 0)
 					angleInDegrees = -angleInDegrees;
 
-				cout << angleInDegrees << endl;
+				// cout << angleInDegrees << endl;
 				m_pPlayer->m_fFullAngle = angleInDegrees;
 			}
 			break;
@@ -486,6 +504,7 @@ void CGameFramework::BuildObjects()
 	if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 
 	CPlayer *pPlayer = new CPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), m_pScene->m_pTerrain);
+	m_UILayer = new CBitmap(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 
 	m_pScene->m_pPlayer = m_pPlayer = pPlayer;
 	m_pScene->m_ppCollisionObjects[0] = m_pPlayer;
@@ -599,15 +618,14 @@ void CGameFramework::MoveToNextFrame()
 	}
 }
 
-//#define _WITH_PLAYER_TOP
-
 void CGameFramework::FrameAdvance()
 {    
 	m_GameTimer.Tick(60.0f);
-	
+
 	ProcessInput();
 
     AnimateObjects();
+
 
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
@@ -635,6 +653,8 @@ void CGameFramework::FrameAdvance()
 	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);
 	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
 	if (m_bRenderBoundingBox) m_pScene->RenderBoundingBox(m_pd3dCommandList, m_pCamera);
+
+	if (m_UILayer) m_UILayer->Render(m_pd3dDevice, m_pd3dCommandList, m_pCamera, m_pPlayer->GetPosition().x, m_pPlayer->GetPosition().z);
 
 	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;

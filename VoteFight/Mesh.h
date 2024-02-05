@@ -315,3 +315,28 @@ public:
 	void UpdateVertexPosition(BoundingOrientedBox* pxmBoundingBox);
 	void Render(ID3D12GraphicsCommandList* pd3dCommandList);
 };
+
+class CBitmapMesh : public CMesh
+{
+public:
+	CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int width, int height);
+	~CBitmapMesh();
+
+	void UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int positionX, int posionY);
+
+	void Render(ID3D12GraphicsCommandList* pd3dCommandList);
+
+	XMFLOAT3*						m_previousPosX, m_previousPosY;
+
+	XMFLOAT3*						m_pd3dMappedPosition = NULL;
+	ID3D12Resource*					m_pd3dPositionBuffer = NULL;
+
+	XMFLOAT2*						m_pxmf2Positions = NULL;
+	XMFLOAT2*						m_pd2dMappedPosition = NULL;
+	ID3D12Resource*					m_pd2dPositionBuffer = NULL;
+	ID3D12Resource*					m_pd2dPositionUploadBuffer = NULL;
+	
+	D3D12_VERTEX_BUFFER_VIEW		m_d2dPositionBufferView;
+
+	int m_nWidth, m_nHeight;
+};

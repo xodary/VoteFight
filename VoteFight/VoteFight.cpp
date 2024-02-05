@@ -26,7 +26,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_ int       nCmdShow)
 {
     UNREFERENCED_PARAMETER(hPrevInstance);
-    UNREFERENCED_PARAMETER(lpCmdLine);
+    UNREFERENCED_PARAMETER(lpCmdLine);    
 
     MSG msg;
     HACCEL hAccelTable;
@@ -64,8 +64,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
     return (int) msg.wParam;
 }
-
-
 
 //
 //  함수: MyRegisterClass()
@@ -116,6 +114,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
    gGameFramework.OnCreate(hInstance, hMainWnd);
 
+
    ::ShowWindow(hMainWnd, nCmdShow);
    ::UpdateWindow(hMainWnd);
 
@@ -164,6 +163,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         default:
             return(::DefWindowProc(hWnd, message, wParam, lParam));
         }
+        break;
+    case WM_CREATE:
         break;
     case WM_PAINT:
         hdc = ::BeginPaint(hWnd, &ps);

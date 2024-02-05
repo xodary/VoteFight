@@ -630,7 +630,7 @@ void CAnimationController::AdvanceTime(float fTimeElapsed, CGameObject* pRootGam
 
 					XMFLOAT4X4 xmf4x4Transform = m_pAnimationSets->m_ppBoneFrameCaches[j]->m_xmf4x4ToParent;
 					XMFLOAT4X4 xmf4x4TrackTransform = pAnimationSet->GetSRT(j, fPosition);
-					if (!strncmp(m_pAnimationSets->m_ppBoneFrameCaches[j]->m_pstrFrameName, "mixamorig:Spine", strlen("mixamorig:Spine")))
+					if (strncmp(m_pAnimationSets->m_ppBoneFrameCaches[j]->m_pstrFrameName, "mixamorig:Spine", strlen(m_pAnimationSets->m_ppBoneFrameCaches[j]->m_pstrFrameName)) == 0)
 					{
 						float angle = ((CPlayer*)m_pModelRootObject->m_pParent)->m_fFullAngle;
 						XMFLOAT4X4 rotate = Matrix4x4::Rotate(0, angle / 2, 0);
@@ -1618,4 +1618,34 @@ void CPlayerAnimationController::OnRootMotion(CGameObject* pRootGameObject)
 	//	((CPlayer*)pRootGameObject)->m_xmf3Look = ((CPlayer*)pRootGameObject)->m_xmf3LookEnd;
 	//	((CPlayer*)pRootGameObject)->ChangeState(playerState::State::Walk, Event::TurnDone, ((CPlayer*)pRootGameObject)->m_xmf3Look);
 	//}
+}
+
+CBitmap::CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+{
+	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, 2, 2);
+	m_pMesh = pBitmapMesh;
+
+	CTexture* pBitmapTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
+	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/item.dds", RESOURCE_TEXTURE2D, 0);
+
+	CBitmapShader* pBitmapShader = new CBitmapShader();
+	pBitmapShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
+	pBitmapShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
+	pBitmapShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 1);
+	pBitmapShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, 15);
+
+	m_pShader = pBitmapShader;
+}
+
+CBitmap::~CBitmap()
+{
+}
+
+void CBitmap::Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int positionX, int positionY)
+{
+	((CBitmapMesh*)m_pMesh)->UpdateBuffers(pd3dDevice, pd3dCommandList, positionX, positionY);
+
+	// OrthoMatrix·Î ¼³Á¤
+	m_pShader->Render(pd3dCommandList, pCamera);
+	m_pMesh->Render(pd3dCommandList, 0);
 }

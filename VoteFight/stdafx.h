@@ -33,13 +33,18 @@ using namespace std;
 enum class Event { None, KeyDown, KeyUp, TurnDone, Mouse };
 
 #include <d3d12.h>
+#include <d2d1.h>
+#include <d2d1_3.h>
 #include <dxgi1_4.h>
 #include <D3Dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXPackedVector.h>
 #include <DirectXColors.h>
 #include <DirectXCollision.h>
+#include <wincodec.h>
 
+#include <dwrite.h>
+#include <d3d11on12.h>
 #include <Mmsystem.h>
 
 #ifdef _DEBUG
@@ -97,8 +102,11 @@ extern HINSTANCE						ghAppInstance;
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
-
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dwrite.lib")
 #pragma comment(lib, "dxguid.lib")
+#pragma comment(lib, "d2d1.lib")
+// #pragma comment(lib, "windowscodes.lib")
 
 // TODO: 프로그램에 필요한 추가 헤더는 여기에서 참조합니다.
 
@@ -396,6 +404,13 @@ namespace Matrix4x4
 		XMFLOAT4X4 xmf4x4Result;
 		XMStoreFloat4x4(&xmf4x4Result, XMMatrixPerspectiveFovLH(FovAngleY, AspectRatio, NearZ, FarZ));
 		return(xmf4x4Result);
+	}
+
+	inline XMFLOAT4X4 OrthographicLH(float NearZ, float FarZ)
+	{
+		XMFLOAT4X4 xmf4x4Result;
+		XMStoreFloat4x4(&xmf4x4Result, XMMatrixOrthographicLH(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, NearZ, FarZ));
+		return xmf4x4Result;
 	}
 
 	inline XMFLOAT4X4 LookAtLH(XMFLOAT3& xmf3EyePosition, XMFLOAT3& xmf3LookAtPosition, XMFLOAT3& xmf3UpDirection)
