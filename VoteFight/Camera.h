@@ -10,6 +10,7 @@ struct VS_CB_CAMERA_INFO
 {
 	XMFLOAT4X4						m_xmf4x4View;
 	XMFLOAT4X4						m_xmf4x4Projection;
+	XMFLOAT4X4						m_xmf4x4Orthographic;
 	XMFLOAT3						m_xmf3Position;
 };
 
@@ -35,6 +36,7 @@ protected:
 
 	XMFLOAT4X4						m_xmf4x4View;
 	XMFLOAT4X4						m_xmf4x4Projection;
+	XMFLOAT4X4						m_xmf4x4Orthographic;
 
 	D3D12_VIEWPORT					m_d3dViewport;
 	D3D12_RECT						m_d3dScissorRect;

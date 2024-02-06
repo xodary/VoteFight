@@ -1620,9 +1620,12 @@ void CPlayerAnimationController::OnRootMotion(CGameObject* pRootGameObject)
 	//}
 }
 
-CBitmap::CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+CBitmap::CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, CCamera* pCamera, CPlayer* pPlayer, int nWidth, int nHeight)
 {
-	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, 2, 2);
+	m_pPlayer = pPlayer;
+	m_pCamera = pCamera;
+
+	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, nWidth, nHeight);
 	m_pMesh = pBitmapMesh;
 
 	CTexture* pBitmapTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
@@ -1635,17 +1638,42 @@ CBitmap::CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	pBitmapShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, 15);
 
 	m_pShader = pBitmapShader;
+
+	CreateShaderVariable(pd3dDevice, pd3dCommandList);
 }
 
 CBitmap::~CBitmap()
 {
 }
 
-void CBitmap::Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int positionX, int positionY)
+void CBitmap::Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int winLeft, int winTop)
 {
-	((CBitmapMesh*)m_pMesh)->UpdateBuffers(pd3dDevice, pd3dCommandList, positionX, positionY);
+	m_xmf2Positon = XMFLOAT2(winLeft, winTop);
+	UpdateShaderVariable(pd3dCommandList);
+
+	m_pMesh->UpdateBuffers(pd3dDevice, pd3dCommandList, winLeft, winTop);
 
 	// OrthoMatrix·Î ¼³Á¤
 	m_pShader->Render(pd3dCommandList, pCamera);
 	m_pMesh->Render(pd3dCommandList, 0);
+}
+
+void CBitmap::CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
+{
+}
+
+void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList)
+{
+	//XMFLOAT3(m_xmf2Positon.x, m_xmf2Positon.y, 0.0f)
+	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(m_pPlayer->GetPosition(), m_pCamera->GetPosition(), m_pCamera->GetUpVector());
+	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4World, 0);
+
+	XMFLOAT4 temp = XMFLOAT4(0, 0, 0, 0);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &temp, 16);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &temp, 20);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &temp, 24);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &temp, 28);
+
+	UINT temp2 = 0;
+	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &temp2, 32);
 }

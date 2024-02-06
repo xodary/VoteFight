@@ -209,7 +209,7 @@ void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamer
 CCamera* CPlayer::CreateCamera(float fTimeElapsed)
 {
 	SetFriction(250.0f);
-	SetGravity(XMFLOAT3(0.0f, -250.0f, 0.0f));
+	SetGravity(XMFLOAT3(0.0f, 0.0f, 0.0f));
 	SetMaxVelocityXZ(15.0f);
 	SetMaxVelocityY(400.0f);
 	m_pCamera = new CCamera(m_pCamera);

@@ -498,16 +498,19 @@ public:
 class CBitmap
 {
 public:
-	CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature);
+	CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, CCamera* pCamera, CPlayer* pPlayer, int nWidth, int nHeight);
 	~CBitmap();
 
+	void CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
+	void UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList);
 	void Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int positionX, int positionY);
 
-
 	CTexture*					m_pTexture = NULL;
-	CMesh*						m_pMesh = NULL;
+	CBitmapMesh*				m_pMesh = NULL;
 	CShader*					m_pShader = NULL;
 
-	XMFLOAT3					m_xmf3Positon;
+	CCamera*					m_pCamera = NULL;
+	CPlayer*					m_pPlayer = NULL;
+
 	XMFLOAT2					m_xmf2Positon;
 };

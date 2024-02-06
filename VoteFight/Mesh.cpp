@@ -1001,30 +1001,44 @@ CBitmapMesh::CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 	m_nWidth = width;
 	m_nHeight = height;
 
-	UpdateBuffers(pd3dDevice, pd3dCommandList, 0, 0);
+	m_pd3dPositionBuffer = CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, sizeof(XMFLOAT3) * m_nVertices, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+	m_pd3dPositionBuffer->Map(0, NULL, (void**)&m_pd3dcbMappedPositions);
+
+	m_d3dPositionBufferView.BufferLocation = m_pd3dPositionBuffer->GetGPUVirtualAddress();
+	m_d3dPositionBufferView.StrideInBytes = sizeof(XMFLOAT3);
+	m_d3dPositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
+
+	m_pd2dPositionBuffer = CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, sizeof(XMFLOAT2) * m_nVertices, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+	m_pd2dPositionBuffer->Map(0, NULL, (void**)&m_pd2dcbMappedPositions);
+
+	m_d2dPositionBufferView.BufferLocation = m_pd2dPositionBuffer->GetGPUVirtualAddress();
+	m_d2dPositionBufferView.StrideInBytes = sizeof(XMFLOAT3);
+	m_d2dPositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
+
+	delete[] m_pxmf3Positions;
+	delete[] m_pxmf2Positions;
 }
 
 CBitmapMesh::~CBitmapMesh()
 {
 }
 
-void CBitmapMesh::UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int positionX, int positionY)
+void CBitmapMesh::UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int winLeft, int winTop)
 {
 	float left, right, top, bottom;
-	D3D11_MAPPED_SUBRESOURCE mappedResource;
 	HRESULT result;
 
 	// Calculate the screen coordinates of the left side of the bitmap.
-	left = (float)((FRAME_BUFFER_WIDTH / 2) * -1) + (float)positionX;
+	left = 100;
 
 	// Calculate the screen coordinates of the right side of the bitmap.
-	right = left + (float)FRAME_BUFFER_WIDTH;
+	right = 200;
 
 	// Calculate the screen coordinates of the top of the bitmap.
-	top = (float)(FRAME_BUFFER_HEIGHT / 2) - (float)positionY;
+	top = 100;
 
 	// Calculate the screen coordinates of the bottom of the bitmap.
-	bottom = top - (float)FRAME_BUFFER_HEIGHT;
+	bottom = 200;
 
 	m_pxmf3Positions = new XMFLOAT3[m_nVertices];
 	m_pxmf2Positions = new XMFLOAT2[m_nVertices];
@@ -1048,47 +1062,12 @@ void CBitmapMesh::UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandL
 
 	m_pxmf3Positions[5] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
 	m_pxmf2Positions[5] = XMFLOAT2(1.0f, 1.0f);
-
-	m_pd3dPositionBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_pxmf3Positions, sizeof(XMFLOAT3) * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dPositionUploadBuffer);
-
-	m_d3dPositionBufferView.BufferLocation = m_pd3dPositionBuffer->GetGPUVirtualAddress();
-	m_d3dPositionBufferView.StrideInBytes = sizeof(XMFLOAT3);
-	m_d3dPositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
-
-	m_pd2dPositionBuffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_pxmf2Positions, sizeof(XMFLOAT2) * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd2dPositionUploadBuffer);
-
-	m_d2dPositionBufferView.BufferLocation = m_pd3dPositionBuffer->GetGPUVirtualAddress();
-	m_d2dPositionBufferView.StrideInBytes = sizeof(XMFLOAT2);
-	m_d2dPositionBufferView.SizeInBytes = sizeof(XMFLOAT2) * m_nVertices;
-
-	delete[] m_pxmf3Positions;
-	delete[] m_pxmf2Positions;
-
-	// // Lock the vertex buffer so it can be written to.
-	// result = m_pd3dPositionBuffer->Map(0, NULL, (void**)m_pd3dMappedPosition);
-	// result = m_pd2dPositionBuffer->Map(0, NULL, (void**)m_pd2dMappedPosition);
-	// if (FAILED(result))
-	// {
-	// 	return;
-	// }
-	// 
-	// // Copy the data into the vertex buffer.
-	// memcpy(m_pd3dMappedPosition, (void*)m_pxmf3Positions, (sizeof(XMFLOAT3) * m_nVertices));
-	// memcpy(m_pd2dMappedPosition, (void*)m_pxmf2Positions, (sizeof(XMFLOAT2) * m_nVertices));
-	// 
-	// // Unlock the vertex buffer.
-	// m_pd3dPositionBuffer->Unmap(0, NULL);
-	// m_pd2dPositionBuffer->Unmap(0, NULL);
-	// 
-	// // Release the vertex array as it is no longer needed.
-	// delete[] m_pxmf3Positions;
-	// delete[] m_pxmf2Positions;
-
-	return;
 }
 
-void CBitmapMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
+void CBitmapMesh::OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, void* pContext)
 {
 	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[2] = { m_d3dPositionBufferView, m_d2dPositionBufferView };
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 2, pVertexBufferViews);
+
+	// pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
 }

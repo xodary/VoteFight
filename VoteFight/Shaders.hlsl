@@ -10,7 +10,8 @@ cbuffer cbCameraInfo : register(b1)
 {
 	matrix					gmtxView : packoffset(c0);
 	matrix					gmtxProjection : packoffset(c4);
-	float3					gvCameraPosition : packoffset(c8);
+	matrix					gmtxOrthographic : packoffset(c8);
+	float3					gvCameraPosition : packoffset(c12);
 };
 
 cbuffer cbGameObjectInfo : register(b2)
@@ -277,27 +278,22 @@ Texture2D bitmapTexture : register(t14);
 
 struct VS_BITMAP_INPUT
 {
-    float4 position : POSITION;
-    float2 tex : TEXCOORD0;
+    float3 position : POSITION;
+    float2 uv : TEXCOORD0;
 };
 
 struct VS_BITMAP_OUTPUT
 {
     float4 position : SV_POSITION;
-    float2 tex : TEXCOORD0;
+    float2 uv : TEXCOORD0;
 };
 
 VS_BITMAP_OUTPUT VSBitmap(VS_BITMAP_INPUT input)
 {
     VS_BITMAP_OUTPUT output;
-    
-    input.position.w = 1.0f;
-
-    output.position = mul(input.position, gmtxGameObject);
-    output.position = mul(output.position, gmtxView);
-    output.position = mul(output.position, gmtxProjection);
-    
-    output.tex = input.tex;
+   
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxOrthographic);
+    output.uv = input.uv;
     
     return output;
 }
@@ -307,7 +303,7 @@ float4 PSBitmap(VS_BITMAP_OUTPUT input) : SV_TARGET
     float4 textureColor;
 	
     // 이 텍스처 좌표 위치에서 샘플러를 사용하여 텍스처에서 픽셀 색상을 샘플링합니다.
-    textureColor = bitmapTexture.Sample(gssWrap, input.tex);
+    textureColor = bitmapTexture.Sample(gssWrap, input.uv);
 
     return textureColor;
 }
