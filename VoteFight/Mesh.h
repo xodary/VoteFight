@@ -5,6 +5,8 @@
 #pragma once
 
 class CGameObject;
+class CCamera;
+class CPlayer;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -322,12 +324,12 @@ public:
 	CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int width, int height);
 	~CBitmapMesh();
 
-	void UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int positionX, int posionY);
+	void UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer, int positionX, int posionY);
 
-	virtual void OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, void* pContext);
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList);
 
 	XMFLOAT3*						m_pd3dcbMappedPositions = NULL;
-	XMFLOAT3*						m_pd2dcbMappedPositions = NULL;
+	XMFLOAT2*						m_pd2dcbMappedPositions = NULL;
 
 	XMFLOAT2*						m_pxmf2Positions = NULL;
 	ID3D12Resource*					m_pd2dPositionBuffer = NULL;

@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "Mesh.h"
 #include "Object.h"
+#include "Player.h"
 
 CMesh::CMesh(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
 {
@@ -995,9 +996,6 @@ CBitmapMesh::CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 	m_nVertices = 6;
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
-	m_pxmf3Positions = new XMFLOAT3[m_nVertices];
-	m_pxmf2Positions = new XMFLOAT2[m_nVertices];
-
 	m_nWidth = width;
 	m_nHeight = height;
 
@@ -1012,62 +1010,51 @@ CBitmapMesh::CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd
 	m_pd2dPositionBuffer->Map(0, NULL, (void**)&m_pd2dcbMappedPositions);
 
 	m_d2dPositionBufferView.BufferLocation = m_pd2dPositionBuffer->GetGPUVirtualAddress();
-	m_d2dPositionBufferView.StrideInBytes = sizeof(XMFLOAT3);
-	m_d2dPositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
-
-	delete[] m_pxmf3Positions;
-	delete[] m_pxmf2Positions;
+	m_d2dPositionBufferView.StrideInBytes = sizeof(XMFLOAT2);
+	m_d2dPositionBufferView.SizeInBytes = sizeof(XMFLOAT2) * m_nVertices;
 }
 
 CBitmapMesh::~CBitmapMesh()
 {
 }
 
-void CBitmapMesh::UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int winLeft, int winTop)
+void CBitmapMesh::UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera *pCamera, CPlayer *pPlayer, int winLeft, int winTop)
 {
 	float left, right, top, bottom;
 	HRESULT result;
 
-	// Calculate the screen coordinates of the left side of the bitmap.
-	left = 100;
-
-	// Calculate the screen coordinates of the right side of the bitmap.
-	right = 200;
-
-	// Calculate the screen coordinates of the top of the bitmap.
-	top = 100;
-
-	// Calculate the screen coordinates of the bottom of the bitmap.
-	bottom = 200;
-
-	m_pxmf3Positions = new XMFLOAT3[m_nVertices];
-	m_pxmf2Positions = new XMFLOAT2[m_nVertices];
+	left = - pCamera->GetPosition().x + FRAME_BUFFER_WIDTH / 2 - winLeft;
+	right = left - m_nWidth;
+	top = pPlayer->GetPosition().z  / sqrt(2) + FRAME_BUFFER_HEIGHT / 2 - winTop;	// sin 45 = 1/sqrt(2)
+	bottom = top - m_nHeight;
 
 	// First triangle.
-	m_pxmf3Positions[0] = XMFLOAT3(left, top, 0.0f);  // Top left.
-	m_pxmf2Positions[0] = XMFLOAT2(0.0f, 0.0f);
+	m_pd3dcbMappedPositions[0] = XMFLOAT3(left, top, 0.0f);  // Top left.
+	m_pd2dcbMappedPositions[0] = XMFLOAT2(0.0f, 0.0f);
 
-	m_pxmf3Positions[1] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
-	m_pxmf2Positions[1] = XMFLOAT2(1.0f, 1.0f);
+	m_pd3dcbMappedPositions[1] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
+	m_pd2dcbMappedPositions[1] = XMFLOAT2(1.0f, 1.0f);
 
-	m_pxmf3Positions[2] = XMFLOAT3(left, bottom, 0.0f);  // Bottom left.
-	m_pxmf2Positions[2] = XMFLOAT2(0.0f, 1.0f);
+	m_pd3dcbMappedPositions[2] = XMFLOAT3(left, bottom, 0.0f);  // Bottom left.
+	m_pd2dcbMappedPositions[2] = XMFLOAT2(0.0f, 1.0f);
 
 	// Second triangle.
-	m_pxmf3Positions[3] = XMFLOAT3(left, top, 0.0f);  // Top left.
-	m_pxmf2Positions[3] = XMFLOAT2(0.0f, 0.0f);
+	m_pd3dcbMappedPositions[3] = XMFLOAT3(left, top, 0.0f);  // Top left.
+	m_pd2dcbMappedPositions[3] = XMFLOAT2(0.0f, 0.0f);
 
-	m_pxmf3Positions[4] = XMFLOAT3(right, top, 0.0f);  // Top right.
-	m_pxmf2Positions[4] = XMFLOAT2(1.0f, 0.0f);
+	m_pd3dcbMappedPositions[4] = XMFLOAT3(right, top, 0.0f);  // Top right.
+	m_pd2dcbMappedPositions[4] = XMFLOAT2(1.0f, 0.0f);
 
-	m_pxmf3Positions[5] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
-	m_pxmf2Positions[5] = XMFLOAT2(1.0f, 1.0f);
+	m_pd3dcbMappedPositions[5] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
+	m_pd2dcbMappedPositions[5] = XMFLOAT2(1.0f, 1.0f);
 }
 
-void CBitmapMesh::OnPreRender(ID3D12GraphicsCommandList* pd3dCommandList, void* pContext)
+void CBitmapMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
+
 	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[2] = { m_d3dPositionBufferView, m_d2dPositionBufferView };
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 2, pVertexBufferViews);
 
-	// pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
+	pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
 }

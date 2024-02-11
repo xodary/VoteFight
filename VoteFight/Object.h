@@ -503,7 +503,7 @@ public:
 
 	void CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
 	void UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList);
-	void Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, int positionX, int positionY);
+	void Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer, int positionX, int positionY);
 
 	CTexture*					m_pTexture = NULL;
 	CBitmapMesh*				m_pMesh = NULL;

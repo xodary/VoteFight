@@ -106,7 +106,7 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	SetCameraUpdatedContext(pContext);
 
 	// CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
-	// m_xmf3Position = XMFLOAT3(310.0f, pTerrain->GetHeight(310.0f, 590.0f) + 100.f, 590.0f);
+	m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	SetScale(XMFLOAT3(10.0f, 10.0f, 10.0f));
 
 	m_pCrntState = new playerState::Idle(this);

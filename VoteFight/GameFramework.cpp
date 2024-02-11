@@ -504,7 +504,7 @@ void CGameFramework::BuildObjects()
 	if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 
 	CPlayer *pPlayer = new CPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), m_pScene->m_pTerrain);
-	m_UILayer = new CBitmap(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), pPlayer->GetCamera(), pPlayer, 10, 10);
+	m_UILayer = new CBitmap(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), pPlayer->GetCamera(), pPlayer, 100, 100);
 
 	m_pScene->m_pPlayer = m_pPlayer = pPlayer;
 	m_pScene->m_ppCollisionObjects[0] = m_pPlayer;
@@ -654,7 +654,7 @@ void CGameFramework::FrameAdvance()
 	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
 	if (m_bRenderBoundingBox) m_pScene->RenderBoundingBox(m_pd3dCommandList, m_pCamera);
 
-	if (m_UILayer) m_UILayer->Render(m_pd3dDevice, m_pd3dCommandList, m_pCamera, 10, 10);
+	if (m_UILayer) m_UILayer->Render(m_pd3dDevice, m_pd3dCommandList, m_pCamera, m_pPlayer, 100, 100);
 
 	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
