@@ -1018,7 +1018,7 @@ CBitmapMesh::~CBitmapMesh()
 {
 }
 
-void CBitmapMesh::UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera *pCamera, CPlayer *pPlayer, int winLeft, int winTop)
+void CBitmapMesh::UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCamera *pCamera, CPlayer *pPlayer, int winLeft, int winTop)
 {
 	float left, right, top, bottom;
 	HRESULT result;

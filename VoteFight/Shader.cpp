@@ -668,6 +668,12 @@ CBitmapShader::~CBitmapShader()
 {
 }
 
+void CBitmapShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+{
+	m_pCrntState = new bitmapState::MainScreen(this);
+	m_pCrntState->Enter(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+}
+
 D3D12_INPUT_LAYOUT_DESC CBitmapShader::CreateInputLayout()
 {
 	UINT nInputElementDescs = 2;
@@ -762,7 +768,13 @@ void CBitmapShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* 
 	CShader::CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 }
 
-void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer)
 {
+	m_pCrntState->Update();
 	CShader::Render(pd3dCommandList, pCamera);
+	pd3dCommandList->SetGraphicsRootDescriptorTable(15, GetGPUSrvDescriptorStartHandle());
+	for (int i = 0; i < m_nObject; ++i)
+	{
+		m_ppObjects[i]->Render(pd3dCommandList, pCamera, pPlayer);
+	}
 }

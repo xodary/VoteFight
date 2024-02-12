@@ -324,7 +324,7 @@ public:
 	CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int width, int height);
 	~CBitmapMesh();
 
-	void UpdateBuffers(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer, int positionX, int posionY);
+	void UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer, int positionX, int posionY);
 
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList);
 
@@ -338,4 +338,5 @@ public:
 	D3D12_VERTEX_BUFFER_VIEW		m_d2dPositionBufferView;
 
 	int m_nWidth, m_nHeight;
+	int m_nLeft, m_nTop;
 };

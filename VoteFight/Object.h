@@ -16,6 +16,7 @@
 
 class CShader;
 class CStandardShader;
+class CBitmapShader;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -495,18 +496,46 @@ public:
 	virtual void OnRootMotion(CGameObject* pRootGameObject);
 };
 
+namespace bitmapState {
+	// state
+	enum class State { MainScreen = 0, InvenScreen, MapScreen, EscScreen };
+
+	/* ±âº» State  */
+	class BitmapState abstract {
+	public:
+		CBitmapShader* m_pShader = NULL;
+
+		BitmapState(CBitmapShader* pShader) { m_pShader = pShader; }
+		virtual void Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) abstract;
+		virtual void Exit() abstract;
+		virtual void Update() abstract;
+		virtual void HandleEvent(const Event& e) abstract;
+	};
+
+	class MainScreen : public BitmapState {
+	public:
+		MainScreen(CBitmapShader* pShader) : BitmapState(pShader) {};
+		void Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) override;
+		void Exit() override;
+		void Update() override;
+		void HandleEvent(const Event& e) override;
+	};
+}
+
 class CBitmap
 {
 public:
-	CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, CCamera* pCamera, CPlayer* pPlayer, int nWidth, int nHeight);
+	CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature);
 	~CBitmap();
 
 	void CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList);
-	void UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList);
-	void Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer, int positionX, int positionY);
+	void UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer);
 
 	CTexture*					m_pTexture = NULL;
-	CBitmapMesh*				m_pMesh = NULL;
+
+	int							m_nMesh = 0;
+	CBitmapMesh**				m_ppMeshes = NULL;
 	CShader*					m_pShader = NULL;
 
 	CCamera*					m_pCamera = NULL;

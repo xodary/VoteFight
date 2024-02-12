@@ -213,8 +213,15 @@ public:
 class CBitmapShader : public CShader
 {
 public:
+	int								m_nObject = 0;
+	CBitmap							**m_ppObjects = NULL;
+
+	bitmapState::BitmapState* m_pCrntState = nullptr;
+
 	CBitmapShader();
 	virtual ~CBitmapShader();
+
+	virtual void BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature);
 
 	virtual D3D12_INPUT_LAYOUT_DESC CreateInputLayout();
 	virtual D3D12_BLEND_DESC CreateBlendState();
@@ -224,5 +231,5 @@ public:
 	virtual D3D12_SHADER_BYTECODE CreatePixelShader(ID3DBlob** ppd3dShaderBlob);
 
 	virtual void CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature);
-	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
+	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer);
 };

@@ -1620,25 +1620,8 @@ void CPlayerAnimationController::OnRootMotion(CGameObject* pRootGameObject)
 	//}
 }
 
-CBitmap::CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, CCamera* pCamera, CPlayer* pPlayer, int nWidth, int nHeight)
+CBitmap::CBitmap(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
-	m_pPlayer = pPlayer;
-	m_pCamera = pCamera;
-
-	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, nWidth, nHeight);
-	m_pMesh = pBitmapMesh;
-
-	CTexture* pBitmapTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
-	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/item.dds", RESOURCE_TEXTURE2D, 0);
-
-	CBitmapShader* pBitmapShader = new CBitmapShader();
-	pBitmapShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
-	pBitmapShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
-	pBitmapShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 1);
-	pBitmapShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, 15);
-
-	m_pShader = pBitmapShader;
-
 	CreateShaderVariable(pd3dDevice, pd3dCommandList);
 }
 
@@ -1646,24 +1629,23 @@ CBitmap::~CBitmap()
 {
 }
 
-void CBitmap::Render(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer *pPlayer, int winLeft, int winTop)
+void CBitmap::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer *pPlayer)
 {
-	UpdateShaderVariable(pd3dCommandList);
+	UpdateShaderVariable(pd3dCommandList, pCamera);
 
-	m_pShader->Render(pd3dCommandList, pCamera);
-
-	pd3dCommandList->SetGraphicsRootDescriptorTable(15, m_pShader->GetGPUSrvDescriptorStartHandle());
-	m_pMesh->UpdateBuffers(pd3dDevice, pd3dCommandList, pCamera, pPlayer, winLeft,  winTop);
-	m_pMesh->Render(pd3dCommandList);
+	for (int i = 0; i < m_nMesh; ++i) {
+		m_ppMeshes[i]->UpdateBuffers(pd3dCommandList, pCamera, pPlayer, m_ppMeshes[i]->m_nLeft, m_ppMeshes[i]->m_nTop);
+		m_ppMeshes[i]->Render(pd3dCommandList);
+	}
 }
 
 void CBitmap::CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
 }
 
-void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList)
+void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(XMFLOAT3(0, 0, 0), m_pCamera->GetOffset(), m_pCamera->GetUpVector());
+	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(XMFLOAT3(0, 0, 0), pCamera->GetOffset(), pCamera->GetUpVector());
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4World, 0);
 
 	XMFLOAT4 temp = XMFLOAT4(0, 0, 0, 0);
@@ -1674,4 +1656,39 @@ void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList)
 
 	UINT temp2 = 0;
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &temp2, 32);
+}
+
+void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+{
+	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, 100, 100);
+	m_pShader->m_nObject = 1;
+	m_pShader->m_ppObjects = new CBitmap * [m_pShader->m_nObject];
+	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[0]->m_nMesh = 1;
+	m_pShader->m_ppObjects[0]->m_ppMeshes = new CBitmapMesh * [m_pShader->m_ppObjects[0]->m_nMesh];
+	for (int i = 0; i < m_pShader->m_ppObjects[0]->m_nMesh; ++i) {
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i] = pBitmapMesh;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nLeft = 100;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nTop = 100;
+	}
+
+	CTexture* pBitmapTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
+	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/item.dds", RESOURCE_TEXTURE2D, 0);
+
+	m_pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
+	m_pShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
+	m_pShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 1);
+	m_pShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, 15);
+}
+
+void bitmapState::MainScreen::Exit()
+{
+}
+
+void bitmapState::MainScreen::Update()
+{
+}
+
+void bitmapState::MainScreen::HandleEvent(const Event& e)
+{
 }

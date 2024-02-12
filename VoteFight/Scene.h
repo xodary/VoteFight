@@ -105,4 +105,6 @@ public:
 	LIGHTS								*m_pcbMappedLights = NULL;
 
 	CBoundingBoxShader*					m_pBoundingBoxShader = NULL;
+
+	CBitmapShader*						m_pUILayer = NULL;
 };

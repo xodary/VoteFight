@@ -78,6 +78,9 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_nCollisionObject = 1;
 	m_ppCollisionObjects = new CGameObject * [m_nCollisionObject];
 
+	m_pUILayer = new CBitmapShader();
+	m_pUILayer->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
+
 	// CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 76); //SuperCobra(17), Gunship(2), Player:Mi24(1), Angrybot()
 
 	CMaterial::PrepareShaders(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature); 
@@ -382,6 +385,7 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->Render(pd3dCommandList, pCamera);
 	for (int i = 0; i < m_nShaders; i++) if (m_ppShaders[i]) m_ppShaders[i]->Render(pd3dCommandList, pCamera);
+	if (m_pUILayer) m_pUILayer->Render(pd3dCommandList, pCamera, m_pPlayer);
 
 	for (int i = 0; i < m_nHierarchicalGameObjects; i++)
 	{
