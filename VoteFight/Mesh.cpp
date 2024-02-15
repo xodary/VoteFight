@@ -1018,28 +1018,28 @@ CBitmapMesh::~CBitmapMesh()
 {
 }
 
-void CBitmapMesh::UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCamera *pCamera, CPlayer *pPlayer, int winLeft, int winTop)
+void CBitmapMesh::UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCamera *pCamera, CPlayer *pPlayer)
 {
 	float left, right, top, bottom;
 	HRESULT result;
 
-	left = - pCamera->GetPosition().x + FRAME_BUFFER_WIDTH / 2 - winLeft;
+	left = -pPlayer->GetPosition().x + FRAME_BUFFER_WIDTH / 2 - m_nLeft;
 	right = left - m_nWidth;
-	top = pPlayer->GetPosition().z  / sqrt(2) + FRAME_BUFFER_HEIGHT / 2 - winTop;	// sin 45 = 1/sqrt(2)
+	top = pPlayer->GetPosition().z  / sqrt(2) + FRAME_BUFFER_HEIGHT / 2 - m_nTop;	// sin 45 = 1/sqrt(2)
 	bottom = top - m_nHeight;
 
 	// First triangle.
-	m_pd3dcbMappedPositions[0] = XMFLOAT3(left, top, 0.0f);  // Top left.
+	m_pd3dcbMappedPositions[0] = XMFLOAT3(left, top, 0.0f);  // Top Left.
 	m_pd2dcbMappedPositions[0] = XMFLOAT2(0.0f, 0.0f);
 
 	m_pd3dcbMappedPositions[1] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
 	m_pd2dcbMappedPositions[1] = XMFLOAT2(1.0f, 1.0f);
 
-	m_pd3dcbMappedPositions[2] = XMFLOAT3(left, bottom, 0.0f);  // Bottom left.
+	m_pd3dcbMappedPositions[2] = XMFLOAT3(left, bottom, 0.0f);  // Bottom Left.
 	m_pd2dcbMappedPositions[2] = XMFLOAT2(0.0f, 1.0f);
 
 	// Second triangle.
-	m_pd3dcbMappedPositions[3] = XMFLOAT3(left, top, 0.0f);  // Top left.
+	m_pd3dcbMappedPositions[3] = XMFLOAT3(left, top, 0.0f);  // Top Left.
 	m_pd2dcbMappedPositions[3] = XMFLOAT2(0.0f, 0.0f);
 
 	m_pd3dcbMappedPositions[4] = XMFLOAT3(right, top, 0.0f);  // Top right.

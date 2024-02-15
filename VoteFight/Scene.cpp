@@ -89,9 +89,9 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
 	m_pSkyBox = new CSkyBox(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 
-	// XMFLOAT3 xmf3Scale(8.0f, 2.0f, 8.0f);
-	// XMFLOAT4 xmf4Color(0.0f, 0.3f, 0.0f, 0.0f);
-	// m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Terrain/HeightMap.raw"), 257, 257, xmf3Scale, xmf4Color);
+	XMFLOAT3 xmf3Scale(8.0f, 2.0f, 8.0f);
+	XMFLOAT4 xmf4Color(0.0f, 0.3f, 0.0f, 0.0f);
+	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Terrain/HeightMap.raw"), 257, 257, xmf3Scale, xmf4Color);
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
@@ -385,7 +385,6 @@ void CScene::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera
 
 	for (int i = 0; i < m_nGameObjects; i++) if (m_ppGameObjects[i]) m_ppGameObjects[i]->Render(pd3dCommandList, pCamera);
 	for (int i = 0; i < m_nShaders; i++) if (m_ppShaders[i]) m_ppShaders[i]->Render(pd3dCommandList, pCamera);
-	if (m_pUILayer) m_pUILayer->Render(pd3dCommandList, pCamera, m_pPlayer);
 
 	for (int i = 0; i < m_nHierarchicalGameObjects; i++)
 	{
@@ -460,6 +459,11 @@ void CScene::RenderBoundingBox(ID3D12GraphicsCommandList* pd3dCommandList, CCame
 		}
 	}
 	m_pPlayer->RenderBoundingBox(pd3dCommandList, pCamera);
+}
+
+void CScene::RenderUILayer(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+{
+	if (m_pUILayer) m_pUILayer->Render(pd3dCommandList, pCamera, m_pPlayer);
 }
 
 CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera)

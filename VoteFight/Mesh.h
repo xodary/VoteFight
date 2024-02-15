@@ -324,7 +324,7 @@ public:
 	CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int width, int height);
 	~CBitmapMesh();
 
-	void UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer, int positionX, int posionY);
+	void UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer);
 
 	virtual void Render(ID3D12GraphicsCommandList* pd3dCommandList);
 

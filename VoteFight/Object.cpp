@@ -1632,9 +1632,8 @@ CBitmap::~CBitmap()
 void CBitmap::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer *pPlayer)
 {
 	UpdateShaderVariable(pd3dCommandList, pCamera);
-
 	for (int i = 0; i < m_nMesh; ++i) {
-		m_ppMeshes[i]->UpdateBuffers(pd3dCommandList, pCamera, pPlayer, m_ppMeshes[i]->m_nLeft, m_ppMeshes[i]->m_nTop);
+		m_ppMeshes[i]->UpdateBuffers(pd3dCommandList, pCamera, pPlayer);
 		m_ppMeshes[i]->Render(pd3dCommandList);
 	}
 }
@@ -1660,7 +1659,7 @@ void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, C
 
 void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
-	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, 100, 100);
+	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, 500, 100);
 	m_pShader->m_nObject = 1;
 	m_pShader->m_ppObjects = new CBitmap * [m_pShader->m_nObject];
 	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
@@ -1668,12 +1667,12 @@ void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 	m_pShader->m_ppObjects[0]->m_ppMeshes = new CBitmapMesh * [m_pShader->m_ppObjects[0]->m_nMesh];
 	for (int i = 0; i < m_pShader->m_ppObjects[0]->m_nMesh; ++i) {
 		m_pShader->m_ppObjects[0]->m_ppMeshes[i] = pBitmapMesh;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nLeft = 100;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nTop = 100;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nLeft = FRAME_BUFFER_WIDTH / 2 - 250;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nTop = FRAME_BUFFER_HEIGHT - 200;
 	}
 
 	CTexture* pBitmapTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
-	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/item.dds", RESOURCE_TEXTURE2D, 0);
+	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/slot.dds", RESOURCE_TEXTURE2D, 0);
 
 	m_pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	m_pShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
