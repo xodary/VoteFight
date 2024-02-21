@@ -21,7 +21,12 @@ namespace playerState {
 	// state
 	enum class State { Idle = 0, TurnRight, TurnLeft, Walk};
 
-	/* 기본 State  */
+	/* 
+		Player의 Animation State를 나타내는 클래스 (애니메이션 트리)
+		2024-02-21 13:43 황유림 수정
+	*/
+
+
 	class PlayerState abstract {
 	public:
 		CPlayer* m_pPlayer = nullptr;

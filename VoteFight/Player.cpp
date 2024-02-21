@@ -300,12 +300,7 @@ void CPlayer::Move(DWORD xmf3Direction, float fDistance, bool bUpdateVelocity)
 
 void CPlayer::Update(float fTimeElapsed)
 {
-	// // now 는 현재, end는 목표 방향 벡터.
-	// // Look 벡터를 선형보간을 통해 부드럽게 회전.
-	// XMVECTOR now = XMLoadFloat3(&m_xmf3Look);
-	// XMVECTOR end = XMLoadFloat3(&m_xmf3LookEnd);
-	// m_xmf3Look = Vector3::Normalize(Vector3::XMVectorToFloat3(DirectX::XMVectorLerp(now, end, fTimeElapsed * 20)));
-	
+	// Look Up Right 벡터 Normalize
 	m_xmf3Look = Vector3::Normalize(m_xmf3Look);
 	m_xmf3Up = Vector3::Normalize(m_xmf3Up);
 	m_xmf3Right = Vector3::Normalize(Vector3::CrossProduct(m_xmf3Up, m_xmf3Look, true));
@@ -338,28 +333,7 @@ void CPlayer::Update(float fTimeElapsed)
 	if (fDeceleration > fLength) fDeceleration = fLength;
 	m_xmf3Velocity = Vector3::Add(m_xmf3Velocity, Vector3::ScalarProduct(m_xmf3Velocity, -fDeceleration, true));
 
-	// 애니메이션 블렌딩
-	if (m_pSkinnedAnimationController)
-	{
-		//if (m_bMoving)
-		//{
-		//	m_pSkinnedAnimationController->SetTrackEnable(WALK, true);
-		//	walk = min(1.f, walk + 5.f * fTimeElapsed);
-		//	idle = 1.f - walk;
-		//}
-		//else
-		//{
-		//	idle = min(1.f, idle + 5.f * fTimeElapsed);
-		//	walk = 1.f - idle;
-		//}
-		//if (idle == 1.f)
-		//{
-		//	m_pSkinnedAnimationController->SetTrackEnable(WALK, false);
-		//	m_pSkinnedAnimationController->SetTrackPosition(WALK, 0.0f);
-		//}
-		//m_pSkinnedAnimationController->SetTrackWeight(IDLE, idle);
-		//m_pSkinnedAnimationController->SetTrackWeight(WALK, walk);
-	}
+	// 현재 상태에 대한 Update 함수 호출 후 애니메이션 블렌딩
 	if (m_pCrntState)
 	{
 		m_pCrntState->Update(fTimeElapsed);
@@ -369,14 +343,22 @@ void CPlayer::Update(float fTimeElapsed)
 
 using namespace playerState;
 
+// Player의 Animation State가 변경될 때 호출하는 함수
+// Args:
+//	playerState: 변경하고자 하는 상태
+//	e: 발생한 이벤트의 종류
+//	xmf3Direction: 변경하고자 하는 방향 벡터
+// 2024-02-21 13:43 황유림 수정
 void CPlayer::ChangeState(const playerState::State& playerState, const Event& e, const XMFLOAT3& xmf3Direction)
 {
+	// Exit 함수 호출
 	if (m_pCrntState != nullptr)
 	{
 		m_pCrntState->Exit(playerState);
 		delete m_pCrntState;
 	}
 
+	// 상태 객체 생성
 	switch (playerState)
 	{
 	case State::Idle:
@@ -395,16 +377,25 @@ void CPlayer::ChangeState(const playerState::State& playerState, const Event& e,
 		assert(0);
 	}
 
+	// Enter 함수 호출
 	m_pCrntState->Enter(e, xmf3Direction);
 }
 
+// Player의 Animation을 자연스럽게 블렌딩하는 함수
+// Args:
+//	fTimeElapsed: 이전 클락과 현재 클락 사이의 시간
+// 2024-02-21 13:43 황유림 수정
 void CPlayer::BlendAnimation(float fTimeElapsed)
 {
 	if (m_bBlending)
 	{
+		// m_nUpState은 비중이 높아지고 있는 애니메이션의 인덱스, m_nDownState은 비중이 낮아지고 있는 애니메이션의 인덱스이다.
+		// m_fUpState은 비중이 높아지고 있는 애니메이션의 현재 비중, m_fDownState은 비중이 낮아지고 있는 애니메이션의 현재 비중이다.
+		// 함수가 호출될 수록 m_fUpState은 0에서 1로 향하고, m_fDownState은 1에서 0으로 향함.
 		m_fUpState = min(1.f, m_fUpState + 5.f * fTimeElapsed);
 		m_fDownState = 1.0f - m_fUpState;
 
+		// 비중이 완전히 낮아지면 m_fDownState에 해당하는 애니메이션을 Enable 시킨다.
 		if (m_fDownState <= 0.0f)
 		{
 			m_pSkinnedAnimationController->SetTrackEnable(m_nDownState, false);
@@ -422,15 +413,29 @@ void CPlayer::BlendAnimation(float fTimeElapsed)
 
 
 /********** [ IDLE ] **********/
+
+// Idle 상태일 때에 처음 들어갔을 때 호출
+// Args:
+//	e: 입력된 이벤트의 종류
+//	xmf3Direction: 입력된 방향의 벡터
+// 2024-02-21 21:45 황유림 수정
 void playerState::Idle::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
 {
+	// IDLE에 해당하는 인덱스의 애니메이션을 활성화 한다.
 	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(IDLE, true);
 }
 
+// Idle 상태일 때를 나갈 때 호출
+// Args:
+//	playerState: 다음 상태
+// 2024-02-21 21:45 황유림 수정
 void playerState::Idle::Exit(const State& playerState)
 {
+	// 애니메이션 블렌딩을 위한 변수 설정
+	// CPlayer::BlendAnimation 에서 이 변수를 사용함.
 	m_pPlayer->m_nUpState = int(playerState);
 	m_pPlayer->m_nDownState = IDLE;
+
 	for (int i = 0; i < 4; ++i)
 	{
 		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
@@ -443,10 +448,19 @@ void playerState::Idle::Exit(const State& playerState)
 	m_pPlayer->m_bBlending = true;
 }
 
+// Idle 상태일 때 계속 호출
+// Args:
+//	fTimeElapsed: 이전 클락과 현재 클락 사이의 시간
+// 2024-02-21 21:45 황유림 수정
 void playerState::Idle::Update(float fTimeElapsed)
 {
 }
 
+// Idle 상태일 때 다른 이벤트가 발생했다면, 처리를 해주는 함수
+// Args:
+//	e: 입력된 이벤트의 종류
+//	xmf3Direction: 입력된 방향의 벡터
+// 2024-02-21 13:43 황유림 수정
 void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
 {
 	XMFLOAT3 xmf3SubDirection = xmf3Direction;
@@ -457,6 +471,7 @@ void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Directio
 		angleInDegrees = -angleInDegrees;
 	// std::cout << "각도 (도): " << angleInDegrees << std::endl;
 
+	// 입력된 벡터가 현재 벡터의 사이각이 -45도 보다 작거나 45도 보다 크다면 Turn Animation을 실행시킨다.
 	if (angleInDegrees >= 45)
 	{
 		m_pPlayer->ChangeState(State::TurnRight, e, xmf3SubDirection);
@@ -465,7 +480,7 @@ void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Directio
 	{
 		m_pPlayer->ChangeState(State::TurnLeft, e, xmf3SubDirection);
 	}
-	else
+	else // 아니라면 Walk Animation을 실행시킨다.
 	{
 		if(e == Event::KeyDown)
 			m_pPlayer->ChangeState(State::Walk, e, xmf3SubDirection);
@@ -473,19 +488,9 @@ void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Directio
 }
 
 /********** [ WALK ] **********/
+
 void playerState::Walk::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
 {
-	//switch (e)
-	//{
-	//case Event::KeyDown:
-	//	m_pPlayer->Move(xmf3Direction, true);
-	//	break;
-	//case Event::KeyUp:
-	//	m_pPlayer->Move(xmf3Direction, true);	// ??
-	//	break;
-	//default:
-	//	break;
-	//}
 	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNRIGHT, false);
 	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNLEFT, false);
 	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(WALK, true);
@@ -566,6 +571,10 @@ void playerState::TurnRight::Enter(const Event& e, const XMFLOAT3& xmf3Direction
 	m_nTurn = (int)(angleInDegrees / 45);
 }
 
+// TurnRight 상태일 때 계속 호출됨.
+// Args:
+//	fTimeElapsed: 이전 클락과 현재 클락 사이의 시간
+// 2024-02-21 13:43 황유림 수정
 void playerState::TurnRight::Exit(const State& playerState)
 {
 	for (int i = 0; i < 4; ++i)
@@ -582,12 +591,18 @@ void playerState::TurnRight::Exit(const State& playerState)
 	m_pPlayer->m_bBlending = true;
 }
 
+// TurnRight 상태일 때 계속 호출됨.
+// Args:
+//	fTimeElapsed: 이전 클락과 현재 클락 사이의 시간
+// 2024-02-21 13:43 황유림 수정
 void playerState::TurnRight::Update(float fTimeElapsed)
 {
+	// 원하는 각도로 조금씩 회전시키기 위함.
 	float time = m_pPlayer->m_pSkinnedAnimationController->m_pAnimationSets->m_pAnimationSets[TURNLEFT]->m_fLength / TURNSPEED;
 	float fRotateAngle = m_nTurn * 45 / time * fTimeElapsed;	
 	m_pPlayer->Rotate(0, fRotateAngle, 0);
 
+	// Turn 애니메이션이 끝나면 Idle 상태로 돌아간다.
 	if (m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNRIGHT].m_bAnimationOnceDone)
 	{
 		m_pPlayer->m_xmf3Look = Vector3::TransformCoord(m_xmf3Origin, Matrix4x4::Rotate(0, m_nTurn * 45, 0));
@@ -600,6 +615,7 @@ void playerState::TurnRight::HandleEvent(const Event& e, const XMFLOAT3& xmf3Dir
 {
 }
 
+// TurnLeft는 TurnRight와 거의 동일하다. 애니메이션 인덱스와 회전 방향만 다르다.
 void playerState::TurnLeft::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
 {
 	m_pPlayer->m_pSkinnedAnimationController->m_pAnimationTracks[TURNLEFT].m_bAnimationOnceDone = false;
