@@ -53,11 +53,16 @@ void CMesh::OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pConte
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 1, &m_d3dPositionBufferView);
 }
 
+// Mesh를 Render 하는 함수 
+// Args:
+//	pd3dCommandList: Direct3D 명령 리스트
+//  nSubSet: 몇 번째 인덱스 정보를 이용해서 Render를 할지
+// 2024-02-24 17:12 황유림 수정
 void CMesh::Render(ID3D12GraphicsCommandList *pd3dCommandList, int nSubSet)
 {
 	UpdateShaderVariables(pd3dCommandList);
 
-	OnPreRender(pd3dCommandList, NULL);
+	OnPreRender(pd3dCommandList, NULL);	// OnPreRender에서는 주로 View를 설정함.
 
 	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
 
@@ -76,98 +81,102 @@ void CMesh::OnPostRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pCont
 {
 }
 
-// 레이와 삼각형의 충돌 지점 계산 함수
-BOOL CMesh::RayIntersectionByTriangle(const XMVECTOR& origin, const XMVECTOR& direction,
-	const XMFLOAT3& v0, const XMFLOAT3& v1, const XMFLOAT3& v2, XMFLOAT3& intersectionPoint, float* pfNearHitDistance)
-{
-	float fHitDistance;
-	XMVECTOR v00 = XMLoadFloat3(&v0);
-	XMVECTOR v11 = XMLoadFloat3(&v1);
-	XMVECTOR v22 = XMLoadFloat3(&v2);
-	BOOL bIntersected = ::TriangleTests::Intersects(origin, direction, v00, v11, v22, fHitDistance);
-	if (bIntersected)
-	{
-		if (fHitDistance < *pfNearHitDistance)
-			*pfNearHitDistance = fHitDistance;
+//BOOL CMesh::RayIntersectionByTriangle(const XMVECTOR& origin, const XMVECTOR& direction,
+//	const XMFLOAT3& v0, const XMFLOAT3& v1, const XMFLOAT3& v2, XMFLOAT3& intersectionPoint, float* pfNearHitDistance)
+//{
+//	float fHitDistance;
+//	XMVECTOR v00 = XMLoadFloat3(&v0);
+//	XMVECTOR v11 = XMLoadFloat3(&v1);
+//	XMVECTOR v22 = XMLoadFloat3(&v2);
+//	BOOL bIntersected = ::TriangleTests::Intersects(origin, direction, v00, v11, v22, fHitDistance);
+//	if (bIntersected)
+//	{
+//		if (fHitDistance < *pfNearHitDistance)
+//			*pfNearHitDistance = fHitDistance;
+//
+//		XMFLOAT3 e1 = XMFLOAT3(v1.x - v0.x, v1.y - v0.y, v1.z - v0.z);
+//		XMFLOAT3 e2 = XMFLOAT3(v2.x - v0.x, v2.y - v0.y, v2.z - v0.z);
+//
+//		XMVECTOR h = XMVector3Cross(direction, XMLoadFloat3(&e2));
+//		float a = XMVectorGetX(XMVector3Dot(XMLoadFloat3(&e1), h));
+//
+//		if (a > -EPSILON && a < EPSILON)
+//			return false;
+//
+//		float f = 1.0f / a;
+//		XMFLOAT3 s;
+//		XMStoreFloat3(&s, XMVectorSubtract(origin, XMLoadFloat3(&v0)));
+//		float u = f * XMVectorGetX(XMVector3Dot(XMLoadFloat3(&s), h));
+//
+//		if (u < 0.0f || u > 1.0f)
+//			return false;
+//
+//		XMVECTOR q = XMVector3Cross(XMLoadFloat3(&s), XMLoadFloat3(&e1));
+//		float v = f * XMVectorGetX(XMVector3Dot(direction, q));
+//
+//		if (v < 0.0f || u + v > 1.0f)
+//			return false;
+//
+//		float t = f * XMVectorGetX(XMVector3Dot(XMLoadFloat3(&e2), q));
+//
+//		if (t > EPSILON)
+//		{
+//			XMStoreFloat3(&intersectionPoint, XMVectorAdd(origin, XMVectorScale(direction, t)));
+//		}
+//	}
+//	return(bIntersected);
+//}
 
-		XMFLOAT3 e1 = XMFLOAT3(v1.x - v0.x, v1.y - v0.y, v1.z - v0.z);
-		XMFLOAT3 e2 = XMFLOAT3(v2.x - v0.x, v2.y - v0.y, v2.z - v0.z);
-
-		XMVECTOR h = XMVector3Cross(direction, XMLoadFloat3(&e2));
-		float a = XMVectorGetX(XMVector3Dot(XMLoadFloat3(&e1), h));
-
-		if (a > -EPSILON && a < EPSILON)
-			return false;
-
-		float f = 1.0f / a;
-		XMFLOAT3 s;
-		XMStoreFloat3(&s, XMVectorSubtract(origin, XMLoadFloat3(&v0)));
-		float u = f * XMVectorGetX(XMVector3Dot(XMLoadFloat3(&s), h));
-
-		if (u < 0.0f || u > 1.0f)
-			return false;
-
-		XMVECTOR q = XMVector3Cross(XMLoadFloat3(&s), XMLoadFloat3(&e1));
-		float v = f * XMVectorGetX(XMVector3Dot(direction, q));
-
-		if (v < 0.0f || u + v > 1.0f)
-			return false;
-
-		float t = f * XMVectorGetX(XMVector3Dot(XMLoadFloat3(&e2), q));
-
-		if (t > EPSILON)
-		{
-			XMStoreFloat3(&intersectionPoint, XMVectorAdd(origin, XMVectorScale(direction, t)));
-		}
-	}
-	return(bIntersected);
-}
-
-int CMesh::CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, XMFLOAT3& xmf3hitpoint, float* pfHitDistance)
-{
-	XMFLOAT3 hitPoint = {};
-	// bool bIntersected = m_xmOOBB.Intersects(xmvPickRayOrigin, xmvPickRayDirection, *pfNearHitDistance);
-	float distance;
-	int nIntersections = 0;
-	bool bIntersected = true;
-	if (bIntersected)
-	{
-		switch (m_d3dPrimitiveTopology)
-		{
-		case D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
-			for (int i = 2; i < m_nVertices; ++i)
-			{
-				XMFLOAT3 v0;
-				XMFLOAT3 v1;
-				XMFLOAT3 v2;
-				if (i % 2 == 0)
-				{
-					// 짝수번째 정점은 이전 정점1, 이전 정점2, 현재 정점으로 구성된 삼각형
-					v0 = m_pxmf3Positions[i - 2];
-					v1 = m_pxmf3Positions[i - 1];
-					v2 = m_pxmf3Positions[i];
-				}
-				else
-				{
-					// 홀수번째 정점은 이전 정점2, 이전 정점1, 현재 정점으로 구성된 삼각형
-					v0 = m_pxmf3Positions[i - 2];
-					v1 = m_pxmf3Positions[i];
-					v2 = m_pxmf3Positions[i - 1];
-				}
-
-				BOOL bIntersected = RayIntersectionByTriangle(xmvPickRayOrigin, xmvPickRayDirection, v0, v1, v2, xmf3hitpoint, pfHitDistance);
-				if (bIntersected) 
-					nIntersections++;
-			}
-			break;
-		}
-	}
-	return(nIntersections);
-}
+//int CMesh::CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, XMFLOAT3& xmf3hitpoint, float* pfHitDistance)
+//{
+//	XMFLOAT3 hitPoint = {};
+//	// bool bIntersected = m_xmOOBB.Intersects(xmvPickRayOrigin, xmvPickRayDirection, *pfNearHitDistance);
+//	float distance;
+//	int nIntersections = 0;
+//	bool bIntersected = true;
+//	if (bIntersected)
+//	{
+//		switch (m_d3dPrimitiveTopology)
+//		{
+//		case D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP:
+//			for (int i = 2; i < m_nVertices; ++i)
+//			{
+//				XMFLOAT3 v0;
+//				XMFLOAT3 v1;
+//				XMFLOAT3 v2;
+//				if (i % 2 == 0)
+//				{
+//					// 짝수번째 정점은 이전 정점1, 이전 정점2, 현재 정점으로 구성된 삼각형
+//					v0 = m_pxmf3Positions[i - 2];
+//					v1 = m_pxmf3Positions[i - 1];
+//					v2 = m_pxmf3Positions[i];
+//				}
+//				else
+//				{
+//					// 홀수번째 정점은 이전 정점2, 이전 정점1, 현재 정점으로 구성된 삼각형
+//					v0 = m_pxmf3Positions[i - 2];
+//					v1 = m_pxmf3Positions[i];
+//					v2 = m_pxmf3Positions[i - 1];
+//				}
+//
+//				BOOL bIntersected = RayIntersectionByTriangle(xmvPickRayOrigin, xmvPickRayDirection, v0, v1, v2, xmf3hitpoint, pfHitDistance);
+//				if (bIntersected) 
+//					nIntersections++;
+//			}
+//			break;
+//		}
+//	}
+//	return(nIntersections);
+//}
 
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
+// 높이맵 이미지를 가져와서 높이맵 이미지 객체를 생성해줌.
+// Args:
+//	pFileName: 이미지의 파일 이름
+//  nWidth: 이미지의 가로 길이
+//  nLength: 이미지의 세로 길이
+//	xmf3Scale: 이미지의 Scale 정보
+// 2024-02-24 17:12 황유림 수정
 CHeightMapImage::CHeightMapImage(LPCTSTR pFileName, int nWidth, int nLength, XMFLOAT3 xmf3Scale)
 {
 	m_nWidth = nWidth;
@@ -256,6 +265,18 @@ float CHeightMapImage::GetHeight(float fx, float fz, bool bReverseQuad)
 	return(fHeight);
 }
 
+// Height Map Image 에서 가져온 정보를 가지고 Grid Mesh를 생성하는 함수
+// Args:
+//	pd3dDevice: Direct3D 디바이스
+//	pd3dCommandList: Direct3D 명령 리스트
+//	xStart: 높이 이미지 정보에서 x 좌표의 어디서부터 가져올지
+//  zStart: 높이 이미지 정보에서 z 좌표의 어디서부터 가져올지
+//  nWidth: 터레인의 x축 길이
+//  nLength: 터레인의 z축 길이
+//  xmf3Scale: 터레인의 Scale 정보
+//  xmf4Color: 터레인의 color 정보
+//  pContext: CHeightMapImage 객체
+// 2024-02-24 17:12 황유림 수정
 CHeightMapGridMesh::CHeightMapGridMesh(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, XMFLOAT4 xmf4Color, void *pContext) : CMesh(pd3dDevice, pd3dCommandList)
 {
 	m_nVertices = nWidth * nLength;
@@ -413,11 +434,17 @@ void CHeightMapGridMesh::OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList,
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 4, pVertexBufferViews);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
+// 스카이 박스 육면체 Mesh 생성하는 함수. Position Buffer에 값을 직접 넣어준다.
+// Args:
+//	pd3dDevice: Direct3D 디바이스
+//	pd3dCommandList: Direct3D 명령 리스트
+//	fWidth: 육면체의 x축 가로 길이
+//  fHeight: 육면체의 y축 세로 길이
+//	fDepth: 육면체의 z축 깊이 길이
+// 2024-02-24 17:12 황유림 수정
 CSkyBoxMesh::CSkyBoxMesh(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, float fWidth, float fHeight, float fDepth) : CMesh(pd3dDevice, pd3dCommandList)
 {
-	m_nVertices = 36;
+	m_nVertices = 36;	
 	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
 	m_pxmf3Positions = new XMFLOAT3[m_nVertices];
@@ -515,6 +542,12 @@ void CStandardMesh::ReleaseUploadBuffers()
 	m_pd3dBiTangentUploadBuffer = NULL;
 }
 
+// 유니티에서 추출한 .bin 파일에서 모델의 메쉬 정보를 읽어와서 객체에 값으로 입력하는 함수 
+// Args:
+//	pd3dDevice: Direct3D 디바이스
+//	pd3dCommandList: Direct3D 명령 리스트
+//	pInFile: 유니티에서 추출한 파일
+// 2024-02-24 17:12 황유림 수정
 void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, FILE *pInFile)
 {
 	char pstrToken[64] = { '\0' };
@@ -527,13 +560,13 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 	for ( ; ; )
 	{
 		::ReadStringFromFile(pInFile, pstrToken);
-		if (!strcmp(pstrToken, "<Bounds>:"))
+		if (!strcmp(pstrToken, "<Bounds>:"))	// 바운딩 박스 정보
 		{
 			nReads = (UINT)::fread(&m_xmBoundingBox.Center, sizeof(XMFLOAT3), 1, pInFile);
 			nReads = (UINT)::fread(&m_xmBoundingBox.Extents, sizeof(XMFLOAT3), 1, pInFile);
 			m_xmBoundingBox.Orientation = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 		}
-		else if (!strcmp(pstrToken, "<Positions>:"))
+		else if (!strcmp(pstrToken, "<Positions>:"))	// 정점 정보
 		{
 			nReads = (UINT)::fread(&nPositions, sizeof(int), 1, pInFile);
 			if (nPositions > 0)
@@ -549,7 +582,7 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 				m_d3dPositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
 			}
 		}
-		else if (!strcmp(pstrToken, "<Colors>:"))
+		else if (!strcmp(pstrToken, "<Colors>:"))	// 색 정보 
 		{
 			nReads = (UINT)::fread(&nColors, sizeof(int), 1, pInFile);
 			if (nColors > 0)
@@ -559,7 +592,7 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 				nReads = (UINT)::fread(m_pxmf4Colors, sizeof(XMFLOAT4), nColors, pInFile);
 			}
 		}
-		else if (!strcmp(pstrToken, "<TextureCoords0>:"))
+		else if (!strcmp(pstrToken, "<TextureCoords0>:"))	// UV 정보
 		{
 			nReads = (UINT)::fread(&nTextureCoords, sizeof(int), 1, pInFile);
 			if (nTextureCoords > 0)
@@ -575,13 +608,13 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 				m_d3dTextureCoord0BufferView.SizeInBytes = sizeof(XMFLOAT2) * m_nVertices;
 			}
 		}
-		else if (!strcmp(pstrToken, "<TextureCoords1>:"))
+		else if (!strcmp(pstrToken, "<TextureCoords1>:"))	// UV 정보
 		{
 			nReads = (UINT)::fread(&nTextureCoords, sizeof(int), 1, pInFile);
 			if (nTextureCoords > 0)
 			{
 				m_nType |= VERTEXT_TEXTURE_COORD1;
-				m_pxmf2TextureCoords1 = new XMFLOAT2[nTextureCoords];
+				m_pxmf2TextureCoords1 = new XMFLOAT2[nTextureCoords];	
 				nReads = (UINT)::fread(m_pxmf2TextureCoords1, sizeof(XMFLOAT2), nTextureCoords, pInFile);
 
 				m_pd3dTextureCoord1Buffer = ::CreateBufferResource(pd3dDevice, pd3dCommandList, m_pxmf2TextureCoords1, sizeof(XMFLOAT2) * m_nVertices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_pd3dTextureCoord1UploadBuffer);
@@ -591,7 +624,7 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 				m_d3dTextureCoord1BufferView.SizeInBytes = sizeof(XMFLOAT2) * m_nVertices;
 			}
 		}
-		else if (!strcmp(pstrToken, "<Normals>:"))
+		else if (!strcmp(pstrToken, "<Normals>:"))	// Normal 정보
 		{
 			nReads = (UINT)::fread(&nNormals, sizeof(int), 1, pInFile);
 			if (nNormals > 0)
@@ -607,7 +640,7 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 				m_d3dNormalBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
 			}
 		}
-		else if (!strcmp(pstrToken, "<Tangents>:"))
+		else if (!strcmp(pstrToken, "<Tangents>:"))	// Tangent 정보
 		{
 			nReads = (UINT)::fread(&nTangents, sizeof(int), 1, pInFile);
 			if (nTangents > 0)
@@ -623,7 +656,7 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 				m_d3dTangentBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
 			}
 		}
-		else if (!strcmp(pstrToken, "<BiTangents>:"))
+		else if (!strcmp(pstrToken, "<BiTangents>:"))	// BiTangent 정보
 		{
 			nReads = (UINT)::fread(&nBiTangents, sizeof(int), 1, pInFile);
 			if (nBiTangents > 0)
@@ -638,7 +671,7 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 				m_d3dBiTangentBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_nVertices;
 			}
 		}
-		else if (!strcmp(pstrToken, "<SubMeshes>:"))
+		else if (!strcmp(pstrToken, "<SubMeshes>:"))	// 인덱스 정보
 		{
 			nReads = (UINT)::fread(&(m_nSubMeshes), sizeof(int), 1, pInFile);
 			if (m_nSubMeshes > 0)
@@ -680,6 +713,11 @@ void CStandardMesh::LoadMeshFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 	}
 }
 
+// Render 하기 전에 호출되어야 하는 함수. View를 설정한다. 
+// Args:
+//	pd3dCommandList: Direct3D 명령 리스트
+//  pContext: 어떠한 값도 올 수 있음. 실제로 사용하지 않음.
+// 2024-02-24 17:12 황유림 수정
 void CStandardMesh::OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pContext)
 {
 	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[5] = { m_d3dPositionBufferView, m_d3dTextureCoord0BufferView, m_d3dNormalBufferView, m_d3dTangentBufferView, m_d3dBiTangentBufferView };
@@ -713,6 +751,10 @@ void CSkinnedMesh::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12Graphic
 {
 }
 
+// Root Signature의 11번 인덱스와 12번 인덱스에 설정 되어있는  Skinned Bone Offset, Transform 에 값을 설정해주는 함수 
+// Args:
+//	pd3dCommandList: Direct3D 명령 리스트
+// 2024-02-24 17:12 황유림 수정
 void CSkinnedMesh::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
 {
 	if (m_pd3dcbBindPoseBoneOffsets)
@@ -756,6 +798,12 @@ void CSkinnedMesh::PrepareSkinning(CGameObject *pModelRootObject)
 	}
 }
 
+// 유니티에서 추출한 .bin 파일에서 Skinned Mesh 정보를 읽어와서 객체에 값으로 입력하는 함수 
+// Args:
+//	pd3dDevice: Direct3D 디바이스
+//	pd3dCommandList: Direct3D 명령 리스트
+//	pInFile: 유니티에서 추출한 파일
+// 2024-02-24 17:12 황유림 수정
 void CSkinnedMesh::LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, FILE *pInFile)
 {
 	char pstrToken[64] = { '\0' };
@@ -853,6 +901,11 @@ void CSkinnedMesh::LoadSkinInfoFromFile(ID3D12Device *pd3dDevice, ID3D12Graphics
 	}
 }
 
+// 유니티에서 추출할 때 설정했던 뼈 계층을 멤버 변수로 저장한다.
+// Args:
+//	pInFile: 유니티에서 추출한 파일
+//	pd3dCommandList: Direct3D 명령 리스트
+// 2024-02-24 17:12 황유림 수정
 void CSkinnedMesh::SetBoneHierarchy(FILE* pInFile)
 {
 	m_pBoneHierarchy = new BoneHierarchy();
@@ -897,6 +950,11 @@ void CSkinnedMesh::SetBoneHierarchy(FILE* pInFile)
 	}
 }
 
+// 뼈 계층 구조에서 자식 객체 중에서 cBoneName에 해당하는 뼈 계층이 존재하는지 재귀함수로 검사한다.
+// Args:
+//	root: 현재 뼈
+//	cBoneName: 찾으려고 하는 뼈의 이름
+// 2024-02-24 17:12 황유림 수정
 BoneHierarchy* CSkinnedMesh::FindBone(BoneHierarchy* root, char* cBoneName)
 {
 	if (!strcmp(root->name, cBoneName)) return root;
@@ -905,21 +963,29 @@ BoneHierarchy* CSkinnedMesh::FindBone(BoneHierarchy* root, char* cBoneName)
 	if (root->m_pSibling) FindBone(root->m_pSibling, cBoneName);
 }
 
+// Render 이전에 호출되는 함수. View를 설정해준다.
+// Args:
+//	pd3dCommandList: Direct3D 명령 리스트
+//  pContext: 
+// 2024-02-24 17:12 황유림 수정
 void CSkinnedMesh::OnPreRender(ID3D12GraphicsCommandList *pd3dCommandList, void *pContext)
 {
 	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[7] = { m_d3dPositionBufferView, m_d3dTextureCoord0BufferView, m_d3dNormalBufferView, m_d3dTangentBufferView, m_d3dBiTangentBufferView, m_d3dBoneIndexBufferView, m_d3dBoneWeightBufferView };
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 7, pVertexBufferViews);
 }
 
-/////////////////////////////////////////////////////////////////////////////////////////////////
-//
+// 육면체 Bounding Box를 출력하기 위한 Position Buffer를 Constant Buffer로 생성해준다. (모델의 위치가 바뀌면 바운딩 박스의 위치도 계속 바뀌기 때문)
+// Args:
+//	pd3dDevice: Direct3D 디바이스
+//	pd3dCommandList: Direct3D 명령 리스트
+// 2024-02-24 17:12 황유림 수정
 CBoundingBoxMesh::CBoundingBoxMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList) : CMesh(pd3dDevice, pd3dCommandList)
 {
-	m_nVertices = 12 * 2;
+	m_nVertices = 12 * 2; // 육면체의 모서리는 12개, 한 개의 모서리를 표현하기 위해 점 두개가 필요함. 따라서 12 * 2의 Vertex가 필요함.
 	m_nStride = sizeof(XMFLOAT3);
 	m_nOffset = 0;
 	m_nSlot = 0;
-	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST;
+	m_d3dPrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_LINELIST; // 빨간 선만 보여줄 것 이므로 LineList로 설정해야 함.
 
 	m_pd3dPositionBuffer = CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, m_nStride * m_nVertices, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
 	m_pd3dPositionBuffer->Map(0, NULL, (void**)&m_pcbMappedPositions);
@@ -934,15 +1000,19 @@ CBoundingBoxMesh::~CBoundingBoxMesh()
 	if (m_pd3dPositionBuffer) m_pd3dPositionBuffer->Unmap(0, NULL);
 }
 
+// Constant buffer로 설정된 Position Buffer의 값을 지정해주는 함수
+// Args:
+//	pxmBoundingBox: 바운딩 박스 정보. 
+//	pd3dCommandList: Direct3D 명령 리스트
+// 2024-02-24 17:12 황유림 수정
 void CBoundingBoxMesh::UpdateVertexPosition(BoundingOrientedBox* pxmBoundingBox)
 {
-	// std::cout << "CBoundingBoxMesh::UpdateVertexPosition 함수 진입" << std::endl;
-
 	XMFLOAT3 xmf3Corners[8];
-	pxmBoundingBox->GetCorners(xmf3Corners);
+	pxmBoundingBox->GetCorners(xmf3Corners);	// 바운딩 박스의 꼭짓점 정보를 가져옴.
 
 	int i = 0;
 
+	// 꼭짓점 정보를 이용해 LineList의 형식으로 육면체의 변을 그려준다.
 	m_pcbMappedPositions[i++] = xmf3Corners[0];
 	m_pcbMappedPositions[i++] = xmf3Corners[1];
 
@@ -981,6 +1051,10 @@ void CBoundingBoxMesh::UpdateVertexPosition(BoundingOrientedBox* pxmBoundingBox)
 
 }
 
+// Bounding Box Mesh를 Render 하는 함수
+// Args:
+//	pd3dCommandList: Direct3D 명령 리스트
+// 2024-02-24 17:12 황유림 수정
 void CBoundingBoxMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
@@ -989,8 +1063,13 @@ void CBoundingBoxMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 	pd3dCommandList->DrawInstanced(m_nVertices, 1, m_nOffset, 0);
 }
 
-//================================================
-
+// 2D 이미지가 출력될 Mesh의 Position Buffer와 UV Buffer를 CBV로 생성해준다.(움직이는 UI는 위치를 계속 변경해주어야 하기 때문)
+// Args:
+//	pd3dDevice: Direct3D 디바이스
+//	pd3dCommandList: Direct3D 명령 리스트
+//  width: Mesh의 가로 길이
+//	height: Mesh의 세로 길이
+// 2024-02-24 17:12 황유림 수정
 CBitmapMesh::CBitmapMesh(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, int width, int height) : CMesh(pd3dDevice, pd3dCommandList)
 {
 	m_nVertices = 6;
@@ -1018,6 +1097,12 @@ CBitmapMesh::~CBitmapMesh()
 {
 }
 
+// 2D 이미지가 출력될 Mesh의 Vertex 위치를 설정해줌.
+// Args:
+//	pd3dCommandList: Direct3D 명령 리스트
+//	pCamera: 카메라의 위치를 받아오기 위해 카메라 객체를 넘겨준다.
+//	pPlayer: 플레이어의 위치를 받아오기 위해 플레이어 객체를 넘겨준다.
+// 2024-02-24 17:12 황유림 수정
 void CBitmapMesh::UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCamera *pCamera, CPlayer *pPlayer)
 {
 	float left, right, top, bottom;
@@ -1030,29 +1115,34 @@ void CBitmapMesh::UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCam
 
 	// First triangle.
 	m_pd3dcbMappedPositions[0] = XMFLOAT3(left, top, 0.0f);  // Top Left.
-	m_pd2dcbMappedPositions[0] = XMFLOAT2(0.0f, 0.0f);
+	m_pd2dcbMappedPositions[0] = XMFLOAT2(n_UVLeft, n_UVTop);
 
 	m_pd3dcbMappedPositions[1] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
-	m_pd2dcbMappedPositions[1] = XMFLOAT2(1.0f, 1.0f);
+	m_pd2dcbMappedPositions[1] = XMFLOAT2(n_UVRight, n_UVBottom);
 
 	m_pd3dcbMappedPositions[2] = XMFLOAT3(left, bottom, 0.0f);  // Bottom Left.
-	m_pd2dcbMappedPositions[2] = XMFLOAT2(0.0f, 1.0f);
+	m_pd2dcbMappedPositions[2] = XMFLOAT2(n_UVLeft, n_UVBottom);
 
 	// Second triangle.
 	m_pd3dcbMappedPositions[3] = XMFLOAT3(left, top, 0.0f);  // Top Left.
-	m_pd2dcbMappedPositions[3] = XMFLOAT2(0.0f, 0.0f);
+	m_pd2dcbMappedPositions[3] = XMFLOAT2(n_UVLeft, n_UVTop);
 
 	m_pd3dcbMappedPositions[4] = XMFLOAT3(right, top, 0.0f);  // Top right.
-	m_pd2dcbMappedPositions[4] = XMFLOAT2(1.0f, 0.0f);
+	m_pd2dcbMappedPositions[4] = XMFLOAT2(n_UVRight, n_UVTop);
 
 	m_pd3dcbMappedPositions[5] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
-	m_pd2dcbMappedPositions[5] = XMFLOAT2(1.0f, 1.0f);
+	m_pd2dcbMappedPositions[5] = XMFLOAT2(n_UVRight, n_UVBottom);
 }
 
+// Primitive Topology를 설정, Vertex View와 UV View를 설정한 후 DrawInstanced 호출.
+// Args:
+//	pd3dCommandList: Direct3D 명령 리스트
+// 2024-02-24 17:12 황유림 수정
 void CBitmapMesh::Render(ID3D12GraphicsCommandList* pd3dCommandList)
 {
 	pd3dCommandList->IASetPrimitiveTopology(m_d3dPrimitiveTopology);
 
+	// Position Buffer View와 UV Buffer View 2개의 View가 있음.
 	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[2] = { m_d3dPositionBufferView, m_d2dPositionBufferView };
 	pd3dCommandList->IASetVertexBuffers(m_nSlot, 2, pVertexBufferViews);
 

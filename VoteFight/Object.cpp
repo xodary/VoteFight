@@ -1498,27 +1498,36 @@ void CGameObject::GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmm
 	xmvPickRayDirection = XMVector3Normalize(xmvPickRayDirection - xmvPickRayOrigin);
 }
 
-int CGameObject::PickObjectByRayIntersection(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMFLOAT3& xmf3GroundSpot, float* pfHitDistance)
-{
-	XMFLOAT3 groundSpot = XMFLOAT3(0, 0, 0);
-	int nIntersected = 0;
-	if (m_ppMeshes)
-	{
-		for (int i = 0; i < m_nMeshes; ++i)
-		{
-			XMVECTOR xmvPickRayOrigin, xmvPickRayDirection;
-			GenerateRayForPicking(xmvPickPosition, xmmtxView, xmvPickRayOrigin, xmvPickRayDirection);
-			nIntersected += m_ppMeshes[i]->CheckRayIntersection(xmvPickRayOrigin, xmvPickRayDirection, xmf3GroundSpot, pfHitDistance);
-		}
-	}
-
-	if (m_pSibling) nIntersected += m_pSibling->PickObjectByRayIntersection(xmvPickPosition, xmmtxView, xmf3GroundSpot, pfHitDistance);
-	if (m_pChild) nIntersected += m_pChild->PickObjectByRayIntersection(xmvPickPosition, xmmtxView, xmf3GroundSpot, pfHitDistance);
-	return(nIntersected);
-}
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//int CGameObject::PickObjectByRayIntersection(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMFLOAT3& xmf3GroundSpot, float* pfHitDistance)
+//{
+//	XMFLOAT3 groundSpot = XMFLOAT3(0, 0, 0);
+//	int nIntersected = 0;
+//	if (m_ppMeshes)
+//	{
+//		for (int i = 0; i < m_nMeshes; ++i)
+//		{
+//			XMVECTOR xmvPickRayOrigin, xmvPickRayDirection;
+//			GenerateRayForPicking(xmvPickPosition, xmmtxView, xmvPickRayOrigin, xmvPickRayDirection);
+//			nIntersected += m_ppMeshes[i]->CheckRayIntersection(xmvPickRayOrigin, xmvPickRayDirection, xmf3GroundSpot, pfHitDistance);
+//		}
+//	}
 //
+//	if (m_pSibling) nIntersected += m_pSibling->PickObjectByRayIntersection(xmvPickPosition, xmmtxView, xmf3GroundSpot, pfHitDistance);
+//	if (m_pChild) nIntersected += m_pChild->PickObjectByRayIntersection(xmvPickPosition, xmmtxView, xmf3GroundSpot, pfHitDistance);
+//	return(nIntersected);
+//}
+
+// Height Map 이미지를 이용해서 Terrain 객체를 생성하는 함수
+// Args:
+//	pd3dDevice: Direct3D 디바이스 정보
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//  pd3dGraphicsRootSignature: Direct3D Root Signature 정보
+//  pFileName: 높이맵 이미지 파일 이름
+//  nWidth: Terrain의 가로 길이
+//  nHeight: Terrain의 세로 길이
+//  xmf3Scale: Terrain의 스케일 정보 
+//  xmf4Color: Terrain의 색 정보
+// 2024-02-24 17:12 황유림 수정
 CHeightMapTerrain::CHeightMapTerrain(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, LPCTSTR pFileName, int nWidth, int nLength, XMFLOAT3 xmf3Scale, XMFLOAT4 xmf4Color) : CGameObject(1, 1)
 {
 	m_nWidth = nWidth;
@@ -1528,6 +1537,7 @@ CHeightMapTerrain::CHeightMapTerrain(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 
 	m_pHeightMapImage = new CHeightMapImage(pFileName, nWidth, nLength, xmf3Scale);
 
+	// 메쉬 생성
 	CHeightMapGridMesh *pMesh = new CHeightMapGridMesh(pd3dDevice, pd3dCommandList, 0, 0, nWidth, nLength, xmf3Scale, xmf4Color, m_pHeightMapImage);
 	SetMesh(0, pMesh);
 
@@ -1539,6 +1549,7 @@ CHeightMapTerrain::CHeightMapTerrain(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 	CTexture* pTerrainDetailTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
 	pTerrainDetailTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Terrain/Detail_Texture_7.dds", RESOURCE_TEXTURE2D, 0);
 
+	// Shader 생성
 	CTerrainShader *pTerrainShader = new CTerrainShader();
 	pTerrainShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	pTerrainShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
@@ -1551,7 +1562,7 @@ CHeightMapTerrain::CHeightMapTerrain(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 	pTerrainMaterial->SetTexture(pTerrainDetailTexture, 1);
 	pTerrainMaterial->SetShader(pTerrainShader);
 
-	SetMaterial(0, pTerrainMaterial);
+	SetMaterial(0, pTerrainMaterial);	// Material에 쉐이더, Texture 정보 모두 들어있음.
 }
 
 CHeightMapTerrain::~CHeightMapTerrain(void)
@@ -1559,10 +1570,15 @@ CHeightMapTerrain::~CHeightMapTerrain(void)
 	if (m_pHeightMapImage) delete m_pHeightMapImage;
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
+// CSkyBox를 생성하는 함수
+// Args:
+//	pd3dDevice: Direct3D 디바이스 정보
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//  pd3dGraphicsRootSignature: Direct3D Root Signature 정보
+// 2024-02-24 17:12 황유림 수정
 CSkyBox::CSkyBox(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature) : CGameObject(1, 1)
 {
+	// 메쉬 설정해줌.
 	CSkyBoxMesh *pSkyBoxMesh = new CSkyBoxMesh(pd3dDevice, pd3dCommandList, 20.0f, 20.0f, 2.0f);
 	SetMesh(0, pSkyBoxMesh);
 
@@ -1581,15 +1597,21 @@ CSkyBox::CSkyBox(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dComman
 	pSkyBoxMaterial->SetTexture(pSkyBoxTexture);
 	pSkyBoxMaterial->SetShader(pSkyBoxShader);
 
-	SetMaterial(0, pSkyBoxMaterial);
+	SetMaterial(0, pSkyBoxMaterial);	// Material에 쉐이더와 텍스처 정보가 들어있음.
 }
 
 CSkyBox::~CSkyBox()
 {
 }
 
+// SkyBox를 렌더하는 함수
+// Args:
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//  pCamera: 카메라 정보
+// 2024-02-24 17:12 황유림 수정
 void CSkyBox::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
 {
+	// 카메라가 이동하면 SkyBox도 같이 이동해서 항상 동일한 화면을 보이도록 함.
 	XMFLOAT3 xmf3CameraPos = pCamera->GetPosition();
 	SetPosition(xmf3CameraPos.x, xmf3CameraPos.y, xmf3CameraPos.z);
 
@@ -1607,6 +1629,10 @@ CPlayerAnimationController::~CPlayerAnimationController()
 {
 }
 
+// 플레이어의 애니메이션이 재생될 때 호출됨. 주로 애니메이션 실행으로 변화된 플레이어의 위치를 유지하는데 이용됨.
+// Args:
+//  pRootGameObject: 플레이어 오브젝트 정보
+// 2024-02-24 17:12 황유림 수정
 void CPlayerAnimationController::OnRootMotion(CGameObject* pRootGameObject)
 {
 	//if (m_pAnimationTracks[TURNRIGHT].m_fPosition == 0.0f)
@@ -1629,12 +1655,18 @@ CBitmap::~CBitmap()
 {
 }
 
+// 2D Iamge를 Render 하는 함수
+// Args:
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//  pCamera: 카메라
+//  pPlayer: 플레이어
+// 2024-02-24 17:12 황유림 수정
 void CBitmap::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer *pPlayer)
 {
 	UpdateShaderVariable(pd3dCommandList, pCamera);
 	for (int i = 0; i < m_nMesh; ++i) {
-		m_ppMeshes[i]->UpdateBuffers(pd3dCommandList, pCamera, pPlayer);
-		m_ppMeshes[i]->Render(pd3dCommandList);
+		m_ppMeshes[i]->UpdateBuffers(pd3dCommandList, pCamera, pPlayer);	// 이미지가 출력되는 Mesh의 위치를 변경시킴.
+		m_ppMeshes[i]->Render(pd3dCommandList);								// Mesh를 Render함.
 	}
 }
 
@@ -1657,9 +1689,18 @@ void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, C
 	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &temp2, 32);
 }
 
+// 기본 메인화면에 들어갈 때 UI를 배치하는 함수
+// Args:
+//  pd3dDevice: Direct3D Device 정보
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//  pd3dGraphicsRootSignature: Direct3D 루트 시그너쳐 정보
+// 2024-02-24 17:12 황유림 수정
 void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
+	// Bitmap Mesh 새로 생성
 	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, 500, 100);
+	
+	// Shader에서 Bitmap Object를 관리
 	m_pShader->m_nObject = 1;
 	m_pShader->m_ppObjects = new CBitmap * [m_pShader->m_nObject];
 	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
@@ -1667,6 +1708,10 @@ void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 	m_pShader->m_ppObjects[0]->m_ppMeshes = new CBitmapMesh * [m_pShader->m_ppObjects[0]->m_nMesh];
 	for (int i = 0; i < m_pShader->m_ppObjects[0]->m_nMesh; ++i) {
 		m_pShader->m_ppObjects[0]->m_ppMeshes[i] = pBitmapMesh;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_UVLeft = 0.0f;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_UVTop = 0.0f;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_UVRight = 1.0f;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_UVBottom = 1.0f;
 		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nLeft = FRAME_BUFFER_WIDTH / 2 - 250;
 		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nTop = FRAME_BUFFER_HEIGHT - 200;
 	}
@@ -1678,6 +1723,8 @@ void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 	m_pShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 	m_pShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 1);
 	m_pShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, 15);
+
+	// Idea: UI를 모두 모아놓은 이미지를 SRV에 설정하고, UV를 조절해서 화면에 세팅하기
 }
 
 void bitmapState::MainScreen::Exit()

@@ -283,6 +283,13 @@ void CGameFramework::ChangeSwapChainState()
 	CreateRenderTargetViews();
 }
 
+// 마우스 이벤트가 감지되면 호출됨.
+// Args:
+//	hWnd:
+//  nMessageID: 이벤트 종류 (WM_LBUTTONDOWN: 왼쪽 마우스 버튼을 누름, WM_MOUSEMOVE: 마우스가 움직임)
+//  wParam:
+//  lParam: LOWORD를 적용하면 마우스의 윈도우 화면 x좌표, HIWORD를 적용하면 y좌표이다.
+// 2024-02-24 17:12 황유림 수정
 void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 	static bool isDragging = false; // 드래그 중인지 여부
@@ -378,6 +385,13 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 	}
 }
 
+// 키보드 입력이 감지되면 호출됨.
+// Args:
+//	hWnd:
+//  nMessageID: 이벤트 종류 (WM_KEYUP: 키를 뗌, WM_KEYDOWN: 키를 누름.)
+//  wParam: 눌린 키의 종류 (VK_UP: 방향키 위쪽, VK_DOWN: 방향키 아래쪽)
+//  lParam:
+// 2024-02-24 17:12 황유림 수정
 void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam)
 {
 	if (m_pScene) m_pScene->OnProcessingKeyboardMessage(hWnd, nMessageID, wParam, lParam);
@@ -496,15 +510,18 @@ void CGameFramework::OnDestroy()
 #endif
 }
 
+// 프로그램이 실행되면 호출됨. Scene에 필요한 오브젝트를 생성하고 플레이어를 생성해줌.
+// 2024-02-24 17:12 황유림 수정
 void CGameFramework::BuildObjects()
 {
 	m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
+	// Scene 생성
 	m_pScene = new CScene();
 	if (m_pScene) m_pScene->BuildObjects(m_pd3dDevice, m_pd3dCommandList);
 
+	// Player 생성
 	CPlayer *pPlayer = new CPlayer(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), m_pScene->m_pTerrain);
-
 	m_pScene->m_pPlayer = m_pPlayer = pPlayer;
 	m_pScene->m_ppCollisionObjects[0] = m_pPlayer;
 	m_pCamera = m_pPlayer->GetCamera();
@@ -529,6 +546,8 @@ void CGameFramework::ReleaseObjects()
 	if (m_pScene) delete m_pScene;
 }
 
+// 사용자가 키를 눌렀을 때 (이벤트 발생) 호출되는 함수.
+// 2024-02-24 17:12 황유림 수정
 void CGameFramework::ProcessInput()
 {
 	static UCHAR pKeysBuffer[256];
@@ -573,8 +592,7 @@ void CGameFramework::ProcessInput()
 				if (xmf3Direction & DIR_LEFT) xmf3Shift.x -= 1;
 
 				xmf3Shift = Vector3::Normalize(xmf3Shift);
-
-				m_pPlayer->m_pCrntState->HandleEvent(Event::KeyDown, xmf3Shift);
+				m_pPlayer->m_pCrntState->HandleEvent(Event::KeyDown, xmf3Shift);	// 플레이어의 현재 상태에서 처리를 해줌.
 			}
 		}
 		if (!xmf3Direction) m_pPlayer->m_bMoving = false;
@@ -582,6 +600,8 @@ void CGameFramework::ProcessInput()
 	m_pPlayer->Update(m_GameTimer.GetTimeElapsed());
 }
 
+// Scene에 있는 모든 오브젝트와 플레이어에 대해 Animate를 수행함.
+// 2024-02-24 17:12 황유림 수정
 void CGameFramework::AnimateObjects()
 {
 	float fTimeElapsed = m_GameTimer.GetTimeElapsed();
@@ -617,18 +637,20 @@ void CGameFramework::MoveToNextFrame()
 	}
 }
 
+// 게임의 Main Loop에 해당됨.
+// 2024-02-24 17:12 황유림 수정
 void CGameFramework::FrameAdvance()
 {    
 	m_GameTimer.Tick(60.0f);
 
 	ProcessInput();
 
-    AnimateObjects();
-
+    AnimateObjects();	// Animate
 
 	HRESULT hResult = m_pd3dCommandAllocator->Reset();
 	hResult = m_pd3dCommandList->Reset(m_pd3dCommandAllocator, NULL);
 
+	// Resource의 중복 접근 방어
 	D3D12_RESOURCE_BARRIER d3dResourceBarrier;
 	::ZeroMemory(&d3dResourceBarrier, sizeof(D3D12_RESOURCE_BARRIER));
 	d3dResourceBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -649,11 +671,13 @@ void CGameFramework::FrameAdvance()
 	m_pd3dCommandList->ClearDepthStencilView(d3dDsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, NULL);
 	m_pd3dCommandList->OMSetRenderTargets(1, &d3dRtvCPUDescriptorHandle, TRUE, &d3dDsvCPUDescriptorHandle);
 
-	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);
-	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList, m_pCamera);
-	if (m_bRenderBoundingBox && m_pScene) m_pScene->RenderBoundingBox(m_pd3dCommandList, m_pCamera);
-	if (m_pScene) m_pScene->RenderUILayer(m_pd3dCommandList, m_pCamera);
+	// Render
+	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);		// Scene에 있는 모든 Object를 Render함
+	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList, m_pCamera);		// Player를 Render함.
+	if (m_bRenderBoundingBox && m_pScene) m_pScene->RenderBoundingBox(m_pd3dCommandList, m_pCamera);	// Bounding Box를 Render함.
+	if (m_pScene) m_pScene->RenderUILayer(m_pd3dCommandList, m_pCamera);	// UI는 맨 마지막에 Render해야 가려지지 않음.
 
+	// Render Target에 그려진 화면을 Present 함.
 	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	d3dResourceBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 	d3dResourceBarrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;

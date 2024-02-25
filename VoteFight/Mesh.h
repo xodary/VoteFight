@@ -89,9 +89,9 @@ public:
 	BoundingOrientedBox GetBoundingBox() { return(m_xmBoundingBox); }
 	BoundingSphere GetBoundingSphere() { return(m_xmBoundingSphere); }
 
-	BOOL RayIntersectionByTriangle(const XMVECTOR& origin, const XMVECTOR& direction,
-		const XMFLOAT3& v0, const XMFLOAT3& v1, const XMFLOAT3& v2, XMFLOAT3& intersectionPoint, float* pfNearHitDistance);
-	int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, XMFLOAT3& xmf3hitpoint, float* pfHitDistance);
+	// BOOL RayIntersectionByTriangle(const XMVECTOR& origin, const XMVECTOR& direction,
+	// 	const XMFLOAT3& v0, const XMFLOAT3& v1, const XMFLOAT3& v2, XMFLOAT3& intersectionPoint, float* pfNearHitDistance);
+	// int CheckRayIntersection(XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection, XMFLOAT3& xmf3hitpoint, float* pfHitDistance);
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -339,4 +339,6 @@ public:
 
 	int m_nWidth, m_nHeight;
 	int m_nLeft, m_nTop;
+
+	int n_UVLeft, n_UVTop, n_UVRight, n_UVBottom;
 };

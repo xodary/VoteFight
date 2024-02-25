@@ -445,11 +445,9 @@ public:
 	static void PrintFrameInfo(CGameObject *pGameObject, CGameObject *pParent);
 
 	void GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection);
-	BOOL PickObjectByRayIntersection(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, XMFLOAT3& xmf3GroundSpot, float* pfHitDistance);
+	// BOOL PickObjectByRayIntersection(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, XMFLOAT3& xmf3GroundSpot, float* pfHitDistance);
 };
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
 class CHeightMapTerrain : public CGameObject
 {
 public:

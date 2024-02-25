@@ -37,6 +37,13 @@ D3D12_SHADER_BYTECODE CShader::CreatePixelShader(ID3DBlob** ppd3dShaderBlob)
 	return(d3dShaderByteCode);
 }
 
+// 파일 이름으로 쉐이더를 컴파일하는 함수. 컴파일한 후 ppd3dShaderBlob 객체에 정보가 저장된다.
+// Args:
+//	pszFileName: 쉐이더 파일의 이름
+//  pszShaderName: 설정하고자 하는 쉐이더 파일 내부의 함수 이름
+//  pszShaderProfile: vertex shader이면 vs_5_1, pixel shader이면 ps_5_1
+//  ppd3dShaderBlob: shader를 컴파일하고 정보값을 넣어서 내보낼 ID3DBlob 객체
+// 2024-02-25 10:10 황유림 수정
 D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(WCHAR *pszFileName, LPCSTR pszShaderName, LPCSTR pszShaderProfile, ID3DBlob **ppd3dShaderBlob)
 {
 	UINT nCompileFlags = 0;
@@ -58,11 +65,6 @@ D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(WCHAR *pszFileName, LPCSTR 
 			std::cout << "Shader Compilation Failed (No Error Message Available)" << std::endl;
 		}
 	}
-	else
-	{
-		// m_pszShaderName = pszShaderName;
-		// std::cout << "Shader Function: " << m_pszShaderName << std::endl;
-	}
 
 	D3D12_SHADER_BYTECODE d3dShaderByteCode;
 	d3dShaderByteCode.BytecodeLength = (*ppd3dShaderBlob)->GetBufferSize();
@@ -71,6 +73,8 @@ D3D12_SHADER_BYTECODE CShader::CompileShaderFromFile(WCHAR *pszFileName, LPCSTR 
 	return(d3dShaderByteCode);
 }
 
+// Input Layout을 생성해주는 함수. Mesh 객체를 생성할 때 정의했던 Position, UV, Normal 등의 View와 관련이 있다.
+// 2024-02-25 10:10 황유림 수정
 D3D12_INPUT_LAYOUT_DESC CShader::CreateInputLayout()
 {
 	D3D12_INPUT_LAYOUT_DESC d3dInputLayoutDesc;
@@ -80,12 +84,14 @@ D3D12_INPUT_LAYOUT_DESC CShader::CreateInputLayout()
 	return(d3dInputLayoutDesc);
 }
 
+// Rasterizer State를 생성해주는 함수. Polygon이 출력되는 방식을 결정함. ex) 면이 아닌 선으로 보이게 함, 시계방향 정점이 앞면임. 
+// 2024-02-25 10:10 황유림 수정
 D3D12_RASTERIZER_DESC CShader::CreateRasterizerState()
 {
 	D3D12_RASTERIZER_DESC d3dRasterizerDesc;
 	::ZeroMemory(&d3dRasterizerDesc, sizeof(D3D12_RASTERIZER_DESC));
 	//	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_WIREFRAME;
-	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID; //D3D12_FILL_MODE_WIREFRAME
+	d3dRasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID; // 면이 아닌 선으로 나타내고 싶다면 D3D12_FILL_MODE_WIREFRAME
 	d3dRasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;	// D3D12_CULL_MODE_NONE
 	d3dRasterizerDesc.FrontCounterClockwise = FALSE;
 	d3dRasterizerDesc.DepthBias = 0;
@@ -100,6 +106,8 @@ D3D12_RASTERIZER_DESC CShader::CreateRasterizerState()
 	return(d3dRasterizerDesc);
 }
 
+// Depth Stencil State를 생성해주는 함수. Depth 버퍼는 주로 앞 물체가 뒷 물체를 가리게 해주는 Z버퍼와 관련이 있다.
+// 2024-02-25 10:10 황유림 수정
 D3D12_DEPTH_STENCIL_DESC CShader::CreateDepthStencilState()
 {
 	D3D12_DEPTH_STENCIL_DESC d3dDepthStencilDesc;
@@ -122,6 +130,8 @@ D3D12_DEPTH_STENCIL_DESC CShader::CreateDepthStencilState()
 	return(d3dDepthStencilDesc);
 }
 
+// Blend State를 생성해주는 함수. 주로 투명화 처리를 담당함.
+// 2024-02-25 10:10 황유림 수정
 D3D12_BLEND_DESC CShader::CreateBlendState()
 {
 	D3D12_BLEND_DESC d3dBlendDesc;
@@ -142,6 +152,12 @@ D3D12_BLEND_DESC CShader::CreateBlendState()
 	return(d3dBlendDesc);
 }
 
+// Graphics Pipeline State (Shader) 를 생성해주는 함수. Shader는 주로 Mesh를 Render하기 전에 상태를 Setting 해주기 위해 사용된다.
+// Args:
+//  pd3dDevice: Direct3D Device 정보
+//  pd3dGraphicsRootSignature: Direct3D 루트 시그너쳐 정보
+//  d3dPrimitiveTopologyType: POINT, LINE, TRIANGLE 등으로 설정 
+// 2024-02-25 10:10 황유림 수정
 void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGraphicsRootSignature, D3D12_PRIMITIVE_TOPOLOGY_TYPE d3dPrimitiveTopologyType)
 {
 	if (pd3dGraphicsRootSignature)
@@ -154,28 +170,29 @@ void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGr
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC d3dPipelineStateDesc;
 	::ZeroMemory(&d3dPipelineStateDesc, sizeof(D3D12_GRAPHICS_PIPELINE_STATE_DESC));
-	d3dPipelineStateDesc.pRootSignature = pd3dGraphicsRootSignature;
-	d3dPipelineStateDesc.VS = CreateVertexShader(&pd3dVertexShaderBlob);
-	d3dPipelineStateDesc.PS = CreatePixelShader(&pd3dPixelShaderBlob);
-	d3dPipelineStateDesc.RasterizerState = CreateRasterizerState();
-	d3dPipelineStateDesc.BlendState = CreateBlendState();
-	d3dPipelineStateDesc.DepthStencilState = CreateDepthStencilState();
-	d3dPipelineStateDesc.InputLayout = CreateInputLayout();
+	d3dPipelineStateDesc.pRootSignature = pd3dGraphicsRootSignature;		// 루트 시그니처 설정
+	d3dPipelineStateDesc.VS = CreateVertexShader(&pd3dVertexShaderBlob);	// 버텍스 쉐이더
+	d3dPipelineStateDesc.PS = CreatePixelShader(&pd3dPixelShaderBlob);		// 프래그먼트 쉐이더
+	d3dPipelineStateDesc.RasterizerState = CreateRasterizerState();			// 레스터라이저 상태
+	d3dPipelineStateDesc.BlendState = CreateBlendState();					// 블렌드 상태
+	d3dPipelineStateDesc.DepthStencilState = CreateDepthStencilState();		// 깊이 스텐실 상태
+	d3dPipelineStateDesc.InputLayout = CreateInputLayout();					// 입력 레이아웃 (Mesh에서 설정해준 View와 연동)
 	d3dPipelineStateDesc.SampleMask = UINT_MAX;
-	d3dPipelineStateDesc.PrimitiveTopologyType = d3dPrimitiveTopologyType; //D3D12_PRIMITIVE_TOPOLOGY_TYPE_PATCH
-	d3dPipelineStateDesc.NumRenderTargets = 1;
-	d3dPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	d3dPipelineStateDesc.PrimitiveTopologyType = d3dPrimitiveTopologyType;	// POINT, LINE, TRIANGLE, PATCH 등으로 설정 가능
+	d3dPipelineStateDesc.NumRenderTargets = 1;								// 사용하는 렌더타겟 갯수
+	d3dPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;			
 	d3dPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
 	d3dPipelineStateDesc.SampleDesc.Count = 1;
 	d3dPipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+	// Graphics Pipeline State 를 생성해서 m_ppd3dPipelineStates[0] 변수에 저장한다.
 	HRESULT hResult = pd3dDevice->CreateGraphicsPipelineState(&d3dPipelineStateDesc, __uuidof(ID3D12PipelineState), (void**)&m_ppd3dPipelineStates[0]);
 
-	if (FAILED(hResult)) {
+	// 예외처리
+	if (FAILED(hResult))
 		std::cout << "Can't Create PipelineState" << std::endl;
-	}
-	if (hResult == S_FALSE) {
+	if (hResult == S_FALSE)
 		std::cout << "Can't Create PipelineState : S_FALSE" << std::endl;
-	}
 
 	if (pd3dVertexShaderBlob) pd3dVertexShaderBlob->Release();
 	if (pd3dPixelShaderBlob) pd3dPixelShaderBlob->Release();
@@ -185,6 +202,11 @@ void CShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* pd3dGr
 	if (d3dPipelineStateDesc.InputLayout.pInputElementDescs) delete[] d3dPipelineStateDesc.InputLayout.pInputElementDescs;
 }
 
+// Shader를 Render 하기 전에 호출하는 함수.
+// Args:
+//  pd3dCommandList: Direct3D 명령 리스트
+//  nPipelineState: 파이프라인 상태의 인덱스  
+// 2024-02-25 01:00 황유림 수정
 void CShader::OnPrepareRender(ID3D12GraphicsCommandList *pd3dCommandList, int nPipelineState)
 {
 	if (m_pd3dGraphicsRootSignature) pd3dCommandList->SetGraphicsRootSignature(m_pd3dGraphicsRootSignature);
@@ -668,6 +690,13 @@ CBitmapShader::~CBitmapShader()
 {
 }
 
+// Bitmap Shader는 다른 오브젝트와 다르게, shader가 Object를 한번에 모두 관리한다.
+// CBitmapShader가 처음 생성될 때, 오브젝트를 생성하는 함수이다.
+// Args:
+//  pd3dDevice: Direct3D 디바이스
+//  pd3dCommandList: Direct3D 명령 리스트
+//  pd3dGraphicsRootSignature: Direct3D 루트시그너쳐
+// 2024-02-25 01:00 황유림 수정
 void CBitmapShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
 	m_pCrntState = new bitmapState::MainScreen(this);
@@ -768,6 +797,11 @@ void CBitmapShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* 
 	CShader::CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 }
 
+// CBitmapShader의 파이프라인 상태를 설정하고, 루트 시그너쳐 인덱스를 설정한다.
+// Args:
+//  pd3dCommandList: Direct3D 명령 리스트
+//  nPipelineState: 파이프라인 상태의 인덱스  
+// 2024-02-25 01:00 황유림 수정
 void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer)
 {
 	m_pCrntState->Update();
@@ -778,3 +812,4 @@ void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* 
 		m_ppObjects[i]->Render(pd3dCommandList, pCamera, pPlayer);
 	}
 }
+

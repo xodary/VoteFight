@@ -65,7 +65,7 @@ public:
 
 	void ReleaseUploadBuffers();
 
-	CGameObject* PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera);
+	// CGameObject* PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera);
 	BOOL PointGroundByCursor(int xClient, int yClient, CCamera* pCamera, XMFLOAT3& xmf3GroundSpot);
 
 	CPlayer								*m_pPlayer = NULL;
