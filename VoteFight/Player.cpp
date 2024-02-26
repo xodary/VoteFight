@@ -11,7 +11,7 @@
 
 CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, void* pContext)
 {
-	m_pCamera = CreateCamera(0.0f);
+	m_pCamera = CreateCamera(0.0f);	
 
 	CLoadedModelInfo* pSimpsonModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/hugo_idle.bin", NULL);
 	SetChild(pSimpsonModel->m_pModelRootObject, true);
@@ -124,10 +124,25 @@ CPlayer::~CPlayer()
 void CPlayer::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
 {
 	if (m_pCamera) m_pCamera->CreateShaderVariables(pd3dDevice, pd3dCommandList);
+	CGameObject::CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 
 void CPlayer::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
 {
+	if (m_pcbMappedGameObject)
+	{
+		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
+		if (m_pChild->m_pChild->m_ppMaterials)
+		{
+			CMaterial* pMaterial = m_pChild->m_pChild->m_ppMaterials[0];
+			XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&pMaterial->m_ppTextures[0]->m_xmf4x4Texture)));
+			MATERIAL material = { pMaterial->m_xmf4AlbedoColor, pMaterial->m_xmf4EmissiveColor, pMaterial->m_xmf4SpecularColor, pMaterial->m_xmf4AmbientColor };
+			memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
+			memcpy(&m_pcbMappedGameObject->m_nType, &pMaterial->m_nType, sizeof(UINT));
+		}
+	}
+
+	// CGameObject::UpdateShaderVariables(pd3dCommandList);
 }
 
 void CPlayer::ReleaseShaderVariables()

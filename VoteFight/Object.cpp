@@ -241,17 +241,16 @@ void CMaterial::PrepareShaders(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandLi
 
 void CMaterial::UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList)
 {
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4AmbientColor, 16);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4AlbedoColor, 20);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4SpecularColor, 24);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4EmissiveColor, 28);
-
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &m_nType, 32);
+	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4AmbientColor, 16);
+	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4AlbedoColor, 20);
+	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4SpecularColor, 24);
+	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4EmissiveColor, 28);
+	// 
+	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &m_nType, 32);
 
 	for (int i = 0; i < m_nTextures; i++)
 	{
 		if (m_ppTextures[i]) m_ppTextures[i]->UpdateShaderVariables(pd3dCommandList);
-		//		if (m_ppTextures[i]) m_ppTextures[i]->UpdateShaderVariable(pd3dCommandList, 0, 0);
 	}
 }
 
@@ -901,7 +900,7 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 {
 	if (m_pSkinnedAnimationController) m_pSkinnedAnimationController->UpdateShaderVariables(pd3dCommandList);
 
-	UpdateShaderVariable(pd3dCommandList, &m_xmf4x4World);
+	UpdateShaderVariables(pd3dCommandList);
 
 	if (m_nMaterials > 0)
 	{
@@ -911,7 +910,17 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			{
 				if (m_ppMaterials[i]->m_pShader) m_ppMaterials[i]->m_pShader->Render(pd3dCommandList, pCamera);
 				m_ppMaterials[i]->UpdateShaderVariable(pd3dCommandList);
+				if (m_pcbMappedGameObject)
+				{
+					for (int j = 0; j < m_ppMaterials[i]->m_nTextures; ++j)
+						XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&m_ppMaterials[i]->m_ppTextures[j]->m_xmf4x4Texture)));
+					MATERIAL material = { m_ppMaterials[i]->m_xmf4AlbedoColor, m_ppMaterials[i]->m_xmf4EmissiveColor, m_ppMaterials[i]->m_xmf4SpecularColor, m_ppMaterials[i]->m_xmf4AmbientColor };
+					memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
+				}
 			}
+
+			if(m_ppMaterials[i] && m_ppMaterials[i]->m_pShader)
+				pd3dCommandList->SetGraphicsRootDescriptorTable(1, m_ppMaterials[i]->m_pShader->GetGPUCbvDescriptorStartHandle());
 
 			if (m_ppMeshes)
 			{
@@ -929,22 +938,30 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 
 void CGameObject::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
 {
+	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
+	m_pd3dcbGameObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+
+	m_pd3dcbGameObject->Map(0, NULL, (void**)&m_pcbMappedGameObject);
 }
 
-void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList)
+void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	if (m_pcbMappedGameObject)
+	{
+		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
+		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&m_ppMaterials[0]->m_ppTextures[0]->m_xmf4x4Texture)));
+		MATERIAL material = { m_ppMaterials[0]->m_xmf4AlbedoColor, m_ppMaterials[0]->m_xmf4EmissiveColor, m_ppMaterials[0]->m_xmf4SpecularColor, m_ppMaterials[0]->m_xmf4AmbientColor };
+		memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
+		memcpy(&m_pcbMappedGameObject->m_nType, &m_ppMaterials[0]->m_nType, sizeof(UINT));
+	}
 }
 
-void CGameObject::UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, XMFLOAT4X4 *pxmf4x4World)
-{
-	XMFLOAT4X4 xmf4x4World;
-	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(pxmf4x4World)));
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4World, 0);
-}
-
-void CGameObject::UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, CMaterial *pMaterial)
-{
-}
+//void CGameObject::UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, XMFLOAT4X4 *pxmf4x4World)
+//{
+//	XMFLOAT4X4 xmf4x4World;
+//	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(pxmf4x4World)));
+//	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4World, 0);
+//}
 
 void CGameObject::ReleaseShaderVariables()
 {
@@ -1672,21 +1689,33 @@ void CBitmap::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 
 void CBitmap::CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
+	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
+	m_pd3dcbGameObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
+
+	m_pd3dcbGameObject->Map(0, NULL, (void**)&m_pcbMappedGameObject);
 }
 
 void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
+
 	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(XMFLOAT3(0, 0, 0), pCamera->GetOffset(), pCamera->GetUpVector());
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4World, 0);
-
-	XMFLOAT4 temp = XMFLOAT4(0, 0, 0, 0);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &temp, 16);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &temp, 20);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &temp, 24);
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &temp, 28);
-
-	UINT temp2 = 0;
-	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &temp2, 32);
+	if (m_pcbMappedGameObject)
+	{
+		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4World)));
+		MATERIAL material = { {0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f} };
+		memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
+		
+		int width = 500, height = 100;
+		int Left = 100, Right = 400, Top = 20, Bottom = 80;
+		XMFLOAT4X4 xmf4x4Texture = Matrix4x4::Identity();
+		xmf4x4Texture._11 = float(Right - Left) / float(width);
+		xmf4x4Texture._22 = float(Bottom - Top) / float(height);
+		xmf4x4Texture._31 = float(Left) / float(width);
+		xmf4x4Texture._32 = float(Top) / float(height);
+		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4Texture)));
+		UINT temp2 = 0;
+		memcpy(&m_pcbMappedGameObject->m_nType, &temp2, sizeof(UINT));
+	}
 }
 
 // 기본 메인화면에 들어갈 때 UI를 배치하는 함수
@@ -1698,7 +1727,8 @@ void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, C
 void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
 	// Bitmap Mesh 새로 생성
-	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, 500, 100);
+	int width = 500, height = 100;
+	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
 	
 	// Shader에서 Bitmap Object를 관리
 	m_pShader->m_nObject = 1;
@@ -1706,12 +1736,14 @@ void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
 	m_pShader->m_ppObjects[0]->m_nMesh = 1;
 	m_pShader->m_ppObjects[0]->m_ppMeshes = new CBitmapMesh * [m_pShader->m_ppObjects[0]->m_nMesh];
+	
+	int Left = 100, Right = 400, Top = 20, Bottom = 80;
 	for (int i = 0; i < m_pShader->m_ppObjects[0]->m_nMesh; ++i) {
 		m_pShader->m_ppObjects[0]->m_ppMeshes[i] = pBitmapMesh;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_UVLeft = 0.0f;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_UVTop = 0.0f;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_UVRight = 1.0f;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_UVBottom = 1.0f;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_SheetLeft = Left;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_SheetTop = Top;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_SheetRight = Right;
+		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_SheetBottom = Bottom;
 		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nLeft = FRAME_BUFFER_WIDTH / 2 - 250;
 		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nTop = FRAME_BUFFER_HEIGHT - 200;
 	}
@@ -1725,6 +1757,7 @@ void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 	m_pShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, 15);
 
 	// Idea: UI를 모두 모아놓은 이미지를 SRV에 설정하고, UV를 조절해서 화면에 세팅하기
+
 }
 
 void bitmapState::MainScreen::Exit()

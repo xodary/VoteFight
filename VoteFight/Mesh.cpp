@@ -1115,23 +1115,23 @@ void CBitmapMesh::UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCam
 
 	// First triangle.
 	m_pd3dcbMappedPositions[0] = XMFLOAT3(left, top, 0.0f);  // Top Left.
-	m_pd2dcbMappedPositions[0] = XMFLOAT2(n_UVLeft, n_UVTop);
+	m_pd2dcbMappedPositions[0] = XMFLOAT2(0, 0);
 
 	m_pd3dcbMappedPositions[1] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
-	m_pd2dcbMappedPositions[1] = XMFLOAT2(n_UVRight, n_UVBottom);
+	m_pd2dcbMappedPositions[1] = XMFLOAT2(1, 1);
 
 	m_pd3dcbMappedPositions[2] = XMFLOAT3(left, bottom, 0.0f);  // Bottom Left.
-	m_pd2dcbMappedPositions[2] = XMFLOAT2(n_UVLeft, n_UVBottom);
+	m_pd2dcbMappedPositions[2] = XMFLOAT2(0, 1);
 
 	// Second triangle.
 	m_pd3dcbMappedPositions[3] = XMFLOAT3(left, top, 0.0f);  // Top Left.
-	m_pd2dcbMappedPositions[3] = XMFLOAT2(n_UVLeft, n_UVTop);
+	m_pd2dcbMappedPositions[3] = XMFLOAT2(0, 0);
 
 	m_pd3dcbMappedPositions[4] = XMFLOAT3(right, top, 0.0f);  // Top right.
-	m_pd2dcbMappedPositions[4] = XMFLOAT2(n_UVRight, n_UVTop);
+	m_pd2dcbMappedPositions[4] = XMFLOAT2(1, 0);
 
 	m_pd3dcbMappedPositions[5] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
-	m_pd2dcbMappedPositions[5] = XMFLOAT2(n_UVRight, n_UVBottom);
+	m_pd2dcbMappedPositions[5] = XMFLOAT2(1, 1);
 }
 
 // Primitive Topology를 설정, Vertex View와 UV View를 설정한 후 DrawInstanced 호출.

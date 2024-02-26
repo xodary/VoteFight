@@ -340,5 +340,5 @@ public:
 	int m_nWidth, m_nHeight;
 	int m_nLeft, m_nTop;
 
-	int n_UVLeft, n_UVTop, n_UVRight, n_UVBottom;
+	int n_SheetLeft, n_SheetTop, n_SheetRight, n_SheetBottom;
 };

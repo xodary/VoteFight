@@ -54,6 +54,9 @@ private:
 	D3D12_GPU_DESCRIPTOR_HANDLE*	m_pd3dSamplerGpuDescriptorHandles = NULL;
 
 public:
+
+	XMFLOAT4X4						m_xmf4x4Texture;
+
 	void AddRef() { m_nReferences++; }
 	void Release() { if (--m_nReferences <= 0) delete this; }
 
@@ -116,6 +119,7 @@ public:
 
 public:
 	CShader							*m_pShader = NULL;
+
 
 	XMFLOAT4						m_xmf4AlbedoColor = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	XMFLOAT4						m_xmf4EmissiveColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -334,6 +338,23 @@ public:
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
+
+struct MATERIAL
+{
+	XMFLOAT4						m_xmf4Ambient;
+	XMFLOAT4						m_xmf4Diffuse;
+	XMFLOAT4						m_xmf4Specular; //(r,g,b,a=power)
+	XMFLOAT4						m_xmf4Emissive;
+};
+
+struct CB_GAMEOBJECT_INFO
+{
+	XMFLOAT4X4						m_xmf4x4World;
+	MATERIAL						m_material;
+	XMFLOAT4X4						m_xmf4x4Texture;
+	UINT							m_nType;
+};
+
 class CGameObject
 {
 private:
@@ -348,6 +369,10 @@ public:
     virtual ~CGameObject();
 
 public:
+
+	ID3D12Resource					*m_pd3dcbGameObject = NULL;
+	CB_GAMEOBJECT_INFO				*m_pcbMappedGameObject = NULL;
+
 	char							m_pstrFrameName[64];
 
 	int								m_nMeshes = 0;
@@ -391,9 +416,6 @@ public:
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList);
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList);
 	virtual void ReleaseShaderVariables();
-
-	virtual void UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, XMFLOAT4X4 *pxmf4x4World);
-	virtual void UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, CMaterial *pMaterial);
 
 	virtual void ReleaseUploadBuffers();
 
@@ -531,6 +553,9 @@ public:
 	void Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer);
 
 	CTexture*					m_pTexture = NULL;
+
+	ID3D12Resource				*m_pd3dcbGameObject = NULL;
+	CB_GAMEOBJECT_INFO			*m_pcbMappedGameObject = NULL;
 
 	int							m_nMesh = 0;
 	CBitmapMesh**				m_ppMeshes = NULL;

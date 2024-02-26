@@ -1,7 +1,6 @@
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: 중간 디렉터리(x64\Debug\)에 다른 프로젝트(LabProject07-9-8.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
-  Object.cpp
-C:\directX_work\VoteFight\Object.cpp(1711,56): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight\Object.cpp(1712,55): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight\Object.cpp(1713,57): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight\Object.cpp(1714,58): warning C4244: '=': 'float'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Player.cpp
+C:\directX_work\VoteFight\Player.cpp(547,91): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
+C:\directX_work\VoteFight\Player.cpp(623,94): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight\Player.cpp(670,95): warning C4244: '인수': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   VoteFight.vcxproj -> C:\directX_work\x64\Debug\VoteFight.exe

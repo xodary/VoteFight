@@ -1,11 +1,3 @@
-struct MATERIAL
-{
-	float4					m_cAmbient;
-	float4					m_cDiffuse;
-	float4					m_cSpecular; //a = power
-	float4					m_cEmissive;
-};
-
 cbuffer cbCameraInfo : register(b1)
 {
 	matrix					gmtxView : packoffset(c0);
@@ -14,11 +6,21 @@ cbuffer cbCameraInfo : register(b1)
 	float3					gvCameraPosition : packoffset(c12);
 };
 
+struct MATERIAL
+{
+    float4 m_cAmbient;
+    float4 m_cDiffuse;
+    float4 m_cSpecular; //a = power
+    float4 m_cEmissive;
+	
+    matrix gmtxTexture;
+};
+
 cbuffer cbGameObjectInfo : register(b2)
 {
 	matrix					gmtxGameObject : packoffset(c0);
 	MATERIAL				gMaterial : packoffset(c4);
-	uint					gnTexturesMask : packoffset(c8);
+	uint					gnTexturesMask : packoffset(c12);
 };
 
 #include "Light.hlsl"
@@ -104,6 +106,7 @@ float4 PSStandard(VS_STANDARD_OUTPUT input) : SV_TARGET
 		normalW = normalize(input.normalW);
 	}
 	float4 cIllumination = Lighting(input.positionW, normalW);
+    // float4 cIllumination = float4(1, 1, 1, 1);
 	return(lerp(cColor, cIllumination, 0.5f));
 }
 
@@ -293,8 +296,8 @@ VS_BITMAP_OUTPUT VSBitmap(VS_BITMAP_INPUT input)
     VS_BITMAP_OUTPUT output;
    
     output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxOrthographic);
-    output.uv = input.uv;
-    
+    output.uv = mul(float3(input.uv, 1.0f), (float3x3) (gMaterial.gmtxTexture)).xy;
+
     return output;
 }
 

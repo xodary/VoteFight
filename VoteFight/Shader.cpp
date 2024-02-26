@@ -804,10 +804,11 @@ void CBitmapShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* 
 // 2024-02-25 01:00 황유림 수정
 void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer)
 {
+	pd3dCommandList->SetGraphicsRootDescriptorTable(15, GetGPUSrvDescriptorStartHandle());
 	m_pCrntState->Update();
 	CShader::Render(pd3dCommandList, pCamera);
-	pd3dCommandList->SetGraphicsRootDescriptorTable(15, GetGPUSrvDescriptorStartHandle());
-	for (int i = 0; i < m_nObject; ++i)
+
+	pd3dCommandList->SetGraphicsRootDescriptorTable(1, GetGPUCbvDescriptorStartHandle()); for (int i = 0; i < m_nObject; ++i)
 	{
 		m_ppObjects[i]->Render(pd3dCommandList, pCamera, pPlayer);
 	}
