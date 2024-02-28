@@ -241,12 +241,12 @@ void CMaterial::PrepareShaders(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandLi
 
 void CMaterial::UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList)
 {
-	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4AmbientColor, 16);
-	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4AlbedoColor, 20);
-	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4SpecularColor, 24);
-	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 4, &m_xmf4EmissiveColor, 28);
-	// 
-	// pd3dCommandList->SetGraphicsRoot32BitConstants(1, 1, &m_nType, 32);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &m_xmf4AmbientColor, 16);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &m_xmf4AlbedoColor, 20);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &m_xmf4SpecularColor, 24);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &m_xmf4EmissiveColor, 28);
+	
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 1, &m_nType, 32);
 
 	for (int i = 0; i < m_nTextures; i++)
 	{
@@ -900,7 +900,7 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 {
 	if (m_pSkinnedAnimationController) m_pSkinnedAnimationController->UpdateShaderVariables(pd3dCommandList);
 
-	UpdateShaderVariables(pd3dCommandList);
+	UpdateShaderVariable(pd3dCommandList, &m_xmf4x4World);
 
 	if (m_nMaterials > 0)
 	{
@@ -910,18 +910,7 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 			{
 				if (m_ppMaterials[i]->m_pShader) m_ppMaterials[i]->m_pShader->Render(pd3dCommandList, pCamera);
 				m_ppMaterials[i]->UpdateShaderVariable(pd3dCommandList);
-				if (m_pcbMappedGameObject)
-				{
-					for (int j = 0; j < m_ppMaterials[i]->m_nTextures; ++j)
-						XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&m_ppMaterials[i]->m_ppTextures[j]->m_xmf4x4Texture)));
-					MATERIAL material = { m_ppMaterials[i]->m_xmf4AlbedoColor, m_ppMaterials[i]->m_xmf4EmissiveColor, m_ppMaterials[i]->m_xmf4SpecularColor, m_ppMaterials[i]->m_xmf4AmbientColor };
-					memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
-				}
 			}
-
-			if(m_ppMaterials[i] && m_ppMaterials[i]->m_pShader)
-				pd3dCommandList->SetGraphicsRootDescriptorTable(1, m_ppMaterials[i]->m_pShader->GetGPUCbvDescriptorStartHandle());
-
 			if (m_ppMeshes)
 			{
 				for (int j = 0; j < m_nMeshes; j++)
@@ -938,30 +927,18 @@ void CGameObject::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pC
 
 void CGameObject::CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList)
 {
-	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
-	m_pd3dcbGameObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
-
-	m_pd3dcbGameObject->Map(0, NULL, (void**)&m_pcbMappedGameObject);
 }
 
 void CGameObject::UpdateShaderVariables(ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	if (m_pcbMappedGameObject)
-	{
-		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
-		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&m_ppMaterials[0]->m_ppTextures[0]->m_xmf4x4Texture)));
-		MATERIAL material = { m_ppMaterials[0]->m_xmf4AlbedoColor, m_ppMaterials[0]->m_xmf4EmissiveColor, m_ppMaterials[0]->m_xmf4SpecularColor, m_ppMaterials[0]->m_xmf4AmbientColor };
-		memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
-		memcpy(&m_pcbMappedGameObject->m_nType, &m_ppMaterials[0]->m_nType, sizeof(UINT));
-	}
 }
 
-//void CGameObject::UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, XMFLOAT4X4 *pxmf4x4World)
-//{
-//	XMFLOAT4X4 xmf4x4World;
-//	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(pxmf4x4World)));
-//	pd3dCommandList->SetGraphicsRoot32BitConstants(1, 16, &xmf4x4World, 0);
-//}
+void CGameObject::UpdateShaderVariable(ID3D12GraphicsCommandList *pd3dCommandList, XMFLOAT4X4 *pxmf4x4World)
+{
+	XMFLOAT4X4 xmf4x4World;
+	XMStoreFloat4x4(&xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(pxmf4x4World)));
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 16, &xmf4x4World, 0);
+}
 
 void CGameObject::ReleaseShaderVariables()
 {
@@ -1222,31 +1199,31 @@ void CGameObject::LoadMaterialsFromFile(ID3D12Device *pd3dDevice, ID3D12Graphics
 		}
 		else if (!strcmp(pstrToken, "<AlbedoMap>:"))
 		{
-			pMaterial->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_ALBEDO_MAP, 3, pMaterial->m_ppstrTextureNames[0], &(pMaterial->m_ppTextures[0]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
+			pMaterial->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_ALBEDO_MAP, ROOTSIG_STANDARD_1, pMaterial->m_ppstrTextureNames[0], &(pMaterial->m_ppTextures[0]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
 		}
 		else if (!strcmp(pstrToken, "<SpecularMap>:"))
 		{
-			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_SPECULAR_MAP, 4, pMaterial->m_ppstrTextureNames[1], &(pMaterial->m_ppTextures[1]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
+			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_SPECULAR_MAP, ROOTSIG_STANDARD_2, pMaterial->m_ppstrTextureNames[1], &(pMaterial->m_ppTextures[1]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
 		}
 		else if (!strcmp(pstrToken, "<NormalMap>:"))
 		{
-			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_NORMAL_MAP, 5, pMaterial->m_ppstrTextureNames[2], &(pMaterial->m_ppTextures[2]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
+			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_NORMAL_MAP, ROOTSIG_STANDARD_3, pMaterial->m_ppstrTextureNames[2], &(pMaterial->m_ppTextures[2]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
 		}
 		else if (!strcmp(pstrToken, "<MetallicMap>:"))
 		{
-			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_METALLIC_MAP, 6, pMaterial->m_ppstrTextureNames[3], &(pMaterial->m_ppTextures[3]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
+			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_METALLIC_MAP, ROOTSIG_STANDARD_4, pMaterial->m_ppstrTextureNames[3], &(pMaterial->m_ppTextures[3]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
 		}
 		else if (!strcmp(pstrToken, "<EmissionMap>:"))
 		{
-			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_EMISSION_MAP, 7, pMaterial->m_ppstrTextureNames[4], &(pMaterial->m_ppTextures[4]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
+			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_EMISSION_MAP, ROOTSIG_STANDARD_5, pMaterial->m_ppstrTextureNames[4], &(pMaterial->m_ppTextures[4]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
 		}
 		else if (!strcmp(pstrToken, "<DetailAlbedoMap>:"))
 		{
-			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_DETAIL_ALBEDO_MAP, 8, pMaterial->m_ppstrTextureNames[5], &(pMaterial->m_ppTextures[5]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
+			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_DETAIL_ALBEDO_MAP, ROOTSIG_STANDARD_6, pMaterial->m_ppstrTextureNames[5], &(pMaterial->m_ppTextures[5]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
 		}
 		else if (!strcmp(pstrToken, "<DetailNormalMap>:"))
 		{
-			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_DETAIL_NORMAL_MAP, 9, pMaterial->m_ppstrTextureNames[6], &(pMaterial->m_ppTextures[6]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
+			m_ppMaterials[nMaterial]->LoadTextureFromFile(pd3dDevice, pd3dCommandList, MATERIAL_DETAIL_NORMAL_MAP, ROOTSIG_STANDARD_7, pMaterial->m_ppstrTextureNames[6], &(pMaterial->m_ppTextures[6]), pParent, pInFile, pMaterial->m_pSkinnedAnimationShader);
 		}
 		else if (!strcmp(pstrToken, "</Materials>"))
 		{
@@ -1571,8 +1548,8 @@ CHeightMapTerrain::CHeightMapTerrain(ID3D12Device *pd3dDevice, ID3D12GraphicsCom
 	pTerrainShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	pTerrainShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 	pTerrainShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 2);
-	pTerrainShader->CreateShaderResourceViews(pd3dDevice, pTerrainBaseTexture, 0, 13);
-	pTerrainShader->CreateShaderResourceViews(pd3dDevice, pTerrainDetailTexture, 0, 14);
+	pTerrainShader->CreateShaderResourceViews(pd3dDevice, pTerrainBaseTexture, 0, ROOTSIG_TERRAIN_1);
+	pTerrainShader->CreateShaderResourceViews(pd3dDevice, pTerrainDetailTexture, 0, ROOTSIG_TERRAIN_2);
 
 	CMaterial *pTerrainMaterial = new CMaterial(2);
 	pTerrainMaterial->SetTexture(pTerrainBaseTexture, 0);
@@ -1608,7 +1585,7 @@ CSkyBox::CSkyBox(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dComman
 	pSkyBoxShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	pSkyBoxShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 	pSkyBoxShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 1);
-	pSkyBoxShader->CreateShaderResourceViews(pd3dDevice, pSkyBoxTexture, 0, 10);
+	pSkyBoxShader->CreateShaderResourceViews(pd3dDevice, pSkyBoxTexture, 0, ROOTSIG_SKYBOX);
 
 	CMaterial *pSkyBoxMaterial = new CMaterial(1);
 	pSkyBoxMaterial->SetTexture(pSkyBoxTexture);
@@ -1689,7 +1666,7 @@ void CBitmap::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamer
 
 void CBitmap::CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
 {
-	UINT ncbElementBytes = ((sizeof(CB_GAMEOBJECT_INFO) + 255) & ~255); //256의 배수
+	UINT ncbElementBytes = ((sizeof(XMFLOAT4X4) + 255) & ~255); //256의 배수
 	m_pd3dcbGameObject = ::CreateBufferResource(pd3dDevice, pd3dCommandList, NULL, ncbElementBytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, NULL);
 
 	m_pd3dcbGameObject->Map(0, NULL, (void**)&m_pcbMappedGameObject);
@@ -1699,23 +1676,34 @@ void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, C
 {
 
 	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(XMFLOAT3(0, 0, 0), pCamera->GetOffset(), pCamera->GetUpVector());
-	if (m_pcbMappedGameObject)
-	{
-		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4World)));
-		MATERIAL material = { {0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f} };
-		memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
-		
-		int width = 500, height = 100;
-		int Left = 100, Right = 400, Top = 20, Bottom = 80;
-		XMFLOAT4X4 xmf4x4Texture = Matrix4x4::Identity();
-		xmf4x4Texture._11 = float(Right - Left) / float(width);
-		xmf4x4Texture._22 = float(Bottom - Top) / float(height);
-		xmf4x4Texture._31 = float(Left) / float(width);
-		xmf4x4Texture._32 = float(Top) / float(height);
-		XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4Texture, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4Texture)));
-		UINT temp2 = 0;
-		memcpy(&m_pcbMappedGameObject->m_nType, &temp2, sizeof(UINT));
-	}
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 16, &xmf4x4World, 0);
+
+	XMFLOAT4 temp = XMFLOAT4(0, 0, 0, 0);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 16);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 20);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 24);
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 28);
+
+	UINT temp2 = 0;
+	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 1, &temp2, 32);
+	
+	//if (m_pcbMappedGameObject)
+	//{
+	//	XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4World)));
+	//	MATERIAL material = { {0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f} };
+	//	memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
+	//	
+	int width = 500, height = 100;
+	int Left = 100, Right = 400, Top = 20, Bottom = 80;
+	XMFLOAT4X4 xmf4x4Texture = Matrix4x4::Identity();
+	xmf4x4Texture._11 = float(Right - Left) / float(width);
+	xmf4x4Texture._22 = float(Bottom - Top) / float(height);
+	xmf4x4Texture._31 = float(Left) / float(width);
+	xmf4x4Texture._32 = float(Top) / float(height);
+	XMStoreFloat4x4(m_pcbMappedGameObject, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4Texture)));
+
+	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbGameObject->GetGPUVirtualAddress();
+	pd3dCommandList->SetGraphicsRootConstantBufferView(ROOTSIG_UV, d3dGpuVirtualAddress);
 }
 
 // 기본 메인화면에 들어갈 때 UI를 배치하는 함수
@@ -1754,7 +1742,7 @@ void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 	m_pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	m_pShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 	m_pShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 1);
-	m_pShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, 15);
+	m_pShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, ROOTSIG_SPRITE);
 
 	// Idea: UI를 모두 모아놓은 이미지를 SRV에 설정하고, UV를 조절해서 화면에 세팅하기
 

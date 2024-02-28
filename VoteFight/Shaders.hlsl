@@ -12,15 +12,18 @@ struct MATERIAL
     float4 m_cDiffuse;
     float4 m_cSpecular; //a = power
     float4 m_cEmissive;
-	
-    matrix gmtxTexture;
 };
 
 cbuffer cbGameObjectInfo : register(b2)
 {
 	matrix					gmtxGameObject : packoffset(c0);
 	MATERIAL				gMaterial : packoffset(c4);
-	uint					gnTexturesMask : packoffset(c12);
+	uint					gnTexturesMask : packoffset(c8);
+};
+
+cbuffer cbBitmapInfo : register(b0)
+{
+    matrix gmtxTexture : packoffset(c0);
 };
 
 #include "Light.hlsl"
@@ -296,7 +299,7 @@ VS_BITMAP_OUTPUT VSBitmap(VS_BITMAP_INPUT input)
     VS_BITMAP_OUTPUT output;
    
     output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxOrthographic);
-    output.uv = mul(float3(input.uv, 1.0f), (float3x3) (gMaterial.gmtxTexture)).xy;
+    output.uv = mul(float3(input.uv, 1.0f), (float3x3) (gmtxTexture)).xy;
 
     return output;
 }

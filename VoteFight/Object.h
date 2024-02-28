@@ -339,22 +339,6 @@ public:
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 
-struct MATERIAL
-{
-	XMFLOAT4						m_xmf4Ambient;
-	XMFLOAT4						m_xmf4Diffuse;
-	XMFLOAT4						m_xmf4Specular; //(r,g,b,a=power)
-	XMFLOAT4						m_xmf4Emissive;
-};
-
-struct CB_GAMEOBJECT_INFO
-{
-	XMFLOAT4X4						m_xmf4x4World;
-	MATERIAL						m_material;
-	XMFLOAT4X4						m_xmf4x4Texture;
-	UINT							m_nType;
-};
-
 class CGameObject
 {
 private:
@@ -371,7 +355,7 @@ public:
 public:
 
 	ID3D12Resource					*m_pd3dcbGameObject = NULL;
-	CB_GAMEOBJECT_INFO				*m_pcbMappedGameObject = NULL;
+	XMFLOAT4X4						m_xmf4x4Texture;
 
 	char							m_pstrFrameName[64];
 
@@ -415,6 +399,7 @@ public:
 
 	virtual void CreateShaderVariables(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList);
 	virtual void UpdateShaderVariables(ID3D12GraphicsCommandList *pd3dCommandList);
+	virtual void UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, XMFLOAT4X4* pxmf4x4World);
 	virtual void ReleaseShaderVariables();
 
 	virtual void ReleaseUploadBuffers();
@@ -468,6 +453,16 @@ public:
 
 	void GenerateRayForPicking(XMVECTOR& xmvPickPosition, XMMATRIX& xmmtxView, XMVECTOR& xmvPickRayOrigin, XMVECTOR& xmvPickRayDirection);
 	// BOOL PickObjectByRayIntersection(XMVECTOR& xmPickPosition, XMMATRIX& xmmtxView, XMFLOAT3& xmf3GroundSpot, float* pfHitDistance);
+
+	D3D12_GPU_DESCRIPTOR_HANDLE		m_d3dCbvGPUDescriptorHandle;
+	void SetCbvGPUDescriptorHandle(D3D12_GPU_DESCRIPTOR_HANDLE d3dCbvGPUDescriptorHandle) { m_d3dCbvGPUDescriptorHandle = d3dCbvGPUDescriptorHandle; }
+	void SetCbvGPUDescriptorHandlePtr(UINT64 nCbvGPUDescriptorHandlePtr)
+	{
+		m_d3dCbvGPUDescriptorHandle.ptr = nCbvGPUDescriptorHandlePtr;
+		if (m_pSibling) m_pSibling->SetCbvGPUDescriptorHandlePtr(nCbvGPUDescriptorHandlePtr);
+		if (m_pChild) m_pChild->SetCbvGPUDescriptorHandlePtr(nCbvGPUDescriptorHandlePtr);
+	}
+	D3D12_GPU_DESCRIPTOR_HANDLE GetCbvGPUDescriptorHandle() { return(m_d3dCbvGPUDescriptorHandle); }
 };
 
 class CHeightMapTerrain : public CGameObject
@@ -555,7 +550,7 @@ public:
 	CTexture*					m_pTexture = NULL;
 
 	ID3D12Resource				*m_pd3dcbGameObject = NULL;
-	CB_GAMEOBJECT_INFO			*m_pcbMappedGameObject = NULL;
+	XMFLOAT4X4					*m_pcbMappedGameObject = NULL;
 
 	int							m_nMesh = 0;
 	CBitmapMesh**				m_ppMeshes = NULL;
