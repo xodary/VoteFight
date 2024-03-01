@@ -340,5 +340,5 @@ public:
 	int m_nWidth, m_nHeight;
 	int m_nLeft, m_nTop;
 
-	int n_SheetLeft, n_SheetTop, n_SheetRight, n_SheetBottom;
+	RECT m_SheetRect;
 };

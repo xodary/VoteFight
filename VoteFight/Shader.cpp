@@ -804,7 +804,7 @@ void CBitmapShader::CreateShader(ID3D12Device* pd3dDevice, ID3D12RootSignature* 
 // 2024-02-25 01:00 황유림 수정
 void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer)
 {
-	pd3dCommandList->SetGraphicsRootDescriptorTable(16, GetGPUSrvDescriptorStartHandle());
+	pd3dCommandList->SetGraphicsRootDescriptorTable(ROOTSIG_SPRITE, GetGPUSrvDescriptorStartHandle());
 	m_pCrntState->Update();
 	CShader::Render(pd3dCommandList, pCamera);
 
@@ -814,3 +814,40 @@ void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* 
 	}
 }
 
+// Player의 Animation State가 변경될 때 호출하는 함수
+// Args:
+//	playerState: 변경하고자 하는 상태
+//	e: 발생한 이벤트의 종류
+//	xmf3Direction: 변경하고자 하는 방향 벡터
+// 2024-02-21 13:43 황유림 수정
+void CBitmapShader::ChangeState(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const bitmapState::State& bitmapState, const Event& e, const WPARAM& wParam)
+{
+	// Exit 함수 호출
+	if (m_pCrntState != nullptr)
+	{
+		m_pCrntState->Exit();
+		delete m_pCrntState;
+	}
+
+	// 상태 객체 생성
+	switch (bitmapState)
+	{
+	case bitmapState::State::MainScreen:
+		m_pCrntState = new bitmapState::MainScreen(this);
+		break;
+	case bitmapState::State::InventoryScreen:
+		m_pCrntState = new bitmapState::InventoryScreen(this);
+		break;
+	case bitmapState::State::MapScreen:
+		m_pCrntState = new bitmapState::MapScreen(this);
+		break;
+	case bitmapState::State::EscScreen:
+		m_pCrntState = new bitmapState::EscScreen(this);
+		break;
+	default:
+		assert(0);
+	}
+
+	// Enter 함수 호출
+	m_pCrntState->Enter(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+}

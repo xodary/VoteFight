@@ -1655,13 +1655,11 @@ CBitmap::~CBitmap()
 //  pCamera: 카메라
 //  pPlayer: 플레이어
 // 2024-02-24 17:12 황유림 수정
-void CBitmap::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer *pPlayer)
+void CBitmap::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer)
 {
 	UpdateShaderVariable(pd3dCommandList, pCamera);
-	for (int i = 0; i < m_nMesh; ++i) {
-		m_ppMeshes[i]->UpdateBuffers(pd3dCommandList, pCamera, pPlayer);	// 이미지가 출력되는 Mesh의 위치를 변경시킴.
-		m_ppMeshes[i]->Render(pd3dCommandList);								// Mesh를 Render함.
-	}
+	m_pMesh->UpdateBuffers(pd3dCommandList, pCamera, pPlayer);	// 이미지가 출력되는 Mesh의 위치를 변경시킴.
+	m_pMesh->Render(pd3dCommandList);								// Mesh를 Render함.
 }
 
 void CBitmap::CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList)
@@ -1672,34 +1670,30 @@ void CBitmap::CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsComma
 	m_pd3dcbGameObject->Map(0, NULL, (void**)&m_pcbMappedGameObject);
 }
 
+// Bitmap의 Shader Variable(스프라이트 시트의 UV 조정)을 업데이트하는 부분
+// Args:
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//	pCamera: 카메라
+// 2024-02-29 13:43 황유림 수정
 void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
 {
-
+	// Object 설정
 	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(XMFLOAT3(0, 0, 0), pCamera->GetOffset(), pCamera->GetUpVector());
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 16, &xmf4x4World, 0);
-
 	XMFLOAT4 temp = XMFLOAT4(0, 0, 0, 0);
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 16);
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 20);
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 24);
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 28);
-
 	UINT temp2 = 0;
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 1, &temp2, 32);
-	
-	//if (m_pcbMappedGameObject)
-	//{
-	//	XMStoreFloat4x4(&m_pcbMappedGameObject->m_xmf4x4World, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4World)));
-	//	MATERIAL material = { {0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f},{0.0f, 0.0f, 0.0f, 0.0f} };
-	//	memcpy(&m_pcbMappedGameObject->m_material, &material, sizeof(MATERIAL));
-	//	
-	int width = 500, height = 100;
-	int Left = 100, Right = 400, Top = 20, Bottom = 80;
+		
+	// 스프라이트 시트 UV 설정
 	XMFLOAT4X4 xmf4x4Texture = Matrix4x4::Identity();
-	xmf4x4Texture._11 = float(Right - Left) / float(width);
-	xmf4x4Texture._22 = float(Bottom - Top) / float(height);
-	xmf4x4Texture._31 = float(Left) / float(width);
-	xmf4x4Texture._32 = float(Top) / float(height);
+	xmf4x4Texture._11 = float(m_pMesh->m_SheetRect.right - m_pMesh->m_SheetRect.left) / float(1000);
+	xmf4x4Texture._22 = float(m_pMesh->m_SheetRect.bottom - m_pMesh->m_SheetRect.top) / float(1000);
+	xmf4x4Texture._31 = float(m_pMesh->m_SheetRect.left) / float(1000);
+	xmf4x4Texture._32 = float(m_pMesh->m_SheetRect.top) / float(1000);
 	XMStoreFloat4x4(m_pcbMappedGameObject, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4Texture)));
 
 	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbGameObject->GetGPUVirtualAddress();
@@ -1714,37 +1708,64 @@ void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, C
 // 2024-02-24 17:12 황유림 수정
 void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
-	// Bitmap Mesh 새로 생성
-	int width = 500, height = 100;
-	CBitmapMesh* pBitmapMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
-	
-	// Shader에서 Bitmap Object를 관리
-	m_pShader->m_nObject = 1;
-	m_pShader->m_ppObjects = new CBitmap * [m_pShader->m_nObject];
-	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
-	m_pShader->m_ppObjects[0]->m_nMesh = 1;
-	m_pShader->m_ppObjects[0]->m_ppMeshes = new CBitmapMesh * [m_pShader->m_ppObjects[0]->m_nMesh];
-	
-	int Left = 100, Right = 400, Top = 20, Bottom = 80;
-	for (int i = 0; i < m_pShader->m_ppObjects[0]->m_nMesh; ++i) {
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i] = pBitmapMesh;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_SheetLeft = Left;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_SheetTop = Top;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_SheetRight = Right;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->n_SheetBottom = Bottom;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nLeft = FRAME_BUFFER_WIDTH / 2 - 250;
-		m_pShader->m_ppObjects[0]->m_ppMeshes[i]->m_nTop = FRAME_BUFFER_HEIGHT - 200;
-	}
-
+	// 스프라이트 시트 이미지 SRV 설정
 	CTexture* pBitmapTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
-	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/slot.dds", RESOURCE_TEXTURE2D, 0);
-
+	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/Textures/sprite_sheet.dds", RESOURCE_TEXTURE2D, 0);
 	m_pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
 	m_pShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
 	m_pShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 1);
 	m_pShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, ROOTSIG_SPRITE);
+	
+	// Bitmap Mesh 새로 생성
+	int width = 100, height = 100;
+	
+	// Shader에서 Bitmap Object를 관리
+	m_pShader->m_nObject = 6;
+	m_pShader->m_ppObjects = new CBitmap * [m_pShader->m_nObject];
 
-	// Idea: UI를 모두 모아놓은 이미지를 SRV에 설정하고, UV를 조절해서 화면에 세팅하기
+	int gap = 50;
+
+	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[0]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
+	RECT sheet = { 0, 0, 160, 160 };
+	m_pShader->m_ppObjects[0]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[0]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - width / 2 - gap - width;
+	m_pShader->m_ppObjects[0]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT - height - gap;
+
+	m_pShader->m_ppObjects[1] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[1]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
+	m_pShader->m_ppObjects[1]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[1]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - width / 2;
+	m_pShader->m_ppObjects[1]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT - height - gap;
+
+	m_pShader->m_ppObjects[2] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[2]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
+	m_pShader->m_ppObjects[2]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[2]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 + gap + width / 2;
+	m_pShader->m_ppObjects[2]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT - height - gap;
+
+	width = 150, height = 50;
+	gap = 20;
+	m_pShader->m_ppObjects[3] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[3]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
+	sheet = { 160*3, 0, 160 * 6, 160 };
+	m_pShader->m_ppObjects[3]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[3]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH - width - gap - 20;
+	m_pShader->m_ppObjects[3]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT - gap * 3 - height * 3 - 20;
+
+	m_pShader->m_ppObjects[4] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[4]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
+	sheet = { 160 * 3, 160, 160 * 6, 160 * 2 };
+	m_pShader->m_ppObjects[4]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[4]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH - width - gap - 20;
+	m_pShader->m_ppObjects[4]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT - gap * 2 - height * 2 - 20;
+
+	m_pShader->m_ppObjects[5] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[5]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
+	sheet = { 160 * 3, 160 * 2, 160 * 6, 160 * 3 };
+	m_pShader->m_ppObjects[5]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[5]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH - width - gap - 20;
+	m_pShader->m_ppObjects[5]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT - gap - height - 20;
 
 }
 
@@ -1756,6 +1777,73 @@ void bitmapState::MainScreen::Update()
 {
 }
 
-void bitmapState::MainScreen::HandleEvent(const Event& e)
+void bitmapState::MainScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
+{
+	switch (e)
+	{
+		case Event::KeyDown:
+			switch (wParam)
+			{
+			case VK_TAB:
+				m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::MapScreen, e, wParam);
+				break;
+			case VK_ESCAPE:
+				m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::EscScreen, e, wParam);
+				break;
+			case 'Q':
+			case 'q':
+				m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::InventoryScreen, e, wParam);
+				break;
+			}
+			break;
+
+	}
+}
+
+void bitmapState::InventoryScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+{
+}
+
+void bitmapState::InventoryScreen::Exit()
+{
+}
+
+void bitmapState::InventoryScreen::Update()
+{
+}
+
+void bitmapState::InventoryScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
+{
+}
+
+void bitmapState::EscScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+{
+}
+
+void bitmapState::EscScreen::Exit()
+{
+}
+
+void bitmapState::EscScreen::Update()
+{
+}
+
+void bitmapState::EscScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
+{
+}
+
+void bitmapState::MapScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
+{
+}
+
+void bitmapState::MapScreen::Exit()
+{
+}
+
+void bitmapState::MapScreen::Update()
+{
+}
+
+void bitmapState::MapScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
 {
 }

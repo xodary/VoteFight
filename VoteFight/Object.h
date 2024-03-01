@@ -513,7 +513,7 @@ public:
 
 namespace bitmapState {
 	// state
-	enum class State { MainScreen = 0, InvenScreen, MapScreen, EscScreen };
+	enum class State { MainScreen = 0, InventoryScreen, MapScreen, EscScreen };
 
 	/* ±âº» State  */
 	class BitmapState abstract {
@@ -524,7 +524,7 @@ namespace bitmapState {
 		virtual void Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) abstract;
 		virtual void Exit() abstract;
 		virtual void Update() abstract;
-		virtual void HandleEvent(const Event& e) abstract;
+		virtual void HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam) abstract;
 	};
 
 	class MainScreen : public BitmapState {
@@ -533,7 +533,34 @@ namespace bitmapState {
 		void Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) override;
 		void Exit() override;
 		void Update() override;
-		void HandleEvent(const Event& e) override;
+		void HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam) override;
+	};
+
+	class InventoryScreen : public BitmapState {
+	public:
+		InventoryScreen(CBitmapShader* pShader) : BitmapState(pShader) {};
+		void Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) override;
+		void Exit() override;
+		void Update() override;
+		void HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam) override;
+	};
+
+	class MapScreen : public BitmapState {
+	public:
+		MapScreen(CBitmapShader* pShader) : BitmapState(pShader) {};
+		void Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) override;
+		void Exit() override;
+		void Update() override;
+		void HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam) override;
+	};
+
+	class EscScreen : public BitmapState {
+	public:
+		EscScreen(CBitmapShader* pShader) : BitmapState(pShader) {};
+		void Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature) override;
+		void Exit() override;
+		void Update() override;
+		void HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam) override;
 	};
 }
 
@@ -552,8 +579,7 @@ public:
 	ID3D12Resource				*m_pd3dcbGameObject = NULL;
 	XMFLOAT4X4					*m_pcbMappedGameObject = NULL;
 
-	int							m_nMesh = 0;
-	CBitmapMesh**				m_ppMeshes = NULL;
+	CBitmapMesh*				m_pMesh = NULL;
 	CShader*					m_pShader = NULL;
 
 	CCamera*					m_pCamera = NULL;
