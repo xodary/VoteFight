@@ -86,7 +86,6 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	m_pSkinnedAnimationController->m_pAnimationTracks[2].m_nType = ANIMATION_TYPE_ONCE;
 
 
-
 	m_pSkinnedAnimationController->SetCallbackKeys(1, 2);
 #ifdef _WITH_SOUND_RESOURCE
 	m_pSkinnedAnimationController->SetCallbackKey(0, 0.1f, _T("Footstep01"));
@@ -105,8 +104,9 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	SetPlayerUpdatedContext(pContext);
 	SetCameraUpdatedContext(pContext);
 
-	// CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
-	m_xmf3Position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
+	m_xmf3Position = XMFLOAT3(pTerrain->GetWidth() / 2, 1000.f, pTerrain->GetWidth() / 2);
+	// m_xmf3Position = XMFLOAT3(0, 0, 0);
 	SetScale(XMFLOAT3(10.0f, 10.0f, 10.0f));
 
 	m_pCrntState = new playerState::Idle(this);
@@ -211,7 +211,7 @@ void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamer
 CCamera* CPlayer::CreateCamera(float fTimeElapsed)
 {
 	SetFriction(250.0f);
-	SetGravity(XMFLOAT3(0.0f, 0.0f, 0.0f));
+	SetGravity(XMFLOAT3(0.0f, -10.0f, 0.0f));
 	SetMaxVelocityXZ(15.0f);
 	SetMaxVelocityY(400.0f);
 	m_pCamera = new CCamera(m_pCamera);
@@ -221,7 +221,8 @@ CCamera* CPlayer::CreateCamera(float fTimeElapsed)
 	m_pCamera->GenerateProjectionMatrix(1.01f, 5000.0f, ASPECT_RATIO, 60.0f);
 	m_pCamera->SetViewport(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, 0.0f, 1.0f);
 	m_pCamera->SetScissorRect(0, 0, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
-	m_pCamera->SetPosition(Vector3::Add(m_xmf3Position, m_pCamera->GetOffset()));
+	//m_pCamera->SetPosition(Vector3::Add(m_xmf3Position, m_pCamera->GetOffset()));
+	m_pCamera->SetPosition(XMFLOAT3(0, 0, 0));
 	Update(fTimeElapsed);
 
 	return(m_pCamera);
@@ -255,15 +256,15 @@ void CPlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 	XMFLOAT3 xmf3PlayerPosition = GetPosition();
 	int z = (int)(xmf3PlayerPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
-	// float fHeight = pTerrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 10.0f;
-	// if (xmf3PlayerPosition.y < fHeight)
-	// {
-	// 	XMFLOAT3 xmf3PlayerVelocity = GetVelocity();
-	// 	xmf3PlayerVelocity.y = 0.0f;
-	// 	SetVelocity(xmf3PlayerVelocity);
-	// 	xmf3PlayerPosition.y = fHeight;
-	// 	SetPosition(xmf3PlayerPosition);
-	// }
+	float fHeight = pTerrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 10.0f;
+	if (xmf3PlayerPosition.y < fHeight)
+	{
+		XMFLOAT3 xmf3PlayerVelocity = GetVelocity();
+		xmf3PlayerVelocity.y = 0.0f;
+		SetVelocity(xmf3PlayerVelocity);
+		xmf3PlayerPosition.y = fHeight;
+		SetPosition(xmf3PlayerPosition);
+	}
 }
 
 void CPlayer::OnCameraUpdateCallback(float fTimeElapsed)
@@ -273,14 +274,14 @@ void CPlayer::OnCameraUpdateCallback(float fTimeElapsed)
 	XMFLOAT3 xmf3CameraPosition = m_pCamera->GetPosition();
 	int z = (int)(xmf3CameraPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
-	// float fHeight = pTerrain->GetHeight(xmf3CameraPosition.x, xmf3CameraPosition.z, bReverseQuad) + 5.0f;
-	// if (xmf3CameraPosition.y <= fHeight)
-	// {
-	// 	xmf3CameraPosition.y = fHeight;
-	// 	m_pCamera->SetPosition(xmf3CameraPosition);
-	// 	CCamera* p3rdPersonCamera = m_pCamera;
-	// 	p3rdPersonCamera->SetLookAt(GetPosition());
-	// }
+	float fHeight = pTerrain->GetHeight(xmf3CameraPosition.x, xmf3CameraPosition.z, bReverseQuad) + 5.0f;
+	if (xmf3CameraPosition.y <= fHeight)
+	{
+		xmf3CameraPosition.y = fHeight;
+		m_pCamera->SetPosition(xmf3CameraPosition);
+		CCamera* p3rdPersonCamera = m_pCamera;
+		p3rdPersonCamera->SetLookAt(GetPosition());
+	}
 }
 
 void CPlayer::Move(DWORD xmf3Direction, float fDistance, bool bUpdateVelocity)

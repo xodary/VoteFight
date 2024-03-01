@@ -414,14 +414,13 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			case VK_RIGHT:
 				xmf3Direction |= DIR_RIGHT;
 				break;
-			case VK_ESCAPE:
-				::PostQuitMessage(0);
-				break;
+			// case VK_ESCAPE:
+			// 	::PostQuitMessage(0);
+			// 	break;
 			case VK_RETURN:
 				break;
 			case VK_F1:
-			case VK_F2:
-			case VK_F3:
+				::PostQuitMessage(0);
 				break;
 			case 'B':
 			case 'b':
@@ -441,9 +440,16 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 
 			xmf3Shift = Vector3::Normalize(xmf3Shift);
 
-			m_pPlayer->m_pCrntState->HandleEvent(Event::KeyUp, xmf3Shift);
+			if(!Vector3::IsZero(xmf3Shift))
+				m_pPlayer->m_pCrntState->HandleEvent(Event::KeyUp, xmf3Shift);
+			m_pUILayer->m_pCrntState->HandleEvent(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), Event::KeyUp, wParam);
 
 			break;
+		}
+		break;
+		case WM_KEYDOWN:
+		{
+			m_pUILayer->m_pCrntState->HandleEvent(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), Event::KeyDown, wParam);
 		}
 		default:
 			break;
@@ -525,6 +531,10 @@ void CGameFramework::BuildObjects()
 	m_pScene->m_pPlayer = m_pPlayer = pPlayer;
 	m_pScene->m_ppCollisionObjects[0] = m_pPlayer;
 	m_pCamera = m_pPlayer->GetCamera();
+	
+	// UI 생성
+	m_pUILayer = new CBitmapShader();
+	m_pUILayer->BuildObjects(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature());
 
 	m_pd3dCommandList->Close();
 	ID3D12CommandList *ppd3dCommandLists[] = { m_pd3dCommandList };
@@ -675,7 +685,7 @@ void CGameFramework::FrameAdvance()
 	if (m_pScene) m_pScene->Render(m_pd3dCommandList, m_pCamera);		// Scene에 있는 모든 Object를 Render함
 	if (m_pPlayer) m_pPlayer->Render(m_pd3dCommandList, m_pCamera);		// Player를 Render함.
 	if (m_bRenderBoundingBox && m_pScene) m_pScene->RenderBoundingBox(m_pd3dCommandList, m_pCamera);	// Bounding Box를 Render함.
-	if (m_pScene) m_pScene->RenderUILayer(m_pd3dCommandList, m_pCamera);	// UI는 맨 마지막에 Render해야 가려지지 않음.
+	if (m_pUILayer) m_pUILayer->Render(m_pd3dCommandList, m_pCamera, m_pPlayer);
 
 	// Render Target에 그려진 화면을 Present 함.
 	d3dResourceBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;

@@ -58,10 +58,10 @@ using Microsoft::WRL::ComPtr;
 
 extern HINSTANCE						ghAppInstance;
 
-//#define _WITH_SWAPCHAIN_FULLSCREEN_STATE
+// #define _WITH_SWAPCHAIN_FULLSCREEN_STATE
 
-#define FRAME_BUFFER_WIDTH				640 * 2
-#define FRAME_BUFFER_HEIGHT				480 * 2
+#define FRAME_BUFFER_WIDTH				1600
+#define FRAME_BUFFER_HEIGHT				900
 
 #define ROOTSIG_UV 0
 #define ROOTSIG_CAMERA 1

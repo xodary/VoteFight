@@ -78,9 +78,6 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	m_nCollisionObject = 1;
 	m_ppCollisionObjects = new CGameObject * [m_nCollisionObject];
 
-	m_pUILayer = new CBitmapShader();
-	m_pUILayer->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
-
 	CMaterial::PrepareShaders(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature); 
 
 	BuildDefaultLightsAndMaterials();
@@ -463,11 +460,6 @@ void CScene::RenderBoundingBox(ID3D12GraphicsCommandList* pd3dCommandList, CCame
 		}
 	}
 	m_pPlayer->RenderBoundingBox(pd3dCommandList, pCamera);
-}
-
-void CScene::RenderUILayer(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
-{
-	if (m_pUILayer) m_pUILayer->Render(pd3dCommandList, pCamera, m_pPlayer);
 }
 
 //CGameObject* CScene::PickObjectPointedByCursor(int xClient, int yClient, CCamera* pCamera)

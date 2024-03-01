@@ -60,7 +60,6 @@ public:
 	bool ProcessInput(UCHAR *pKeysBuffer);
     void AnimateObjects(float fTimeElapsed);
 	void RenderBoundingBox(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
-	void RenderUILayer(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera);
     void Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera=NULL);
 
 	void ReleaseUploadBuffers();
@@ -106,6 +105,4 @@ public:
 	LIGHTS								*m_pcbMappedLights = NULL;
 
 	CBoundingBoxShader*					m_pBoundingBoxShader = NULL;
-
-	CBitmapShader*						m_pUILayer = NULL;
 };

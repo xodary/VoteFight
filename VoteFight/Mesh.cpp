@@ -1110,7 +1110,8 @@ void CBitmapMesh::UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCam
 
 	left = -pPlayer->GetPosition().x + FRAME_BUFFER_WIDTH / 2 - m_nLeft;
 	right = left - m_nWidth;
-	top = pPlayer->GetPosition().z  / sqrt(2) + FRAME_BUFFER_HEIGHT / 2 - m_nTop;	// sin 45 = 1/sqrt(2)
+	//top = pPlayer->GetPosition().z  / sqrt(2) + FRAME_BUFFER_HEIGHT / 2 - m_nTop;	// sin 45 = 1/sqrt(2)
+	top = pPlayer->GetPosition().z / sqrt(2) + pPlayer->GetPosition().y / sqrt(2) + FRAME_BUFFER_HEIGHT / 2 - m_nTop;	// sin 45 = 1/sqrt(2)
 	bottom = top - m_nHeight;
 
 	// First triangle.

@@ -1,7 +1,7 @@
 #pragma once
 
-#define FRAME_BUFFER_WIDTH		640 * 2
-#define FRAME_BUFFER_HEIGHT		480 * 2
+#define FRAME_BUFFER_WIDTH		1600 
+#define FRAME_BUFFER_HEIGHT		900 
 
 #include "Timer.h"
 #include "Player.h"
@@ -89,6 +89,6 @@ private:
 
 	_TCHAR						m_pszFrameRate[70];
 
-	CBitmap*					m_UILayer;
+	CBitmapShader*				m_pUILayer = NULL;
 };
 

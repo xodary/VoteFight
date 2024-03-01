@@ -1657,8 +1657,8 @@ CBitmap::~CBitmap()
 // 2024-02-24 17:12 황유림 수정
 void CBitmap::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer)
 {
-	UpdateShaderVariable(pd3dCommandList, pCamera);
-	m_pMesh->UpdateBuffers(pd3dCommandList, pCamera, pPlayer);	// 이미지가 출력되는 Mesh의 위치를 변경시킴.
+	UpdateShaderVariable(pd3dCommandList, pCamera, pPlayer);
+	m_pMesh->UpdateBuffers(pd3dCommandList, pCamera, pPlayer);		// 이미지가 출력되는 Mesh의 위치를 변경시킴.
 	m_pMesh->Render(pd3dCommandList);								// Mesh를 Render함.
 }
 
@@ -1675,10 +1675,10 @@ void CBitmap::CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsComma
 //  pd3dCommandList: Direct3D 명령 리스트 정보
 //	pCamera: 카메라
 // 2024-02-29 13:43 황유림 수정
-void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera)
+void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer)
 {
 	// Object 설정
-	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(XMFLOAT3(0, 0, 0), pCamera->GetOffset(), pCamera->GetUpVector());
+	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(XMFLOAT3(0,0,0), pCamera->GetOffset(), pCamera->GetUpVector());
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 16, &xmf4x4World, 0);
 	XMFLOAT4 temp = XMFLOAT4(0, 0, 0, 0);
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 16);
@@ -1705,17 +1705,9 @@ void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, C
 //  pd3dDevice: Direct3D Device 정보
 //  pd3dCommandList: Direct3D 명령 리스트 정보
 //  pd3dGraphicsRootSignature: Direct3D 루트 시그너쳐 정보
-// 2024-02-24 17:12 황유림 수정
+// 2024-03-02 02:03 황유림 수정
 void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
-	// 스프라이트 시트 이미지 SRV 설정
-	CTexture* pBitmapTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
-	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/Textures/sprite_sheet.dds", RESOURCE_TEXTURE2D, 0);
-	m_pShader->CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
-	m_pShader->CreateShaderVariables(pd3dDevice, pd3dCommandList);
-	m_pShader->CreateCbvSrvDescriptorHeaps(pd3dDevice, 1, 1);
-	m_pShader->CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, ROOTSIG_SPRITE);
-	
 	// Bitmap Mesh 새로 생성
 	int width = 100, height = 100;
 	
@@ -1769,14 +1761,31 @@ void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 
 }
 
+// 메인 화면에서 벗어나서 또 다른 화면으로 전환될 때, 메인 화면에 띄웠던 Object를 해제한다.
+// 2024-03-02 02:03 황유림 수정
 void bitmapState::MainScreen::Exit()
 {
+	for (int i = 0; i < m_pShader->m_nObject; ++i)
+	{
+		delete m_pShader->m_ppObjects[i];
+		m_pShader->m_ppObjects[i] = NULL;
+	}
 }
 
+// 메인 화면에 머물러 있을 때, 계속해서 체크하고 수정해야 하는 부분을 관리해주는 Update함수이다.
+// 2024-03-02 02:03 황유림 수정
 void bitmapState::MainScreen::Update()
 {
 }
 
+// 메인 화면에 머물러 있을 때, 계속해서 체크하고 수정해야 하는 부분을 관리해주는 Update함수이다.
+// Args:
+//  pd3dDevice: Direct3D Device 정보
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//  pd3dGraphicsRootSignature: Direct3D 루트 시그너쳐 정보
+//	e: 키가 눌린 이벤트면 KeyDown, 키가 눌렸다가 떼어진 이벤트라면 KeyUp이 넘어온다.
+//  wParam: 어떤 키가 넘어온 것인지 알려준다.
+// 2024-03-02 02:03 황유림 수정
 void bitmapState::MainScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
 {
 	switch (e)
@@ -1800,8 +1809,42 @@ void bitmapState::MainScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12Graphi
 	}
 }
 
+// 인벤토리 화면에 넘어갈 때 UI를 배치해주는 함수
+// Args:
+//  pd3dDevice: Direct3D Device 정보
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//  pd3dGraphicsRootSignature: Direct3D 루트 시그너쳐 정보
+// 2024-03-02 02:03 황유림 수정
 void bitmapState::InventoryScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
+	// Bitmap Mesh 새로 생성
+	int nBackgroundWidth = FRAME_BUFFER_WIDTH * 2 / 3, nBackgroundHeight = FRAME_BUFFER_WIDTH * 2 / 3;
+
+	// Shader에서 Bitmap Object를 관리
+	m_pShader->m_nObject = 16;
+	m_pShader->m_ppObjects = new CBitmap * [m_pShader->m_nObject];
+
+	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[0]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, nBackgroundWidth, nBackgroundHeight);
+	RECT sheet = { 0, 160 * 2, 160, 160 * 3 };
+	m_pShader->m_ppObjects[0]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[0]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - nBackgroundWidth / 2;
+	m_pShader->m_ppObjects[0]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT / 2 - nBackgroundHeight / 2;
+
+	// Inventory 칸 설정
+	int width = 100, height = 100;
+	for (int i = 0; i < 3; ++i)
+	{
+		for (int j = 0; j < 5; ++j)
+		{
+			m_pShader->m_ppObjects[i * 5 + j + 1] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+			m_pShader->m_ppObjects[i * 5 + j + 1]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, width, height);
+			sheet = { 160 * 2, 160 * 2, 160 * 3, 160 * 3 };
+			m_pShader->m_ppObjects[i * 5 + j + 1]->m_pMesh->m_SheetRect = sheet;
+			m_pShader->m_ppObjects[i * 5 + j + 1]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - nBackgroundWidth / 2 + 50 + j * 150;
+			m_pShader->m_ppObjects[i * 5 + j + 1]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT / 2 - nBackgroundHeight / 2 + 50 + i * 150;
+		}
+	}
 }
 
 void bitmapState::InventoryScreen::Exit()
@@ -1814,10 +1857,71 @@ void bitmapState::InventoryScreen::Update()
 
 void bitmapState::InventoryScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
 {
+	switch (e)
+	{
+	case Event::KeyDown:
+		switch (wParam)
+		{
+		case 'Q':
+		case 'q':
+			m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::MainScreen, e, wParam);
+			break;
+		}
+		break;
+	}
 }
 
 void bitmapState::EscScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
-{
+{	
+	// Bitmap Mesh 새로 생성
+	int nBackgroundWidth = FRAME_BUFFER_WIDTH * 2 / 3, nBackgroundHeight = FRAME_BUFFER_WIDTH * 2 / 3;
+
+	// Shader에서 Bitmap Object를 관리
+	m_pShader->m_nObject = 5;
+	m_pShader->m_ppObjects = new CBitmap * [m_pShader->m_nObject];
+
+	// Background
+	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[0]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, nBackgroundWidth, nBackgroundHeight);
+	RECT sheet = { 0, 160 * 2, 160, 160 * 3 };
+	m_pShader->m_ppObjects[0]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[0]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - nBackgroundWidth / 2; 
+	m_pShader->m_ppObjects[0]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT / 2 - nBackgroundHeight / 2;
+
+	// 돌아가기 네모 칸
+	int Width = 800, Height = 100;
+	m_pShader->m_ppObjects[1] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[1]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, Width, Height);
+	sheet = { 160 * 2, 160 * 2, 160 * 3 - 1, 160 * 3 - 1 };
+	m_pShader->m_ppObjects[1]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[1]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - Width / 2;
+	m_pShader->m_ppObjects[1]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT / 2 - nBackgroundHeight / 2 + 200;
+
+	// 돌아가기 네모 칸
+	m_pShader->m_ppObjects[2] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[2]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, Width, Height);
+	m_pShader->m_ppObjects[2]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[2]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - Width / 2;
+	m_pShader->m_ppObjects[2]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT / 2 - nBackgroundHeight / 2 + 400;
+
+	// 돌아가기 텍스트
+	Width = 300, Height = 100;
+	m_pShader->m_ppObjects[3] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[3]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, Width, Height);
+	sheet = { 160 * 2, 160 * 3, 160 * 4, 160 * 4 };
+	m_pShader->m_ppObjects[3]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[3]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - Width / 2;
+	m_pShader->m_ppObjects[3]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT / 2 - nBackgroundHeight / 2 + 200;
+	
+	// 나가기 텍스트
+	m_pShader->m_ppObjects[4] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[4]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, Width, Height);
+	sheet = { 0, 160 * 3, 160 * 2, 160 * 4 };
+	m_pShader->m_ppObjects[4]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[4]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - Width / 2;
+	m_pShader->m_ppObjects[4]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT / 2 - nBackgroundHeight / 2 + 400;
+
+
 }
 
 void bitmapState::EscScreen::Exit()
@@ -1830,10 +1934,34 @@ void bitmapState::EscScreen::Update()
 
 void bitmapState::EscScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
 {
+	switch (e)
+	{
+	case Event::KeyDown:
+		switch (wParam)
+		{
+		case VK_ESCAPE:
+			m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::MainScreen, e, wParam);
+			break;
+		}
+		break;
+	}
 }
 
 void bitmapState::MapScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
+	// Bitmap Mesh 새로 생성
+	int nBackgroundWidth = 1000, nBackgroundHeight = 800;
+
+	// Shader에서 Bitmap Object를 관리
+	m_pShader->m_nObject = 1;
+	m_pShader->m_ppObjects = new CBitmap * [m_pShader->m_nObject];
+
+	m_pShader->m_ppObjects[0] = new CBitmap(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
+	m_pShader->m_ppObjects[0]->m_pMesh = new CBitmapMesh(pd3dDevice, pd3dCommandList, nBackgroundWidth, nBackgroundHeight);
+	RECT sheet = { 0, 160 * 2, 160, 160 * 3 };
+	m_pShader->m_ppObjects[0]->m_pMesh->m_SheetRect = sheet;
+	m_pShader->m_ppObjects[0]->m_pMesh->m_nLeft = FRAME_BUFFER_WIDTH / 2 - nBackgroundWidth / 2;
+	m_pShader->m_ppObjects[0]->m_pMesh->m_nTop = FRAME_BUFFER_HEIGHT / 2 - nBackgroundHeight / 2;
 }
 
 void bitmapState::MapScreen::Exit()
@@ -1846,4 +1974,15 @@ void bitmapState::MapScreen::Update()
 
 void bitmapState::MapScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
 {
+	switch (e)
+	{
+	case Event::KeyUp:
+		switch (wParam)
+		{
+		case VK_TAB:
+			m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::MainScreen, e, wParam);
+			break;
+		}
+		break;
+	}
 }

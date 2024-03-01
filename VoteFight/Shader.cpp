@@ -252,7 +252,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE CShader::CreateConstantBufferView(ID3D12Device* pd3d
 	return(d3dCbvGPUDescriptorHandle);
 }
 
-
 void CShader::CreateConstantBufferViews(ID3D12Device* pd3dDevice, int nConstantBufferViews, ID3D12Resource* pd3dConstantBuffers, UINT nStride)
 {
 	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = pd3dConstantBuffers->GetGPUVirtualAddress();
@@ -696,9 +695,17 @@ CBitmapShader::~CBitmapShader()
 //  pd3dDevice: Direct3D 디바이스
 //  pd3dCommandList: Direct3D 명령 리스트
 //  pd3dGraphicsRootSignature: Direct3D 루트시그너쳐
-// 2024-02-25 01:00 황유림 수정
+// 2024-03-02 00:17 황유림 수정
 void CBitmapShader::BuildObjects(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
+	// 스프라이트 시트 이미지 SRV 설정
+	CTexture* pBitmapTexture = new CTexture(1, RESOURCE_TEXTURE2D, 0, 1);
+	pBitmapTexture->LoadTextureFromDDSFile(pd3dDevice, pd3dCommandList, L"Model/Textures/sprite_sheet.dds", RESOURCE_TEXTURE2D, 0);
+	CreateShader(pd3dDevice, pd3dGraphicsRootSignature);
+	CreateShaderVariables(pd3dDevice, pd3dCommandList);
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 1);
+	CreateShaderResourceViews(pd3dDevice, pBitmapTexture, 0, ROOTSIG_SPRITE);
+
 	m_pCrntState = new bitmapState::MainScreen(this);
 	m_pCrntState->Enter(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature);
 }
@@ -810,21 +817,29 @@ void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* 
 
 	for (int i = 0; i < m_nObject; ++i)
 	{
-		m_ppObjects[i]->Render(pd3dCommandList, pCamera, pPlayer);
+		if(m_ppObjects[i]) m_ppObjects[i]->Render(pd3dCommandList, pCamera, pPlayer);
 	}
 }
 
-// Player의 Animation State가 변경될 때 호출하는 함수
+// Bitmap의 State가 변경될 때 호출하는 함수
 // Args:
-//	playerState: 변경하고자 하는 상태
-//	e: 발생한 이벤트의 종류
-//	xmf3Direction: 변경하고자 하는 방향 벡터
+//  pd3dDevice: Direct3D Device 정보
+//  pd3dCommandList: Direct3D 명령 리스트 정보
+//  pd3dGraphicsRootSignature: Direct3D 루트 시그너쳐 정보
+//	e: 키가 눌린 이벤트면 KeyDown, 키가 눌렸다가 떼어진 이벤트라면 KeyUp이 넘어온다.
+//  wParam: 어떤 키가 넘어온 것인지 알려준다.
 // 2024-02-21 13:43 황유림 수정
 void CBitmapShader::ChangeState(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const bitmapState::State& bitmapState, const Event& e, const WPARAM& wParam)
 {
 	// Exit 함수 호출
 	if (m_pCrntState != nullptr)
 	{
+		// Bitmap 오브젝트를 삭제해준다.
+		for (int i = 0; i < m_nObject; ++i)
+		{
+			delete m_ppObjects[i];
+			m_ppObjects[i] = NULL;
+		}
 		m_pCrntState->Exit();
 		delete m_pCrntState;
 	}
