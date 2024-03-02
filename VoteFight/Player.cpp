@@ -16,7 +16,7 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	CLoadedModelInfo* pSimpsonModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/hugo_idle.bin", NULL);
 	SetChild(pSimpsonModel->m_pModelRootObject, true);
 
-	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 5, pSimpsonModel);
+	m_pSkinnedAnimationController = new CPlayerAnimationController(pd3dDevice, pd3dCommandList, 6, pSimpsonModel);
 	m_pSkinnedAnimationController->m_pRootMotionObject = pSimpsonModel->m_pModelRootObject->FindFrame("mixamorig:Hips");
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(0, 0);	// idle
@@ -29,22 +29,24 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 
 	m_pSkinnedAnimationController->SetTrackAnimationSet(3, 3);	// Walk
 
-	// m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// Dance
+	m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// Run
 
-	m_pSkinnedAnimationController->SetTrackAnimationSet(4, 4);	// idle (upper-body)
+	m_pSkinnedAnimationController->SetTrackAnimationSet(5, 5);	// idle (upper-body)
 
 
 	// 애니메이션 상하체 분리
-	m_pSkinnedAnimationController->CreateMaskBones(0, 1, false);	
-	m_pSkinnedAnimationController->CreateMaskBones(1, 1, false);	// Spine을 가린다
-	m_pSkinnedAnimationController->CreateMaskBones(2, 1, false);	// Spine을 가린다
-	m_pSkinnedAnimationController->CreateMaskBones(3, 1, false);	// Spine을 가린다
-	m_pSkinnedAnimationController->CreateMaskBones(4, 1, true);	// Spine만 살리고 나머지를 가린다.
+	m_pSkinnedAnimationController->CreateMaskBones(0, 1, false);	// Spine을 가린다
+	m_pSkinnedAnimationController->CreateMaskBones(1, 1, false);	
+	m_pSkinnedAnimationController->CreateMaskBones(2, 1, false);	
+	m_pSkinnedAnimationController->CreateMaskBones(3, 1, false);	
+	m_pSkinnedAnimationController->CreateMaskBones(4, 1, false);	
+	m_pSkinnedAnimationController->CreateMaskBones(5, 1, true);		// Spine만 살리고 나머지를 가린다.
 	m_pSkinnedAnimationController->SetMaskBone(0, 0, "mixamorig:Spine");
 	m_pSkinnedAnimationController->SetMaskBone(1, 0, "mixamorig:Spine");
 	m_pSkinnedAnimationController->SetMaskBone(2, 0, "mixamorig:Spine");
 	m_pSkinnedAnimationController->SetMaskBone(3, 0, "mixamorig:Spine");
 	m_pSkinnedAnimationController->SetMaskBone(4, 0, "mixamorig:Spine");
+	m_pSkinnedAnimationController->SetMaskBone(5, 0, "mixamorig:Spine");
 
 #ifdef UPPER_BODY
 	// 애니메이션 상하체 분리
@@ -73,13 +75,15 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	m_pSkinnedAnimationController->SetTrackWeight(1, 0);
 	m_pSkinnedAnimationController->SetTrackWeight(2, 0);
 	m_pSkinnedAnimationController->SetTrackWeight(3, 0);
-	m_pSkinnedAnimationController->SetTrackWeight(4, 1);
+	m_pSkinnedAnimationController->SetTrackWeight(4, 0);
+	m_pSkinnedAnimationController->SetTrackWeight(5, 1);
 
 	m_pSkinnedAnimationController->SetTrackEnable(0, true);
 	m_pSkinnedAnimationController->SetTrackEnable(1, false);
 	m_pSkinnedAnimationController->SetTrackEnable(2, false);
 	m_pSkinnedAnimationController->SetTrackEnable(3, false);
-	m_pSkinnedAnimationController->SetTrackEnable(4, true);
+	m_pSkinnedAnimationController->SetTrackEnable(4, false);
+	m_pSkinnedAnimationController->SetTrackEnable(5, true);
 #endif
 
 	m_pSkinnedAnimationController->m_pAnimationTracks[1].m_nType = ANIMATION_TYPE_ONCE;
@@ -212,7 +216,7 @@ CCamera* CPlayer::CreateCamera(float fTimeElapsed)
 {
 	SetFriction(250.0f);
 	SetGravity(XMFLOAT3(0.0f, -5.0f, 0.0f));
-	SetMaxVelocityXZ(50.0f);
+	SetMaxVelocityXZ(10.0f);
 	SetMaxVelocityY(400.0f);
 	m_pCamera = new CCamera(m_pCamera);
 	m_pCamera->SetPlayer(this);
@@ -246,8 +250,6 @@ void CSoundCallbackHandler::HandleCallback(void *pCallbackData, float fTrackPosi
    //PlaySound(pWavName, NULL, SND_FILENAME | SND_ASYNC);
 #endif
 }
-
-
 
 void CPlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 {
@@ -376,6 +378,9 @@ void CPlayer::ChangeState(const playerState::State& playerState, const Event& e,
 	case State::TurnLeft:
 		m_pCrntState = new playerState::TurnLeft(this);
 		break;
+	case State::Run:
+		m_pCrntState = new playerState::Run(this);
+		break;
 	default:
 		assert(0);
 	}
@@ -387,30 +392,43 @@ void CPlayer::ChangeState(const playerState::State& playerState, const Event& e,
 // Player의 Animation을 자연스럽게 블렌딩하는 함수
 // Args:
 //	fTimeElapsed: 이전 클락과 현재 클락 사이의 시간
-// 2024-02-21 13:43 황유림 수정
+// 2024-03-03 04:21 황유림 수정
 void CPlayer::BlendAnimation(float fTimeElapsed)
 {
 	if (m_bBlending)
 	{
-		// m_nUpState은 비중이 높아지고 있는 애니메이션의 인덱스, m_nDownState은 비중이 낮아지고 있는 애니메이션의 인덱스이다.
-		// m_fUpState은 비중이 높아지고 있는 애니메이션의 현재 비중, m_fDownState은 비중이 낮아지고 있는 애니메이션의 현재 비중이다.
-		// 함수가 호출될 수록 m_fUpState은 0에서 1로 향하고, m_fDownState은 1에서 0으로 향함.
-		m_fUpState = min(1.f, m_fUpState + 5.f * fTimeElapsed);
-		m_fDownState = 1.0f - m_fUpState;
-
-		// 비중이 완전히 낮아지면 m_fDownState에 해당하는 애니메이션을 Enable 시킨다.
-		if (m_fDownState <= 0.0f)
+		// m_nUpState은 비중이 높아지고 있는 애니메이션의 인덱스이다. m_fStates[]는 각 애니메이션의 가중치이다.
+		// 함수가 호출될 수록 m_nUpState에 해당하는 가중치는 0에서 1로 향하고, 나머지는 1에서 0으로 향한다.
+		// 1에서 0으로 향하는 나머지들과 0에서 1로 향하는 모든 가중치는 합해서 1.0이 되어야 한다.
+		
+		float temp = 1.0f - m_fStates[m_nUpState];								// 비중이 낮아지는 애니메이션의 가중치를 모두 합한 값
+		m_fStates[m_nUpState] = m_fStates[m_nUpState] + 5.f * fTimeElapsed;		// 비중이 높아지는 하나의 애니메이션의 가중치
+		for (int i = 0; i < LOWER_ANIMATION; ++i)
 		{
-			m_pSkinnedAnimationController->SetTrackEnable(m_nDownState, false);
-			m_fDownState = 0.0f;
-			m_fUpState = 1.0f;
-			m_pSkinnedAnimationController->SetTrackWeight(m_nUpState, m_fUpState);
-			m_pSkinnedAnimationController->SetTrackWeight(m_nDownState, m_fDownState);
-			m_bBlending = false;
+			// 모든 가중치의 합은 1.0이 되어야 한다.
+			// 그러므로 비중이 낮아지는 애니메이션의 감소 비율을 맞추어야 한다.
+			if (i == m_nUpState) continue;
+			m_fStates[i] = (m_fStates[i] / temp)* (1 - m_fStates[m_nUpState]);	
 		}
 
-		m_pSkinnedAnimationController->SetTrackWeight(m_nUpState, m_fUpState);
-		m_pSkinnedAnimationController->SetTrackWeight(m_nDownState, m_fDownState);
+		// 비중이 완전히 기울면 블렌딩을 멈춘다.
+		if (m_fStates[m_nUpState] >= 1.0f)
+		{
+			for (int i = 0; i < LOWER_ANIMATION; ++i)
+			{
+				if (i == m_nUpState) m_fStates[i] = 1.0f;
+				else m_fStates[i] = 0.0f;
+				m_pSkinnedAnimationController->SetTrackWeight(i, m_fStates[i]);
+			}
+			m_bBlending = false;
+			return;
+		}
+
+		// 가중치 설정
+		for (int i = 0; i < LOWER_ANIMATION; ++i)
+		{
+			m_pSkinnedAnimationController->SetTrackWeight(i, m_fStates[i]);
+		}
 	}
 }
 
@@ -437,17 +455,6 @@ void playerState::Idle::Exit(const State& playerState)
 	// 애니메이션 블렌딩을 위한 변수 설정
 	// CPlayer::BlendAnimation 에서 이 변수를 사용함.
 	m_pPlayer->m_nUpState = int(playerState);
-	m_pPlayer->m_nDownState = IDLE;
-
-	for (int i = 0; i < 4; ++i)
-	{
-		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
-			continue;
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackWeight(i, 0);
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(i, false);
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(i, ANIMATION_CALLBACK_EPSILON);
-	}
-	m_pPlayer->m_fUpState = 0.0f;
 	m_pPlayer->m_bBlending = true;
 }
 
@@ -464,9 +471,10 @@ void playerState::Idle::Update(float fTimeElapsed)
 //	e: 입력된 이벤트의 종류
 //	xmf3Direction: 입력된 방향의 벡터
 // 2024-02-21 13:43 황유림 수정
-void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
+void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam)
 {
 	XMFLOAT3 xmf3SubDirection = xmf3Direction;
+	if (Vector3::IsZero(xmf3SubDirection)) return;
 	float dotProduct = Vector3::DotProduct(xmf3SubDirection, m_pPlayer->m_xmf3Look);
 	float angleInDegrees = XMConvertToDegrees(acos(dotProduct));
 	XMFLOAT3 crossProduct = Vector3::CrossProduct(xmf3SubDirection, m_pPlayer->m_xmf3Look);
@@ -494,25 +502,16 @@ void playerState::Idle::HandleEvent(const Event& e, const XMFLOAT3& xmf3Directio
 
 void playerState::Walk::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
 {
-	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNRIGHT, false);
-	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNLEFT, false);
+	//m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNRIGHT, false);
+	//m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(TURNLEFT, false);
 	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(WALK, true);
 	m_xmf3Direction = xmf3Direction;
+	m_pPlayer->SetMaxVelocityXZ(10.0f);
 }
 
 void playerState::Walk::Exit(const State& playerState)
 {
-	for (int i = 0; i < 4; ++i)
-	{
-		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
-			continue;
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackWeight(i, 0);
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(i, false);
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(i, ANIMATION_CALLBACK_EPSILON);
-	}
 	m_pPlayer->m_nUpState = int(playerState);
-	m_pPlayer->m_nDownState = WALK;
-	m_pPlayer->m_fUpState = 0.0f;
 	m_pPlayer->m_bBlending = true;
 }
 
@@ -521,11 +520,17 @@ void playerState::Walk::Update(float fTimeElapsed)
 	m_pPlayer->Move(Vector3::ScalarProduct(m_xmf3Direction, fTimeElapsed * 1000), true);
 }
 
-void playerState::Walk::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
+void playerState::Walk::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam)
 {
 	switch (e)
 	{
 	case Event::KeyDown:
+
+		if (wParam == VK_SHIFT)
+		{
+			m_pPlayer->ChangeState(State::Run, e, xmf3Direction);
+			return;
+		}
 
 		if (m_pPlayer->m_xmf3Velocity.x == 0 && m_pPlayer->m_xmf3Velocity.z == 0)
 			m_pPlayer->ChangeState(State::Idle, e, xmf3Direction);
@@ -580,17 +585,7 @@ void playerState::TurnRight::Enter(const Event& e, const XMFLOAT3& xmf3Direction
 // 2024-02-21 13:43 황유림 수정
 void playerState::TurnRight::Exit(const State& playerState)
 {
-	for (int i = 0; i < 4; ++i)
-	{
-		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
-			continue;
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackWeight(i, 0);
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(i, false);
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(i, ANIMATION_CALLBACK_EPSILON);
-	}
 	m_pPlayer->m_nUpState = int(playerState);
-	m_pPlayer->m_nDownState = TURNRIGHT;
-	m_pPlayer->m_fUpState = 0.0f;
 	m_pPlayer->m_bBlending = true;
 }
 
@@ -614,7 +609,7 @@ void playerState::TurnRight::Update(float fTimeElapsed)
 	}
 }
 
-void playerState::TurnRight::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
+void playerState::TurnRight::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam)
 {
 }
 
@@ -633,17 +628,7 @@ void playerState::TurnLeft::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
 
 void playerState::TurnLeft::Exit(const State& playerState)
 {
-	for (int i = 0; i < 4; ++i)
-	{
-		if (i == m_pPlayer->m_nUpState || i == m_pPlayer->m_nDownState)
-			continue;
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackWeight(i, 0);
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(i, false);
-		m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(i, ANIMATION_CALLBACK_EPSILON);
-	}
 	m_pPlayer->m_nUpState = int(playerState);
-	m_pPlayer->m_nDownState = TURNLEFT;
-	m_pPlayer->m_fUpState = 0.0f;
 	m_pPlayer->m_bBlending = true;
 }
 
@@ -661,6 +646,84 @@ void playerState::TurnLeft::Update(float fTimeElapsed)
 	}
 }
 
-void playerState::TurnLeft::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction)
+void playerState::TurnLeft::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam)
 {
+}
+
+void playerState::Run::Enter(const Event& e, const XMFLOAT3& xmf3Direction)
+{
+	m_xmf3Direction = xmf3Direction;
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackPosition(RUN, ANIMATION_CALLBACK_EPSILON);
+	m_pPlayer->m_pSkinnedAnimationController->SetTrackEnable(RUN, true);
+	m_pPlayer->SetMaxVelocityXZ(20.0f);
+}
+
+void playerState::Run::Exit(const State& playerState)
+{
+	m_pPlayer->m_nUpState = int(playerState);
+	m_pPlayer->m_bBlending = true;
+}
+
+void playerState::Run::Update(float fTimeElapsed)
+{
+	m_pPlayer->Move(Vector3::ScalarProduct(m_xmf3Direction, fTimeElapsed * 1000), true);
+}
+
+void playerState::Run::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam)
+{
+	switch (e)
+	{
+	case Event::KeyDown:
+	{
+		switch (wParam)
+		{
+		case VK_UP:
+		case 'w':
+		case 'W':
+		case VK_DOWN:
+		case 's':
+		case 'S':
+		case VK_LEFT:
+		case 'a':
+		case 'A':
+		case VK_RIGHT:
+		case 'd':
+		case 'D':
+			if (m_pPlayer->m_xmf3Velocity.x == 0 && m_pPlayer->m_xmf3Velocity.z == 0)
+				m_pPlayer->ChangeState(State::Idle, e, xmf3Direction);
+			else
+			{
+				m_xmf3Direction = xmf3Direction;
+				m_pPlayer->m_xmf3Look = Vector3::Interpolation(m_pPlayer->m_xmf3Look, m_xmf3Direction, 0.1);
+				m_pPlayer->m_xmf3Look = Vector3::Normalize(m_pPlayer->m_xmf3Look);
+			}
+			break;
+		}
+	}
+	break;
+	case Event::KeyUp:
+	{
+		switch (wParam)
+		{
+		case VK_SHIFT:
+			m_pPlayer->ChangeState(State::Walk, e, xmf3Direction);
+			break;
+		case VK_UP:
+		case 'w':
+		case 'W':
+		case VK_DOWN:
+		case 's':
+		case 'S':
+		case VK_LEFT:
+		case 'a':
+		case 'A':
+		case VK_RIGHT:
+		case 'd':
+		case 'D':
+			m_pPlayer->ChangeState(State::Idle, e, xmf3Direction);
+			break;
+		}
+	}
+	break;
+	}
 }

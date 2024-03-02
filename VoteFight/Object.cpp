@@ -1802,7 +1802,6 @@ void bitmapState::MainScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12Graphi
 				break;
 			}
 			break;
-
 	}
 }
 
@@ -1850,6 +1849,7 @@ void bitmapState::InventoryScreen::Exit()
 
 void bitmapState::InventoryScreen::Update()
 {
+
 }
 
 void bitmapState::InventoryScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, const Event& e, const WPARAM& wParam)
@@ -1862,6 +1862,12 @@ void bitmapState::InventoryScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12G
 		case 'Q':
 		case 'q':
 			m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::MainScreen, e, wParam);
+			break;
+		case VK_TAB:
+			m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::MapScreen, e, wParam);
+			break;
+		case VK_ESCAPE:
+			m_pShader->ChangeState(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, bitmapState::State::EscScreen, e, wParam);
 			break;
 		}
 		break;

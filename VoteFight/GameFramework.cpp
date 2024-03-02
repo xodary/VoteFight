@@ -327,7 +327,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 				if (angleInDegrees > 45)
 				{
-					m_pPlayer->m_pCrntState->HandleEvent(Event::Mouse, xmf3Look);
+					m_pPlayer->m_pCrntState->HandleEvent(Event::Mouse, xmf3Look, wParam);
 				}
 
 				while (angleInDegrees >= 45)
@@ -365,7 +365,7 @@ void CGameFramework::OnProcessingMouseMessage(HWND hWnd, UINT nMessageID, WPARAM
 
 				if (angleInDegrees > 45)
 				{
-					m_pPlayer->m_pCrntState->HandleEvent(Event::Mouse, xmf3Look);
+					m_pPlayer->m_pCrntState->HandleEvent(Event::Mouse, xmf3Look, wParam);
 				}
 
 				while (angleInDegrees >= 45)
@@ -403,15 +403,23 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			switch (wParam)
 			{
 			case VK_UP:
+			case 'w':
+			case 'W':
 				xmf3Direction |= DIR_FORWARD;
 				break;
 			case VK_DOWN:
+			case 's':
+			case 'S':
 				xmf3Direction |= DIR_BACKWARD;
 				break;
 			case VK_LEFT:
+			case 'a':
+			case 'A':
 				xmf3Direction |= DIR_LEFT;
 				break;
 			case VK_RIGHT:
+			case 'd':
+			case 'D':
 				xmf3Direction |= DIR_RIGHT;
 				break;
 			// case VK_ESCAPE:
@@ -439,18 +447,14 @@ void CGameFramework::OnProcessingKeyboardMessage(HWND hWnd, UINT nMessageID, WPA
 			if (xmf3Direction & DIR_LEFT) xmf3Shift.x -= 1;
 
 			xmf3Shift = Vector3::Normalize(xmf3Shift);
-
-			if(!Vector3::IsZero(xmf3Shift))
-				m_pPlayer->m_pCrntState->HandleEvent(Event::KeyUp, xmf3Shift);
+			
+			m_pPlayer->m_pCrntState->HandleEvent(Event::KeyUp, xmf3Shift, wParam);
 			m_pUILayer->m_pCrntState->HandleEvent(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), Event::KeyUp, wParam);
-
 			break;
 		}
 		break;
 		case WM_KEYDOWN:
-		{
 			m_pUILayer->m_pCrntState->HandleEvent(m_pd3dDevice, m_pd3dCommandList, m_pScene->GetGraphicsRootSignature(), Event::KeyDown, wParam);
-		}
 		default:
 			break;
 	}
@@ -577,12 +581,10 @@ void CGameFramework::ProcessInput()
 		}
 
 		DWORD xmf3Direction = 0;
-		if (pKeysBuffer[VK_UP] & 0xF0) xmf3Direction |= DIR_FORWARD;
-		if (pKeysBuffer[VK_DOWN] & 0xF0) xmf3Direction |= DIR_BACKWARD;
-		if (pKeysBuffer[VK_LEFT] & 0xF0) xmf3Direction |= DIR_LEFT;
-		if (pKeysBuffer[VK_RIGHT] & 0xF0) xmf3Direction |= DIR_RIGHT;
-		if (pKeysBuffer[VK_PRIOR] & 0xF0) xmf3Direction |= DIR_UP;
-		if (pKeysBuffer[VK_NEXT] & 0xF0) xmf3Direction |= DIR_DOWN;
+		if ((pKeysBuffer[VK_UP] & 0xF0) || (pKeysBuffer['W'] & 0xF0) || (pKeysBuffer['w'] & 0xF0)) xmf3Direction |= DIR_FORWARD;
+		if ((pKeysBuffer[VK_DOWN] & 0xF0) || (pKeysBuffer['S'] & 0xF0) || (pKeysBuffer['s'] & 0xF0)) xmf3Direction |= DIR_BACKWARD;
+		if ((pKeysBuffer[VK_LEFT] & 0xF0) || (pKeysBuffer['A'] & 0xF0) || (pKeysBuffer['a'] & 0xF0)) xmf3Direction |= DIR_LEFT;
+		if ((pKeysBuffer[VK_RIGHT] & 0xF0) || (pKeysBuffer['D'] & 0xF0) || (pKeysBuffer['d'] & 0xF0)) xmf3Direction |= DIR_RIGHT;
 
 		if ((xmf3Direction != 0) || (cxDelta != 0.0f) || (cyDelta != 0.0f))
 		{
@@ -602,7 +604,8 @@ void CGameFramework::ProcessInput()
 				if (xmf3Direction & DIR_LEFT) xmf3Shift.x -= 1;
 
 				xmf3Shift = Vector3::Normalize(xmf3Shift);
-				m_pPlayer->m_pCrntState->HandleEvent(Event::KeyDown, xmf3Shift);	// 플레이어의 현재 상태에서 처리를 해줌.
+				m_pPlayer->m_pCrntState->HandleEvent(Event::KeyDown, xmf3Shift, VK_UP);	// 플레이어의 현재 상태에서 처리를 해줌.
+				if(pKeysBuffer[VK_SHIFT] & 0xF0) m_pPlayer->m_pCrntState->HandleEvent(Event::KeyDown, xmf3Shift, VK_SHIFT);
 			}
 		}
 		if (!xmf3Direction) m_pPlayer->m_bMoving = false;

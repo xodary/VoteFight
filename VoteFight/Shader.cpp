@@ -859,7 +859,6 @@ void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* 
 	{
 		if (m_ppObjects[i]) m_ppObjects[i]->Render(pd3dCommandList, pCamera, pPlayer);
 	}
-	printf("%.2f\n", pPlayer->GetPosition().z - pPlayer->GetPosition().y);	// 158.몇 넘으면 UI가 안보임 ;
 }
 
 // Bitmap의 State가 변경될 때 호출하는 함수

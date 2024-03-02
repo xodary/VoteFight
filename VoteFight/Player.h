@@ -11,6 +11,9 @@
 #define TURNRIGHT				1
 #define TURNLEFT				2
 #define WALK					3
+#define RUN						4
+
+#define LOWER_ANIMATION			5
 
 #define TURNSPEED				4.0f
 
@@ -19,7 +22,7 @@
 
 namespace playerState {
 	// state
-	enum class State { Idle = 0, TurnRight, TurnLeft, Walk};
+	enum class State { Idle = 0, TurnRight, TurnLeft, Walk, Run };
 
 	/* 
 		Player의 Animation State를 나타내는 클래스 (애니메이션 트리)
@@ -38,7 +41,7 @@ namespace playerState {
 		virtual void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0,0,0)) abstract;
 		virtual void Exit(const State& playerState) abstract;
 		virtual void Update(float fTimeElapsed) abstract;
-		virtual void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) abstract;
+		virtual void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam) abstract;
 	};
 
 	class Idle : public PlayerState {
@@ -47,7 +50,7 @@ namespace playerState {
 		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
 		void Exit(const State& playerState) override;
 		void Update(float fTimeElapsed) override;
-		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam) override;
 	};
 
 	class Walk : public PlayerState {
@@ -56,7 +59,7 @@ namespace playerState {
 		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
 		void Exit(const State& playerState) override;
 		void Update(float fTimeElapsed) override;
-		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam) override;
 	};
 
 	class TurnRight : public PlayerState {
@@ -65,7 +68,7 @@ namespace playerState {
 		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
 		void Exit(const State& playerState) override;
 		void Update(float fTimeElapsed) override;
-		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam) override;
 	};
 
 	class TurnLeft : public PlayerState {
@@ -74,7 +77,16 @@ namespace playerState {
 		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
 		void Exit(const State& playerState) override;
 		void Update(float fTimeElapsed) override;
-		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam) override;
+	};
+
+	class Run : public PlayerState {
+	public:
+		Run(CPlayer* player) : PlayerState(player) {};
+		void Enter(const Event& e = Event::None, const XMFLOAT3& xmf3Direction = XMFLOAT3(0, 0, 0)) override;
+		void Exit(const State& playerState) override;
+		void Update(float fTimeElapsed) override;
+		void HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction, const WPARAM& wParam) override;
 	};
 
 }
@@ -119,9 +131,7 @@ public:
 	playerState::PlayerState*	m_pCrntState = nullptr;
 
 	int							m_nUpState = -1;
-	int							m_nDownState = -1;
-	float						m_fUpState = 0.0f;
-	float						m_fDownState = 0.0f;
+	float						m_fStates[LOWER_ANIMATION] = { 1.0f };
 
 public:
 	CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature, void* pContext = NULL);
