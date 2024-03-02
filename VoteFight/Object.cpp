@@ -1674,11 +1674,13 @@ void CBitmap::CreateShaderVariable(ID3D12Device* pd3dDevice, ID3D12GraphicsComma
 // Args:
 //  pd3dCommandList: Direct3D 명령 리스트 정보
 //	pCamera: 카메라
-// 2024-02-29 13:43 황유림 수정
+// 2024-03-03 01:47 황유림 수정
 void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* pCamera, CPlayer* pPlayer)
 {
 	// Object 설정
-	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(XMFLOAT3(0,0,0), pCamera->GetOffset(), pCamera->GetUpVector());
+	XMFLOAT4X4 xmf4x4World = Matrix4x4::LookAtLH(pCamera->GetOffset(), XMFLOAT3(0, 0, 0), pCamera->GetUpVector());
+	xmf4x4World._41 = xmf4x4World._42 = xmf4x4World._43 = 0.0;		// 행렬에서 회전행렬만 필요함. 이동 행렬은 필요 없음.
+
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 16, &xmf4x4World, 0);
 	XMFLOAT4 temp = XMFLOAT4(0, 0, 0, 0);
 	pd3dCommandList->SetGraphicsRoot32BitConstants(ROOTSIG_OBJECT, 4, &temp, 16);
@@ -1765,11 +1767,6 @@ void bitmapState::MainScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsComm
 // 2024-03-02 02:03 황유림 수정
 void bitmapState::MainScreen::Exit()
 {
-	for (int i = 0; i < m_pShader->m_nObject; ++i)
-	{
-		delete m_pShader->m_ppObjects[i];
-		m_pShader->m_ppObjects[i] = NULL;
-	}
 }
 
 // 메인 화면에 머물러 있을 때, 계속해서 체크하고 수정해야 하는 부분을 관리해주는 Update함수이다.
@@ -1818,7 +1815,7 @@ void bitmapState::MainScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12Graphi
 void bitmapState::InventoryScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
 	// Bitmap Mesh 새로 생성
-	int nBackgroundWidth = FRAME_BUFFER_WIDTH * 2 / 3, nBackgroundHeight = FRAME_BUFFER_WIDTH * 2 / 3;
+	int nBackgroundWidth = FRAME_BUFFER_WIDTH * 2 / 3, nBackgroundHeight = FRAME_BUFFER_HEIGHT * 2 / 3;
 
 	// Shader에서 Bitmap Object를 관리
 	m_pShader->m_nObject = 16;
@@ -1874,7 +1871,7 @@ void bitmapState::InventoryScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12G
 void bitmapState::EscScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {	
 	// Bitmap Mesh 새로 생성
-	int nBackgroundWidth = FRAME_BUFFER_WIDTH * 2 / 3, nBackgroundHeight = FRAME_BUFFER_WIDTH * 2 / 3;
+	int nBackgroundWidth = FRAME_BUFFER_WIDTH * 2 / 3, nBackgroundHeight = FRAME_BUFFER_HEIGHT * 2 / 3;
 
 	// Shader에서 Bitmap Object를 관리
 	m_pShader->m_nObject = 5;
@@ -1950,7 +1947,7 @@ void bitmapState::EscScreen::HandleEvent(ID3D12Device* pd3dDevice, ID3D12Graphic
 void bitmapState::MapScreen::Enter(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dCommandList, ID3D12RootSignature* pd3dGraphicsRootSignature)
 {
 	// Bitmap Mesh 새로 생성
-	int nBackgroundWidth = 1000, nBackgroundHeight = 800;
+	int nBackgroundWidth = FRAME_BUFFER_WIDTH * 2 / 3, nBackgroundHeight = FRAME_BUFFER_HEIGHT * 2 / 3;
 
 	// Shader에서 Bitmap Object를 관리
 	m_pShader->m_nObject = 1;

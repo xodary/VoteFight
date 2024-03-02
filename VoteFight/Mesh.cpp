@@ -1102,36 +1102,37 @@ CBitmapMesh::~CBitmapMesh()
 //	pd3dCommandList: Direct3D 명령 리스트
 //	pCamera: 카메라의 위치를 받아오기 위해 카메라 객체를 넘겨준다.
 //	pPlayer: 플레이어의 위치를 받아오기 위해 플레이어 객체를 넘겨준다.
-// 2024-02-24 17:12 황유림 수정
+// 2024-03-03 01:49 황유림 수정
 void CBitmapMesh::UpdateBuffers(ID3D12GraphicsCommandList* pd3dCommandList, CCamera *pCamera, CPlayer *pPlayer)
 {
 	float left, right, top, bottom;
 	HRESULT result;
 
-	left = -pPlayer->GetPosition().x + FRAME_BUFFER_WIDTH / 2 - m_nLeft;
-	right = left - m_nWidth;
-	//top = pPlayer->GetPosition().z  / sqrt(2) + FRAME_BUFFER_HEIGHT / 2 - m_nTop;	// sin 45 = 1/sqrt(2)
+	left = pPlayer->GetPosition().x - FRAME_BUFFER_WIDTH / 2 + m_nLeft;
+	right = left + m_nWidth;
 	top = pPlayer->GetPosition().z / sqrt(2) + pPlayer->GetPosition().y / sqrt(2) + FRAME_BUFFER_HEIGHT / 2 - m_nTop;	// sin 45 = 1/sqrt(2)
 	bottom = top - m_nHeight;
 
+	float z = pPlayer->GetPosition().z;	// z좌표가 플레이어를 따라가도록 한다. 이거 안 해주면 z좌표 159 이상 가면 UI 사라짐.
+
 	// First triangle.
-	m_pd3dcbMappedPositions[0] = XMFLOAT3(left, top, 0.0f);  // Top Left.
+	m_pd3dcbMappedPositions[0] = XMFLOAT3(left, top, z);  // Top Left.
 	m_pd2dcbMappedPositions[0] = XMFLOAT2(0, 0);
 
-	m_pd3dcbMappedPositions[1] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
+	m_pd3dcbMappedPositions[1] = XMFLOAT3(right, bottom, z);  // Bottom right.
 	m_pd2dcbMappedPositions[1] = XMFLOAT2(1, 1);
 
-	m_pd3dcbMappedPositions[2] = XMFLOAT3(left, bottom, 0.0f);  // Bottom Left.
+	m_pd3dcbMappedPositions[2] = XMFLOAT3(left, bottom, z);  // Bottom Left.
 	m_pd2dcbMappedPositions[2] = XMFLOAT2(0, 1);
 
 	// Second triangle.
-	m_pd3dcbMappedPositions[3] = XMFLOAT3(left, top, 0.0f);  // Top Left.
+	m_pd3dcbMappedPositions[3] = XMFLOAT3(left, top, z);  // Top Left.
 	m_pd2dcbMappedPositions[3] = XMFLOAT2(0, 0);
 
-	m_pd3dcbMappedPositions[4] = XMFLOAT3(right, top, 0.0f);  // Top right.
+	m_pd3dcbMappedPositions[4] = XMFLOAT3(right, top, z);  // Top right.
 	m_pd2dcbMappedPositions[4] = XMFLOAT2(1, 0);
 
-	m_pd3dcbMappedPositions[5] = XMFLOAT3(right, bottom, 0.0f);  // Bottom right.
+	m_pd3dcbMappedPositions[5] = XMFLOAT3(right, bottom, z);  // Bottom right.
 	m_pd2dcbMappedPositions[5] = XMFLOAT2(1, 1);
 }
 

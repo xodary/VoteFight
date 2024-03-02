@@ -105,8 +105,8 @@ CPlayer::CPlayer(ID3D12Device* pd3dDevice, ID3D12GraphicsCommandList* pd3dComman
 	SetCameraUpdatedContext(pContext);
 
 	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
-	m_xmf3Position = XMFLOAT3(pTerrain->GetWidth() / 2, 1000.f, pTerrain->GetWidth() / 2);
-	// m_xmf3Position = XMFLOAT3(0, 0, 0);
+	// m_xmf3Position = XMFLOAT3(pTerrain->GetWidth() / 2, 300.f, pTerrain->GetWidth() / 2);
+	m_xmf3Position = XMFLOAT3(300, 100, 300);
 	SetScale(XMFLOAT3(10.0f, 10.0f, 10.0f));
 
 	m_pCrntState = new playerState::Idle(this);
@@ -211,8 +211,8 @@ void CPlayer::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamer
 CCamera* CPlayer::CreateCamera(float fTimeElapsed)
 {
 	SetFriction(250.0f);
-	SetGravity(XMFLOAT3(0.0f, -10.0f, 0.0f));
-	SetMaxVelocityXZ(15.0f);
+	SetGravity(XMFLOAT3(0.0f, -5.0f, 0.0f));
+	SetMaxVelocityXZ(50.0f);
 	SetMaxVelocityY(400.0f);
 	m_pCamera = new CCamera(m_pCamera);
 	m_pCamera->SetPlayer(this);
@@ -256,7 +256,7 @@ void CPlayer::OnPlayerUpdateCallback(float fTimeElapsed)
 	XMFLOAT3 xmf3PlayerPosition = GetPosition();
 	int z = (int)(xmf3PlayerPosition.z / xmf3Scale.z);
 	bool bReverseQuad = ((z % 2) != 0);
-	float fHeight = pTerrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 10.0f;
+	float fHeight = pTerrain->GetHeight(xmf3PlayerPosition.x, xmf3PlayerPosition.z, bReverseQuad) + 1.0f;
 	if (xmf3PlayerPosition.y < fHeight)
 	{
 		XMFLOAT3 xmf3PlayerVelocity = GetVelocity();

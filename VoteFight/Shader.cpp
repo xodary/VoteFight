@@ -4,6 +4,7 @@
 
 #include "stdafx.h"
 #include "Shader.h"
+#include "Player.h"
 
 CShader::CShader()
 {
@@ -214,11 +215,23 @@ void CShader::OnPrepareRender(ID3D12GraphicsCommandList *pd3dCommandList, int nP
 	if (m_pd3dCbvSrvDescriptorHeap) pd3dCommandList->SetDescriptorHeaps(1, &m_pd3dCbvSrvDescriptorHeap);
 }
 
+// Shader 렌더함수. 오브젝트에 적용시킬 루트 시그니처, 파이브라인 상태, 디스크립터 힙을 설정해준다.
+// Args:
+//  pd3dCommandList: Direct3D 명령 리스트
+//  pCamera: 카메라
+// 2024-03-02 09:31 황유림 수정
 void CShader::Render(ID3D12GraphicsCommandList *pd3dCommandList, CCamera *pCamera)
 {
 	OnPrepareRender(pd3dCommandList);
 }
 
+// 디스크립터 힙에 CBV와 SRV를 몇 개 설정해줄 예정인지 미리 알려주는 함수. 디스크립터 힙에 해당 공간을 마련해준다.
+// 이 프로젝트는 Shader에서 디스크립터 힙을 관리해주고 있다.
+// Args:
+//  pd3dDevice: Direct3D 디바이스
+//  nConstantBufferViews: CBV 갯수
+//  nShaderResourceViews: SRV 갯수
+// 2024-03-02 09:31 황유림 수정
 void CShader::CreateCbvSrvDescriptorHeaps(ID3D12Device* pd3dDevice, int nConstantBufferViews, int nShaderResourceViews)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC d3dDescriptorHeapDesc;
@@ -239,6 +252,12 @@ void CShader::CreateCbvSrvDescriptorHeaps(ID3D12Device* pd3dDevice, int nConstan
 	m_d3dSrvGPUDescriptorNextHandle = m_d3dSrvGPUDescriptorStartHandle;
 }
 
+// 디스크립터 힙에 CBV(상수 버퍼 뷰)를 설정해주는 함수
+// Args:
+//  pd3dDevice: Direct3D 디바이스
+//  pd3dConstantBuffer: CBV로 설정할 리소스
+//  nStride: CBV 크기
+// 2024-03-02 09:31 황유림 수정
 D3D12_GPU_DESCRIPTOR_HANDLE CShader::CreateConstantBufferView(ID3D12Device* pd3dDevice, ID3D12Resource* pd3dConstantBuffer, UINT nStride)
 {
 	D3D12_CONSTANT_BUFFER_VIEW_DESC d3dCBVDesc;
@@ -252,6 +271,13 @@ D3D12_GPU_DESCRIPTOR_HANDLE CShader::CreateConstantBufferView(ID3D12Device* pd3d
 	return(d3dCbvGPUDescriptorHandle);
 }
 
+// 디스크립터 힙에 CBV(상수 버퍼 뷰)를 여러 개 설정해주는 함수
+// Args:
+//  pd3dDevice: Direct3D 디바이스
+//	nConstantBufferViews: CBV 갯수
+//  pd3dConstantBuffer: CBV로 설정할 리소스
+//  nStride: CBV 크기
+// 2024-03-02 09:31 황유림 수정
 void CShader::CreateConstantBufferViews(ID3D12Device* pd3dDevice, int nConstantBufferViews, ID3D12Resource* pd3dConstantBuffers, UINT nStride)
 {
 	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = pd3dConstantBuffers->GetGPUVirtualAddress();
@@ -266,6 +292,33 @@ void CShader::CreateConstantBufferViews(ID3D12Device* pd3dDevice, int nConstantB
 	}
 }
 
+// 디스크립터 힙에 SRV(쉐이더 리소스 뷰)를 설정해주는 함수. SRV는 대부분 텍스쳐이다.
+// Args:
+//  pd3dDevice: Direct3D 디바이스
+//	pTexture: SRV로 설정하려고 하는 텍스처
+//	nIndex: 텍스처 객체의 몇 번째 인덱스로 설정된 이미지를 SRV로 설정할지 정한다.
+// 2024-03-02 09:31 황유림 수정
+void CShader::CreateShaderResourceView(ID3D12Device* pd3dDevice, CTexture* pTexture, int nIndex)
+{
+	ID3D12Resource* pShaderResource = pTexture->GetResource(nIndex);
+	D3D12_GPU_DESCRIPTOR_HANDLE d3dGpuDescriptorHandle = pTexture->GetGpuDescriptorHandle(nIndex);
+	if (pShaderResource && !d3dGpuDescriptorHandle.ptr)
+	{
+		D3D12_SHADER_RESOURCE_VIEW_DESC d3dShaderResourceViewDesc = pTexture->GetShaderResourceViewDesc(nIndex);
+		pd3dDevice->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, m_d3dSrvCPUDescriptorNextHandle);
+		m_d3dSrvCPUDescriptorNextHandle.ptr += ::gnCbvSrvDescriptorIncrementSize;
+		pTexture->SetGpuDescriptorHandle(nIndex, m_d3dSrvGPUDescriptorNextHandle);
+		m_d3dSrvGPUDescriptorNextHandle.ptr += ::gnCbvSrvDescriptorIncrementSize;
+	}
+}
+
+// 디스크립터 힙에 SRV(쉐이더 리소스 뷰)를 여러 개 설정해주는 함수. SRV는 대부분 텍스쳐이다.
+// Args:
+//  pd3dDevice: Direct3D 디바이스
+//	pTexture: SRV로 설정하려고 하는 텍스처
+//  nDescriptorHeapIndex: 디스크립터 힙의 공간을 건너뛰고 싶을 때, 얼마나 건너 뛸 것인지
+//  nRootParameterStartIndex: 루트 파라미터의 SRV 인덱스
+// 2024-03-02 09:31 황유림 수정
 void CShader::CreateShaderResourceViews(ID3D12Device* pd3dDevice, CTexture* pTexture, UINT nDescriptorHeapIndex, UINT nRootParameterStartIndex)
 {
 	m_d3dSrvCPUDescriptorNextHandle.ptr += (::gnCbvSrvDescriptorIncrementSize * nDescriptorHeapIndex);
@@ -286,19 +339,6 @@ void CShader::CreateShaderResourceViews(ID3D12Device* pd3dDevice, CTexture* pTex
 	for (int i = 0; i < nRootParameters; i++) pTexture->SetRootParameterIndex(i, nRootParameterStartIndex + i);
 }
 
-void CShader::CreateShaderResourceView(ID3D12Device* pd3dDevice, CTexture* pTexture, int nIndex)
-{
-	ID3D12Resource* pShaderResource = pTexture->GetResource(nIndex);
-	D3D12_GPU_DESCRIPTOR_HANDLE d3dGpuDescriptorHandle = pTexture->GetGpuDescriptorHandle(nIndex);
-	if (pShaderResource && !d3dGpuDescriptorHandle.ptr)
-	{
-		D3D12_SHADER_RESOURCE_VIEW_DESC d3dShaderResourceViewDesc = pTexture->GetShaderResourceViewDesc(nIndex);
-		pd3dDevice->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, m_d3dSrvCPUDescriptorNextHandle);
-		m_d3dSrvCPUDescriptorNextHandle.ptr += ::gnCbvSrvDescriptorIncrementSize;
-		pTexture->SetGpuDescriptorHandle(nIndex, m_d3dSrvGPUDescriptorNextHandle);
-		m_d3dSrvGPUDescriptorNextHandle.ptr += ::gnCbvSrvDescriptorIncrementSize;
-	}
-}
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -817,8 +857,9 @@ void CBitmapShader::Render(ID3D12GraphicsCommandList* pd3dCommandList, CCamera* 
 
 	for (int i = 0; i < m_nObject; ++i)
 	{
-		if(m_ppObjects[i]) m_ppObjects[i]->Render(pd3dCommandList, pCamera, pPlayer);
+		if (m_ppObjects[i]) m_ppObjects[i]->Render(pd3dCommandList, pCamera, pPlayer);
 	}
+	printf("%.2f\n", pPlayer->GetPosition().z - pPlayer->GetPosition().y);	// 158.몇 넘으면 UI가 안보임 ;
 }
 
 // Bitmap의 State가 변경될 때 호출하는 함수
