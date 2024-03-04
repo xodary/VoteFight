@@ -88,6 +88,14 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 	XMFLOAT4 xmf4Color(0.0f, 0.3f, 0.0f, 0.0f);
 	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Terrain/HeightMap.raw"), 257, 257, xmf3Scale, xmf4Color);
 
+	m_nShaders = 1;
+	m_ppShaders = new CShader * [m_nShaders];
+	m_ppShaders[0] = new CStandardObjectsShader();
+
+	m_ppShaders[0]->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
+	m_ppShaders[0]->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, NULL, m_pTerrain);
+	
+
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);
 }
 

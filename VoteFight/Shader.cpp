@@ -534,14 +534,39 @@ D3D12_SHADER_BYTECODE CSkinnedAnimationStandardShader::CreateVertexShader(ID3DBl
 //
 CStandardObjectsShader::CStandardObjectsShader()
 {
+	m_nObjects = 2;
+	m_ppObjects = new CGameObject * [m_nObjects];
 }
 
 CStandardObjectsShader::~CStandardObjectsShader()
 {
 }
 
+// m_ppObjects에 오브젝트를 할당하는 함수
+// Args:
+//	pd3dDevice: Direct3D 디바이스
+//	pd3dCommandList: Direct3D 명령 리스트
+//	pd3dGraphicsRootSignature: Direct3D 루트 시그너쳐
+//  pContext: 터레인을 넘겨줌.
+// 2024-03-03 21:28 황유림 수정
 void CStandardObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, void *pContext)
 {
+	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
+
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 1);
+	CLoadedModelInfo* pOakTreeModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Oak_Tree.bin", NULL);
+	
+	CLoadedModelInfo* pFirTreeModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Fir_Tree.bin", NULL);
+	
+	m_ppObjects[0] = new CGameObject();
+	m_ppObjects[0]->SetChild(pOakTreeModel->m_pModelRootObject, true);
+	m_ppObjects[0]->SetScale(8, 8, 8);
+	m_ppObjects[0]->SetPosition(350, pTerrain->GetHeight(350, 330), 330);
+	
+	m_ppObjects[1] = new CGameObject();
+	m_ppObjects[1]->SetChild(pFirTreeModel->m_pModelRootObject, true);
+	m_ppObjects[1]->SetScale(8, 8, 8);
+	m_ppObjects[1]->SetPosition(250, pTerrain->GetHeight(250, 330), 330);
 }
 
 void CStandardObjectsShader::ReleaseObjects()

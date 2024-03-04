@@ -694,7 +694,7 @@ void playerState::Run::HandleEvent(const Event& e, const XMFLOAT3& xmf3Direction
 			else
 			{
 				m_xmf3Direction = xmf3Direction;
-				m_pPlayer->m_xmf3Look = Vector3::Interpolation(m_pPlayer->m_xmf3Look, m_xmf3Direction, 0.1);
+				m_pPlayer->m_xmf3Look = Vector3::Interpolation(m_pPlayer->m_xmf3Look, m_xmf3Direction, 0.1);	// 0.1 말고 fTimeElapsed로 수정하기
 				m_pPlayer->m_xmf3Look = Vector3::Normalize(m_pPlayer->m_xmf3Look);
 			}
 			break;
