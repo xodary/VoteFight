@@ -1,0 +1,126 @@
+Child Count: 25
+Object Name: rpgpp_lt_building_05
+Position: (118.74, 20.98, 101.85)
+Rotation: (0.00, 180.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (1)
+Position: (98.84, 20.98, 101.85)
+Rotation: (0.00, 180.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (2)
+Position: (11.28, 20.98, 94.69)
+Rotation: (0.00, 180.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (3)
+Position: (30.08, 20.98, 94.69)
+Rotation: (0.00, 184.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (4)
+Position: (51.78, 20.98, 94.69)
+Rotation: (0.00, 180.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (5)
+Position: (35.28, 20.98, 67.29)
+Rotation: (0.00, 270.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (7)
+Position: (164.88, 20.98, 227.89)
+Rotation: (0.00, 94.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (8)
+Position: (164.88, 20.98, 246.99)
+Rotation: (0.00, 94.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (9)
+Position: (164.88, 20.98, 206.59)
+Rotation: (0.00, 94.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (10)
+Position: (164.88, 20.98, 120.79)
+Rotation: (0.00, 94.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (11)
+Position: (164.88, 20.98, 135.69)
+Rotation: (0.00, 94.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (12)
+Position: (164.88, 20.98, 155.19)
+Rotation: (0.00, 94.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (6)
+Position: (138.08, 20.98, 101.85)
+Rotation: (0.00, 180.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (13)
+Position: (188.68, 20.98, 227.89)
+Rotation: (0.00, 274.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (14)
+Position: (188.68, 20.98, 246.99)
+Rotation: (0.00, 274.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (15)
+Position: (188.68, 20.98, 206.59)
+Rotation: (0.00, 274.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (16)
+Position: (188.68, 20.98, 184.29)
+Rotation: (0.00, 274.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (17)
+Position: (188.68, 20.98, 137.99)
+Rotation: (0.00, 274.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (18)
+Position: (188.68, 20.98, 116.69)
+Rotation: (0.00, 274.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (19)
+Position: (188.68, 20.98, 95.59)
+Rotation: (0.00, 274.80, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (20)
+Position: (149.88, 20.98, 67.29)
+Rotation: (0.00, 270.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (21)
+Position: (13.68, 20.98, 67.29)
+Rotation: (0.00, 270.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (22)
+Position: (120.58, 20.98, 67.29)
+Rotation: (0.00, 270.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (23)
+Position: (53.38, 20.98, 67.29)
+Rotation: (0.00, 270.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+
+Object Name: rpgpp_lt_building_05 (24)
+Position: (75.78, 20.98, 67.29)
+Rotation: (0.00, 270.00, 0.00)
+Scale: (1.00, 1.00, 1.00)
+

@@ -536,6 +536,60 @@ CStandardObjectsShader::CStandardObjectsShader()
 {
 	m_nObjects = 2;
 	m_ppObjects = new CGameObject * [m_nObjects];
+
+	for (size_t i = 0; i < m_nObjects; i++)
+	{
+		m_ppObjects[i] = new CGameObject();
+	}
+}
+
+// 파일 경로를 읽고 동적 할당 및 오브젝트 생성
+// 2024-03-05 05:28 이시영 수정
+CStandardObjectsShader::CStandardObjectsShader(const string& filePath)
+{
+	// 파일 열기
+	std::ifstream file(filePath);
+	if (!file.is_open()) {
+		std::cerr << "Error: Failed to open the file." << std::endl;
+	}
+
+	// Child Count 읽기
+	std::string line;
+	std::getline(file, line);
+	if (line.find("Child Count: ") != std::string::npos) {
+		m_nObjects = std::stoi(line.substr(13)); // "Child Count: " 다음부터 문자열을 int로 변환
+	}
+	// 객체 배열 동적 할당
+	m_ppObjects = new CGameObject * [m_nObjects];
+
+	// 객체 데이터 읽기
+	int currentIndex = 0;
+	float currentX, currentY, currentZ = 1;
+	while (std::getline(file, line) && currentIndex < m_nObjects) {
+		if (line.find("Object Name: ") != std::string::npos) {
+			m_ppObjects[currentIndex] = new CGameObject();
+
+			// 다음 라인 읽기 (Position)
+			std::getline(file, line);
+			sscanf(line.c_str(), "Position: (%f, %f, %f)", &currentX, &currentY, &currentZ);
+			m_ppObjects[currentIndex]->SetPosition(currentX, currentY, currentZ);
+
+			// 다음 라인 읽기 (Rotation)
+			std::getline(file, line);
+			sscanf(line.c_str(), "Rotation: (%f, %f, %f)", &currentX, &currentY, &currentZ);
+			m_ppObjects[currentIndex]->Rotate(currentX, currentY, currentZ);
+			// 다음 라인 읽기 (Scale)
+
+			std::getline(file, line);
+			sscanf(line.c_str(), "Scale: (%f, %f, %f)", &currentX, &currentY, &currentZ);
+			m_ppObjects[currentIndex]->SetScale(currentX, currentY, currentZ);
+
+			currentIndex++;
+		}
+	}
+
+	// 파일 닫기
+	file.close();
 }
 
 CStandardObjectsShader::~CStandardObjectsShader()
@@ -549,6 +603,9 @@ CStandardObjectsShader::~CStandardObjectsShader()
 //	pd3dGraphicsRootSignature: Direct3D 루트 시그너쳐
 //  pContext: 터레인을 넘겨줌.
 // 2024-03-03 21:28 황유림 수정
+
+// m_nObjects 만큼 for 루프 돌리도록 변경
+// 2024-03-05 05:28 이시영 수정
 void CStandardObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, void *pContext)
 {
 	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
@@ -558,15 +615,14 @@ void CStandardObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Graphi
 	
 	CLoadedModelInfo* pFirTreeModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Fir_Tree.bin", NULL);
 	
-	m_ppObjects[0] = new CGameObject();
-	m_ppObjects[0]->SetChild(pOakTreeModel->m_pModelRootObject, true);
-	m_ppObjects[0]->SetScale(8, 8, 8);
-	m_ppObjects[0]->SetPosition(350, pTerrain->GetHeight(350, 330), 330);
-	
-	m_ppObjects[1] = new CGameObject();
-	m_ppObjects[1]->SetChild(pFirTreeModel->m_pModelRootObject, true);
-	m_ppObjects[1]->SetScale(8, 8, 8);
-	m_ppObjects[1]->SetPosition(250, pTerrain->GetHeight(250, 330), 330);
+
+	for (size_t i = 0; i < m_nObjects; i++)
+	{
+		m_ppObjects[i]->SetChild(pOakTreeModel->m_pModelRootObject, true);
+		m_ppObjects[i]->SetScale(8, 8, 8);
+		m_ppObjects[i]->SetPosition(100*i, pTerrain->GetHeight(100 * i, 100 * i), 100*i);
+	}
+
 }
 
 void CStandardObjectsShader::ReleaseObjects()
