@@ -612,15 +612,16 @@ void CStandardObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Graphi
 
 	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 1);
 	CLoadedModelInfo* pOakTreeModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Oak_Tree.bin", NULL);
-	
 	CLoadedModelInfo* pFirTreeModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/Fir_Tree.bin", NULL);
 	
-
+	float currentX, currentZ;
 	for (size_t i = 0; i < m_nObjects; i++)
 	{
+		currentX = m_ppObjects[i]->GetPosition().x * 10;
+		currentZ = m_ppObjects[i]->GetPosition().z * 10;
 		m_ppObjects[i]->SetChild(pOakTreeModel->m_pModelRootObject, true);
-		m_ppObjects[i]->SetScale(8, 8, 8);
-		m_ppObjects[i]->SetPosition(100*i, pTerrain->GetHeight(100 * i, 100 * i), 100*i);
+		m_ppObjects[i]->SetScale(20, 20, 20);
+		m_ppObjects[i]->SetPosition(currentX, pTerrain->GetHeight(currentX, currentZ), currentZ);
 	}
 
 }
