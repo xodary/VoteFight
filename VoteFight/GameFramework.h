@@ -13,6 +13,10 @@ public:
 	CGameFramework();
 	~CGameFramework();
 
+	// Server
+	void ConnectServer();
+
+	// Client
 	bool OnCreate(HINSTANCE hInstance, HWND hMainWnd);
 	void OnDestroy();
 
@@ -42,6 +46,14 @@ public:
 	LRESULT CALLBACK OnProcessingWindowMessage(HWND hWnd, UINT nMessageID, WPARAM wParam, LPARAM lParam);
 
 private:
+	// Server
+	SOCKET_INFO						  m_SocketInfo{};
+
+	HANDLE							  m_ReceiveEvent{};
+	HANDLE							  m_RenderingEvent{};
+
+
+	// Client
 	HINSTANCE					m_hInstance;
 	HWND						m_hWnd; 
 

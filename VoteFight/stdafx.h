@@ -1,17 +1,25 @@
 // stdafx.h : 자주 사용하지만 자주 변경되지는 않는
 // 표준 시스템 포함 파일 및 프로젝트 관련 포함 파일이
 // 들어 있는 포함 파일입니다.
-//
 
 #pragma once
+#pragma comment(lib, "ws2_32")
 // #define UPPER_BODY
 
 #define WIN32_LEAN_AND_MEAN             // 거의 사용되지 않는 내용은 Windows 헤더에서 제외합니다.
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
+#define SERVER_IP "127.0.0.1"
+#define SERVER_PORT	9000
+#define MAX_CLIENT_CAPACITY 3
+
 // Windows 헤더 파일:
 #include <windows.h>
 #include <iostream>
 
 // C의 런타임 헤더 파일입니다.
+#include <winsock2.h>
+#include <SDKDDKVer.h>
 #include <stdlib.h>
 #include <malloc.h>
 #include <memory.h>
@@ -161,6 +169,21 @@ inline void Swap(float *pfS, float *pfT) { float fTemp = *pfS; *pfS = *pfT; *pfT
 #define ANIMATION_TYPE_PINGPONG			2
 
 #define ANIMATION_CALLBACK_EPSILON		0.00165f
+
+struct SOCKET_INFO
+{
+	UINT		m_ID{};
+	SOCKET      m_Socket{};
+	SOCKADDR_IN m_SocketAddress{};
+};
+
+struct CLIENT_TO_SERVER_DATA
+{
+	UINT	   m_SceneState{};
+
+	UINT	   m_InputMask{};
+	XMFLOAT4X4 m_WorldMatrix{};
+};
 
 namespace Vector3
 {
@@ -455,4 +478,10 @@ namespace Plane
 		XMStoreFloat4(&xmf4Result, XMPlaneNormalize(XMLoadFloat4(&xmf4Plane)));
 		return(xmf4Result);
 	}
+}
+
+namespace Server
+{
+	void ErrorQuit(const char* Msg);
+	void ErrorDisplay(const char* Msg);
 }

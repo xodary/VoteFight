@@ -7,6 +7,8 @@
 
 CGameFramework::CGameFramework()
 {
+	ConnectServer();
+
 	m_pdxgiFactory = NULL;
 	m_pdxgiSwapChain = NULL;
 	m_pd3dDevice = NULL;
@@ -32,10 +34,13 @@ CGameFramework::CGameFramework()
 	m_pPlayer = NULL;
 
 	_tcscpy_s(m_pszFrameRate, _T("LabProject ("));
+
 }
 
 CGameFramework::~CGameFramework()
 {
+	closesocket(m_SocketInfo.m_Socket);
+	WSACleanup();
 }
 
 bool CGameFramework::OnCreate(HINSTANCE hInstance, HWND hMainWnd)
@@ -727,3 +732,49 @@ void CGameFramework::FrameAdvance()
 	::SetWindowText(m_hWnd, m_pszFrameRate);
 }
 
+
+// Server
+
+void CGameFramework::ConnectServer()
+{
+	WSADATA Wsa{};
+
+	if (WSAStartup(MAKEWORD(2, 2), &Wsa))
+	{
+		cout << "윈속을 초기화하지 못했습니다." << endl;
+		exit(1);
+	}
+
+	m_SocketInfo.m_Socket = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (m_SocketInfo.m_Socket == INVALID_SOCKET)
+	{
+		Server::ErrorQuit("socket()");
+	}
+
+	m_SocketInfo.m_SocketAddress.sin_family = AF_INET;
+	m_SocketInfo.m_SocketAddress.sin_addr.s_addr = inet_addr(SERVER_IP);
+	m_SocketInfo.m_SocketAddress.sin_port = htons(SERVER_PORT);
+
+	int ReturnValue{ connect(m_SocketInfo.m_Socket, (SOCKADDR*)&m_SocketInfo.m_SocketAddress, sizeof(m_SocketInfo.m_SocketAddress)) };
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		Server::ErrorQuit("connect()");
+	}
+
+	// 플레이어 아이디를 수신한다.
+	ReturnValue = recv(m_SocketInfo.m_Socket, (char*)&m_SocketInfo.m_ID, sizeof(UINT), MSG_WAITALL);
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		Server::ErrorDisplay("recv()");
+	}
+	else if (m_SocketInfo.m_ID == UINT_MAX)
+	{
+		MessageBox(m_hWnd, TEXT("현재 정원이 꽉찼거나, 게임이 이미 시작되어 참여할 수 없습니다."), TEXT("PRISON BREAKER"), MB_ICONSTOP | MB_OK);
+		PostQuitMessage(0);
+	}
+
+	//CreateEvents();
+}
