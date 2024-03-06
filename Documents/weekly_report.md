@@ -181,6 +181,7 @@
 
 ### weekly report
 - 03/03 회의진행 [240303회의록](Meeting_report/report_240303.md)
+- https://youtu.be/KdE3v5E2xmA
 
 ### weekly plan
 - 황유림: 씬에 오브젝트 배치하는 프로토콜 노션문서 작성해서 시영님께 공유하기. 콘트레이싱 코드 분석, 쉐도우 매핑 분석 들어가기. 예시 프로젝트 서버 분석
