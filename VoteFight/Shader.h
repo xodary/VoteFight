@@ -7,6 +7,16 @@
 #include "Object.h"
 #include "Camera.h"
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 
+#define MODEL_OAKTREE		0x01
+#define MODEL_FIRTREE			0x02
+#define MODEL_HUT					0x03	
+#define MODEL_SOTRE			0x04
+#define MODEL_BARRICADE	0x05
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
 class CShader
 {
 public:
@@ -142,7 +152,7 @@ class CStandardObjectsShader : public CStandardShader
 {
 public:
 	CStandardObjectsShader();
-	CStandardObjectsShader(const string& filePath);
+	CStandardObjectsShader(const string& filePath, const int model);
 	virtual ~CStandardObjectsShader();
 
 	virtual void BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *pd3dCommandList, ID3D12RootSignature *pd3dGraphicsRootSignature, CLoadedModelInfo *pModel, void *pContext = NULL);
@@ -156,6 +166,7 @@ public:
 protected:
 	CGameObject						**m_ppObjects = 0;
 	int								m_nObjects = 0;
+	int								m_nObjectModel = 0;
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

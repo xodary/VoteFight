@@ -1,0 +1,81 @@
+Child Count: 16
+Object Name: SM_fence_stand_small (1)
+Position: (147.70, 20.00, 108.93)
+Rotation: (0.00, 0.00, 0.00)
+Scale: (13.84, 13.84, 30.29)
+
+Object Name: SM_fence_stand_small (2)
+Position: (148.64, 20.00, 196.80)
+Rotation: (0.00, 0.00, 0.00)
+Scale: (13.84, 13.84, 30.29)
+
+Object Name: SM_fence_stand_small (3)
+Position: (-0.80, 20.00, 109.60)
+Rotation: (0.00, 90.00, 0.00)
+Scale: (13.84, 13.84, 34.69)
+
+Object Name: SM_fence_stand_small (4)
+Position: (0.50, 39.20, 153.70)
+Rotation: (0.00, 90.00, 0.00)
+Scale: (7.44, 14.57, 18.64)
+
+Object Name: SM_fence_stand_small (5)
+Position: (85.60, 20.00, 109.60)
+Rotation: (0.00, 90.00, 0.00)
+Scale: (13.84, 13.84, 34.69)
+
+Object Name: SM_fence_stand_small (10)
+Position: (63.60, 39.20, 153.70)
+Rotation: (0.00, 90.00, 0.00)
+Scale: (7.44, 14.57, 18.64)
+
+Object Name: SM_fence_stand_small (11)
+Position: (99.00, 38.50, 154.00)
+Rotation: (0.00, 0.00, 0.00)
+Scale: (7.44, 14.57, 18.64)
+
+Object Name: SM_fence_stand_small (12)
+Position: (99.00, 38.50, 220.60)
+Rotation: (0.00, 0.00, 0.00)
+Scale: (7.44, 14.57, 18.64)
+
+Object Name: SM_fence_stand_small (7)
+Position: (198.20, -0.50, 103.40)
+Rotation: (0.00, 0.00, 0.00)
+Scale: (13.84, 13.84, 22.48)
+
+Object Name: SM_fence_stand_small (8)
+Position: (198.20, -0.50, 171.70)
+Rotation: (0.00, 0.00, 0.00)
+Scale: (13.84, 13.84, 22.48)
+
+Object Name: SM_fence_stand_small (9)
+Position: (198.20, -0.50, 216.70)
+Rotation: (0.00, 0.00, 0.00)
+Scale: (13.84, 13.84, 22.48)
+
+Object Name: SM_fence_stand_small (10)
+Position: (1.98, -0.50, 59.19)
+Rotation: (0.00, 90.00, 0.00)
+Scale: (13.84, 13.84, 22.48)
+
+Object Name: SM_fence_stand_small (11)
+Position: (46.48, -0.50, 59.19)
+Rotation: (0.00, 90.00, 0.00)
+Scale: (13.84, 13.84, 22.48)
+
+Object Name: SM_fence_stand_small (12)
+Position: (198.20, -0.50, 58.70)
+Rotation: (0.00, 0.00, 0.00)
+Scale: (13.84, 13.84, 22.48)
+
+Object Name: SM_fence_stand_small (13)
+Position: (107.38, -0.50, 59.19)
+Rotation: (0.00, 90.00, 0.00)
+Scale: (13.84, 13.84, 22.48)
+
+Object Name: SM_fence_stand_small (14)
+Position: (152.08, -0.50, 59.19)
+Rotation: (0.00, 90.00, 0.00)
+Scale: (13.84, 13.84, 22.48)
+
