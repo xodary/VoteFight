@@ -1,0 +1,6 @@
+Child Count: 1
+Object Name: WhiteHouse
+Position: (48.70, 59.96, 203.50)
+Rotation: (270.00, 135.00, 0.00)
+Scale: (0.02, 0.02, 0.02)
+

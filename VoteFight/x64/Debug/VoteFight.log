@@ -1,11 +1,2 @@
-<<<<<<< HEAD
 ﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(531,5): warning MSB8028: 중간 디렉터리(x64\Debug\)에 다른 프로젝트(LabProject07-9-8.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
-  Shader.cpp
-D:\directX_work\VoteFight\Shader.cpp(575,4): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-D:\directX_work\VoteFight\Shader.cpp(580,4): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-D:\directX_work\VoteFight\Shader.cpp(585,4): warning C4996: 'sscanf': This function or variable may be unsafe. Consider using sscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
   VoteFight.vcxproj -> D:\directX_work\x64\Debug\VoteFight.exe
-=======
-﻿C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Microsoft\VC\v170\Microsoft.CppBuild.targets(517,5): warning MSB8028: 중간 디렉터리(x64\Debug\)에 다른 프로젝트(LabProject07-9-8.vcxproj)에서 공유하는 파일이 포함되어 있습니다.  이로 인해 잘못된 정리 및 다시 빌드 동작이 수행될 수 있습니다.
-  VoteFight.vcxproj -> C:\Users\qkrdh\OneDrive\바탕 화면\내 문서\GITHUB\directX_work\x64\Debug\VoteFight.exe
->>>>>>> origin/main

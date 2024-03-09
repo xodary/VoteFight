@@ -84,17 +84,20 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
 	m_pSkyBox = new CSkyBox(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature);
 
-	XMFLOAT3 xmf3Scale(8.0f, 2.0f, 8.0f);
-	XMFLOAT4 xmf4Color(0.0f, 0.3f, 0.0f, 0.0f);
+	XMFLOAT3 xmf3Scale(8.0f, 8.0f, 8.0f);
+	XMFLOAT4 xmf4Color(0.3f, 0.3f, 0.0f, 0.0f);
 	m_pTerrain = new CHeightMapTerrain(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, _T("Terrain/FightVote_terrain.raw"), 257, 257, xmf3Scale, xmf4Color);
 
 
 	// 2024-03-05 05:28 이시영 수정
 	// CStandardObjectsShader의 파일경로를 넣어서 동적생성함
-	m_nShaders = 2;
+	m_nShaders = 5;
 	m_ppShaders = new CShader * [m_nShaders];
-	m_ppShaders[0] = new CStandardObjectsShader("ObjectData/TreeData.txt", MODEL_OAKTREE);
+	m_ppShaders[0] = new CStandardObjectsShader("ObjectData/TreeData.txt", MODEL_FIRTREE);
 	m_ppShaders[1] = new CStandardObjectsShader("ObjectData/HutHouseData.txt", MODEL_HUT);
+	m_ppShaders[2] = new CStandardObjectsShader("ObjectData/CityData.txt", MODEL_STORE);
+	m_ppShaders[3] = new CStandardObjectsShader("ObjectData/BarricadeData.txt", MODEL_BARRICADE);
+	m_ppShaders[4] = new CStandardObjectsShader("ObjectData/WhiteHouseData.txt", MODEL_WHITEHOUSE);
 
 
 	for (size_t i = 0; i < m_nShaders; i++)

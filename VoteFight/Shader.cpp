@@ -573,7 +573,7 @@ CStandardObjectsShader::CStandardObjectsShader(const string& filePath, const int
 			// 다음 라인 읽기 (Position)
 			std::getline(file, line);
 			sscanf(line.c_str(), "Position: (%f, %f, %f)", &currentX, &currentY, &currentZ);
-			m_ppObjects[currentIndex]->SetPosition(currentX, currentY, currentZ);
+			m_ppObjects[currentIndex]->SetPosition(currentX * 8, currentY * 8, currentZ * 8);
 
 			// 다음 라인 읽기 (Rotation)
 			std::getline(file, line);
@@ -583,7 +583,7 @@ CStandardObjectsShader::CStandardObjectsShader(const string& filePath, const int
 			// 다음 라인 읽기 (Scale)
 			std::getline(file, line);
 			sscanf(line.c_str(), "Scale: (%f, %f, %f)", &currentX, &currentY, &currentZ);
-			m_ppObjects[currentIndex]->SetScale(currentX, currentY, currentZ);
+			m_ppObjects[currentIndex]->SetScale(currentX * 8, currentY * 8, currentZ * 8);
 
 			currentIndex++;
 		}
@@ -611,12 +611,15 @@ void CStandardObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Graphi
 {
 	CHeightMapTerrain* pTerrain = (CHeightMapTerrain*)pContext;
 
-	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0, 1);
+	CreateCbvSrvDescriptorHeaps(pd3dDevice, 0,1);
 	//CLoadedModelInfo* pOakTreeModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/02_Country/rpgpp_lt_building_05.bin", NULL);
 	CLoadedModelInfo* pObjectModel;
 	
 	switch (m_nObjectModel)
 	{
+	case MODEL_TREE:
+		pObjectModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/01_Forest/Tree.bin", NULL);
+		break;
 	case MODEL_FIRTREE:
 		pObjectModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/01_Forest/Fir_Tree.bin", NULL);
 		break;
@@ -624,24 +627,27 @@ void CStandardObjectsShader::BuildObjects(ID3D12Device *pd3dDevice, ID3D12Graphi
 		pObjectModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/01_Forest/Oak_Tree.bin", NULL);
 		break;
 	case MODEL_HUT:
-		pObjectModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/02_Country/rpgpp_lt_building_05.bin", NULL);
+		pObjectModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/02_Country/rpgpp_lt_building.bin", NULL);
 		break;
-	case MODEL_SOTRE:
+	case MODEL_STORE:
 		pObjectModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/03_City/Building_Bakery.bin", NULL);
 		break;
 	case MODEL_BARRICADE:
 		pObjectModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/05_other/fence_stand_small_LOD.bin", NULL);
 		break;
+	case MODEL_WHITEHOUSE:
+		pObjectModel = CGameObject::LoadGeometryAndAnimationFromFile(pd3dDevice, pd3dCommandList, pd3dGraphicsRootSignature, "Model/04_WhiteHouse/WhiteHouse.bin", NULL);
+		break;
 	}
 	
-	float currentX = 0, currentZ = 0;
+	float currentX = 0, currentY = 0,currentZ = 0;
 	for (size_t i = 0; i < m_nObjects; i++)
 	{
-		currentX = m_ppObjects[i]->GetPosition().x * 9;
-		currentZ = m_ppObjects[i]->GetPosition().z * 9;
+		currentX = m_ppObjects[i]->GetPosition().x;
+		currentZ = m_ppObjects[i]->GetPosition().z;
 		m_ppObjects[i]->SetChild(pObjectModel->m_pModelRootObject, true);
-		m_ppObjects[i]->SetScale(10, 10, 10);
 		m_ppObjects[i]->SetPosition(currentX, pTerrain->GetHeight(currentX, currentZ), currentZ);
+		//m_ppObjects[i]->SetPosition(currentX, currentY, currentZ);
 	}
 
 }
