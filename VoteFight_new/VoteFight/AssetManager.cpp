@@ -6,10 +6,6 @@
 #include "SkinnedMesh.h"
 #include "Texture.h"
 #include "ObjectShader.h"
-#include "DepthWriteShader.h"
-#include "BilboardShader.h"
-#include "UIShader.h"
-#include "WireFrameShader.h"
 #include "Material.h"
 #include "Animation.h"
 

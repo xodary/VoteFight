@@ -22,9 +22,6 @@
 
 #include "Camera.h"
 
-#include "NavMesh.h"
-#include "NavNode.h"
-
 #include "UIStates.h"
 
 CGameScene::CGameScene() :
@@ -90,34 +87,13 @@ void CGameScene::Init()
 	Load("GameScene.bin");
 	LoadUI("GameSceneUI.bin");
 
-	// 구조물을 순회하며, 감시탑의 조명 프레임을 찾아 저장한다.
-	const vector<CObject*>& structures = GetGroupObject(GROUP_TYPE::STRUCTURE);
-
-	for (const auto& structure : structures)
-	{
-		CObject* towerLight = structure->FindFrame("spotlight_pr_1");
-
-		if (towerLight != nullptr)
-		{
-			m_towerLight = towerLight;
-			break;
-		}
-	}
-
 	// 스카이박스 추가
 	CObject* object = new CSkyBox();
 
 	AddObject(GROUP_TYPE::BILBOARD, object);
 
-	// 나무 추가
-	object = new CTree(SCENE_TYPE::GAME);
-	AddObject(GROUP_TYPE::BILBOARD, object);
-
 	// 충돌 그룹 설정
-	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::ENEMY, GROUP_TYPE::ENEMY);
-	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::ENEMY, GROUP_TYPE::PLAYER);
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::PLAYER);
-	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::TRIGGER);
 
 	CreateShaderVariables();
 

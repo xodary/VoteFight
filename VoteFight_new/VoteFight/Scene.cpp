@@ -7,7 +7,6 @@
 #include "CameraManager.h"
 
 #include "Player.h"
-#include "Guard.h"
 #include "UI.h"
 #include "Trigger.h"
 
@@ -92,68 +91,6 @@ void CScene::Load(const string& fileName)
 					AddObject(groupType, object);
 				}
 				break;
-			case GROUP_TYPE::TRIGGER:
-			{
-				// <RootObject>
-				string rootObjectName;
-				vector<string> targetObjectNames;
-
-				File::ReadStringFromFile(in, str);
-				File::ReadStringFromFile(in, rootObjectName);
-
-				if (rootObjectName != "None")
-				{
-					// <TargetObjects>
-					File::ReadStringFromFile(in, str);
-
-					int targetCount = 0;
-
-					in.read(reinterpret_cast<char*>(&targetCount), sizeof(int));
-					targetObjectNames.resize(targetCount);
-
-					for (int i = 0; i < targetCount; ++i)
-					{
-						File::ReadStringFromFile(in, targetObjectNames[i]);
-					}
-				}
-
-				const vector<CObject*>& structures = GetGroupObject(GROUP_TYPE::STRUCTURE);
-
-				for (int i = 0; i < instanceCount; ++i)
-				{
-					CTrigger* trigger = static_cast<CTrigger*>(CObject::Load(modelFileName));
-					CTransform* transform = static_cast<CTransform*>(trigger->GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-					trigger->SetActive(isActives[i]);
-					transform->SetPosition(transforms[3 * i]);
-					transform->SetRotation(transforms[3 * i + 1]);
-					transform->SetScale(transforms[3 * i + 2]);
-					transform->Update();
-					trigger->Init();
-
-					for (const auto& structure : structures)
-					{
-						// 타겟 오브젝트의 최상위 프레임을 찾는다.
-						CObject* rootObject = structure->FindFrame(rootObjectName);
-
-						if (rootObject != nullptr)
-						{
-							for (const auto& targetObjectName : targetObjectNames)
-							{
-								// 최상위 프레임에서 타겟 오브젝트를 찾아 트리거에 추가한다.
-								CObject* targetObject = rootObject->FindFrame(targetObjectName);
-
-								trigger->AddTargetObject(targetObject);
-							}
-
-							break;
-						}
-					}
-
-					AddObject(groupType, trigger);
-				}
-			}
-			break;
 			}
 		}
 		else if (str == "</Scene>")

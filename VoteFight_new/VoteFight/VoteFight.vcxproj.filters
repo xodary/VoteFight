@@ -311,7 +311,7 @@
     <ClCompile Include="Object.cpp">
       <Filter>소스 파일\05. Object</Filter>
     </ClCompile>
-    <ClCompile Include="Player%28M%29.cpp">
+    <ClCompile Include="Player.cpp">
       <Filter>소스 파일\05. Object\05-01. Character</Filter>
     </ClCompile>
     <ClCompile Include="Character.cpp">

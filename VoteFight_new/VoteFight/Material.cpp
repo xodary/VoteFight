@@ -99,14 +99,14 @@ void CMaterial::Load(ifstream& in)
 		{
 			File::ReadStringFromFile(in, m_name);
 		}
-		else if (str == "<Color>")
-		{
-			in.read(reinterpret_cast<char*>(&m_color), sizeof(XMFLOAT4));
-		}
-		else if (str == "<TextureScale>")
-		{
-			in.read(reinterpret_cast<char*>(&m_textureScale), sizeof(XMFLOAT2));
-		}
+		//else if (str == "<Color>")
+		//{
+		//	in.read(reinterpret_cast<char*>(&m_color), sizeof(XMFLOAT4));
+		//}
+		//else if (str == "<TextureScale>")
+		//{
+		//	in.read(reinterpret_cast<char*>(&m_textureScale), sizeof(XMFLOAT2));
+		//}
 		else if (str == "<AlbedoMap>" || str == "<NormalMap>")
 		{
 			File::ReadStringFromFile(in, str);

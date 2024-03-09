@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "UI.h"
 
-#include "Core.h"
+#include "GameFramework.h"
 
 #include "AssetManager.h"
 #include "InputManager.h"

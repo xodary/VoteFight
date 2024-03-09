@@ -5,10 +5,11 @@ using UnityEngine.Windows;
 using System.IO;
 using static UnityEditor.UIElements.ToolbarMenu;
 
-public class TextMeshes : MonoBehaviour
+public class TextModel : MonoBehaviour
 {
-    public GameObject[] meshObjects;
-    
+    public int classType;
+    public AnimationClip[] m_raAnimationClips;
+
     private List<string> m_rTextureNamesListForCounting = new List<string>();
     private List<string> m_rTextureNamesListForWriting = new List<string>();
 
@@ -212,194 +213,161 @@ public class TextMeshes : MonoBehaviour
         WriteMatrix(matrix);
     }
 
-    void WriteTransform(int nLevel, string strHeader, Transform current)
+    void WriteMaterials(int nLevel, Material[] materials)
     {
-        WriteString(nLevel, strHeader + " ");
-        WriteVector(current.localPosition);
-        WriteVector(current.localEulerAngles);
-        WriteVector(current.localScale);
-        WriteVector(current.localRotation);
-        m_rTextWriter.WriteLine(" ");
-    }
-
-    void WriteLocalMatrix(int nLevel, string strHeader, Transform current)
-    {
-        WriteString(nLevel, strHeader + " ");
-        Matrix4x4 matrix = Matrix4x4.identity;
-        matrix.SetTRS(current.localPosition, current.localRotation, current.localScale);
-        WriteMatrix(matrix);
-        m_rTextWriter.WriteLine(" ");
-    }
-
-    void WriteWorldMatrix(int nLevel, string strHeader, Transform current)
-    {
-        WriteString(nLevel, strHeader + " ");
-        Matrix4x4 matrix = Matrix4x4.identity;
-        matrix.SetTRS(current.position, current.rotation, current.lossyScale);
-        WriteMatrix(matrix);
-        m_rTextWriter.WriteLine(" ");
-    }
-
-    void WriteBoneTransforms(int nLevel, string strHeader, Transform[] bones)
-    {
-        WriteString(nLevel, strHeader + " " + bones.Length + " ");
-        if (bones.Length > 0)
+        WriteLineString(nLevel, "<Materials> " + materials.Length);
+        if (materials.Length > 0)
         {
-            foreach (Transform bone in bones)
+            for (int i = 0; i < materials.Length; i++)
             {
-                WriteMatrix(bone.localPosition, bone.localRotation, bone.localScale);
+                WriteLineString(nLevel+1, "<Material>");
+
+                if (materials[i].HasProperty("_MainTex"))
+                {
+                    Texture mainAlbedoMap = materials[i].GetTexture("_MainTex");
+                    if(mainAlbedoMap) WriteLineString(nLevel+2, mainAlbedoMap.name);
+                }
+                if (materials[i].HasProperty("_BumpMap"))
+                {
+                    Texture bumpMap = materials[i].GetTexture("_BumpMap");
+                    if(bumpMap) WriteLineString(nLevel+2, bumpMap.name);
+                }
             }
         }
-        m_rTextWriter.WriteLine(" ");
-    }
-
-    void WriteBoneNames(int nLevel, string strHeader, Transform[] bones)
-    {
-        WriteString(nLevel, strHeader + " " + bones.Length + " ");
-        if (bones.Length > 0)
-        {
-            foreach (Transform transform in bones)
-            {
-                m_rTextWriter.Write(string.Copy(transform.gameObject.name).Replace(" ", "_") + " ");
-            }
-            m_rTextWriter.WriteLine(" ");
-            WriteString(nLevel, "<BoneHierarchy>:");
-            WriteBoneNameHierarchy(bones[0]);
-            WriteString(nLevel, "</BoneHierarchy>:");
-        }
-        m_rTextWriter.WriteLine(" ");
-    }
-
-    void WriteBoneNameHierarchy(Transform parant)
-    {
-        m_rTextWriter.Write(string.Copy(parant.gameObject.name).Replace(" ", "_") + " ");
-        WriteString(parant.childCount + " ");
-        for (int k = 0; k < parant.childCount; k++) m_rTextWriter.Write(string.Copy(parant.GetChild(k).gameObject.name).Replace(" ", "_") + " ");
-        for (int k = 0; k < parant.childCount; k++) WriteBoneNameHierarchy(parant.GetChild(k));
-    }
-
-    void WriteMatrixes(int nLevel, string strHeader, Matrix4x4[] matrixes)
-    {
-        WriteString(nLevel, strHeader + " " + matrixes.Length + " ");
-        if (matrixes.Length > 0)
-        {
-            foreach (Matrix4x4 matrix in matrixes)
-            {
-                WriteMatrix(matrix);
-            }
-        }
-        m_rTextWriter.WriteLine(" ");
-    }
-
-    void WriteBoneIndices(int nLevel, string strHeader, BoneWeight[] boneWeights)
-    {
-        WriteString(nLevel, strHeader + " " + boneWeights.Length + " ");
-        if (boneWeights.Length > 0)
-        {
-            foreach (BoneWeight boneWeight in boneWeights)
-            {
-                m_rTextWriter.Write(boneWeight.boneIndex0 + " " + boneWeight.boneIndex1 + " " + boneWeight.boneIndex2 + " " + boneWeight.boneIndex3 + " ");
-            }
-        }
-        m_rTextWriter.WriteLine(" ");
-    }
-
-    void WriteBoneWeights(int nLevel, string strHeader, BoneWeight[] boneWeights)
-    {
-        WriteString(nLevel, strHeader + " " + boneWeights.Length + " ");
-        if (boneWeights.Length > 0)
-        {
-            foreach (BoneWeight boneWeight in boneWeights)
-            {
-                m_rTextWriter.Write(boneWeight.weight0 + " " + boneWeight.weight1 + " " + boneWeight.weight2 + " " + boneWeight.weight3 + " ");
-            }
-        }
-        m_rTextWriter.WriteLine(" ");
-    }
-
-    void WriteMeshInfo(int nLevel, Mesh mesh)
-    {
-        WriteLineString(nLevel, "<Mesh>: ");
-
-        WriteObjectName(nLevel+1, "<Name>: ", mesh);
-
-        WriteVectors(nLevel+1, "<Positions>:", mesh.vertices);
-        WriteVectors(nLevel+1, "<Normals>:", mesh.normals);
-
-        if ((mesh.normals.Length > 0) && (mesh.tangents.Length > 0))
-        {
-            Vector3[] tangents = new Vector3[mesh.tangents.Length];
-            Vector3[] bitangents = new Vector3[mesh.tangents.Length];
-            for (int i = 0; i < mesh.tangents.Length; i++)
-            {
-                tangents[i] = new Vector3(mesh.tangents[i].x, mesh.tangents[i].y, mesh.tangents[i].z);
-                bitangents[i] = Vector3.Normalize(Vector3.Cross(mesh.normals[i], tangents[i])) * mesh.tangents[i].w;
-            }
-
-            WriteVectors(nLevel+1, "<Tangents>:", tangents);
-            WriteVectors(nLevel+1, "<BiTangents>:", bitangents);
-        }
-        WriteTextureCoords(nLevel+1, "<TexCoords>:", mesh.uv);
-
-        WriteLineString(nLevel+1, "<SubMeshes>: " + mesh.subMeshCount);
-        if (mesh.subMeshCount > 0)
-        {
-            for (int i = 0; i < mesh.subMeshCount; i++)
-            {
-                int[] subindicies = mesh.GetTriangles(i);
-                WriteIntegers(nLevel+2, "<SubMesh>: " + i, subindicies);
-            }
-        }
-
-        WriteLineString(nLevel, "</Mesh>");
-    }
-
-    void WriteSkinnedMeshInfo(int nLevel, SkinnedMeshRenderer skinMeshRenderer)
-    {
-        Mesh mesh = skinMeshRenderer.sharedMesh;
-        WriteMeshInfo(nLevel, mesh);
-
-        WriteLineString(nLevel, "<SkinnedMesh>");
-        WriteObjectName(nLevel + 1, "<Name>: ", skinMeshRenderer);
-        WriteMatrixes(nLevel+1, "<BoneOffsetMatrixes>: ", skinMeshRenderer.sharedMesh.bindposes);
-        WriteBoneIndices(nLevel+1, "<BoneIndices>:", skinMeshRenderer.sharedMesh.boneWeights);
-        WriteBoneWeights(nLevel+1, "<BoneWeights>:", skinMeshRenderer.sharedMesh.boneWeights);
-        WriteLineString(nLevel, "</SkinnedMesh>");
     }
 
     void WriteFrameInfo(int nLevel, Transform current)
     {
-        MeshFilter meshFilter = current.gameObject.GetComponent<MeshFilter>();
-        MeshRenderer meshRenderer = current.gameObject.GetComponent<MeshRenderer>();
-
+        WriteLineString(nLevel + 1, "<ClassType> " + classType);
+        WriteLineString(nLevel + 1, "<Name> " + gameObject.name);
+        WriteLineString(nLevel + 1, "<IsActive> " + gameObject.activeSelf);
+        WriteString(1, "<Transform> ");
+        Vector3[] v = new Vector3[3];
+        v[0] = transform.localPosition;
+        v[1] = transform.localRotation.eulerAngles;
+        v[2] = transform.localScale;
+        WriteVectors(1, v);
+        MeshFilter meshFilter = GetComponent<MeshFilter>();
+        MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
         if (meshFilter && meshRenderer)
         {
-            WriteMeshInfo(nLevel + 1, meshFilter.sharedMesh);
+            Mesh mesh = meshFilter.sharedMesh;
+            WriteObjectName(nLevel + 1, "<Mesh>", mesh);
+            Material[] materials = meshRenderer.materials;
+            if (materials.Length > 0) WriteMaterials(1, materials);
+            WriteLineString(nLevel + 1, "<Collider> " + mesh.bounds.center.x + " " + mesh.bounds.center.y + " " + mesh.bounds.center.z + " " + mesh.bounds.extents.x + " " + mesh.bounds.extents.y + " " + mesh.bounds.extents.z);
         }
         else
         {
-            SkinnedMeshRenderer skinMeshRenderer = current.gameObject.GetComponent<SkinnedMeshRenderer>();
+            SkinnedMeshRenderer skinMeshRenderer = GetComponent<SkinnedMeshRenderer>();
             if (skinMeshRenderer)
             {
-                WriteSkinnedMeshInfo(nLevel + 1, skinMeshRenderer);
+                WriteObjectName(nLevel + 1, "<Mesh>", skinMeshRenderer.sharedMesh);
+                Material[] materials = skinMeshRenderer.materials;
+                if (materials.Length > 0) WriteMaterials(1, materials);
+                WriteLineString(nLevel + 1, "<Bounds>: " + skinMeshRenderer.localBounds.center.x + " " + skinMeshRenderer.localBounds.center.y + " " + skinMeshRenderer.localBounds.center.z + " " + skinMeshRenderer.localBounds.extents.x + " " + skinMeshRenderer.localBounds.extents.y + " " + skinMeshRenderer.localBounds.extents.z);
             }
         }
+    }
+
+    void WriteFrameHierarchyInfo(int nLevel, Transform current)
+    {
+        WriteFrameInfo(nLevel, current);
+
+        WriteLineString(nLevel+1, "<ChildCount> " + current.childCount);
+
+        if (current.childCount > 0)
+        {
+            for (int k = 0; k < current.childCount; k++) WriteFrameHierarchyInfo(nLevel+2, current.GetChild(k));
+        }
+    }
+
+    void WriteFrameAnimationHierarchy(Transform current)
+    {
+        WriteMatrix(current.localPosition, current.localRotation, current.localScale);
+
+        if (current.childCount > 0)
+        {
+            for (int k = 0; k < current.childCount; k++) WriteFrameAnimationHierarchy(current.GetChild(k));
+        }
+    }
+
+    void WriteAnimationTransforms(int nLevel, string strHeader)
+    {
+        WriteString(nLevel, strHeader);
+        WriteFrameAnimationHierarchy(transform);
+        m_rTextWriter.WriteLine(" ");
+    }
+
+    void WriteSkinnedMeshAnimationTransforms(int nLevel, string strHeader, SkinnedMeshRenderer skinnedMeshRenderer)
+    {
+        WriteString(nLevel, strHeader);
+        for (int i = 0; i < skinnedMeshRenderer.bones.Length; i++)
+        {
+            WriteMatrix(skinnedMeshRenderer.bones[i].localPosition, skinnedMeshRenderer.bones[i].localRotation, skinnedMeshRenderer.bones[i].localScale);
+        }
+        m_rTextWriter.WriteLine(" ");
+    }
+
+
+    void WriteVectors(int nLevel, Vector3[] vectors)
+    {
+        foreach (Vector3 v in vectors) m_rTextWriter.Write(v.x + " " + v.y + " " + v.z + " ");
+        m_rTextWriter.WriteLine(" ");
+
+    }
+    void WriteAnimationClipsInfo(int nLevel)
+    {
+        WriteLineString(nLevel, "<AnimationSets>: " + m_raAnimationClips.Length);
+#if _WITH_SKINNED_BONES_ANIMATION
+        WriteSkinnedMeshFrameNames(nLevel+1, "<FrameNames>: " + m_pSkinnedMeshRenderers.Length);
+#else
+        // WriteFrameNames(nLevel + 1, "<FrameNames>: " + m_nFrames + " ");
+#endif
+        for (int j = 0; j < m_raAnimationClips.Length; j++)
+        {
+            int nFramesPerSec = (int)m_raAnimationClips[j].frameRate;
+            int nKeyFrames = Mathf.CeilToInt(m_raAnimationClips[j].length * nFramesPerSec);
+            WriteLineString(nLevel + 1, "<AnimationSet>: " + j + " " + string.Copy(m_raAnimationClips[j].name).Replace(" ", "_") + " " + m_raAnimationClips[j].length + " " + nFramesPerSec + " " + nKeyFrames);
+
+            float fFrameRate = (1.0f / nFramesPerSec), fKeyFrameTime = 0.0f;
+            for (int k = 0; k < nKeyFrames; k++)
+            {
+                m_raAnimationClips[j].SampleAnimation(gameObject, fKeyFrameTime);
+
+#if _WITH_SKINNED_BONES_ANIMATION
+                WriteSkinnedMeshAnimationTransforms(nLevel+2, "<Transforms>: " + k + " " + fKeyFrameTime);
+#else
+                WriteAnimationTransforms(nLevel + 2, "<Transforms>: " + k + " " + fKeyFrameTime + " ");
+#endif
+                fKeyFrameTime += fFrameRate;
+            }
+        }
+
+        WriteLineString(nLevel, "</AnimationSets>");
     }
 
     void Start()
     {
         m_rTextWriter = new StreamWriter(string.Copy(gameObject.name).Replace(" ", "_") + ".txt");
 
-        WriteLineString("<Meshes>: " + meshObjects.Length);
-        foreach (GameObject obj in meshObjects)
+        WriteLineString("<Frames>");
+        WriteFrameHierarchyInfo(0, transform);
+        WriteLineString("</Frames>");
+
+        if (m_raAnimationClips.Length > 0)
         {
-            WriteFrameInfo(1, obj.transform);
+            WriteLineString("<Animator>");
+            WriteAnimationClipsInfo(1);
+            WriteLineString("</Animator>");
         }
-        WriteString("</Meshes>");
+
+
 
         m_rTextWriter.Flush();
         m_rTextWriter.Close();
 
+        print("Model Text Write Completed");
     }
 }
 

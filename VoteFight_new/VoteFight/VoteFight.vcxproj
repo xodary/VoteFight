@@ -191,7 +191,7 @@
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectShader.cpp" />
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Player%28M%29.cpp" />
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerStates%28M%29.cpp" />
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="Scene.cpp" />

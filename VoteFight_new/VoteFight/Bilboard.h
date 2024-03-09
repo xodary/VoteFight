@@ -42,12 +42,3 @@ public:
 
 	virtual void Render(CCamera* camera);
 };
-
-//=========================================================================================================================
-
-class CTree : public CBilboard
-{
-public:
-	CTree(SCENE_TYPE sceneType);
-	virtual ~CTree();
-};
