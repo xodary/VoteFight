@@ -1,0 +1,13 @@
+<Frames>
+	<ClassType> 0
+	<Name> Fir_Tree
+	<IsActive> True
+	<Transform> 3.882493 -8.273123E-05 4.064265 2.504478E-06 0 0 1 1 1  
+	<Mesh> Fir-tree
+	<Materials> 1
+		<Material>
+			tree_diffuse
+	<Collider> -3.945827E-05 2.856652 -0.0002257228 1.885778 2.85657 1.885149
+</Frames>
+	<ChildCount> 0
+</Frame>

@@ -1,0 +1,7 @@
+<Materials>: 1
+	<Material>
+		<Name>: Fir_Tree
+		<AlbedoMap>: tree_diffuse
+		<Shaders> 0
+		<StateNum> 0
+</Materials>

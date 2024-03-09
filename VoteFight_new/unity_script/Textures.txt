@@ -1,0 +1,6 @@
+<Textures>: 1
+	<Texture>: 
+		<Type>: 0
+		<FileName>: tree_diffuse
+	</Texture>
+</Textures>
