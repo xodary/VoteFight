@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34221.43
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "VoteFight", "VoteFight\VoteFight.vcxproj", "{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}.Debug|x64.ActiveCfg = Debug|x64
+		{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}.Debug|x64.Build.0 = Debug|x64
+		{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}.Debug|x86.ActiveCfg = Debug|Win32
+		{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}.Debug|x86.Build.0 = Debug|Win32
+		{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}.Release|x64.ActiveCfg = Release|x64
+		{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}.Release|x64.Build.0 = Release|x64
+		{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}.Release|x86.ActiveCfg = Release|Win32
+		{EDD703BB-F2F9-47D9-A8BE-287E0E5AE55F}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {C2F3B861-E424-4AB9-A465-3C4BA9AE80F5}
+	EndGlobalSection
+EndGlobal
