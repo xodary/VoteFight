@@ -1,10 +1,6 @@
 #include "stdafx.h"
 #include "server.h"
 
-//vector<vector<shared_ptr<CGameObject>>> CServer::m_GameObjects{};
-//shared_ptr<CNavMesh>                    CServer::m_NavMesh{};
-//vector<LIGHT>                           CServer::m_Lights{};
-
 CServer::CServer()
 {
     WSADATA WsaData{};
@@ -42,12 +38,17 @@ CServer::CServer()
         Server::ErrorQuit("listen()");
     }
 
+    Events();
+
     HANDLE hThread{ CreateThread(NULL, 0, AcceptClient, (LPVOID)this, 0, NULL) };
 
     if (hThread)
     {
         CloseHandle(hThread);
     }
+
+    // BuildObjects();
+    // BuildLights(); -> 조명 정보 update
 }
 
 CServer::~CServer()
@@ -114,16 +115,15 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     }
     else
     {
-        UINT PacketSize{};
-
         while (true)
         {
-            // 패킷 데이터의 크기를 수신한다.
-            ReturnValue = recv(ClientSocket, (char*)&PacketSize, sizeof(UINT), MSG_WAITALL);
+            WaitForSingleObject(Server->m_MainSyncEvents[0], INFINITE);
+
+            ReturnValue = recv(ClientSocket, (char*)&Server->m_ReceivedPacketData[ClientID], sizeof(CLIENT_TO_SERVER_DATA), MSG_WAITALL);
 
             if (ReturnValue == SOCKET_ERROR)
             {
-                Server::ErrorDisplay("send()");
+                Server::ErrorDisplay("recv()");
                 break;
             }
             else if (ReturnValue == 0)
@@ -131,8 +131,17 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
                 break;
             }
 
+            SetEvent(Server->m_ClientSyncEvents[ClientID]);
+            WaitForSingleObject(Server->m_MainSyncEvents[1], INFINITE);
+
             // 패킷 데이터의 크기만큼 패킷 데이터를 수신한다.
-            ReturnValue = recv(ClientSocket, (char*)&PacketSize, sizeof(UINT), MSG_WAITALL);
+            // ReturnValue = send(ClientSocket, (char*)&Server->m_SendedPacketData, sizeof(SERVER_TO_CLIENT_DATA), 0);
+
+            if (ReturnValue == SOCKET_ERROR)
+            {
+                Server::ErrorDisplay("send()");
+                break;
+            }
         }
     }
 
@@ -169,6 +178,8 @@ bool CServer::CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress)
     m_ClientSocketInfos[ValidID].m_Socket = Socket;
     m_ClientSocketInfos[ValidID].m_SocketAddress = SocketAddress;
 
+    SetEvent(m_ClientSyncEvents[ValidID]);
+
     return true;
 }
 
@@ -189,4 +200,30 @@ void CServer::DestroyPlayer(UINT ID)
     m_ClientSocketInfos[ID].m_Socket = NULL;
 
     cout << "< 클라이언트 종료 > " << "IP : " << inet_ntoa(m_ClientSocketInfos[ID].m_SocketAddress.sin_addr) << ", 포트번호 : " << ntohs(m_ClientSocketInfos[ID].m_SocketAddress.sin_port) << endl;
+}
+
+void CServer::GameLoop()
+{
+    while (true)
+    {
+        ResetEvent(m_MainSyncEvents[1]);
+        SetEvent(m_MainSyncEvents[0]);
+
+        for (UINT i = 0; i < MAX_CLIENT_CAPACITY; ++i)
+        {
+            if (m_ClientSocketInfos[i].m_Socket)
+            {
+                WaitForSingleObject(m_ClientSyncEvents[i], 1000);
+            }
+        }
+
+        // TIMER
+
+        // Player Info update
+        // calculate
+        // packet update? 
+
+        ResetEvent(m_MainSyncEvents[0]);
+        SetEvent(m_MainSyncEvents[1]);
+    }
 }
