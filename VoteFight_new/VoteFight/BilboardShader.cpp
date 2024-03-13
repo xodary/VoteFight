@@ -71,8 +71,8 @@ D3D12_SHADER_BYTECODE CBilboardShader::CreateGeometryShader(ID3DBlob* d3d12Shade
 	{
 	case 0: // Bilboard
 		return CShader::Compile("main.hlsl", "GS_Bilboard", "gs_5_1", d3d12ShaderBlob);
-	//case 1: // SkyBox
-	//	return CShader::Compile("main.hlsl", "GS_SkyBox", "gs_5_1", d3d12ShaderBlob);
+	case 1: // SkyBox
+		return CShader::Compile("main.hlsl", "GS_SkyBox", "gs_5_1", d3d12ShaderBlob);
 	}
 
 	return CShader::CreateGeometryShader(d3d12ShaderBlob, stateNum);

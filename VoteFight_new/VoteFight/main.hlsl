@@ -144,7 +144,6 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
 
 struct VS_SKINNED_STANDARD_INPUT
 {
@@ -210,4 +209,28 @@ float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
     float4 cColor = gtxtAlbedoTexture.Sample(pcfSamplerState, input.positionL);
 
     return (cColor);
+}
+
+struct VS_BOUNDINGBOX_INPUT
+{
+    float3 position : POSITION;
+};
+
+struct VS_BOUNDINGBOX_OUTPUT
+{
+    float4 positionH : SV_POSITION;
+};
+
+VS_BOUNDINGBOX_OUTPUT VS_Position(VS_BOUNDINGBOX_INPUT input)
+{
+    VS_BOUNDINGBOX_OUTPUT output;
+	
+    output.positionH = mul(mul(float4(input.position, 1.0f), gmtxView), gmtxProjection);
+    //output.positionH = float4(input.position, 1.0f);
+    return (output);
+}
+
+float4 PS_Green(VS_BOUNDINGBOX_OUTPUT input) : SV_TARGET
+{
+    return (float4(1.0f, 0.0f, 0.0f, 1.0f));
 }

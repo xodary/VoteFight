@@ -119,7 +119,7 @@ CSkyBox::CSkyBox()
 	CTexture* texture = CAssetManager::GetInstance()->CreateTexture("SkyBox_Left");
 	CShader* shader = CAssetManager::GetInstance()->GetShader("Bilboard");
 
-	texture->Load("SkyBox_Left.dds", TEXTURE_TYPE::ALBEDO_MAP);
+	texture->Load("SkyBox_Left", TEXTURE_TYPE::ALBEDO_MAP);
 	material->SetTexture(texture);
 	material->AddShader(shader);
 	material->SetStateNum(1);
@@ -128,7 +128,7 @@ CSkyBox::CSkyBox()
 	// Right
 	material = CAssetManager::GetInstance()->CreateMaterial("SkyBox_Right");
 	texture = CAssetManager::GetInstance()->CreateTexture("SkyBox_Right");
-	texture->Load("SkyBox_Right.dds", TEXTURE_TYPE::ALBEDO_MAP);
+	texture->Load("SkyBox_Right", TEXTURE_TYPE::ALBEDO_MAP);
 	material->SetTexture(texture);
 	material->AddShader(shader);
 	material->SetStateNum(1);
@@ -137,7 +137,7 @@ CSkyBox::CSkyBox()
 	// Bottom
 	material = CAssetManager::GetInstance()->CreateMaterial("SkyBox_Bottom");
 	texture = CAssetManager::GetInstance()->CreateTexture("SkyBox_Bottom");
-	texture->Load("SkyBox_Bottom.dds", TEXTURE_TYPE::ALBEDO_MAP);
+	texture->Load("SkyBox_Bottom", TEXTURE_TYPE::ALBEDO_MAP);
 	material->SetTexture(texture);
 	material->AddShader(shader);
 	material->SetStateNum(1);
@@ -146,7 +146,7 @@ CSkyBox::CSkyBox()
 	// Top
 	material = CAssetManager::GetInstance()->CreateMaterial("SkyBox_Top");
 	texture = CAssetManager::GetInstance()->CreateTexture("SkyBox_Top");
-	texture->Load("SkyBox_Top.dds", TEXTURE_TYPE::ALBEDO_MAP);
+	texture->Load("SkyBox_Top", TEXTURE_TYPE::ALBEDO_MAP);
 	material->SetTexture(texture);
 	material->AddShader(shader);
 	material->SetStateNum(1);
@@ -155,7 +155,7 @@ CSkyBox::CSkyBox()
 	// Back
 	material = CAssetManager::GetInstance()->CreateMaterial("SkyBox_Back");
 	texture = CAssetManager::GetInstance()->CreateTexture("SkyBox_Back");
-	texture->Load("SkyBox_Back.dds", TEXTURE_TYPE::ALBEDO_MAP);
+	texture->Load("SkyBox_Back", TEXTURE_TYPE::ALBEDO_MAP);
 	material->SetTexture(texture);
 	material->AddShader(shader);
 	material->SetStateNum(1);
@@ -164,7 +164,7 @@ CSkyBox::CSkyBox()
 	// Front
 	material = CAssetManager::GetInstance()->CreateMaterial("SkyBox_Front");
 	texture = CAssetManager::GetInstance()->CreateTexture("SkyBox_Front");
-	texture->Load("SkyBox_Front.dds", TEXTURE_TYPE::ALBEDO_MAP);
+	texture->Load("SkyBox_Front", TEXTURE_TYPE::ALBEDO_MAP);
 	material->SetTexture(texture);
 	material->AddShader(shader);
 	material->SetStateNum(1);

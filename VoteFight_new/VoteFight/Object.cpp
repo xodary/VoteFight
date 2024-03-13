@@ -4,7 +4,6 @@
 #include "AssetManager.h"
 
 #include "Player.h"
-#include "Guard.h"
 #include "UI.h"
 #include "Trigger.h"
 
@@ -51,7 +50,7 @@ CObject::~CObject()
 CObject* CObject::Load(const string& fileName)
 {
 	CObject* object = {};
-	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Model\\" + fileName;
+	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Model\\" + fileName + ".bin";
 	ifstream in(filePath, ios::binary);
 	string str;
 
@@ -503,20 +502,20 @@ void CObject::Render(CCamera* camera)
 	}
 
 	// [Debug] Render BoundingBox
-	CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
-
-	if (collider != nullptr)
-	{
-		collider->Render(camera);
-	}
-
-	for (const auto& child : m_children)
-	{
-		if (child->IsActive() && !child->IsDeleted())
-		{
-			child->Render(camera);
-		}
-	}
+	// CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
+	// 
+	// if (collider != nullptr)
+	// {
+	// 	collider->Render(camera);
+	// }
+	// 
+	// for (const auto& child : m_children)
+	// {
+	// 	if (child->IsActive() && !child->IsDeleted())
+	// 	{
+	// 		child->Render(camera);
+	// 	}
+	// }
 }
 
 //void CObject::PlaySound(SOUND_TYPE SoundType, float Volume, float MaxHearingDistance)

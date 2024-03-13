@@ -33,7 +33,7 @@ private:
 public:
 	const string& GetAssetPath();
 
-	CMesh* GetMesh(const string& key);
+	CMesh* GetMesh(string& key);
 	int GetMeshCount();
 
 	CTexture* CreateTexture(const string& key);

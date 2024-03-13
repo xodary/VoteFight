@@ -240,6 +240,12 @@
     <ClInclude Include="Trigger.h">
       <Filter>헤더 파일\05. Object\05-04. Trigger</Filter>
     </ClInclude>
+    <ClInclude Include="WireFrameShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="BilboardShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -302,7 +308,7 @@
     <ClCompile Include="Transform.cpp">
       <Filter>소스 파일\07. Component</Filter>
     </ClCompile>
-    <ClCompile Include="GameScene%28M%29.cpp">
+    <ClCompile Include="GameScene.cpp">
       <Filter>소스 파일\04. Scene</Filter>
     </ClCompile>
     <ClCompile Include="Scene.cpp">
@@ -317,7 +323,7 @@
     <ClCompile Include="Character.cpp">
       <Filter>소스 파일\05. Object\05-01. Character</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerStates%28M%29.cpp">
+    <ClCompile Include="PlayerStates.cpp">
       <Filter>소스 파일\08. State</Filter>
     </ClCompile>
     <ClCompile Include="State.cpp">
@@ -359,5 +365,16 @@
     <ClCompile Include="Trigger.cpp">
       <Filter>소스 파일\05. Object\05-04. Trigger</Filter>
     </ClCompile>
+    <ClCompile Include="WireFrameShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="BilboardShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <FxCompile Include="main.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

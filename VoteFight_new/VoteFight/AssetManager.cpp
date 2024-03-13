@@ -1,8 +1,7 @@
 #include "pch.h"
 #include "AssetManager.h"
-
 #include "GameFramework.h"
-
+#include "WireFrameShader.h"
 #include "SkinnedMesh.h"
 #include "Texture.h"
 #include "ObjectShader.h"
@@ -151,10 +150,10 @@ void CAssetManager::LoadShaders()
 	//shader->CreatePipelineStates(2);
 	//m_shaders.emplace(shader->GetName(), shader);
 
-	//shader = new CWireFrameShader();
-	//shader->SetName("WireFrame");
-	//shader->CreatePipelineStates(1);
-	//m_shaders.emplace(shader->GetName(), shader);
+	shader = new CWireFrameShader();
+	shader->SetName("WireFrame");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)
@@ -269,12 +268,17 @@ const string& CAssetManager::GetAssetPath()
 	return m_assetPath;
 }
 
-CMesh* CAssetManager::GetMesh(const string& key)
+CMesh* CAssetManager::GetMesh(string& key)
 {
 	CMesh* mesh = nullptr;
 
-	if (m_meshes.find(key) != m_meshes.end())
-	{
+	int num = key.find("_Instance");
+		
+	if (num != string::npos) {
+		key = key.substr(0, num);
+	}
+
+	if (m_meshes.find(key) != m_meshes.end()) {
 		mesh = m_meshes[key];
 	}
 
@@ -336,7 +340,7 @@ int CAssetManager::GetShaderCount()
 CMaterial* CAssetManager::CreateMaterial(const string& key)
 {
 	CMaterial* material = GetMaterial(key);
-
+	
 	if (material == nullptr)
 	{
 		material = new CMaterial();

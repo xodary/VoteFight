@@ -73,10 +73,9 @@ void CTexture::Load(const string& fileName, TEXTURE_TYPE textureType)
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
-	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Texture\\" + fileName;
+	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Texture\\" + fileName + ".dds";
 
-	// .dds 부분을 제외한 나머지를 이름으로 설정한다.
-	m_name = fileName.substr(0, fileName.length() - 4);
+	m_name = fileName;
 	m_type = textureType;
 	m_d3d12Texture = DX::CreateTextureResourceFromDDSFile(d3d12Device, d3d12GraphicsCommandList, filePath, D3D12_RESOURCE_STATE_GENERIC_READ, m_d3d12UploadBuffer.GetAddressOf());
 }
