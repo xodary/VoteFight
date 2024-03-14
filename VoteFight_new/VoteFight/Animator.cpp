@@ -91,8 +91,7 @@ void CSkinningAnimator::Load(ifstream& in)
 			File::ReadStringFromFile(in, str);
 			CAssetManager::GetInstance()->LoadSkinningAnimations(str);
 
-			// str.length() - 14: _Animation.bin
-			const vector<CAnimation*>& animations = CAssetManager::GetInstance()->GetAnimations(str.substr(0, str.length() - 14));
+			const vector<CAnimation*>& animations = CAssetManager::GetInstance()->GetAnimations(str);
 
 			for (const auto& animation : animations)
 			{

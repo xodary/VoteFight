@@ -1,10 +1,7 @@
 #include "pch.h"
 #include "SkinnedMesh.h"
-
 #include "GameFramework.h"
-
 #include "Object.h"
-
 #include "Transform.h"
 
 CSkinnedMesh::CSkinnedMesh(const CMesh& rhs) : CMesh(rhs),
@@ -145,7 +142,7 @@ void CSkinnedMesh::Render(int subSetIndex)
 	UpdateShaderVariables();
 
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] = { m_d3d12PositionBufferView, m_d3d12NormalBufferView, m_d3d12TangentBufferView, m_d3d12BiTangentBufferView, m_d3d12TexCoordBufferView, m_d3d12BoneIndexBufferView, m_d3d12BoneWeightBufferView };
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] = { m_d3d12PositionBufferView, m_d3d12TexCoordBufferView, m_d3d12NormalBufferView, m_d3d12TangentBufferView, m_d3d12BiTangentBufferView, m_d3d12BoneIndexBufferView, m_d3d12BoneWeightBufferView };
 
 	d3d12GraphicsCommandList->IASetVertexBuffers(0, _countof(vertexBufferViews), vertexBufferViews);
 	d3d12GraphicsCommandList->IASetPrimitiveTopology(m_d3d12PrimitiveTopology);

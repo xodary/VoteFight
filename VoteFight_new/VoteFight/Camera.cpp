@@ -1,10 +1,7 @@
 #include "pch.h"
 #include "Camera.h"
-
 #include "GameFramework.h"
-
 #include "TimeManager.h"
-
 #include "Transform.h"
 
 CCamera::CCamera(CAMERA_TYPE type) :

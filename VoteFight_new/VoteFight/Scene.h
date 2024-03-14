@@ -17,7 +17,6 @@ protected:
 	CScene();
 
 	void Load(const string& fileName);
-	void LoadUI(const string& fileName);
 
 private:
 	virtual void Enter() = 0;

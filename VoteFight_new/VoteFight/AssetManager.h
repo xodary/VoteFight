@@ -43,9 +43,9 @@ public:
 	CShader* GetShader(const string& key);
 	int GetShaderCount();
 
-	CMaterial* CreateMaterial(const string& key);
-	CMaterial* CreateMaterialInstance(const string& key);
-	CMaterial* GetMaterial(const string& key);
+	CMaterial* CreateMaterial(string& key);
+	CMaterial* CreateMaterialInstance(string& key);
+	CMaterial* GetMaterial(string& key);
 	int GetMaterialCount();
 
 	void LoadSkinningAnimations(const string& fileName);

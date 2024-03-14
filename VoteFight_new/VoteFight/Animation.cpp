@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Animation.h"
-
 #include "AssetManager.h"
-
 #include "Object.h"
 
 CAnimation::CAnimation() :

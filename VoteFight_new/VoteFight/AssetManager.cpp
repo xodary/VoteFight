@@ -1,7 +1,6 @@
 #include "pch.h"
 #include "AssetManager.h"
 #include "GameFramework.h"
-#include "WireFrameShader.h"
 #include "SkinnedMesh.h"
 #include "Texture.h"
 #include "ObjectShader.h"
@@ -69,7 +68,7 @@ void CAssetManager::LoadMeshes(const string& fileName)
 			CSkinnedMesh* skinnedMesh = new CSkinnedMesh(*GetMesh(str));
 
 			skinnedMesh->LoadSkinInfo(in);
-			m_meshes.emplace(skinnedMesh->GetName(), skinnedMesh);
+			m_meshes[skinnedMesh->GetName()] = skinnedMesh;
 		}
 		else if (str == "</Meshes>")
 		{
@@ -128,31 +127,9 @@ void CAssetManager::LoadTextures(const string& fileName)
 
 void CAssetManager::LoadShaders()
 {
-	//// 렌더링에 필요한 셰이더 객체(PSO)를 생성한다.
-	//CShader* shader = new CDepthWriteShader();
-
-	//shader->SetName("DepthWrite");
-	//shader->CreatePipelineStates(3);
-	//m_shaders.emplace(shader->GetName(), shader);
-
 	CShader* shader = new CObjectShader();
 	shader->SetName("Object");
 	shader->CreatePipelineStates(2);
-	m_shaders.emplace(shader->GetName(), shader);
-
-	//shader = new CBilboardShader();
-	//shader->SetName("Bilboard");
-	//shader->CreatePipelineStates(2);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	//shader = new CUIShader();
-	//shader->SetName("UI");
-	//shader->CreatePipelineStates(2);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	shader = new CWireFrameShader();
-	shader->SetName("WireFrame");
-	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 
@@ -195,12 +172,11 @@ void CAssetManager::LoadMaterials(const string& fileName)
 
 void CAssetManager::LoadSkinningAnimations(const string& fileName)
 {
-	// str.length() - 14 : _Animation.bin
-	string modelName = fileName.substr(0, fileName.length() - 14);
+	string modelName = fileName;
 
 	if (m_animations.find(modelName) == m_animations.end())
 	{
-		string filePath = m_assetPath + "Animation\\" + fileName;
+		string filePath = m_assetPath + "Animation\\" + fileName + "_Animation.bin";
 		ifstream in(filePath, ios::binary);
 		string str;
 
@@ -337,7 +313,7 @@ int CAssetManager::GetShaderCount()
 	return static_cast<int>(m_shaders.size());
 }
 
-CMaterial* CAssetManager::CreateMaterial(const string& key)
+CMaterial* CAssetManager::CreateMaterial(string& key)
 {
 	CMaterial* material = GetMaterial(key);
 	
@@ -352,7 +328,7 @@ CMaterial* CAssetManager::CreateMaterial(const string& key)
 	return material;
 }
 
-CMaterial* CAssetManager::CreateMaterialInstance(const string& key)
+CMaterial* CAssetManager::CreateMaterialInstance(string& key)
 {
 	CMaterial* material = GetMaterial(key);
 
@@ -366,9 +342,15 @@ CMaterial* CAssetManager::CreateMaterialInstance(const string& key)
 	return material;
 }
 
-CMaterial* CAssetManager::GetMaterial(const string& key)
+CMaterial* CAssetManager::GetMaterial(string& key)
 {
 	CMaterial* material = nullptr;
+
+	int num = key.find("_(Instance)");
+
+	if (num != string::npos) {
+		key = key.substr(0, num);
+	}
 
 	if (m_materials.find(key) != m_materials.end())
 	{

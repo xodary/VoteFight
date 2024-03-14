@@ -1,28 +1,17 @@
 #include "pch.h"
 #include "GameScene.h"
-
 #include "GameFramework.h"
-
 #include "TimeManager.h"
 #include "InputManager.h"
 #include "AssetManager.h"
 #include "CameraManager.h"
-#include "CollisionManager.h"
-
 #include "Player.h"
-#include "Bilboard.h"
-#include "UI.h"
-
 #include "Texture.h"
 #include "Shader.h"
-
 #include "StateMachine.h"
 #include "Animator.h"
 #include "Transform.h"
-
 #include "Camera.h"
-
-#include "UIStates.h"
 
 CGameScene::CGameScene() :
 	m_d3d12GameScene(),
@@ -108,6 +97,9 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[0].m_color = XMFLOAT4(0.5f, 0.5f, 0.6f, 0.0f);
 	m_mappedGameScene->m_lights[0].m_range = 2000.0f;
 	// cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
+
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 }
 
 void CGameScene::Update()

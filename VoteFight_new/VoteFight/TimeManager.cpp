@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "TimeManager.h"
-
 #include "GameFramework.h"
 
 CTimeManager::CTimeManager() :

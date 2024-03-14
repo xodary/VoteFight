@@ -1,24 +1,16 @@
 #include "pch.h"
 #include "Object.h"
-
 #include "AssetManager.h"
-
 #include "Player.h"
-#include "UI.h"
-#include "Trigger.h"
-
 #include "Mesh.h"
 #include "Shader.h"
 #include "Material.h"
-
 #include "StateMachine.h"
 #include "RigidBody.h"
 #include "Animator.h"
 #include "Transform.h"
-#include "SpriteRenderer.h"
-#include "Collider.h"
-
 #include "Camera.h"
+#include "SkinnedMesh.h"
 
 UINT CObject::m_nextInstanceID = 0;
 
@@ -102,9 +94,6 @@ CObject* CObject::LoadFrame(ifstream& in)
 			// Character
 			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
-
-			// Trigger
-			case 3: object = new COpenDoorTrigger(); break;
 			}
 		}
 		else if (str == "<Name>")
@@ -168,12 +157,12 @@ CObject* CObject::LoadFrame(ifstream& in)
 			in.read(reinterpret_cast<char*>(&center), sizeof(XMFLOAT3));
 			in.read(reinterpret_cast<char*>(&extents), sizeof(XMFLOAT3));
 
-			// 메쉬를 가진 프레임은 콜라이더 컴포넌트를 생성한다.
-			object->CreateComponent(COMPONENT_TYPE::COLLIDER);
-			
-			CCollider* collider = static_cast<CCollider*>(object->GetComponent(COMPONENT_TYPE::COLLIDER));
+			//// 메쉬를 가진 프레임은 콜라이더 컴포넌트를 생성한다.
+			//object->CreateComponent(COMPONENT_TYPE::COLLIDER);
+			//
+			//CCollider* collider = static_cast<CCollider*>(object->GetComponent(COMPONENT_TYPE::COLLIDER));
 
-			collider->SetBoundingBox(center, extents);
+			//collider->SetBoundingBox(center, extents);
 		}
 		else if (str == "<ChildCount>")
 		{
@@ -284,12 +273,6 @@ CComponent* CObject::CreateComponent(COMPONENT_TYPE componentType)
 	case COMPONENT_TYPE::TRANSFORM:
 		m_components[static_cast<int>(componentType)] = new CTransform();
 		break;
-	case COMPONENT_TYPE::COLLIDER:
-		m_components[static_cast<int>(componentType)] = new CCollider();
-		break;
-	case COMPONENT_TYPE::SPRITE_RENDERER:
-		m_components[static_cast<int>(componentType)] = new CSpriteRenderer();
-		break;
 	}
 
 	m_components[static_cast<int>(componentType)]->SetOwner(this);
@@ -370,62 +353,9 @@ CObject* CObject::FindFrame(const string& name)
 	return object;
 }
 
-CObject* CObject::CheckRayIntersection(const XMFLOAT3& rayOrigin, const XMFLOAT3& rayDirection, float& hitDistance, float maxDistance)
-{
-	CCollider* collider = static_cast<CCollider*>(m_components[static_cast<int>(COMPONENT_TYPE::COLLIDER)]);
-
-	if ((m_mesh != nullptr) && (collider != nullptr))
-	{
-		// 광선과 바운딩박스의 교차를 검사한다.
-		bool isIntersected = collider->GetBoundingBox().Intersects(XMLoadFloat3(&rayOrigin), XMLoadFloat3(&rayDirection), hitDistance);
-
-		if (isIntersected)
-		{
-			// 광원과 바운딩 박스 사이의 거리가 MaxDistance보다 작거나 같다면 광선과 메쉬(삼각형)의 교차를 검사한다.
-			if (hitDistance <= maxDistance)
-			{
-				CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-				if (m_mesh->CheckRayIntersection(rayOrigin, rayDirection, XMLoadFloat4x4(&transform->GetWorldMatrix()), hitDistance))
-				{
-					return this;
-				}
-			}
-		}
-	}
-
-	CObject* nearestIntersectedObject = nullptr;
-	float nearestHitDistance = FLT_MAX;
-
-	for (const auto& child : m_children)
-	{
-		CObject* intersectedObject = child->CheckRayIntersection(rayOrigin, rayDirection, hitDistance, maxDistance);
-
-		if ((intersectedObject != nullptr) && (hitDistance < nearestHitDistance))
-		{
-			nearestIntersectedObject = intersectedObject;
-			nearestHitDistance = hitDistance;
-		}
-	}
-
-	if (nearestIntersectedObject != nullptr)
-	{
-		hitDistance = nearestHitDistance;
-	}
-
-	return nearestIntersectedObject;
-}
-
 bool CObject::IsVisible(CCamera* camera)
 {
-	CCollider* collider = static_cast<CCollider*>(m_components[static_cast<int>(COMPONENT_TYPE::COLLIDER)]);
-
-	if ((camera != nullptr) && (collider != nullptr))
-	{
-		return camera->IsInBoundingFrustum(collider->GetBoundingBox());
-	}
-
-	return false;
+	return true;
 }
 
 void CObject::OnCollisionEnter(CObject* collidedObject)
@@ -465,16 +395,6 @@ void CObject::PreRender(CCamera* camera)
 {
 	UpdateShaderVariables();
 
-	// DepthWrite의 경우, 직교 투영변환 행렬을 사용하기 때문에 프러스텀 컬링을 수행할 수 없다.
-	if (m_mesh != nullptr)
-	{
-		for (int i = 0; i < m_materials.size(); ++i)
-		{
-			m_materials[i]->SetPipelineState(RENDER_TYPE::DEPTH_WRITE);
-			m_mesh->Render(i);
-		}
-	}
-
 	for (const auto& child : m_children)
 	{
 		if (child->IsActive() && !child->IsDeleted())
@@ -501,32 +421,12 @@ void CObject::Render(CCamera* camera)
 		}
 	}
 
-	// [Debug] Render BoundingBox
-	// CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
-	// 
-	// if (collider != nullptr)
-	// {
-	// 	collider->Render(camera);
-	// }
-	// 
-	// for (const auto& child : m_children)
-	// {
-	// 	if (child->IsActive() && !child->IsDeleted())
-	// 	{
-	// 		child->Render(camera);
-	// 	}
-	// }
-}
+	for (const auto& child : m_children)
+	{
+		if (child->IsActive() && !child->IsDeleted())
+		{
+			child->Render(camera);
+		}
+	}
 
-//void CObject::PlaySound(SOUND_TYPE SoundType, float Volume, float MaxHearingDistance)
-//{
-//	shared_ptr<CGameScene> GameScene{ static_pointer_cast<CGameScene>(CSceneManager::GetInstance()->GetScene("GameScene")) };
-//	vector<vector<shared_ptr<CGameObject>>>& GameObjects{ GameScene->GetGameObjects() };
-//	shared_ptr<CGameObject> MyPlayer{ GameObjects[OBJECT_TYPE_PLAYER][CGameFramework::GetInstance()->GetSocketInfo().m_ID] };
-//
-//	float Distance{ Math::Distance(GetPosition(), MyPlayer->GetPosition()) };
-//
-//	Volume = Volume + ((2.0f - Distance) * (Volume / MaxHearingDistance));
-//
-//	CSoundManager::GetInstance()->Play(SoundType, Volume, true);
-//}
+}

@@ -75,8 +75,6 @@ public:
 
 	CObject* FindFrame(const string& name);
 
-	CObject* CheckRayIntersection(const XMFLOAT3& rayOrigin, const XMFLOAT3& rayDirection, float& hitDistance, float maxDistance);
-
 	bool IsVisible(CCamera* camera);
 
 	virtual void OnCollisionEnter(CObject* collidedObject);

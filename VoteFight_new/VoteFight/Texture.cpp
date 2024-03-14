@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "Texture.h"
-
 #include "GameFramework.h"
-
 #include "AssetManager.h"
 
 CTexture::CTexture() :
@@ -91,9 +89,6 @@ void CTexture::UpdateShaderVariable()
 		break;
 	case TEXTURE_TYPE::NORMAL_MAP:
 		d3d12GraphicsCommandList->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::NORMAL_MAP), m_d3d12GpuDescriptorHandle);
-		break;
-	case TEXTURE_TYPE::SHADOW_MAP:
-		d3d12GraphicsCommandList->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::SHADOW_MAP), m_d3d12GpuDescriptorHandle);
 		break;
 	}
 }

@@ -61,22 +61,15 @@ enum class MSG_TYPE
 
 enum class SCENE_TYPE
 {
-	TITLE,
 	GAME,
-	ENDING,
-	CREDIT,
 	
 	COUNT
 };
 
 enum class GROUP_TYPE
 {
-	TRIGGER,
-	TERRAIN,
 	STRUCTURE,
 	PLAYER,
-	BILBOARD,
-	UI,
 
 	COUNT
 };
@@ -96,8 +89,6 @@ enum class COMPONENT_TYPE
 enum class CAMERA_TYPE
 {
 	MAIN,
-	UI,
-	LIGHT,
 
 	COUNT
 };
@@ -156,7 +147,6 @@ enum class TRIGGER_TYPE
 enum class RENDER_TYPE
 {
 	STANDARD,
-	DEPTH_WRITE,
 
 	COUNT
 };

@@ -6,7 +6,6 @@
 #include "InputManager.h"
 #include "CameraManager.h"
 #include "SceneManager.h"
-#include "CollisionManager.h"
 
 #include "Texture.h"
 
@@ -553,12 +552,6 @@ void CGameFramework::Render()
 
 void CGameFramework::PostRender()
 {
-	//if (m_PostProcessingShader)
-	//{
-	//	m_PostProcessingShader->Render(m_d3d12GraphicsCommandList.Get(), nullptr);
-	//}
-
-	//CSceneManager::GetInstance()->PostRender(m_d3d12GraphicsCommandList.Get());
 }
 
 void CGameFramework::PopulateCommandList()
@@ -568,20 +561,8 @@ void CGameFramework::PopulateCommandList()
 
 	CSceneManager::GetInstance()->Update();
 	CCameraManager::GetInstance()->Update();
-	CCollisionManager::GetInstance()->Update();
 
 	PreRender();
-
-	//DX::ResourceTransition(m_d3d12GraphicsCommandList.Get(), m_RenderingResultTexture->GetResource(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE D3D12RtvCPUDescriptorHandle(m_d3d12RtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart(), 2, m_RtvDescriptorIncrementSize);
-	//CD3DX12_CPU_DESCRIPTOR_HANDLE D3D12DsvCPUDescriptorHandle(m_d3d12DsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
-
-	//m_d3d12GraphicsCommandList->ClearRenderTargetView(D3D12RtvCPUDescriptorHandle, Colors::Black, 0, nullptr);
-	//m_d3d12GraphicsCommandList->ClearDepthStencilView(D3D12DsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
-	//m_d3d12GraphicsCommandList->OMSetRenderTargets(1, &D3D12RtvCPUDescriptorHandle, TRUE, &D3D12DsvCPUDescriptorHandle);
-
-	//DX::ResourceTransition(m_d3d12GraphicsCommandList.Get(), m_RenderingResultTexture->GetResource(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 
 	DX::ResourceTransition(m_d3d12GraphicsCommandList.Get(), m_d3d12RenderTargetBuffers[m_swapChainBufferIndex].Get(), D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
@@ -590,7 +571,7 @@ void CGameFramework::PopulateCommandList()
 
 	D3D12RtvCPUDescriptorHandle = D3D12RtvCPUDescriptorHandle.Offset(m_rtvDescriptorIncrementSize * m_swapChainBufferIndex);
 
-	m_d3d12GraphicsCommandList->ClearRenderTargetView(D3D12RtvCPUDescriptorHandle, Colors::Black, 0, nullptr);
+	m_d3d12GraphicsCommandList->ClearRenderTargetView(D3D12RtvCPUDescriptorHandle, Colors::Pink, 0, nullptr);
 	m_d3d12GraphicsCommandList->ClearDepthStencilView(D3D12DsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 	m_d3d12GraphicsCommandList->OMSetRenderTargets(1, &D3D12RtvCPUDescriptorHandle, TRUE, &D3D12DsvCPUDescriptorHandle);
 
@@ -604,8 +585,6 @@ void CGameFramework::PopulateCommandList()
 	m_d3d12CommandQueue->ExecuteCommandLists(_countof(D3D12CommandLists), D3D12CommandLists->GetAddressOf());
 
 	WaitForGpuComplete();
-
-	//m_UILayer->Render(m_SwapChainBufferIndex);
 }
 
 void CGameFramework::AdvanceFrame()
@@ -617,84 +596,3 @@ void CGameFramework::AdvanceFrame()
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
 	MoveToNextFrame();
 }
-
-//shared_ptr<CPostProcessingShader> CGameFramework::GetPostProcessingShader() const
-//{
-//	return m_PostProcessingShader;
-//}
-//
-//shared_ptr<CUILayer> CGameFramework::GetUILayer() const
-//{
-//	return m_UILayer;
-//}
-//
-//void CGameFramework::ConnectServer()
-//{
-//	WSADATA Wsa{};
-//
-//	if (WSAStartup(MAKEWORD(2, 2), &Wsa))
-//	{
-//		cout << "윈속을 초기화하지 못했습니다." << endl;
-//		PostQuitMessage(0);
-//	}
-//
-//	m_SocketInfo.m_Socket = socket(AF_INET, SOCK_STREAM, 0);
-//
-//	if (m_SocketInfo.m_Socket == INVALID_SOCKET)
-//	{
-//		Server::ErrorQuit("socket()");
-//	}
-//	
-//	// Nagle 알고리즘을 중지시킨다.
-//	BOOL SocketOption{ TRUE };
-//
-//	setsockopt(m_SocketInfo.m_Socket, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<const char*>(&SocketOption), sizeof(SocketOption));
-//
-//	m_SocketInfo.m_SocketAddress.sin_family = AF_INET;
-//	m_SocketInfo.m_SocketAddress.sin_addr.s_addr = inet_addr(m_UILayer->GetText().c_str());
-//	m_SocketInfo.m_SocketAddress.sin_port = htons(SERVER_PORT);
-//
-//	int ReturnValue{ connect(m_SocketInfo.m_Socket, (SOCKADDR*)&m_SocketInfo.m_SocketAddress, sizeof(m_SocketInfo.m_SocketAddress)) };
-//
-//	if (ReturnValue == SOCKET_ERROR)
-//	{
-//		Server::ErrorQuit("connect()");
-//	}
-//
-//	// 플레이어 아이디를 수신한다.
-//	ReturnValue = recv(m_SocketInfo.m_Socket, (char*)&m_SocketInfo.m_ID, sizeof(m_SocketInfo.m_ID), MSG_WAITALL);
-//
-//	if (ReturnValue == SOCKET_ERROR)
-//	{
-//		Server::ErrorDisplay("recv()");
-//	}
-//	else if (m_SocketInfo.m_ID == UINT_MAX)
-//	{
-//		MessageBox(m_hWnd, TEXT("현재 정원이 꽉찼거나, 게임이 이미 시작되어 참여할 수 없습니다."), TEXT("PRISON BREAKER"), MB_ICONSTOP | MB_OK);
-//		PostQuitMessage(0);
-//	}
-//
-//	CSceneManager::GetInstance()->GetScene(TEXT("GameScene"))->Initialize();
-//	CSceneManager::GetInstance()->GetScene(TEXT("CreditScene"))->Initialize();
-//}
-//
-//void CGameFramework::DisconnectServer()
-//{
-//	if (m_SocketInfo.m_Socket)
-//	{
-//		closesocket(m_SocketInfo.m_Socket);
-//		WSACleanup();
-//
-//		memset(&m_SocketInfo, NULL, sizeof(SOCKET_INFO));
-//	}
-//}
-//
-//void CGameFramework::ProcessPacket()
-//{
-//	CSceneManager::GetInstance()->ProcessPacket();
-//}
-//
-//const SOCKET_INFO& CGameFramework::GetSocketInfo() const
-//{
-//	return m_SocketInfo;
-//}
