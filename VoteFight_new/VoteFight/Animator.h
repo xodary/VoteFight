@@ -11,8 +11,8 @@ protected:
 	bool							   m_isFinished;
 
 	unordered_map<string, CAnimation*> m_animations;
-	CAnimation*						   m_playingAnimation;
-	int							       m_frameIndex;
+	unordered_map<string, CAnimation*> m_playingAnimations;
+	unordered_map<string, int>	       m_frameIndices;
 	float							   m_elapsedTime;
 
 public:
@@ -21,8 +21,10 @@ public:
 	
 	bool IsFinished();
 
-	void SetFrameIndex(int frameIndex);
-	int GetFrameIndex();
+	void SetFrameIndex(int frameIndex, const string& key);
+	int GetFrameIndex(const string& key);
+
+	void SetWeight(const string& key, float fWeight);
 
 	void Play(const string& key, bool isLoop, bool duplicatable = false);
 
@@ -49,22 +51,6 @@ public:
 	virtual void Load(ifstream& in);
 
 	virtual void UpdateShaderVariables();
-
-	virtual void Update();
-};
-
-//=========================================================================================================================
-
-class CUIAnimator : public CAnimator
-{
-private:
-	vector<CObject*> m_uiFrameCache;
-
-public:
-	CUIAnimator();
-	virtual ~CUIAnimator();
-
-	virtual void Load(ifstream& in);
 
 	virtual void Update();
 };

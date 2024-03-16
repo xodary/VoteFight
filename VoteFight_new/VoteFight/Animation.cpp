@@ -6,7 +6,8 @@
 CAnimation::CAnimation() :
 	m_frameRate(),
 	m_frameCount(),
-	m_duration()
+	m_duration(),
+	m_weight(1.0f)
 {
 }
 
@@ -27,6 +28,16 @@ int CAnimation::GetFrameCount()
 float CAnimation::GetDuration()
 {
 	return m_duration;
+}
+
+float CAnimation::GetWeight()
+{
+	return m_weight;
+}
+
+void CAnimation::SetWeight(const float fWeight)
+{
+	m_weight = fWeight;
 }
 
 //=========================================================================================================================

@@ -18,8 +18,8 @@ CAnimator::CAnimator() :
 	m_isLoop(),
 	m_isFinished(),
 	m_animations(),
-	m_playingAnimation(),
-	m_frameIndex(),
+	m_playingAnimations(),
+	m_frameIndices(),
 	m_elapsedTime()
 {
 }
@@ -33,33 +33,38 @@ bool CAnimator::IsFinished()
 	return m_isFinished;
 }
 
-void CAnimator::SetFrameIndex(int frameIndex)
+void CAnimator::SetFrameIndex(int frameIndex, const string& key)
 {
-	if ((frameIndex < 0) || (frameIndex >= m_playingAnimation->GetFrameCount()))
+	if ((frameIndex < 0) || (frameIndex >= m_playingAnimations[key]->GetFrameCount()))
 	{
 		return;
 	}
 
-	m_frameIndex = frameIndex;
+	m_frameIndices[key] = frameIndex;
 }
 
-int CAnimator::GetFrameIndex()
+int CAnimator::GetFrameIndex(const string& key)
 {
-	return m_frameIndex;
+	return m_frameIndices[key];
+}
+
+void CAnimator::SetWeight(const string& key, float fWeight)
+{
+	m_animations[key]->SetWeight(fWeight);
 }
 
 void CAnimator::Play(const string& key, bool isLoop, bool duplicatable)
 {
-	// 중복을 허용했다면, 동일 애니메이션으로 전이할 수 있다.
-	if ((m_animations.find(key) == m_animations.end()) || ((!duplicatable) && (m_animations[key] == m_playingAnimation)))
-	{
-		return;
-	}
+	//// 중복을 허용했다면, 동일 애니메이션으로 전이할 수 있다.
+	//if ((m_animations.find(key) == m_animations.end()) || ((!duplicatable) && (m_animations[key] == m_playingAnimations[key])))
+	//{
+	//	return;
+	//}
 
 	m_isLoop = isLoop;
 	m_isFinished = false;
-	m_playingAnimation = m_animations[key];
-	m_frameIndex = 0;
+	m_playingAnimations[key] = m_animations[key];
+	m_frameIndices[key] = 0;
 }
 
 //=========================================================================================================================
@@ -166,154 +171,100 @@ void CSkinningAnimator::UpdateShaderVariables()
 	}
 }
 
+XMFLOAT3 QuaternionToEuler(XMFLOAT4 q) {
+	XMFLOAT3 euler;
+
+	// Roll (X 축을 중심으로 회전하는 각도)
+	euler.x = XMConvertToDegrees(atan2(2 * (q.w * q.x + q.y * q.z), 1 - 2 * (q.x * q.x + q.y * q.y)));
+
+	// Pitch (Y 축을 중심으로 회전하는 각도)
+	euler.y = XMConvertToDegrees(asin(2 * (q.w * q.y - q.z * q.x)));
+
+	// Yaw (Z 축을 중심으로 회전하는 각도)
+	euler.z = XMConvertToDegrees(atan2(2 * (q.w * q.z + q.x * q.y), 1 - 2 * (q.y * q.y + q.z * q.z)));
+
+	return euler;
+}
+
 void CSkinningAnimator::Update()
 {
 	if ((m_isEnabled) && (!m_isFinished))
 	{
-		if (m_playingAnimation != nullptr)
+		for (int i = 0; i < m_skinnedMeshCache.size(); ++i)
 		{
-			m_elapsedTime += DT;
-
-			float duration = 1.0f / m_playingAnimation->GetFrameRate();
-
-			while (m_elapsedTime >= duration)
+			for (int j = 0; j < m_boneFrameCaches[i].size(); ++j)
 			{
-				// 축적된 시간이 애니메이션의 한 프레임 지속시간을 넘어서는 경우를 대비하여 0.0f으로 만드는 것이 아니라, 두 값의 차이로 설정한다.
-				m_elapsedTime -= duration;
-				++m_frameIndex;
+				CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[i][j]->GetComponent(COMPONENT_TYPE::TRANSFORM));
+				transform->SetLocalPosition(XMFLOAT3(0, 0, 0));
+				transform->SetLocalRotation(XMFLOAT3(0, 0, 0));
+				transform->SetLocalScale(XMFLOAT3(0, 0, 0));
+			}
+		}
 
-				if (m_frameIndex >= m_playingAnimation->GetFrameCount())
+		for (auto selectedAnimation : m_playingAnimations)
+		{
+			if (selectedAnimation.second != nullptr)
+			{
+				m_elapsedTime += DT;
+
+				float duration = 1.0f / selectedAnimation.second->GetFrameRate();
+
+				while (m_elapsedTime >= duration)
 				{
-					if (m_isLoop)
+					// 축적된 시간이 애니메이션의 한 프레임 지속시간을 넘어서는 경우를 대비하여 0.0f으로 만드는 것이 아니라, 두 값의 차이로 설정한다.
+					m_elapsedTime -= duration;
+
+					++m_frameIndices[selectedAnimation.first];
+
+					if (m_frameIndices[selectedAnimation.first] >= selectedAnimation.second->GetFrameCount())
 					{
-						m_frameIndex = 0;
+						if (m_isLoop)
+						{
+							m_frameIndices[selectedAnimation.first] = 0;
+						}
+						else
+						{
+							--m_frameIndices[selectedAnimation.first];
+							m_isFinished = true;
+							break;
+						}
 					}
-					else
+				}
+
+				// 이번 프레임의 애니메이션 변환 행렬을 각 뼈 프레임에 변환 행렬로 설정한다.
+				CSkinningAnimation* playingAnimation = static_cast<CSkinningAnimation*>(selectedAnimation.second);
+				const vector<vector<vector<XMFLOAT3>>>& bonePositions = playingAnimation->GetPositions();
+				const vector<vector<vector<XMFLOAT3>>>& boneRotations = playingAnimation->GetRotations();
+				const vector<vector<vector<XMFLOAT3>>>& boneScales = playingAnimation->GetScales();
+
+
+				for (int i = 0; i < m_skinnedMeshCache.size(); ++i)
+				{
+					for (int j = 0; j < m_boneFrameCaches[i].size(); ++j)
 					{
-						--m_frameIndex;
-						m_isFinished = true;
-						break;
+						CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[i][j]->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+						transform->SetLocalPosition(Vector3::Add(transform->GetLocalPosition(), Vector3::ScalarProduct(bonePositions[i][j][m_frameIndices[selectedAnimation.first]], selectedAnimation.second->GetWeight())));
+						XMFLOAT3 Rotation = boneRotations[i][j][m_frameIndices[selectedAnimation.first]];
+						if (Rotation.x - transform->GetLocalRotation().x > 180) Rotation.x -= 360;
+						if (Rotation.y - transform->GetLocalRotation().y > 180) Rotation.y -= 360;
+						if (Rotation.z - transform->GetLocalRotation().z > 180) Rotation.z -= 360; 
+						transform->SetLocalRotation(Vector3::Add(transform->GetLocalRotation(), Vector3::ScalarProduct(Rotation, selectedAnimation.second->GetWeight())));
+						transform->SetLocalScale(Vector3::Add(transform->GetLocalScale(), Vector3::ScalarProduct(boneScales[i][j][m_frameIndices[selectedAnimation.first]], selectedAnimation.second->GetWeight())));
 					}
 				}
 			}
+		}
 
-			// 이번 프레임의 애니메이션 변환 행렬을 각 뼈 프레임에 변환 행렬로 설정한다.
-			CSkinningAnimation* playingAnimation = static_cast<CSkinningAnimation*>(m_playingAnimation);
-			const vector<vector<vector<XMFLOAT3>>>& bonePositions = playingAnimation->GetPositions();
+		for (auto selectedAnimation : m_playingAnimations)
+		{
+			CSkinningAnimation* playingAnimation = static_cast<CSkinningAnimation*>(selectedAnimation.second);
 			const vector<vector<vector<XMFLOAT3>>>& boneRotations = playingAnimation->GetRotations();
-			const vector<vector<vector<XMFLOAT3>>>& boneScales = playingAnimation->GetScales();
-
-			for (int i = 0; i < m_skinnedMeshCache.size(); ++i)
-			{
-				for (int j = 0; j < m_boneFrameCaches[i].size(); ++j)
-				{
-					CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[i][j]->GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-					transform->SetLocalPosition(bonePositions[i][j][m_frameIndex]);
-					transform->SetLocalRotation(boneRotations[i][j][m_frameIndex]);
-					transform->SetLocalScale(boneScales[i][j][m_frameIndex]);
-				}
-			}
+			XMFLOAT3 Rotation = boneRotations[0][0][m_frameIndices[selectedAnimation.first]];
+			cout << selectedAnimation.first;
+			printf(" Angles: %.2f, %.2f, %.2f\n", Rotation.x, Rotation.y, Rotation.z);
 		}
-	}
-}
-
-//=========================================================================================================================
-
-CUIAnimator::CUIAnimator() :
-	m_uiFrameCache()
-{
-}
-
-CUIAnimator::~CUIAnimator()
-{
-}
-
-void CUIAnimator::Load(ifstream& in)
-{
-	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
-	CAssetManager::GetInstance()->LoadUIAnimations(in, m_owner->GetName());
-	const vector<CAnimation*>& animations = CAssetManager::GetInstance()->GetAnimations(m_owner->GetName());
-
-	for (const auto& animation : animations)
-	{
-		m_animations.emplace(animation->GetName(), animation);
-	}
-
-	// 스택을 사용하여 깊이 우선 탐색(DFS)으로 owner의 모든 객체를 순회하며 저장한다.
-	stack<CObject*> st;
-
-	st.push(m_owner);
-
-	while (!st.empty())
-	{
-		CObject* ui = st.top();
-
-		st.pop();
-		m_uiFrameCache.push_back(ui);
-
-		const vector<CObject*>& children = ui->GetChildren();
-
-		for (int i = static_cast<int>(children.size() - 1); i >= 0; --i)
-		{
-			st.push(children[i]);
-		}
-	}
-}
-
-void CUIAnimator::Update()
-{
-	if (m_isEnabled && !m_isFinished)
-	{
-		if (m_playingAnimation != nullptr)
-		{
-			m_elapsedTime += DT;
-
-			float duration = 1.0f / m_playingAnimation->GetFrameRate();
-
-			while (m_elapsedTime >= duration)
-			{
-				// 축적된 시간이 애니메이션의 한 프레임 지속시간을 넘어서는 경우를 대비하여 0.0f으로 만드는 것이 아니라, 두 값의 차이로 설정한다.
-				m_elapsedTime -= duration;
-				++m_frameIndex;
-
-				if (m_frameIndex >= m_playingAnimation->GetFrameCount())
-				{
-					if (m_isLoop)
-					{
-						m_frameIndex = 0;
-					}
-					else
-					{
-						--m_frameIndex;
-						m_isFinished = true;
-						break;
-					}
-				}
-			}
-
-			// 이번 프레임의 애니메이션 변환 행렬을 각 뼈 프레임에 변환 행렬로 설정한다.
-			CUIAnimation* playingAnimation = static_cast<CUIAnimation*>(m_playingAnimation);
-			const vector<vector<XMFLOAT3>>& uiPositions = playingAnimation->GetPositions();
-			const vector<vector<XMFLOAT3>>& uiRotations = playingAnimation->GetRotations();
-			const vector<vector<XMFLOAT3>>& uiScales = playingAnimation->GetScales();
-			const vector<vector<XMFLOAT4>>& uiColors = playingAnimation->GetColors();
-
-			for (int i = 0, j = 0; i < m_uiFrameCache.size(); ++i)
-			{
-				CRectTransform* transform = static_cast<CRectTransform*>(m_uiFrameCache[i]->GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-				transform->SetLocalPosition(uiPositions[m_frameIndex][i]);
-				transform->SetLocalRotation(uiRotations[m_frameIndex][i]);
-				transform->SetLocalScale(uiScales[m_frameIndex][i]);
-
-				const vector<CMaterial*>& materials = m_uiFrameCache[i]->GetMaterials();
-
-				if (!materials.empty())
-				{
-					materials[0]->SetColor(uiColors[m_frameIndex][j++]);
-				}
-			}
-		}
+		CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[0][0]->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		printf("Local Rotatioin: %.2f, %.2f, %.2f\n", transform->GetLocalRotation().x, transform->GetLocalRotation().y, transform->GetLocalRotation().z);
 	}
 }

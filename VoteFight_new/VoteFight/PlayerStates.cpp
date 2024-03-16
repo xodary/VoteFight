@@ -24,8 +24,11 @@ CPlayerIdleState::~CPlayerIdleState()
 void CPlayerIdleState::Enter(CObject* object)
 {
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-
+	animator->Play("idle", true);
 	animator->Play("lisaWalk", true);
+	animator->SetWeight("lisaWalk", 0.2f);
+	animator->SetWeight("idle", 0.8f);
+
 }
 
 void CPlayerIdleState::Exit(CObject* object)
@@ -34,4 +37,8 @@ void CPlayerIdleState::Exit(CObject* object)
 
 void CPlayerIdleState::Update(CObject* object)
 {
+	if (KEY_HOLD(KEY::LBUTTON))
+	{
+		Sleep(1);
+	}
 }

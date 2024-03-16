@@ -3,7 +3,8 @@
 //
 // Functions for loading a DDS texture and creating a Direct3D runtime resource for it
 //
-// Note these functions are useful as a light-weight runtime loader for DDS files. For
+// Note these functions are useful as a light-
+//  runtime loader for DDS files. For
 // a full-featured DDS file reader, writer, and texture processing pipeline see
 // the 'Texconv' sample and the 'DirectXTex' library.
 //
