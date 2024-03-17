@@ -206,30 +206,9 @@ void CCamera::Update()
 	{
 		CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 		CTransform* targetTransform = static_cast<CTransform*>(m_target->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		XMFLOAT3 rotation = Vector3::Add(XMFLOAT3(transform->GetRotation().x, 0.0f, 0.0f), targetTransform->GetRotation());
-
-		transform->SetRotation(rotation);
-
-		XMFLOAT4X4 rotationMatrix = Matrix4x4::Rotation(rotation);
 		XMFLOAT3 focusPosition = targetTransform->GetPosition();
 
-		if (m_isZoomIn)
-		{
-			XMFLOAT3 zoomDirection = Vector3::Normalize(Vector3::Add(transform->GetRight(), transform->GetForward()));
-
-			zoomDirection = Vector3::ScalarProduct(zoomDirection, m_magnification);
-			focusPosition = Vector3::Add(focusPosition, zoomDirection);
-		}
-
-		XMFLOAT3 newPosition = Vector3::Add(focusPosition, Vector3::TransformNormal(m_offset, rotationMatrix));
-		XMFLOAT3 direction = Vector3::Subtract(newPosition, transform->GetPosition());
-		float length = m_speed * Vector3::Length(direction) * DT;
-
-		if (length > 0.0f)
-		{
-			direction = Vector3::Normalize(direction);
-			transform->Translate(Vector3::ScalarProduct(direction, length));
-		}
+		transform->SetPosition(Vector3::Add(focusPosition, m_offset));
 	}
 
 	RegenerateViewMatrix();

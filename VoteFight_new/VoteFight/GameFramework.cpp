@@ -404,7 +404,7 @@ void CGameFramework::CreateRootSignature()
 
 	CD3DX12_ROOT_PARAMETER d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::COUNT)] = {};
 
-	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::GameFramework)].InitAsConstantBufferView(0);					            // CB_GameFramework : register(b0)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::GameFramework)].InitAsConstantBufferView(0);					    // CB_GameFramework : register(b0)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CAMERA)].InitAsConstantBufferView(1);						        // CB_Camera : register(b1)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::GAME_SCENE)].InitAsConstantBufferView(2);					        // CB_GameScene : register(b2)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::OBJECT)].InitAsConstants(23, 3);							        // CB_Object : register(b3)

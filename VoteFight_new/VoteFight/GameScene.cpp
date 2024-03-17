@@ -57,7 +57,7 @@ void CGameScene::ReleaseShaderVariables()
 
 void CGameScene::Enter()
 {
-	ShowCursor(false);
+	// ShowCursor(false);
 
 	// 카메라의 타겟 설정
 	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);

@@ -40,4 +40,73 @@ void CInputManager::Init()
 
 void CInputManager::Update()
 {
+	// 현재 윈도우가 포커싱 상태인지 알아낸다.
+	HWND hWnd = GetFocus();
+
+	if (hWnd != nullptr)
+	{
+		for (int i = 0; i < (int)KEY::COUNT; ++i)
+		{
+			// 이번 프레임에 키가 눌렸다.
+			if (GetAsyncKeyState(m_virtualKey[i]) & 0x8000)
+			{
+				// 이전 프레임에도 키가 눌려 있었다.
+				if (m_keyInfo[i].m_isPressed)
+				{
+					m_keyInfo[i].m_state = KEY_STATE::HOLD;
+				}
+				else
+				{
+					m_keyInfo[i].m_state = KEY_STATE::TAP;
+				}
+
+				m_keyInfo[i].m_isPressed = true;
+			}
+			else
+			{
+				// 이전 프레임에 키가 눌려 있었다.
+				if (m_keyInfo[i].m_isPressed)
+				{
+					m_keyInfo[i].m_state = KEY_STATE::AWAY;
+				}
+				else
+				{
+					m_keyInfo[i].m_state = KEY_STATE::NONE;
+				}
+
+				m_keyInfo[i].m_isPressed = false;
+			}
+		}
+	}
+	// 윈도우 포커싱이 해제된 경우
+	else
+	{
+		for (int i = 0; i < (int)KEY::COUNT; ++i)
+		{
+			switch (m_keyInfo[i].m_state)
+			{
+			case KEY_STATE::TAP:
+			case KEY_STATE::HOLD:
+				m_keyInfo[i].m_state = KEY_STATE::AWAY;
+				break;
+			case KEY_STATE::AWAY:
+				m_keyInfo[i].m_state = KEY_STATE::NONE;
+				break;
+			}
+
+			m_keyInfo[i].m_isPressed = false;
+		}
+	}
+
+	// 마우스 커서의 위치 계산
+	POINT point = {};
+
+	// 이 함수는 윈도우 전체 영역을 기준으로 커서의 위치를 계산한다.
+	GetCursorPos(&point);
+
+	// 스크린 좌표를 클라이언트 기준 좌표로 계산한다.
+	ScreenToClient(CGameFramework::GetInstance()->GetHwnd(), &point);
+
+	m_oldCursor = m_cursor;
+	m_cursor = XMFLOAT2((float)point.x, (float)point.y);
 }
