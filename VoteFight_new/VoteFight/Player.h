@@ -9,11 +9,15 @@ private:
 	string	 m_spineName;
 	float	 m_spineAngle;
 	float    m_turnAngle;
+	float	 m_clickAngle;
 
 public:
+	
 	CPlayer();
 	virtual ~CPlayer();
 
+	void SetClickAngle(float clickAngle);
+	float GetClickAngle();
 	void SetTurnAngle(float look);
 	float GetTurnAngle();
 	string GetSpineName();

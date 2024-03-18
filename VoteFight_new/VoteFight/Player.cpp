@@ -26,6 +26,16 @@ CPlayer::~CPlayer()
 {
 }
 
+void CPlayer::SetClickAngle(float clickAngle)
+{
+	m_clickAngle = clickAngle;
+}
+
+float CPlayer::GetClickAngle()
+{
+	return m_clickAngle;
+}
+
 void CPlayer::SetTurnAngle(float look)
 {
 	m_turnAngle = look;

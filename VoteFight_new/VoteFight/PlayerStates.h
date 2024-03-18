@@ -50,6 +50,7 @@ class CPlayerLeftTurn : public CState, public CSingleton<CPlayerLeftTurn>
 {
 	friend class CSingleton;
 	float restAngle;
+	float lookAngle;
 
 private:
 	CPlayerLeftTurn();
@@ -66,6 +67,7 @@ class CPlayerRightTurn : public CState, public CSingleton<CPlayerRightTurn>
 {
 	friend class CSingleton;
 	float restAngle;
+	float lookAngle;
 
 private:
 	CPlayerRightTurn();
