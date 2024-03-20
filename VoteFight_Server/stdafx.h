@@ -82,8 +82,6 @@ struct SERVER_TO_CLIENT_DATA
 
 	XMFLOAT4X4          m_PlayerWorldMatrixes[MAX_CLIENT_CAPACITY]{};
 	//ANIMATION_CLIP_TYPE m_PlayerAnimationClipTypes[MAX_CLIENT_CAPACITY]{};
-
-	XMFLOAT3            m_TowerLightDirection{};
 };
 
 namespace Server
