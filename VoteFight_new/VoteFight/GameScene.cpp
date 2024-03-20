@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Skybox.h"
 #include "GameScene.h"
 #include "GameFramework.h"
 #include "TimeManager.h"
@@ -76,10 +77,9 @@ void CGameScene::Init()
 	Load("GameScene.bin");
 	// LoadUI("GameSceneUI.bin");
 
-	//// 스카이박스 추가
-	//CObject* object = new CSkyBox();
-
-	//AddObject(GROUP_TYPE::BILBOARD, object);
+	// 스카이박스 추가
+	CObject* object = new CSkyBox();
+	AddObject(GROUP_TYPE::SKYBOX, object);
 
 	//// 충돌 그룹 설정
 	//CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::PLAYER);

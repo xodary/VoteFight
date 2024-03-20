@@ -100,6 +100,24 @@
     <Filter Include="헤더 파일\06. Asset\Shader">
       <UniqueIdentifier>{36026cfd-604a-4fd8-acd5-13db62a38797}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\05. Object\05-02. Bilboard">
+      <UniqueIdentifier>{838128a1-bbcc-4046-a2ae-a49585664bd5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\05. Object\05-02. Bilboard">
+      <UniqueIdentifier>{8d65048f-72c3-4d75-9aa8-f6abb921b67d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\05. Object\05-03. Skybox">
+      <UniqueIdentifier>{4c3eaae2-795b-4758-9129-7c4d3e5f1b56}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\05. Object\05-03. Skybox">
+      <UniqueIdentifier>{6cc46218-a1a7-4201-9f8e-aec5b758d550}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\05. Object\05-04. Terrain">
+      <UniqueIdentifier>{c76545a9-418c-41e2-a6c3-c0107744ddce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\05. Object\05-04. Terrain">
+      <UniqueIdentifier>{b43e31a2-88fc-43ab-abbb-5ac58877a58c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -204,6 +222,15 @@
     <ClInclude Include="ObjectShader.h">
       <Filter>헤더 파일\06. Asset\Shader</Filter>
     </ClInclude>
+    <ClInclude Include="SkyboxShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="Terrain.h">
+      <Filter>헤더 파일\05. Object\05-04. Terrain</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -301,6 +328,21 @@
     </ClCompile>
     <ClCompile Include="ObjectShader.cpp">
       <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SkyboxShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox.h">
+      <Filter>헤더 파일\05. Object\05-03. Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="Skybox.cpp">
+      <Filter>소스 파일\05. Object\05-03. Skybox</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Terrain.cpp">
+      <Filter>소스 파일\05. Object\05-04. Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

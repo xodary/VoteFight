@@ -90,6 +90,12 @@ void CTexture::UpdateShaderVariable()
 	case TEXTURE_TYPE::NORMAL_MAP:
 		d3d12GraphicsCommandList->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::NORMAL_MAP), m_d3d12GpuDescriptorHandle);
 		break;
+	case TEXTURE_TYPE::CUBE_MAP:
+		d3d12GraphicsCommandList->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::CUBE_MAP), m_d3d12GpuDescriptorHandle);
+		break;
+	case TEXTURE_TYPE::SHADOW_MAP:
+		d3d12GraphicsCommandList->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::SHADOW_MAP), m_d3d12GpuDescriptorHandle);
+		break;
 	}
 }
 

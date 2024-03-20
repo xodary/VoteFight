@@ -4,6 +4,8 @@
 #include "SkinnedMesh.h"
 #include "Texture.h"
 #include "ObjectShader.h"
+#include "SkyboxShader.h"
+#include "TerrainShader.h"
 #include "Material.h"
 #include "Animation.h"
 
@@ -131,6 +133,16 @@ void CAssetManager::LoadShaders()
 	shader->SetName("Object");
 	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CSkyboxShader();
+	shader->SetName("Skybox");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	// shader = new CTerrainShader();
+	// shader->SetName("Terrain");
+	// shader->CreatePipelineStates(1);
+	// m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)

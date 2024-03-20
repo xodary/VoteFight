@@ -82,9 +82,11 @@ cbuffer cbBoneTransformInfo : register(b6)
 
 Texture2D gtxtAlbedoTexture : register(t0);
 Texture2D gtxtNormalTexture : register(t1);
+TextureCube gtxtCubeTexture : register(t2);
 
 SamplerState samplerState : register(s0);
 SamplerState pcfSamplerState : register(s1);
+SamplerState gssClamp : register(s2);
 
 struct VS_STANDARD_INPUT
 {
@@ -174,16 +176,35 @@ VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
 	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
 	output.uv = input.uv;
 
-	
-    //output.positionW = input.position;
-
-    //output.normalW = input.normal;
-    //output.tangentW = input.tangent;
-
-    //output.bitangentW = input.bitangent;
-	
-    //output.position = input.position;
-
-    //output.uv = input.uv;
 	return(output);
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+struct VS_SKYBOX_CUBEMAP_INPUT
+{
+    float3 position : POSITION;
+};
+
+struct VS_SKYBOX_CUBEMAP_OUTPUT
+{
+    float3 positionL : POSITION;
+    float4 position : SV_POSITION;
+};
+
+VS_SKYBOX_CUBEMAP_OUTPUT VS_SkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
+{
+    VS_SKYBOX_CUBEMAP_OUTPUT output;
+
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    output.positionL = input.position;
+
+    return (output);
+}
+
+float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
+{
+    float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
+
+    return (cColor);
 }
