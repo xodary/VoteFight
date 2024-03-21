@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "SceneManager.h"
-
 #include "GameFramework.h"
-
 #include "GameScene.h"
 
 CSceneManager::CSceneManager() :
@@ -73,8 +71,3 @@ void CSceneManager::PostRender()
 {
 	m_currentScene->PostRender();
 }
-
-//void CSceneManager::ProcessPacket()
-//{
-//	m_currentScene->ProcessPacket();
-//}

@@ -6,8 +6,6 @@
 
 #include "Object.h"
 
-#include "NavMesh.h"
-
 #include "Transform.h"
 
 CRigidBody::CRigidBody() :
@@ -95,17 +93,13 @@ void CRigidBody::AddVelocity(const XMFLOAT3& velocity)
 }
 
 void CRigidBody::MovePosition()
-{    
+{
     CTransform* transform = static_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
     const XMFLOAT3& position = transform->GetPosition();
     XMFLOAT3 shift = Vector3::ScalarProduct(m_velocity, DT);
     XMFLOAT3 newPosition = Vector3::Add(position, shift);
-    CNavMesh* navMesh = static_cast<CNavMesh*>(CAssetManager::GetInstance()->GetMesh("NavMesh"));
 
-    if (navMesh->IsInNavMesh(position, newPosition))
-    {
-        transform->SetPosition(newPosition);
-    }
+    transform->SetPosition(newPosition);
 }
 
 void CRigidBody::Update()

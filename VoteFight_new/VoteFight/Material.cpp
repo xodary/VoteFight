@@ -1,10 +1,7 @@
 #include "pch.h"
 #include "Material.h"
-
 #include "GameFramework.h"
-
 #include "AssetManager.h"
-
 #include "Texture.h"
 #include "Shader.h"
 
@@ -57,9 +54,6 @@ void CMaterial::SetTexture(CTexture* texture)
 			break;
 		case TEXTURE_TYPE::NORMAL_MAP:
 			m_textureMask |= TEXTURE_MASK_NORMAL_MAP;
-			break;
-		case TEXTURE_TYPE::SHADOW_MAP:
-			m_textureMask |= TEXTURE_MASK_SHADOW_MAP;
 			break;
 		}
 

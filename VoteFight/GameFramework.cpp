@@ -7,7 +7,7 @@
 
 CGameFramework::CGameFramework()
 {
-	ConnectServer();
+	// ConnectServer();
 
 	m_pdxgiFactory = NULL;
 	m_pdxgiSwapChain = NULL;

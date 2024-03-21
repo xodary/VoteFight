@@ -16,8 +16,6 @@ public:
 	virtual void Update(CObject* object);
 };
 
-//=========================================================================================================================
-
 class CPlayerWalkState : public CState, public CSingleton<CPlayerWalkState>
 {
 	friend class CSingleton;
@@ -32,8 +30,6 @@ public:
 
 	virtual void Update(CObject* object);
 };
-
-//=========================================================================================================================
 
 class CPlayerRunState : public CState, public CSingleton<CPlayerRunState>
 {
@@ -50,15 +46,15 @@ public:
 	virtual void Update(CObject* object);
 };
 
-//=========================================================================================================================
-
-class CPlayerPunchState : public CState, public CSingleton<CPlayerPunchState>
+class CPlayerLeftTurn : public CState, public CSingleton<CPlayerLeftTurn>
 {
 	friend class CSingleton;
+	float restAngle;
+	float lookAngle;
 
 private:
-	CPlayerPunchState();
-	virtual ~CPlayerPunchState();
+	CPlayerLeftTurn();
+	virtual ~CPlayerLeftTurn();
 
 public:
 	virtual void Enter(CObject* object);
@@ -67,32 +63,15 @@ public:
 	virtual void Update(CObject* object);
 };
 
-//=========================================================================================================================
-
-class CPlayerShootState : public CState, public CSingleton<CPlayerShootState>
+class CPlayerRightTurn : public CState, public CSingleton<CPlayerRightTurn>
 {
 	friend class CSingleton;
+	float restAngle;
+	float lookAngle;
 
 private:
-	CPlayerShootState();
-	virtual ~CPlayerShootState();
-
-public:
-	virtual void Enter(CObject* object);
-	virtual void Exit(CObject* object);
-
-	virtual void Update(CObject* object);
-};
-
-//=========================================================================================================================
-
-class CPlayerDieState : public CState, public CSingleton<CPlayerDieState>
-{
-	friend class CSingleton;
-
-private:
-	CPlayerDieState();
-	virtual ~CPlayerDieState();
+	CPlayerRightTurn();
+	virtual ~CPlayerRightTurn();
 
 public:
 	virtual void Enter(CObject* object);

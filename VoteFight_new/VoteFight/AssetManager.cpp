@@ -1,11 +1,11 @@
 #include "pch.h"
 #include "AssetManager.h"
-
 #include "GameFramework.h"
-
 #include "SkinnedMesh.h"
 #include "Texture.h"
 #include "ObjectShader.h"
+#include "SkyboxShader.h"
+#include "TerrainShader.h"
 #include "Material.h"
 #include "Animation.h"
 
@@ -70,7 +70,7 @@ void CAssetManager::LoadMeshes(const string& fileName)
 			CSkinnedMesh* skinnedMesh = new CSkinnedMesh(*GetMesh(str));
 
 			skinnedMesh->LoadSkinInfo(in);
-			m_meshes.emplace(skinnedMesh->GetName(), skinnedMesh);
+			m_meshes[skinnedMesh->GetName()] = skinnedMesh;
 		}
 		else if (str == "</Meshes>")
 		{
@@ -129,32 +129,20 @@ void CAssetManager::LoadTextures(const string& fileName)
 
 void CAssetManager::LoadShaders()
 {
-	//// 렌더링에 필요한 셰이더 객체(PSO)를 생성한다.
-	//CShader* shader = new CDepthWriteShader();
-
-	//shader->SetName("DepthWrite");
-	//shader->CreatePipelineStates(3);
-	//m_shaders.emplace(shader->GetName(), shader);
-
 	CShader* shader = new CObjectShader();
 	shader->SetName("Object");
 	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	//shader = new CBilboardShader();
-	//shader->SetName("Bilboard");
-	//shader->CreatePipelineStates(2);
-	//m_shaders.emplace(shader->GetName(), shader);
+	shader = new CSkyboxShader();
+	shader->SetName("Skybox");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
 
-	//shader = new CUIShader();
-	//shader->SetName("UI");
-	//shader->CreatePipelineStates(2);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	//shader = new CWireFrameShader();
-	//shader->SetName("WireFrame");
-	//shader->CreatePipelineStates(1);
-	//m_shaders.emplace(shader->GetName(), shader);
+	// shader = new CTerrainShader();
+	// shader->SetName("Terrain");
+	// shader->CreatePipelineStates(1);
+	// m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)
@@ -196,12 +184,11 @@ void CAssetManager::LoadMaterials(const string& fileName)
 
 void CAssetManager::LoadSkinningAnimations(const string& fileName)
 {
-	// str.length() - 14 : _Animation.bin
-	string modelName = fileName.substr(0, fileName.length() - 14);
+	string modelName = fileName;
 
 	if (m_animations.find(modelName) == m_animations.end())
 	{
-		string filePath = m_assetPath + "Animation\\" + fileName;
+		string filePath = m_assetPath + "Animation\\" + fileName + "_Animation.bin";
 		ifstream in(filePath, ios::binary);
 		string str;
 
@@ -269,12 +256,17 @@ const string& CAssetManager::GetAssetPath()
 	return m_assetPath;
 }
 
-CMesh* CAssetManager::GetMesh(const string& key)
+CMesh* CAssetManager::GetMesh(string& key)
 {
 	CMesh* mesh = nullptr;
 
-	if (m_meshes.find(key) != m_meshes.end())
-	{
+	int num = key.find("_Instance");
+		
+	if (num != string::npos) {
+		key = key.substr(0, num);
+	}
+
+	if (m_meshes.find(key) != m_meshes.end()) {
 		mesh = m_meshes[key];
 	}
 
@@ -333,10 +325,10 @@ int CAssetManager::GetShaderCount()
 	return static_cast<int>(m_shaders.size());
 }
 
-CMaterial* CAssetManager::CreateMaterial(const string& key)
+CMaterial* CAssetManager::CreateMaterial(string& key)
 {
 	CMaterial* material = GetMaterial(key);
-
+	
 	if (material == nullptr)
 	{
 		material = new CMaterial();
@@ -348,7 +340,7 @@ CMaterial* CAssetManager::CreateMaterial(const string& key)
 	return material;
 }
 
-CMaterial* CAssetManager::CreateMaterialInstance(const string& key)
+CMaterial* CAssetManager::CreateMaterialInstance(string& key)
 {
 	CMaterial* material = GetMaterial(key);
 
@@ -362,9 +354,15 @@ CMaterial* CAssetManager::CreateMaterialInstance(const string& key)
 	return material;
 }
 
-CMaterial* CAssetManager::GetMaterial(const string& key)
+CMaterial* CAssetManager::GetMaterial(string& key)
 {
 	CMaterial* material = nullptr;
+
+	int num = key.find("_(Instance)");
+
+	if (num != string::npos) {
+		key = key.substr(0, num);
+	}
 
 	if (m_materials.find(key) != m_materials.end())
 	{
@@ -426,9 +424,24 @@ void CAssetManager::CreateShaderResourceViews()
 	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
 	UINT descriptorIncrementSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
+
 	for (const auto& texture : m_textures)
 	{
-		d3d12Device->CreateShaderResourceView(texture.second->GetTexture(), nullptr, d3d12CpuDescriptorHandle);
+		ID3D12Resource* pShaderResource = texture.second->GetTexture();
+		if ((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP)	// Cubemap (Skybox) 
+		{
+			D3D12_SHADER_RESOURCE_VIEW_DESC d3dShaderResourceViewDesc;
+			d3dShaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			d3dShaderResourceViewDesc.Format = pShaderResource->GetDesc().Format;
+			d3dShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+			d3dShaderResourceViewDesc.TextureCube.MipLevels = 1;
+			d3dShaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
+			d3dShaderResourceViewDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+
+			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, d3d12CpuDescriptorHandle);
+		}
+		else
+			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, d3d12CpuDescriptorHandle);
 		texture.second->SetGpuDescriptorHandle(d3d12GpuDescriptorHandle);
 
 		d3d12CpuDescriptorHandle.ptr += descriptorIncrementSize;

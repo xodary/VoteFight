@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "InputManager.h"
-
 #include "GameFramework.h"
 
 CInputManager::CInputManager() :

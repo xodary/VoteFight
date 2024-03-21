@@ -13,6 +13,9 @@
 
 #define EPSILON				    0.01f
 
+#define FRAME_BUFFER_WIDTH		1920
+#define FRAME_BUFFER_HEIGHT		1080 
+
 #define TERRAIN_WIDTH			400
 #define TERRAIN_HEIGHT			400
 #define DEPTH_BUFFER_WIDTH	    2048
@@ -61,22 +64,16 @@ enum class MSG_TYPE
 
 enum class SCENE_TYPE
 {
-	TITLE,
 	GAME,
-	ENDING,
-	CREDIT,
 	
 	COUNT
 };
 
 enum class GROUP_TYPE
 {
-	TRIGGER,
-	TERRAIN,
 	STRUCTURE,
 	PLAYER,
-	BILBOARD,
-	UI,
+	SKYBOX,
 
 	COUNT
 };
@@ -96,8 +93,6 @@ enum class COMPONENT_TYPE
 enum class CAMERA_TYPE
 {
 	MAIN,
-	UI,
-	LIGHT,
 
 	COUNT
 };
@@ -156,7 +151,6 @@ enum class TRIGGER_TYPE
 enum class RENDER_TYPE
 {
 	STANDARD,
-	DEPTH_WRITE,
 
 	COUNT
 };
@@ -181,6 +175,7 @@ enum class ROOT_PARAMETER_TYPE
 	BONE_TRANSFORM,
 	ALBEDO_MAP,
 	NORMAL_MAP,
+	CUBE_MAP,
 	SHADOW_MAP,
 
 	COUNT
@@ -190,6 +185,7 @@ enum class TEXTURE_TYPE
 {
 	ALBEDO_MAP,
 	NORMAL_MAP,
+	CUBE_MAP,
 	SHADOW_MAP,
 
 	COUNT

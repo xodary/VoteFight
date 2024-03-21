@@ -57,8 +57,6 @@ private:
 	virtual void UpdateShaderVariables();
 	virtual void ReleaseShaderVariables();
 
-	void UpdateLightTower();
-
 public:
 	virtual ~CGameScene();
 

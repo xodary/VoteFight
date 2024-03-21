@@ -1,18 +1,11 @@
 #include "pch.h"
 #include "Scene.h"
-
 #include "GameFramework.h"
-
 #include "AssetManager.h"
 #include "CameraManager.h"
-
 #include "Player.h"
-#include "UI.h"
-#include "Trigger.h"
-
 #include "Animator.h"
 #include "Transform.h"
-
 #include "Camera.h"
 
 CScene::CScene() :
@@ -73,7 +66,6 @@ void CScene::Load(const string& fileName)
 
 			switch (groupType)
 			{
-			case GROUP_TYPE::TERRAIN:
 			case GROUP_TYPE::STRUCTURE:
 			case GROUP_TYPE::PLAYER:
 				for (int i = 0; i < instanceCount; ++i)
@@ -94,30 +86,6 @@ void CScene::Load(const string& fileName)
 			}
 		}
 		else if (str == "</Scene>")
-		{
-			cout << endl;
-			break;
-		}
-	}
-}
-
-void CScene::LoadUI(const string& fileName)
-{
-	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
-	ifstream in(filePath, ios::binary);
-	string str;
-
-	while (true)
-	{
-		File::ReadStringFromFile(in, str);
-
-		if (str == "<UI>")
-		{
-			CUI* ui = CUI::Load(in);
-
-			AddObject(GROUP_TYPE::UI, ui);
-		}
-		else if (str == "</UIs>")
 		{
 			cout << endl;
 			break;
@@ -201,7 +169,7 @@ void CScene::Render()
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
 
-	for (int i = 0; i <= static_cast<int>(GROUP_TYPE::BILBOARD); ++i)
+	for (int i = 0; i < static_cast<int>(GROUP_TYPE::COUNT); ++i)
 	{
 		for (const auto& object : m_objects[i])
 		{
@@ -209,18 +177,6 @@ void CScene::Render()
 			{
 				object->Render(camera);
 			}
-		}
-	}
-	
-	camera = CCameraManager::GetInstance()->GetUICamera();
-	camera->RSSetViewportsAndScissorRects();
-	camera->UpdateShaderVariables();
-
-	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
-	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
-		{
-			object->Render(camera);
 		}
 	}
 }

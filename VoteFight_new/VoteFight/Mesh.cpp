@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "Mesh.h"
-
 #include "GameFramework.h"
 
 CMesh::CMesh() :
@@ -292,7 +291,7 @@ bool CMesh::CheckRayIntersection(const XMFLOAT3& rayOrigin, const XMFLOAT3& rayD
 void CMesh::Render(int subSetIndex)
 {
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] = { m_d3d12PositionBufferView, m_d3d12NormalBufferView, m_d3d12TangentBufferView, m_d3d12BiTangentBufferView, m_d3d12TexCoordBufferView };
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] = { m_d3d12PositionBufferView, m_d3d12TexCoordBufferView, m_d3d12NormalBufferView, m_d3d12TangentBufferView, m_d3d12BiTangentBufferView };
 
 	d3d12GraphicsCommandList->IASetVertexBuffers(0, _countof(vertexBufferViews), vertexBufferViews);
 	d3d12GraphicsCommandList->IASetPrimitiveTopology(m_d3d12PrimitiveTopology);

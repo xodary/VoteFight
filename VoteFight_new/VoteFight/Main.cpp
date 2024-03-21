@@ -51,7 +51,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         }
         else // 메세지가 없는 경우 호출
         {
-            // CGameFramework::GetInstance()->AdvanceFrame();
+            CGameFramework::GetInstance()->AdvanceFrame();
         }
     }
 
@@ -97,7 +97,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
-    // CGameFramework::GetInstance()->Init(hWnd, resolution);
+    CGameFramework::GetInstance()->Init(hWnd, resolution);
 
     return TRUE;
 }

@@ -6,13 +6,23 @@ class CPlayer : public CCharacter
 private:
 	bool	 m_isAiming;
 	int	     m_bulletCount;
-
-	//bool     m_hasKey;
+	string	 m_spineName;
+	float	 m_spineAngle;
+	float    m_turnAngle;
+	float	 m_clickAngle;
 
 public:
+	
 	CPlayer();
 	virtual ~CPlayer();
 
+	void SetClickAngle(float clickAngle);
+	float GetClickAngle();
+	void SetTurnAngle(float look);
+	float GetTurnAngle();
+	string GetSpineName();
+	float GetSpineAngle();
+	void SetSpineAngle(float angle);
 	void SetAiming(bool isAiming);
 	bool IsAiming();
 
