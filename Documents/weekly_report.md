@@ -197,3 +197,15 @@
 - 황유림: 새로운 구조에서 프로그램이 돌아가도록 변경하기.
 - 엄미영: object, light, animation … file upload coding
 - 이시영: 코드 분석 및 구조 수정, 리소스 수집
+
+---
+
+# 24/03/11 ~ 24/03/21
+
+### weekly report
+- 03/21 회의진행 [240321회의록](Meeting_report/report_240321.md)
+
+### weekly plan
+- 이시영: 터레인, 45도 회전
+- 황유림: UI, 바운딩 박스 & 충돌처리, 카툰풍 조명
+- 엄미영: VoteFight_new client-server 연결, 불러온 파일 이용해서 플레이어 이동 처리 시도
