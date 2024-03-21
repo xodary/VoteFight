@@ -424,9 +424,24 @@ void CAssetManager::CreateShaderResourceViews()
 	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
 	UINT descriptorIncrementSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
+
 	for (const auto& texture : m_textures)
 	{
-		d3d12Device->CreateShaderResourceView(texture.second->GetTexture(), nullptr, d3d12CpuDescriptorHandle);
+		ID3D12Resource* pShaderResource = texture.second->GetTexture();
+		if ((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP)	// Cubemap (Skybox) 
+		{
+			D3D12_SHADER_RESOURCE_VIEW_DESC d3dShaderResourceViewDesc;
+			d3dShaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+			d3dShaderResourceViewDesc.Format = pShaderResource->GetDesc().Format;
+			d3dShaderResourceViewDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURECUBE;
+			d3dShaderResourceViewDesc.TextureCube.MipLevels = 1;
+			d3dShaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
+			d3dShaderResourceViewDesc.TextureCube.ResourceMinLODClamp = 0.0f;
+
+			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, d3d12CpuDescriptorHandle);
+		}
+		else
+			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, d3d12CpuDescriptorHandle);
 		texture.second->SetGpuDescriptorHandle(d3d12GpuDescriptorHandle);
 
 		d3d12CpuDescriptorHandle.ptr += descriptorIncrementSize;

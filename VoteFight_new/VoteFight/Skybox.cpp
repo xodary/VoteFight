@@ -88,11 +88,12 @@ void CSkyBox::Render(CCamera* camera)
 
 	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	d3d12GraphicsCommandList->IASetVertexBuffers(0, 1, vertexBufferViews);
-	// d3d12GraphicsCommandList->DrawInstanced(m_maxVertexCount, 1, 0, 0);
 
 	CMaterial* material = GetMaterials()[0];
 
 	material->SetPipelineState(RENDER_TYPE::STANDARD);
+	XMFLOAT4X4 xmf4x4world = Matrix4x4::Identity();
+	d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::OBJECT), 16, &xmf4x4world, 0);
 	material->UpdateShaderVariables();
 
 	d3d12GraphicsCommandList->DrawInstanced(m_maxVertexCount, 1, 0, 0);

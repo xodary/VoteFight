@@ -231,6 +231,9 @@
     <ClInclude Include="Terrain.h">
       <Filter>헤더 파일\05. Object\05-04. Terrain</Filter>
     </ClInclude>
+    <ClInclude Include="Skybox.h">
+      <Filter>헤더 파일\05. Object\05-03. Skybox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -331,9 +334,6 @@
     </ClCompile>
     <ClCompile Include="SkyboxShader.cpp">
       <Filter>소스 파일\06. Asset\Shader</Filter>
-    </ClCompile>
-    <ClCompile Include="Skybox.h">
-      <Filter>헤더 파일\05. Object\05-03. Skybox</Filter>
     </ClCompile>
     <ClCompile Include="Skybox.cpp">
       <Filter>소스 파일\05. Object\05-03. Skybox</Filter>

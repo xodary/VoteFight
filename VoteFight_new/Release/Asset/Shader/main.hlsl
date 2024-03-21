@@ -179,8 +179,7 @@ VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
 	return(output);
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
+// ======== Skybox =========
 struct VS_SKYBOX_CUBEMAP_INPUT
 {
     float3 position : POSITION;
