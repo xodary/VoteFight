@@ -63,6 +63,8 @@ D3D12_SHADER_BYTECODE CObjectShader::CreateVertexShader(ID3DBlob* d3d12ShaderBlo
 		return Compile("main.hlsl", "VS_Main", "vs_5_1", d3d12ShaderBlob);
 	case 1: // With Skinning
 		return Compile("main.hlsl", "VS_Main_Skinning", "vs_5_1", d3d12ShaderBlob);
+	case 2: // Terrain
+		return Compile("main.hlsl", "VS_Main_Skinning", "vs_5_1", d3d12ShaderBlob);
 	}
 
 	return CShader::CreateVertexShader(d3d12ShaderBlob, stateNum);

@@ -349,5 +349,8 @@
     <FxCompile Include="..\Release\Asset\Shader\main.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
+    <FxCompile Include="Terrain.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

@@ -599,10 +599,14 @@ void CGameFramework::PopulateCommandList()
 
 void CGameFramework::AdvanceFrame()
 {
+
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
 
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
 	MoveToNextFrame();
+
+
+
 }

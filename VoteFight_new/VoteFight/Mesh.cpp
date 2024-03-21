@@ -259,7 +259,9 @@ bool CMesh::CheckRayIntersection(const XMFLOAT3& rayOrigin, const XMFLOAT3& rayD
 {
 	bool intersected = false;
 
-	// -1: BoundBox
+	// -1: Bound
+
+
 	int subMeshCount = (int)m_indices.size() - 1;
 	float nearestHitDistance = FLT_MAX;
 
