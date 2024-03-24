@@ -74,6 +74,7 @@ enum class GROUP_TYPE
 	STRUCTURE,
 	PLAYER,
 	SKYBOX,
+	UI,
 
 	COUNT
 };
@@ -93,6 +94,7 @@ enum class COMPONENT_TYPE
 enum class CAMERA_TYPE
 {
 	MAIN,
+	UI,
 
 	COUNT
 };

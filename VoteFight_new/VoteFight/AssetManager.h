@@ -36,7 +36,7 @@ public:
 	CMesh* GetMesh(string& key);
 	int GetMeshCount();
 
-	CTexture* CreateTexture(const string& key);
+	CTexture* CreateTexture(const string& key, const string& textureName, const TEXTURE_TYPE& type);
 	CTexture* GetTexture(const string& key);
 	int GetTextureCount();
 

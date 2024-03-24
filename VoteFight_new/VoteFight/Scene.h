@@ -39,6 +39,8 @@ public:
 
 	virtual void Init() = 0;
 
+	void LoadUI(const string& fileName);
+
 	void ReleaseUploadBuffers();
 
 	virtual void Update();

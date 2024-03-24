@@ -8,6 +8,7 @@
 #include "CameraManager.h"
 #include "Player.h"
 #include "Texture.h"
+#include "UI.h"
 #include "Shader.h"
 #include "StateMachine.h"
 #include "Animator.h"
@@ -75,7 +76,7 @@ void CGameScene::Init()
 {
 	// 씬 로드
 	Load("GameScene.bin");
-	// LoadUI("GameSceneUI.bin");
+	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
 	CObject* object = new CSkyBox();
@@ -119,3 +120,4 @@ void CGameScene::Render()
 {
 	CScene::Render();
 }
+

@@ -5,6 +5,7 @@
 #include "CameraManager.h"
 #include "Player.h"
 #include "Animator.h"
+#include "UI.h"
 #include "Transform.h"
 #include "Camera.h"
 
@@ -93,6 +94,31 @@ void CScene::Load(const string& fileName)
 	}
 }
 
+void CScene::LoadUI(const string& fileName)
+{
+	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
+	ifstream in(filePath, ios::binary);
+	string str;
+
+	while (true)
+	{
+		File::ReadStringFromFile(in, str);
+
+		if (str == "<UI>")
+		{
+			CUI* ui = CUI::Load(in);
+
+			AddObject(GROUP_TYPE::UI, ui);
+		}
+		else if (str == "</UIs>")
+		{
+			cout << endl;
+			break;
+		}
+	}
+}
+
+
 void CScene::CreateShaderVariables()
 {
 }
@@ -169,7 +195,7 @@ void CScene::Render()
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
 
-	for (int i = 0; i < static_cast<int>(GROUP_TYPE::COUNT); ++i)
+	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
 	{
 		for (const auto& object : m_objects[i])
 		{
@@ -179,6 +205,19 @@ void CScene::Render()
 			}
 		}
 	}
+
+	camera = CCameraManager::GetInstance()->GetUICamera();
+	camera->RSSetViewportsAndScissorRects();
+	camera->UpdateShaderVariables();
+
+	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
+	{
+		if ((object->IsActive()) && (!object->IsDeleted()))
+		{
+			object->Render(camera);
+		}
+	}
+
 }
 
 void CScene::PostRender()
