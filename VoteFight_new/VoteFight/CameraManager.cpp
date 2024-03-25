@@ -47,13 +47,13 @@ void CCameraManager::Init()
 	camera->CreateShaderVariables();
 	m_cameras.push_back(camera);
 
-	//camera = new CCamera(CAMERA_TYPE::UI);
-	//camera->SetViewport(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y), 0.0f, 1.0f);
-	//camera->SetScissorRect(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y));
-	//camera->GenerateOrthographicsProjectionMatrix(resolution.x, resolution.y, 0.0f, 30.0f);
-	//camera->GenerateViewMatrix(XMFLOAT3(0.0f, 0.0f, -10.0f), XMFLOAT3(0.0f, 0.0f, 1.0f));
-	//camera->CreateShaderVariables();
-	//m_cameras.push_back(camera);
+	camera = new CCamera(CAMERA_TYPE::UI);
+	camera->SetViewport(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y), 0.0f, 1.0f);
+	camera->SetScissorRect(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y));
+	camera->GenerateOrthographicsProjectionMatrix(resolution.x, resolution.y, 0.0f, 30.0f);
+	camera->GenerateViewMatrix(XMFLOAT3(0.0f, 0.0f, -10.0f), XMFLOAT3(0.0f, 0.0f, 1.0f));
+	camera->CreateShaderVariables();
+	m_cameras.push_back(camera);
 
 	//camera = new CCamera(CAMERA_TYPE::LIGHT);
 	//camera->SetViewport(0, 0, DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 0.0f, 1.0f);

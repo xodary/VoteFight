@@ -6,6 +6,12 @@ class CUI : public CObject
 private:
 	bool m_isFixed;      // 카메라의 영향을 받지 않아 위치가 고정적인지에 대한 여부
 	bool m_isCursorOver; // 현재 커서의 위치가 이 객체 위에 있는지에 대한 여부
+	
+	int						 m_vertexCount;
+
+	ComPtr<ID3D12Resource>	 m_d3d12VertexBuffer;
+	ComPtr<ID3D12Resource>	 m_d3d12VertexUploadBuffer;
+	D3D12_VERTEX_BUFFER_VIEW m_d3d12VertexBufferView;
 
 public:
 	CUI();
@@ -31,35 +37,4 @@ public:
 
 private:
 	void CheckCursorOver();
-};
-
-//=========================================================================================================================
-
-class CMissionUI : public CUI
-{
-public:
-	CMissionUI();
-	virtual ~CMissionUI();
-
-	virtual void Init();
-};
-
-//=========================================================================================================================
-
-class CKeyUI : public CUI
-{
-public:
-	CKeyUI();
-	virtual ~CKeyUI();
-};
-
-//=========================================================================================================================
-
-class CHitUI : public CUI
-{
-public:
-	CHitUI();
-	virtual ~CHitUI();
-
-	virtual void Init();
 };

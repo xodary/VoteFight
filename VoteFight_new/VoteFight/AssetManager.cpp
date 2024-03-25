@@ -5,6 +5,7 @@
 #include "Texture.h"
 #include "ObjectShader.h"
 #include "SkyboxShader.h"
+#include "UIShader.h"
 #include "TerrainShader.h"
 #include "Material.h"
 #include "Animation.h"
@@ -137,6 +138,11 @@ void CAssetManager::LoadShaders()
 	shader = new CSkyboxShader();
 	shader->SetName("Skybox");
 	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CUIShader();
+	shader->SetName("UI");
+	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 
 	// shader = new CTerrainShader();
@@ -278,13 +284,15 @@ int CAssetManager::GetMeshCount()
 	return static_cast<int>(m_meshes.size());
 }
 
-CTexture* CAssetManager::CreateTexture(const string& key)
+CTexture* CAssetManager::CreateTexture(const string& key, const string& textureName, const TEXTURE_TYPE& type)
 {
 	CTexture* texture = GetTexture(key);
 
 	if (texture == nullptr)
 	{
 		texture = new CTexture();
+		texture->SetName(key);
+		texture->Load(textureName, type);
 		m_textures.emplace(key, texture);
 	}
 
@@ -332,6 +340,7 @@ CMaterial* CAssetManager::CreateMaterial(string& key)
 	if (material == nullptr)
 	{
 		material = new CMaterial();
+		material->SetName(key);
 		m_materials.emplace(key, material);
 	}
 

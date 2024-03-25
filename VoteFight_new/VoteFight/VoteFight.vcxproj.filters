@@ -118,6 +118,12 @@
     <Filter Include="헤더 파일\05. Object\05-04. Terrain">
       <UniqueIdentifier>{b43e31a2-88fc-43ab-abbb-5ac58877a58c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\05. Object\05-05. UI">
+      <UniqueIdentifier>{5a446668-0c04-4f9c-a6d2-de5bf1a31077}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\05. Object\05-05. UI">
+      <UniqueIdentifier>{b1a89df2-6be8-4a79-b84b-72e594a257d7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -234,6 +240,15 @@
     <ClInclude Include="Skybox.h">
       <Filter>헤더 파일\05. Object\05-03. Skybox</Filter>
     </ClInclude>
+    <ClInclude Include="UI.h">
+      <Filter>헤더 파일\05. Object\05-05. UI</Filter>
+    </ClInclude>
+    <ClInclude Include="UIShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="SpriteRenderer.h">
+      <Filter>헤더 파일\07. Component</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -343,6 +358,15 @@
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>소스 파일\05. Object\05-04. Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="UI.cpp">
+      <Filter>소스 파일\05. Object\05-05. UI</Filter>
+    </ClCompile>
+    <ClCompile Include="UIShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="SpriteRenderer.cpp">
+      <Filter>소스 파일\07. Component</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

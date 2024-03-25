@@ -315,6 +315,7 @@ void CRectTransform::UpdateShaderVariables()
 {
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 	XMFLOAT4X4 worldMatrix = Matrix4x4::Multiply(Matrix4x4::Scale(XMFLOAT3(m_rect.x, m_rect.y, 1.0f)), m_worldMatrix);
+	// XMFLOAT4X4 worldMatrix = Matrix4x4::Multiply(Matrix4x4::Scale(XMFLOAT3(0.5f, 0.1f, 1.0f)), m_worldMatrix);
 
 	XMStoreFloat4x4(&worldMatrix, XMMatrixTranspose(XMLoadFloat4x4(&worldMatrix)));
 	d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::OBJECT), 16, &worldMatrix, 0);
