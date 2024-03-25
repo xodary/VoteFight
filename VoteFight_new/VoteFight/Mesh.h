@@ -59,4 +59,5 @@ private:
 public:
 	CRectMesh();
 	~CRectMesh();
+	virtual void Render();
 };

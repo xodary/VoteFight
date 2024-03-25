@@ -91,12 +91,12 @@ void CScene::BuildObjects(ID3D12Device *pd3dDevice, ID3D12GraphicsCommandList *p
 
 	// 2024-03-05 05:28 이시영 수정
 	// CStandardObjectsShader의 파일경로를 넣어서 동적생성함
-	m_nShaders = 1;
-	m_ppShaders = new CShader * [m_nShaders];
-	m_ppShaders[0] = new CStandardObjectsShader("ObjectData/TreeData.txt", 0);
+	// m_nShaders = 1;
+	// m_ppShaders = new CShader * [m_nShaders];
+	// m_ppShaders[0] = new CStandardObjectsShader("ObjectData/TreeData.txt", 0);
 
-	m_ppShaders[0]->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
-	m_ppShaders[0]->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, NULL, m_pTerrain);
+	// m_ppShaders[0]->CreateShader(pd3dDevice, m_pd3dGraphicsRootSignature);
+	// m_ppShaders[0]->BuildObjects(pd3dDevice, pd3dCommandList, m_pd3dGraphicsRootSignature, NULL, m_pTerrain);
 	
 
 	CreateShaderVariables(pd3dDevice, pd3dCommandList);

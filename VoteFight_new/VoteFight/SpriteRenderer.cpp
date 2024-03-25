@@ -54,12 +54,10 @@ void CSpriteRenderer::UpdateShaderVariables()
 {
     ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 
-    XMFLOAT4X4 xmf4x4Texture = Matrix4x4::Identity();
-    xmf4x4Texture._11 = 1.0;
-    xmf4x4Texture._22 = 1.0;
-    xmf4x4Texture._31 = 0.0;
-    xmf4x4Texture._32 = 0.0;
-    d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::SPRITE), 16, &xmf4x4Texture, 0);
+    d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::SPRITE), 1, &m_spriteSize.x, 0);
+    d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::SPRITE), 1, &m_spriteSize.y, 1);
+    d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::SPRITE), 1, &m_frameLocation.x, 2);
+    d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::SPRITE), 1, &m_frameLocation.y, 3);
 }
 
 void CSpriteRenderer::Play(bool isLoop, int startFrameIndex, int endFrameIndex, float duration)

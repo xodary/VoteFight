@@ -56,7 +56,10 @@ cbuffer CB_Object : register(b3)
 
 cbuffer CB_Sprite : register(b4)
 {
-    matrix gmtxTexture : packoffset(c0);
+    float width : packoffset(c0);
+    float height : packoffset(c0.y);
+    float left : packoffset(c0.z);
+    float top : packoffset(c0.w);
 };
 
 #define MAX_VERTEX_INFLUENCES			4
@@ -146,8 +149,6 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
     return cColor;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 struct VS_SKINNED_STANDARD_INPUT
 {
 	float3 position : POSITION;
@@ -208,22 +209,22 @@ float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 }
 
 
-// ======== RENDER =========
-struct VS_RENDER_INPUT
+// ======== UI =========
+struct VS_UI_INPUT
 {
     float3 position : POSITION;
-    float2 uv : TEXCOORD0;
+    float2 uv : TEXCOORD;
 };
 
-struct VS_RENDER_OUTPUT
+struct VS_UI_OUTPUT
 {
     float4 position : SV_POSITION;
-    float2 uv : TEXCOORD0;
+    float2 uv : TEXCOORD;
 };
 
-VS_RENDER_OUTPUT VS_RENDER(VS_RENDER_INPUT input)
+VS_UI_OUTPUT VS_UI(VS_UI_INPUT input)
 {
-    VS_RENDER_OUTPUT output;
+    VS_UI_OUTPUT output;
    
     output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
     output.uv = input.uv;
@@ -231,17 +232,22 @@ VS_RENDER_OUTPUT VS_RENDER(VS_RENDER_INPUT input)
     return output;
 }
 
-VS_RENDER_OUTPUT VS_RENDER_SPRITE(VS_RENDER_INPUT input)
+VS_UI_OUTPUT VS_UI_SPRITE(VS_UI_INPUT input)
 {
-    VS_RENDER_OUTPUT output;
+    VS_UI_OUTPUT output;
    
     output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-    output.uv = mul(float3(input.uv, 1.0f), (float3x3) (gmtxTexture)).xy;
-
+    //output.uv = mul(float3(input.uv, 1.0f), (float3x3) (gmtxTexture)).xy;
+    //if (gmtxTexture._31 == 0.0f)
+    //    output.uv += 0.5;
+    
+    output.uv.x = input.uv.x * width + left;
+    output.uv.y = input.uv.y * height + top;
+	
     return output;
 }
 
-float4 PS_RENDER(VS_RENDER_OUTPUT input) : SV_TARGET
+float4 PS_UI(VS_UI_OUTPUT input) : SV_TARGET
 {
     float4 textureColor;
 	

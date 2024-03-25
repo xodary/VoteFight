@@ -49,9 +49,9 @@ D3D12_SHADER_BYTECODE CUIShader::CreateVertexShader(ID3DBlob* d3d12ShaderBlob, i
 	switch (stateNum)
 	{
 	case 0:
-		return CShader::Compile("main.hlsl", "VS_RENDER", "vs_5_1", d3d12ShaderBlob);
+		return CShader::Compile("main.hlsl", "VS_UI", "vs_5_1", d3d12ShaderBlob);
 	case 1:
-		return CShader::Compile("main.hlsl", "VS_RENDER_SPRITE", "vs_5_1", d3d12ShaderBlob);
+		return CShader::Compile("main.hlsl", "VS_UI_SPRITE", "vs_5_1", d3d12ShaderBlob);
 	}
 
 	return CShader::CreateVertexShader(d3d12ShaderBlob, stateNum);
@@ -59,5 +59,5 @@ D3D12_SHADER_BYTECODE CUIShader::CreateVertexShader(ID3DBlob* d3d12ShaderBlob, i
 
 D3D12_SHADER_BYTECODE CUIShader::CreatePixelShader(ID3DBlob* d3d12ShaderBlob, int stateNum)
 {
-	return CShader::Compile("main.hlsl", "PS_RENDER", "ps_5_1", d3d12ShaderBlob);
+	return CShader::Compile("main.hlsl", "PS_UI", "ps_5_1", d3d12ShaderBlob);
 }

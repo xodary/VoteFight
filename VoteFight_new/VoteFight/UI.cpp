@@ -261,7 +261,7 @@ void CUI::Render(CCamera* camera)
 {
 	UpdateShaderVariables();
 
-	CMesh* mesh = GetMesh();
+	CRectMesh* mesh = static_cast<CRectMesh*>(GetMesh());
 
 	if (mesh != nullptr)
 	{
@@ -271,7 +271,7 @@ void CUI::Render(CCamera* camera)
 		{
 			materials[i]->SetPipelineState(RENDER_TYPE::STANDARD);
 			materials[i]->UpdateShaderVariables();
-			mesh->Render(i);
+			mesh->Render();
 		}
 	}
 	

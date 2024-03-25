@@ -7,9 +7,10 @@ private:
 	bool   m_isLoop;
 
 	XMFLOAT2 m_spriteSize;
+	XMFLOAT2 m_frameLocation;
+
 	int    m_startFrameIndex;
 	int	   m_endFrameIndex;
-	XMFLOAT2 m_frameLocation;
 
 	float  m_duration;
 	float  m_elapsedTime;
