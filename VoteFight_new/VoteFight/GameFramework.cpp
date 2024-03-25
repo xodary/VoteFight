@@ -126,6 +126,8 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
+	ConnectServer();
+
 	CreateDevice();
 	CreateCommandQueueAndList();
 	CreateSwapChain();
@@ -605,4 +607,51 @@ void CGameFramework::AdvanceFrame()
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
 	MoveToNextFrame();
+}
+
+
+// Server
+
+void CGameFramework::ConnectServer()
+{
+	WSADATA Wsa{};
+
+	if (WSAStartup(MAKEWORD(2, 2), &Wsa))
+	{
+		cout << "윈속을 초기화하지 못했습니다." << endl;
+		exit(1);
+	}
+
+	m_SocketInfo.m_Socket = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (m_SocketInfo.m_Socket == INVALID_SOCKET)
+	{
+		Server::ErrorQuit("socket()");
+	}
+
+	m_SocketInfo.m_SocketAddress.sin_family = AF_INET;
+	m_SocketInfo.m_SocketAddress.sin_addr.s_addr = inet_addr(SERVER_IP);
+	m_SocketInfo.m_SocketAddress.sin_port = htons(SERVER_PORT);
+
+	int ReturnValue{ connect(m_SocketInfo.m_Socket, (SOCKADDR*)&m_SocketInfo.m_SocketAddress, sizeof(m_SocketInfo.m_SocketAddress)) };
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		Server::ErrorQuit("connect()");
+	}
+
+	// 플레이어 아이디를 수신한다.
+	ReturnValue = recv(m_SocketInfo.m_Socket, (char*)&m_SocketInfo.m_ID, sizeof(UINT), MSG_WAITALL);
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		Server::ErrorDisplay("recv()");
+	}
+	else if (m_SocketInfo.m_ID == UINT_MAX)
+	{
+		MessageBox(m_hWnd, TEXT("현재 정원이 꽉찼거나, 게임이 이미 시작되어 참여할 수 없습니다."), TEXT("VOTE FIGHT"), MB_ICONSTOP | MB_OK);
+		PostQuitMessage(0);
+	}
+
+	//CreateEvents();
 }

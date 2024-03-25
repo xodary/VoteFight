@@ -123,3 +123,4 @@ namespace Server
 	void ErrorQuit(const char* Msg);
 	void ErrorDisplay(const char* Msg);
 }
+

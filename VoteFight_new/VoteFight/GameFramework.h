@@ -59,8 +59,11 @@ private:
 
 	//shared_ptr<CUILayer>			  m_UILayer;
 
-	// 네트워크 통신 관련 변수
-	//SOCKET_INFO				      m_SocketInfo;
+	// Server
+	SOCKET_INFO						  m_SocketInfo{};
+
+	HANDLE							  m_ReceiveEvent{};
+	HANDLE							  m_RenderingEvent{};
 
 private:
 	CGameFramework();
@@ -122,4 +125,7 @@ public:
 	void Init(HWND hWnd, const XMFLOAT2& resolution);
 
 	void AdvanceFrame();
+
+	// Server
+	void ConnectServer();
 };
