@@ -12,7 +12,7 @@
 #include "Transform.h"
 #include "GameFramework.h"
 #include "Camera.h"
-
+#include <bitset>
 CPlayerIdleState::CPlayerIdleState()
 {
 }
@@ -39,15 +39,76 @@ void CPlayerIdleState::Update(CObject* object)
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	// cout << transform->GetRotation().y << endl;
+
+	/*
+	if (KEY_TAP(KEY::W) || KEY_TAP(KEY::S) || KEY_TAP(KEY::A) || KEY_TAP(KEY::D))
+	{
+		if (KEY_TAP(KEY::W))
+			player->b_front = true;
+		if (KEY_TAP(KEY::A))
+			player->b_left = true;
+		if (KEY_TAP(KEY::S))
+			player->b_back = true;
+		if (KEY_TAP(KEY::D))
+			player->b_right = true;
+		return;
+	}
+	*/
+	if (KEY_AWAY(KEY::W) || KEY_AWAY(KEY::S) || KEY_AWAY(KEY::A) || KEY_AWAY(KEY::D))
+	{
+		if (KEY_AWAY(KEY::W))
+			player->b_front = false;
+		if (KEY_AWAY(KEY::A))
+			player->b_left = false;
+		if (KEY_AWAY(KEY::S))
+			player->b_back = false;
+		if (KEY_AWAY(KEY::D))
+			player->b_right = false;
+		return;
+	}
+
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::D))
 	{
-		float wannaLook(0.f);
-		if (KEY_HOLD(KEY::S))
-			wannaLook = 180.f;
+		if (KEY_HOLD(KEY::W))
+			player->b_front = true;
 		if (KEY_HOLD(KEY::A))
-			wannaLook = 270.f;
+			player->b_left = true;
+		if (KEY_HOLD(KEY::S))
+			player->b_back = true;
 		if (KEY_HOLD(KEY::D))
+			player->b_right = true;
+
+		if (KEY_NONE(KEY::W))
+			player->b_front = false;
+		if (KEY_NONE(KEY::A))
+			player->b_left = false;
+		if (KEY_NONE(KEY::S))
+			player->b_back = false;
+		if (KEY_NONE(KEY::D))
+			player->b_right = false;
+
+
+
+		float wannaLook(0.f);
+		if (player->b_front && player->b_right)
+			wannaLook = 45.f;
+		else if (player->b_front && player->b_left)
+			wannaLook = 315.f;
+		else if (player->b_back && player->b_right)
+			wannaLook = 135.f;
+		else if (player->b_back && player->b_left)
+			wannaLook = 225.f;
+		 else if (player->b_front)
+			wannaLook = 0.f;
+		else if (player->b_left)
+			wannaLook = 270.f;
+		else if (player->b_back)
+			wannaLook = 180.f;
+		else if (player->b_right)
 			wannaLook = 90.f;
+		else
+			return;
+
 		player->SetTurnAngle(wannaLook);
 		float nowRotation = wannaLook - transform->GetRotation().y;
 		cout << nowRotation << endl;
