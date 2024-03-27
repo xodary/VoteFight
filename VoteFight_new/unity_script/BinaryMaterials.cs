@@ -11,7 +11,7 @@ public class BinaryMaterials : MonoBehaviour
     public String[] shaders;
     public int[] stateNum;
 
-    public GameObject[] objects;
+    public Material[] materials;
 
     private BinaryWriter binaryWriter = null;
     private int m_nFrames = 0;
@@ -38,35 +38,27 @@ public class BinaryMaterials : MonoBehaviour
         binaryWriter.Write(strHeader);
         binaryWriter.Write(i);
     }
-    void WriteTextures(Material[] materials)
+    void WriteTextures(Material mat)
     {
-        for (int i = 0; i < materials.Length; i++)
+        Texture texture;
+        if (mat.HasProperty("_MainTex"))
         {
-            Texture texture;
-            if (materials[i].HasProperty("_MainTex"))
-            {
-                texture = materials[i].GetTexture("_MainTex");
-                if (texture != null) { WriteTextureName("<AlbedoMap>", texture); }
-            }
-            if (materials[i].HasProperty("_BumpMap"))
-            {
-                texture = materials[i].GetTexture("_BumpMap");
-                if (texture != null) { WriteTextureName("<NormalMap>", texture); }
-            }
+            texture = mat.GetTexture("_MainTex");
+            if (texture != null) { WriteTextureName("<AlbedoMap>", texture); }
+        }
+        if (mat.HasProperty("_BumpMap"))
+        {
+            texture = mat.GetTexture("_BumpMap");
+            if (texture != null) { WriteTextureName("<NormalMap>", texture); }
         }
     }
 
-    void WriteMaterials(GameObject current, int index)
+    void WriteMaterials(Material mat, int index)
     {
         WriteString("<Material>");
-        WriteObjectName("<Name>", current);
-        MeshRenderer meshRenderer = current.GetComponent<MeshRenderer>();
-        Material[] materials = null;
-        if (meshRenderer)
-            materials = meshRenderer.sharedMaterials;
-        else
-            materials = current.GetComponent<SkinnedMeshRenderer>().sharedMaterials;
-        WriteTextures(materials);
+        WriteString("<Name>");
+        WriteString(mat.name);
+        WriteTextures(mat);
         WriteInteger("<Shaders>", 1);
         WriteString(shaders[index]);
         WriteInteger("<StateNum>", stateNum[index]);
@@ -78,11 +70,11 @@ public class BinaryMaterials : MonoBehaviour
     {
         binaryWriter = new BinaryWriter(File.Open(string.Copy(gameObject.name).Replace(" ", "_") + ".bin", FileMode.Create));
 
-        WriteInteger("<Materials>", objects.Length);
+        WriteInteger("<Materials>", materials.Length);
 
-        for (int i = 0; i < objects.Length; i++)
+        for (int i = 0; i < materials.Length; i++)
         {
-            WriteMaterials(objects[i], i);
+            WriteMaterials(materials[i], i);
         }
 
         WriteString("</Materials>");

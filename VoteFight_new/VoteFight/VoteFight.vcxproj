@@ -143,6 +143,7 @@
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraManager.h" />
     <ClInclude Include="Character.h" />
+    <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="D3DX12.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="udt.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UIShader.h" />
+    <ClInclude Include="WireFrameShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
@@ -186,6 +188,8 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraManager.cpp" />
     <ClCompile Include="Character.cpp" />
+    <ClCompile Include="Collider.cpp" />
+    <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="DDSTextureLoader12.cpp" />
@@ -220,6 +224,7 @@
     <ClCompile Include="udt.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="UIShader.cpp" />
+    <ClCompile Include="WireFrameShader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Release\Asset\Shader\main.hlsl">

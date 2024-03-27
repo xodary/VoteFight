@@ -4,6 +4,7 @@
 #include "SkinnedMesh.h"
 #include "Texture.h"
 #include "ObjectShader.h"
+#include "WireFrameShader.h"
 #include "SkyboxShader.h"
 #include "UIShader.h"
 #include "TerrainShader.h"
@@ -143,6 +144,11 @@ void CAssetManager::LoadShaders()
 	shader = new CUIShader();
 	shader->SetName("UI");
 	shader->CreatePipelineStates(2);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CWireFrameShader();
+	shader->SetName("WireFrame");
+	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
 	// shader = new CTerrainShader();

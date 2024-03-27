@@ -256,3 +256,28 @@ float4 PS_UI(VS_UI_OUTPUT input) : SV_TARGET
 
     return textureColor;
 }
+
+// ======== BOUNDING_BOX =========
+struct VS_POSITION_INPUT
+{
+    float3 position : POSITION;
+};
+
+struct VS_POSITION_OUTPUT
+{
+    float4 positionH : SV_POSITION;
+};
+
+VS_POSITION_OUTPUT VS_Position(VS_POSITION_INPUT input)
+{
+    VS_POSITION_OUTPUT output;
+	
+    output.positionH = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    //output.positionH = float4(input.position, 1.0f);
+    return (output);
+}
+
+float4 PS_Red(VS_POSITION_OUTPUT input) : SV_TARGET
+{
+    return (float4(1.0f, 0.0f, 0.0f, 1.0f));
+}

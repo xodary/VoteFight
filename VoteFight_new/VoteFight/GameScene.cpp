@@ -6,6 +6,7 @@
 #include "InputManager.h"
 #include "AssetManager.h"
 #include "CameraManager.h"
+#include "CollisionManager.h"
 #include "Player.h"
 #include "Texture.h"
 #include "UI.h"
@@ -83,7 +84,7 @@ void CGameScene::Init()
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
 	//// 충돌 그룹 설정
-	//CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::PLAYER);
+	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);
 
 	CreateShaderVariables();
 

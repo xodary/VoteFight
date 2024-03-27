@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "GameFramework.h"
-
+#include "CollisionManager.h"
 #include "TimeManager.h"
 #include "AssetManager.h"
 #include "InputManager.h"
@@ -126,7 +126,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	ConnectServer();
+	// ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -573,6 +573,7 @@ void CGameFramework::PopulateCommandList()
 
 	CSceneManager::GetInstance()->Update();
 	CCameraManager::GetInstance()->Update();
+	CCollisionManager::GetInstance()->Update();
 
 	PreRender();
 

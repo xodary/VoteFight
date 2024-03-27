@@ -7,6 +7,7 @@
 #include "Material.h"
 #include "StateMachine.h"
 #include "RigidBody.h"
+#include "Collider.h"
 #include "Animator.h"
 #include "Transform.h"
 #include "Camera.h"
@@ -157,12 +158,12 @@ CObject* CObject::LoadFrame(ifstream& in)
 			in.read(reinterpret_cast<char*>(&center), sizeof(XMFLOAT3));
 			in.read(reinterpret_cast<char*>(&extents), sizeof(XMFLOAT3));
 
-			//// 메쉬를 가진 프레임은 콜라이더 컴포넌트를 생성한다.
-			//object->CreateComponent(COMPONENT_TYPE::COLLIDER);
-			//
-			//CCollider* collider = static_cast<CCollider*>(object->GetComponent(COMPONENT_TYPE::COLLIDER));
+			// 메쉬를 가진 프레임은 콜라이더 컴포넌트를 생성한다.
+			object->CreateComponent(COMPONENT_TYPE::COLLIDER);
+			
+			CCollider* collider = static_cast<CCollider*>(object->GetComponent(COMPONENT_TYPE::COLLIDER));
 
-			//collider->SetBoundingBox(center, extents);
+			collider->SetBoundingBox(center, extents);
 		}
 		else if (str == "<ChildCount>")
 		{
@@ -272,6 +273,9 @@ CComponent* CObject::CreateComponent(COMPONENT_TYPE componentType)
 		break;
 	case COMPONENT_TYPE::TRANSFORM:
 		m_components[static_cast<int>(componentType)] = new CTransform();
+		break;
+	case COMPONENT_TYPE::COLLIDER:
+		m_components[static_cast<int>(componentType)] = new CCollider();
 		break;
 	}
 
@@ -419,6 +423,14 @@ void CObject::Render(CCamera* camera)
 				m_mesh->Render(i);
 			}
 		}
+	}
+
+	// [Debug] Render BoundingBox
+	CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
+
+	if (collider != nullptr)
+	{
+		collider->Render(camera);
 	}
 
 	for (const auto& child : m_children)
