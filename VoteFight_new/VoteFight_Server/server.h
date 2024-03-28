@@ -41,6 +41,7 @@ public:
 	bool CreatePlayer(SOCKET Socket, const SOCKADDR_IN& SocketAddress);
 	void DestroyPlayer(UINT ID);
 
+	//void BulidObj();
 	void GameLoop();
 
 };

@@ -1,5 +1,6 @@
-#include "stdafx.h"
+#include "pch.h"
 #include "server.h"
+#include "AssetManager.h"
 
 CServer::CServer()
 {
@@ -24,7 +25,7 @@ CServer::CServer()
 
     int returnValue{};
 
-    returnValue = bind(m_ListenSocket, (SOCKADDR*)&m_SocketAddress, sizeof(m_SocketAddress));
+    returnValue = ::bind(m_ListenSocket, (SOCKADDR*)&m_SocketAddress, sizeof(m_SocketAddress));
 
     if (returnValue == SOCKET_ERROR)
     {
@@ -149,6 +150,74 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
 
     return 0;
 }
+
+//void CServer::BulidObj() {
+//    string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
+//    ifstream in(filePath, ios::binary);
+//    string str, modelFileName;
+//    GROUP_TYPE groupType = {};
+//
+//    while (true)
+//    {
+//        File::ReadStringFromFile(in, str);
+//
+//        if (str == "<GroupType>")
+//        {
+//            in.read(reinterpret_cast<char*>(&groupType), sizeof(int));
+//        }
+//        else if (str == "<FileName>")
+//        {
+//            File::ReadStringFromFile(in, modelFileName);
+//        }
+//        else if (str == "<Instance>")
+//        {
+//            int instanceCount = 0;
+//
+//            in.read(reinterpret_cast<char*>(&instanceCount), sizeof(int));
+//
+//            // <IsActive>
+//            File::ReadStringFromFile(in, str);
+//
+//            vector<int> isActives(instanceCount);
+//
+//            in.read(reinterpret_cast<char*>(isActives.data()), instanceCount * sizeof(int));
+//
+//            // <Transforms>
+//            File::ReadStringFromFile(in, str);
+//
+//            // localPosition, localRotation, localScale
+//            vector<XMFLOAT3> transforms(3 * instanceCount);
+//
+//            in.read(reinterpret_cast<char*>(transforms.data()), 3 * instanceCount * sizeof(XMFLOAT3));
+//
+//            switch (groupType)
+//            {
+//            case GROUP_TYPE::STRUCTURE:
+//            case GROUP_TYPE::PLAYER:
+//                for (int i = 0; i < instanceCount; ++i)
+//                {
+//                    CObject* object = CObject::Load(modelFileName);
+//                    CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+//
+//                    object->SetActive(isActives[i]);
+//                    transform->SetPosition(transforms[3 * i]);
+//                    transform->SetRotation(transforms[3 * i + 1]);
+//                    transform->SetScale(transforms[3 * i + 2]);
+//                    transform->Update();
+//                    object->Init();
+//
+//                    AddObject(groupType, object);
+//                }
+//                break;
+//            }
+//        }
+//        else if (str == "</Scene>")
+//        {
+//            cout << endl;
+//            break;
+//        }
+//    }
+//}
 
 UINT CServer::GetClientID() const
 {
