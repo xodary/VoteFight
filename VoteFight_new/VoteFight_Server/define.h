@@ -8,8 +8,6 @@
 #define tcin  cin
 #endif
 
-#define SERVER_IP "127.0.0.1"
-#define SERVER_PORT	9000
 #define MAX_CLIENT_CAPACITY 3
 
 #define EPSILON				    0.01f
@@ -40,28 +38,6 @@
 #define KEY_AWAY(key)			CInputManager::GetInstance()->GetKeyState(key) == KEY_STATE::AWAY
 #define CURSOR					CInputManager::GetInstance()->GetCursor()
 #define OLD_CURSOR				CInputManager::GetInstance()->GetOldCursor()
-
-
-enum class MSG_TYPE
-{
-	NONE = 0x0000,
-	TITLE = 0x0001,
-	INGAME = 0x0002,
-	ENDING = 0x0004,
-	CREDIT = 0x0008,
-	TRIGGER = 0x0010,
-	PLAYER1_WEAPON_SWAP = 0x0020,
-	PLAYER2_WEAPON_SWAP = 0x0040,
-	PLAYER_ATTACK = 0x0080,
-	GUARD_ATTACK = 0x0100,
-	DISCONNECTION = 0x0200,
-	GAME_OVER = 0x0400,
-	GAME_CLEAR = 0x0800,
-	PLAYER1_BGM_SWAP = 0x1000,
-	PLAYER2_BGM_SWAP = 0x2000,
-
-	COUNT
-};
 
 enum class SCENE_TYPE
 {
