@@ -1,11 +1,30 @@
 #pragma once
+#include "Protocol.h"
+
+struct SOCKET_INFO
+{
+	UINT		m_ID{};
+	SOCKET      m_Socket{};
+	SOCKADDR_IN m_SocketAddress{};
+};
+
+struct CLIENT_TO_SERVER_DATA
+{
+	MSG_TYPE			m_recvMsgType;
+};
+
+struct SERVER_TO_CLIENT_DATA
+{
+	MSG_TYPE			m_sendMsgType;
+	XMFLOAT4X4          m_PlayerWorldMatrixes[MAX_CLIENT_CAPACITY]{};
+	//ANIMATION_CLIP_TYPE m_PlayerAnimationClipTypes[MAX_CLIENT_CAPACITY]{};
+};
 
 class CServer
 {
 public:
-	//static vector<vector<shared_ptr<CGameObject>>> m_GameObjects;
-	static MSG_TYPE					m_MsgType;     // 서버 -> 클라이어 메세지 유형
-	static SERVER_TO_CLIENT_DATA	m_SendedPacketData;  // 서버에서 클라로 보내는 패킷 데이터
+	static MSG_TYPE					m_MsgType;           // 서버 -> 클라이어 메세지 유형
+	SERVER_TO_CLIENT_DATA	m_SendedPacketData;  // 서버에서 클라로 보내는 패킷 데이터
 
 
 private:

@@ -36,9 +36,6 @@
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="AssetManager.cpp">
-      <Filter>소스 파일\01. Manager</Filter>
-    </ClCompile>
     <ClCompile Include="func.cpp">
       <Filter>소스 파일\00.Dependency</Filter>
     </ClCompile>
@@ -54,11 +51,11 @@
     <ClCompile Include="server.cpp">
       <Filter>소스 파일\02. Server</Filter>
     </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>소스 파일\02. Server</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AssetManager.h">
-      <Filter>헤더 파일\01. Manager</Filter>
-    </ClInclude>
     <ClInclude Include="func.h">
       <Filter>헤더 파일\00. Dependency</Filter>
     </ClInclude>
@@ -78,6 +75,9 @@
       <Filter>헤더 파일\00. Dependency</Filter>
     </ClInclude>
     <ClInclude Include="server.h">
+      <Filter>헤더 파일\02. Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
       <Filter>헤더 파일\02. Server</Filter>
     </ClInclude>
   </ItemGroup>

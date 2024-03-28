@@ -131,21 +131,21 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="DDSTextureLoader.cpp" />
     <ClCompile Include="func.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="server.cpp" />
     <ClCompile Include="udt.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AssetManager.h" />
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="func.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Protocol.h" />
     <ClInclude Include="server.h" />
     <ClInclude Include="udt.h" />
   </ItemGroup>
