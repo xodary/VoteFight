@@ -159,9 +159,11 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerStates.h" />
+    <ClInclude Include="Protocol.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="Server.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SkinnedMesh.h" />
     <ClInclude Include="Skybox.h" />
@@ -199,9 +201,11 @@
     </ClCompile>
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerStates.cpp" />
+    <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="RigidBody.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
+    <ClCompile Include="Server.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SkinnedMesh.cpp" />
     <ClCompile Include="Skybox.cpp" />

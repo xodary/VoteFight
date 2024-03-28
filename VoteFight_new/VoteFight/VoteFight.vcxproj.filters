@@ -118,6 +118,12 @@
     <Filter Include="헤더 파일\05. Object\05-04. Terrain">
       <UniqueIdentifier>{b43e31a2-88fc-43ab-abbb-5ac58877a58c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\09.Server">
+      <UniqueIdentifier>{a1b72a45-66dc-4cef-801b-7d1f2182ee44}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\09. Server">
+      <UniqueIdentifier>{89380835-b594-4646-9dfa-1735c9432c83}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -234,6 +240,12 @@
     <ClInclude Include="Skybox.h">
       <Filter>헤더 파일\05. Object\05-03. Skybox</Filter>
     </ClInclude>
+    <ClInclude Include="Server.h">
+      <Filter>헤더 파일\09. Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>헤더 파일\09. Server</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -343,6 +355,12 @@
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>소스 파일\05. Object\05-04. Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="Server.cpp">
+      <Filter>소스 파일\09.Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>소스 파일\09.Server</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

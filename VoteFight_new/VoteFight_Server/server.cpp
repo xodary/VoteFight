@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "server.h"
+#include "Protocol.h"
 
 CServer::CServer()
 {
@@ -95,7 +96,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     SOCKET ClientSocket{ Server->m_ClientSocketInfos[ClientID].m_Socket };
 
     // 최초로 클라이언트에게 초기화된 플레이어의 아이디 보냄
-    int ReturnValue = send(ClientSocket, (char*)&ClientID, sizeof(SC_INIT_PACKET), 0);
+    int ReturnValue = send(ClientSocket, (char*)&ClientID, sizeof(UINT), 0);
 
     tcout << "< 지금 연결된 클라이언트의 아이디 : " << ClientID << " >" << endl;
 
@@ -108,11 +109,7 @@ DWORD WINAPI CServer::ProcessClient(LPVOID Arg)
     else{
         while (true){
             WaitForSingleObject(Server->m_MainSyncEvents[0], INFINITE);
-
-            if (ReturnValue == 0) {
-                break; // 클라이언트가 연결을 종료한 경우 루프 종료
-            }
-
+            
             ////////////// 이부분 thread 처리 필요? //////////////
             // 받은 메세지 유형에 따른 처리
             switch (Server->m_ReceivedPacketData[ClientID].m_recvMsgType) {

@@ -1,3 +1,5 @@
+#define SERVER_IP "127.0.0.1"
+
 const int SERVER_PORT = 9000;
 const int BUFSIZE = 24;
 
@@ -15,7 +17,7 @@ enum MSG_TYPE {
 };
 
 // Packet
-class HEAD{
+class HEAD {
 public:
 	unsigned char	m_size;
 	unsigned char	m_type;
