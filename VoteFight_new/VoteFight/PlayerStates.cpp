@@ -54,17 +54,16 @@ void CPlayerIdleState::Update(CObject* object)
 		return;
 	}
 	*/
-	if (KEY_AWAY(KEY::W) || KEY_AWAY(KEY::S) || KEY_AWAY(KEY::A) || KEY_AWAY(KEY::D))
+	if (KEY_NONE(KEY::W) || KEY_NONE(KEY::S) || KEY_NONE(KEY::A) || KEY_NONE(KEY::D))
 	{
-		if (KEY_AWAY(KEY::W))
+		if (KEY_NONE(KEY::W))
 			player->b_front = false;
-		if (KEY_AWAY(KEY::A))
+		if (KEY_NONE(KEY::A))
 			player->b_left = false;
-		if (KEY_AWAY(KEY::S))
+		if (KEY_NONE(KEY::S))
 			player->b_back = false;
-		if (KEY_AWAY(KEY::D))
+		if (KEY_NONE(KEY::D))
 			player->b_right = false;
-		return;
 	}
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::D))
@@ -87,9 +86,8 @@ void CPlayerIdleState::Update(CObject* object)
 		if (KEY_NONE(KEY::D))
 			player->b_right = false;
 
-
-
 		float wannaLook(0.f);
+		
 		if (player->b_front && player->b_right)
 			wannaLook = 45.f;
 		else if (player->b_front && player->b_left)

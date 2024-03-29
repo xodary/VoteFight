@@ -74,7 +74,7 @@ enum class GROUP_TYPE
 	STRUCTURE,
 	PLAYER,
 	SKYBOX,
-
+	TERRAIN,
 	COUNT
 };
 

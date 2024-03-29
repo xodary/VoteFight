@@ -207,3 +207,38 @@ float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 
     return (cColor);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//
+Texture2D gtxtTerrainBaseTexture : register(t1);
+SamplerState gssWrap : register(s0);
+
+struct VS_TERRAIN_INPUT
+{
+    float3 position : POSITION;
+    float2 uv0 : TEXCOORD;
+};
+
+struct VS_TERRAIN_OUTPUT
+{
+    float4 position : SV_POSITION;
+    float2 uv0 : TEXCOORD;
+};
+
+VS_TERRAIN_OUTPUT VSTerrain(VS_TERRAIN_INPUT input)
+{
+    VS_TERRAIN_OUTPUT output;
+
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    output.uv0 = input.uv0;
+
+    return (output);
+}
+
+float4 PSTerrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
+{
+    float4 cBaseTexColor = gtxtTerrainBaseTexture.Sample(gssWrap, input.uv0);
+    float4 cColor = cBaseTexColor;
+
+    return (cColor);
+}
