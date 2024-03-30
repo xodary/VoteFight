@@ -90,14 +90,24 @@ XMFLOAT3 CHeightMapImage::GetHeightMapNormal(int x, int z)
 	return(xmf3Normal);
 }
 
-CTerrain::CTerrain(LPCTSTR pFileName, int nWidth = 100.f, int nLength = 100.f, XMFLOAT3 xmf3Scale = XMFLOAT3(5.f, 5.f, 5.f))
+CTerrain::CTerrain(int nWidth, int nLength )
 {
 	m_nWidth = nWidth;
 	m_nLength = nLength;
-	m_xmf3Scale = xmf3Scale;
+	m_xmf3Scale = XMFLOAT3(5.f, 5.f, 5.f);
+	LPCTSTR pFileName = L"Release\Asset\Texture\FightVote_terrain.raw";
+	m_pHeightMapImage = new CHeightMapImage(pFileName, nWidth, nLength, m_xmf3Scale);
+	MakeHeightMapGridMesh(0, 0, nWidth, nLength, m_xmf3Scale, m_pHeightMapImage);
 
-	m_pHeightMapImage = new CHeightMapImage(pFileName, nWidth, nLength, xmf3Scale);
-	MakeHeightMapGridMesh(0, 0, nWidth, nLength,  xmf3Scale, m_pHeightMapImage);
+	string strTerrain = "Terrain";
+	CMaterial* material = CAssetManager::GetInstance()->CreateMaterial(strTerrain);
+	CTexture* texture = CAssetManager::GetInstance()->CreateTexture(strTerrain, "VoteFightTexture", TEXTURE_TYPE::ALBEDO_MAP);
+	CShader* shader = CAssetManager::GetInstance()->GetShader(strTerrain);
+
+	material->SetTexture(texture);
+	material->AddShader(shader);
+	material->SetStateNum(0);
+	AddMaterial(material);
 }
 
 CTerrain::~CTerrain()
@@ -176,14 +186,6 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	m_d3d12IndexBufferViews[0].BufferLocation = m_d3d12IndexBuffers[0]->GetGPUVirtualAddress();
 	m_d3d12IndexBufferViews[0].Format = DXGI_FORMAT_R32_UINT;
 	m_d3d12IndexBufferViews[0].SizeInBytes = sizeof(UINT) * m_pnSubSetIndices[0];
-
-
-
-	string strTerrain = "Terrain";
-	CMaterial* material = CAssetManager::GetInstance()->CreateMaterial(strTerrain);
-	CTexture* sub_texture = CAssetManager::GetInstance()->CreateTexture(strTerrain);
-	CTexture* texture = CAssetManager::GetInstance()->CreateTexture(strTerrain);
-	CShader* shader = CAssetManager::GetInstance()->GetShader(strTerrain);
 }
 
 float CTerrain::OnGetHeight(int x, int z, void* pContext)
@@ -215,16 +217,6 @@ void CTerrain::Render(CCamera* camera, int subSetIndex)
 
 	d3d12GraphicsCommandList->DrawIndexedInstanced(static_cast<UINT>(IndexBufferViews[subSetIndex].size()), 1, 0, 0, 0);
 
-
-	const vector<CObject*>& children = GetChildren();
-
-	for (const auto& child : children)
-	{
-		if (child->IsActive() && !child->IsDeleted())
-		{
-			child->Render(camera);
-		}
-	}
 }
 
 XMFLOAT4 CTerrain::Add(const XMFLOAT4& vec0, const XMFLOAT4& vec1)

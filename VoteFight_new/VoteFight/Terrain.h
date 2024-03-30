@@ -55,7 +55,7 @@ protected:
 	vector<D3D12_INDEX_BUFFER_VIEW>	m_d3d12IndexBufferViews;
 
 public:
-	CTerrain(LPCTSTR pFileName, int nWidth = 100.f, int nLength = 100.f, XMFLOAT3 xmf3Scale = XMFLOAT3(5.f, 5.f, 5.f));
+	CTerrain(int nWidth = 100.f, int nLength = 100.f);
 	virtual ~CTerrain();
 
 	void MakeHeightMapGridMesh( int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, void* pContext);

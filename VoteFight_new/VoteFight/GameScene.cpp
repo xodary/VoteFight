@@ -15,7 +15,7 @@
 #include "Animator.h"
 #include "Transform.h"
 #include "Camera.h"
-// #include "Terrain.h"
+ #include"Terrain.h"
 
 CGameScene::CGameScene() :
 	m_d3d12GameScene(),
@@ -85,11 +85,8 @@ void CGameScene::Init()
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
 	// 터레인 추가
-	XMFLOAT3 xmf3Scale(8.0f, 2.0f, 8.0f);
-	XMFLOAT4 xmf4Color(0.0f, 0.0f, 0.0f, 0.0f);
-
-//	CObject* object = new CTerrain(pd3dDevice, d3d12GraphicsCommandList, m_pd3dGraphicsRootSignature, _T("Release/Asset/Texture/FightVote_terrain.raw"), 257, 257, xmf3Scale, xmf4Color);
-//	AddObject(GROUP_TYPE::TERRAIN, object);
+	CObject* Terrain_object = new CTerrain(100.f, 100.f);
+	AddObject(GROUP_TYPE::TERRAIN, Terrain_object);
 
 	//// 충돌 그룹 설정
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);
