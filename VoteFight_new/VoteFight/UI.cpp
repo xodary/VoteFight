@@ -7,6 +7,7 @@
 #include "InputManager.h"
 
 #include "Mesh.h"
+#include "Texture.h"
 #include "Material.h"
 
 #include "StateMachine.h"
@@ -46,9 +47,6 @@ CUI* CUI::Load(ifstream& in)
 			switch (classType)
 			{
 			case 0: ui = new CUI(); break;
-			case 2: ui = new CMissionUI(); break;
-			case 3: ui = new CKeyUI(); break;
-			case 4: ui = new CHitUI(); break;
 			}
 		}
 		else if (str == "<Name>")
@@ -69,10 +67,21 @@ CUI* CUI::Load(ifstream& in)
 			in.read(reinterpret_cast<char*>(&rect), sizeof(XMFLOAT2));
 
 			CRectTransform* rectTransform = static_cast<CRectTransform*>(ui->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			
+			RECT winrect;
+			GetClientRect(CGameFramework::GetInstance()->GetHwnd(), &winrect);
 
-			rectTransform->SetLocalPosition(transform[0]);
-			rectTransform->SetLocalRotation(transform[1]);
-			rectTransform->SetLocalScale(transform[2]);
+			transform[0].x *= (winrect.right - winrect.left)/2;
+			transform[0].y *= (winrect.bottom - winrect.top)/2;
+			// rectTransform->SetLocalPosition(transform[0]);
+			// rectTransform->SetLocalRotation(transform[1]);
+			// rectTransform->SetLocalScale(transform[2]);
+			rectTransform->SetPosition(transform[0]);
+			rectTransform->SetRotation(transform[1]);
+			rectTransform->SetScale(transform[2]);
+
+			rect.x *= (winrect.right - winrect.left) / 2;
+			rect.y *= (winrect.bottom - winrect.top) / 2;
 			rectTransform->SetRect(rect);
 			rectTransform->Update();
 		}
@@ -80,11 +89,11 @@ CUI* CUI::Load(ifstream& in)
 		{
 			File::ReadStringFromFile(in, str);
 
-			CMesh* mesh = CAssetManager::GetInstance()->GetMesh(str);
+			CRectMesh* mesh = new CRectMesh();
 
 			ui->SetMesh(mesh);
 		}
-		else if (str == "<Materials>")
+		else if (str == "<Textures>")
 		{
 			int materialCount = 0;
 
@@ -94,15 +103,20 @@ CUI* CUI::Load(ifstream& in)
 			{
 				ui->m_materials.reserve(materialCount);
 
-				// <Material>
+				// <Texture>
 				File::ReadStringFromFile(in, str);
 
 				for (int i = 0; i < materialCount; ++i)
 				{
 					File::ReadStringFromFile(in, str);
 
-					// 머터리얼 인스턴스를 생성하고 추가한다.
-					CMaterial* material = CAssetManager::GetInstance()->CreateMaterialInstance(str);
+					CMaterial* material = CAssetManager::GetInstance()->CreateMaterial(str);
+					CTexture* texture = CAssetManager::GetInstance()->CreateTexture(str, str, TEXTURE_TYPE::ALBEDO_MAP);
+					material->SetTexture(texture);
+
+					CShader* shader = CAssetManager::GetInstance()->GetShader("UI");
+					material->AddShader(shader);
+					material->SetStateNum(1);
 
 					ui->AddMaterial(material);
 				}
@@ -111,17 +125,17 @@ CUI* CUI::Load(ifstream& in)
 		else if (str == "<SpriteSize>")
 		{
 			CSpriteRenderer* spriteRenderer = static_cast<CSpriteRenderer*>(ui->CreateComponent(COMPONENT_TYPE::SPRITE_RENDERER));
-			XMINT2 spriteSize = {};
+			XMFLOAT2 spriteSize = {};
 
-			in.read(reinterpret_cast<char*>(&spriteSize), sizeof(XMINT2));
+			in.read(reinterpret_cast<char*>(&spriteSize), sizeof(XMFLOAT2));
 			spriteRenderer->SetSpriteSize(spriteSize);
 		}
 		else if (str == "<FrameIndex>")
 		{
 			CSpriteRenderer* spriteRenderer = static_cast<CSpriteRenderer*>(ui->GetComponent(COMPONENT_TYPE::SPRITE_RENDERER));
-			int frameIndex = 0;
+			XMFLOAT2 frameIndex = {};
 
-			in.read(reinterpret_cast<char*>(&frameIndex), sizeof(int));
+			in.read(reinterpret_cast<char*>(&frameIndex), sizeof(XMFLOAT2));
 			spriteRenderer->SetFrameIndex(frameIndex);
 		}
 		else if (str == "<ChildCount>")
@@ -201,12 +215,15 @@ CComponent* CUI::CreateComponent(COMPONENT_TYPE componentType)
 	switch (componentType)
 	{
 		// UI는 CSkinningAnimator 컴포넌트가 아닌 CUIAnimator 컴포넌트를 사용한다.
-	case COMPONENT_TYPE::ANIMATOR:
-		m_components[static_cast<int>(componentType)] = new CUIAnimator();
-		break;
+	//case COMPONENT_TYPE::ANIMATOR:
+	//	m_components[static_cast<int>(componentType)] = new CUIAnimator();
+	//	break;
 	case COMPONENT_TYPE::TRANSFORM:
 		// UI는 CTransform 컴포넌트가 아닌 CRectTransform 컴포넌트를 사용한다.
 		m_components[static_cast<int>(componentType)] = new CRectTransform();
+		break;
+	case COMPONENT_TYPE::SPRITE_RENDERER:
+		m_components[static_cast<int>(componentType)] = new CSpriteRenderer();
 		break;
 	default:
 		// 그 외의 컴포넌트는 CObject의 함수를 호출한다.
@@ -244,7 +261,7 @@ void CUI::Render(CCamera* camera)
 {
 	UpdateShaderVariables();
 
-	CMesh* mesh = GetMesh();
+	CRectMesh* mesh = static_cast<CRectMesh*>(GetMesh());
 
 	if (mesh != nullptr)
 	{
@@ -254,7 +271,7 @@ void CUI::Render(CCamera* camera)
 		{
 			materials[i]->SetPipelineState(RENDER_TYPE::STANDARD);
 			materials[i]->UpdateShaderVariables();
-			mesh->Render(i);
+			mesh->Render();
 		}
 	}
 	
@@ -267,49 +284,4 @@ void CUI::Render(CCamera* camera)
 			child->Render(camera);
 		}
 	}
-}
-
-//=========================================================================================================================
-
-CMissionUI::CMissionUI()
-{
-	CreateComponent(COMPONENT_TYPE::STATE_MACHINE);
-}
-
-CMissionUI::~CMissionUI()
-{
-}
-
-void CMissionUI::Init()
-{
-	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-
-	stateMachine->SetCurrentState(CMissionUIShowState::GetInstance());
-}
-
-//=========================================================================================================================
-
-CKeyUI::CKeyUI()
-{
-	CreateComponent(COMPONENT_TYPE::STATE_MACHINE);
-}
-
-CKeyUI::~CKeyUI()
-{
-}
-
-//=========================================================================================================================
-
-CHitUI::CHitUI()
-{
-	CreateComponent(COMPONENT_TYPE::STATE_MACHINE);
-}
-
-CHitUI::~CHitUI()
-{
-}
-
-void CHitUI::Init()
-{
-	SetActive(false);
 }

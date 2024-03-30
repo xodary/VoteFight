@@ -96,11 +96,6 @@ public class BinaryScene : MonoBehaviour
         binaryWriter.Write(f);
     }
 
-    void WriteInteger(int i)
-    {
-        binaryWriter.Write(i);
-    }
-
     void WriteInteger(string strHeader, int i)
     {
         binaryWriter.Write(strHeader);
@@ -184,6 +179,11 @@ public class BinaryScene : MonoBehaviour
     {
         binaryWriter.Write(uv.x);
         binaryWriter.Write(1.0f - uv.y);
+    }
+
+    void WriteVectors(Vector3[] vectors)
+    {
+        if (vectors.Length > 0) foreach (Vector3 v in vectors) WriteVector(v);
     }
 
     void WriteVectors(string strHeader, Vector2[] vectors)
@@ -293,208 +293,40 @@ public class BinaryScene : MonoBehaviour
         WriteMatrix(matrix);
     }
 
-    void WriteWorldMatrix(string strHeader, Transform current)
-    {
-        binaryWriter.Write(strHeader);
-        Matrix4x4 matrix = Matrix4x4.identity;
-        matrix.SetTRS(current.position, current.rotation, current.lossyScale);
-        WriteMatrix(matrix);
-    }
-
-    void WriteBoneTransforms(string strHeader, Transform[] bones)
-    {
-        WriteString(strHeader, bones.Length);
-        if (bones.Length > 0)
-        {
-            foreach (Transform bone in bones)
-            {
-                WriteMatrix(bone.localPosition, bone.localRotation, bone.localScale);
-            }
-        }
-    }
-
-    void WriteBoneNames(string strHeader, Transform[] bones)
-    {
-        WriteString(strHeader, bones.Length);
-        if (bones.Length > 0)
-        {
-            foreach (Transform bone in bones) WriteObjectName(bone.gameObject);
-            WriteString("<BoneHierarchy>:");
-            WriteBoneNameHierarchy(bones[0]);
-            WriteString("</BoneHierarchy>:");
-        }
-    }
-
-    void WriteBoneNameHierarchy(Transform parant)
-    {
-        WriteObjectName(parant);
-        WriteInteger(parant.childCount);
-        for (int k = 0; k < parant.childCount; k++) WriteObjectName(parant.GetChild(k));
-        for (int k = 0; k < parant.childCount; k++) WriteBoneNameHierarchy(parant.GetChild(k));
-    }
-
-    void WriteMatrixes(string strHeader, Matrix4x4[] matrixes)
-    {
-        WriteString(strHeader, matrixes.Length);
-        if (matrixes.Length > 0)
-        {
-            foreach (Matrix4x4 matrix in matrixes) WriteMatrix(matrix);
-        }
-    }
-
-    void WriteBoneIndex(BoneWeight boneWeight)
-    {
-        binaryWriter.Write(boneWeight.boneIndex0);
-        binaryWriter.Write(boneWeight.boneIndex1);
-        binaryWriter.Write(boneWeight.boneIndex2);
-        binaryWriter.Write(boneWeight.boneIndex3);
-    }
-
-    void WriteBoneWeight(BoneWeight boneWeight)
-    {
-        binaryWriter.Write(boneWeight.weight0);
-        binaryWriter.Write(boneWeight.weight1);
-        binaryWriter.Write(boneWeight.weight2);
-        binaryWriter.Write(boneWeight.weight3);
-    }
-
-    void WriteBoneIndices(string strHeader, BoneWeight[] boneWeights)
-    {
-        WriteString(strHeader, boneWeights.Length);
-        if (boneWeights.Length > 0)
-        {
-            foreach (BoneWeight boneWeight in boneWeights) WriteBoneIndex(boneWeight);
-        }
-    }
-
-    void WriteBoneWeights(string strHeader, BoneWeight[] boneWeights)
-    {
-        WriteString(strHeader, boneWeights.Length);
-        if (boneWeights.Length > 0)
-        {
-            foreach (BoneWeight boneWeight in boneWeights) WriteBoneWeight(boneWeight);
-        }
-    }
-
-    void WriteFrameHierarchyInfo(Transform child)
-    {
-        WriteFrameInfo(child);
-
-        WriteInteger("<Children>:", child.childCount);
-
-        if (child.childCount > 0)
-        {
-            for (int k = 0; k < child.childCount; k++)
-            {
-                WriteFrameHierarchyInfo(child.GetChild(k));
-            }
-        }
-
-        WriteString("</Frame>");
-    }
-
-    void WriteAnimationPositionHierarchy(Transform current)
-    {
-        WriteVector(current.localPosition);
-
-        if (current.childCount > 0)
-        {
-            for (int k = 0; k < current.childCount; k++) WriteAnimationPositionHierarchy(current.GetChild(k));
-        }
-    }
-
-    void WriteAnimationRotationHierarchy(Transform current)
-    {
-        WriteVector(current.localRotation);
-
-        if (current.childCount > 0)
-        {
-            for (int k = 0; k < current.childCount; k++) WriteAnimationRotationHierarchy(current.GetChild(k));
-        }
-    }
-
-    void WriteAnimationScaleHierarchy(Transform current)
-    {
-        WriteVector(current.localScale);
-
-        if (current.childCount > 0)
-        {
-            for (int k = 0; k < current.childCount; k++) WriteAnimationScaleHierarchy(current.GetChild(k));
-        }
-    }
-
-    void WriteAnimationMatrixHierarchy(Transform current)
-    {
-        WriteMatrix(current.localPosition, current.localRotation, current.localScale);
-
-        if (current.childCount > 0)
-        {
-            for (int k = 0; k < current.childCount; k++) WriteAnimationMatrixHierarchy(current.GetChild(k));
-        }
-    }
-
-    void WriteAnimationTransforms(string strHeader, int nKeyFrame, float fKeyFrameTime)
-    {
-        WriteString(strHeader, nKeyFrame, fKeyFrameTime);
-        WriteAnimationMatrixHierarchy(transform);
-
-        //WriteAnimationScaleHierarchy(transform);
-        //WriteAnimationRotationHierarchy(transform);
-        //WriteAnimationPositionHierarchy(transform);
-    }
-
-    void WriteFrameNameHierarchy(Transform current)
-    {
-        WriteObjectName(current.gameObject);
-
-        if (current.childCount > 0)
-        {
-            for (int k = 0; k < current.childCount; k++) WriteFrameNameHierarchy(current.GetChild(k));
-        }
-    }
-
-    void WriteFrameNames(string strHeader)
-    {
-        WriteString(strHeader, m_nFrames);
-        WriteFrameNameHierarchy(transform);
-    }
-
     void WriteScene(Transform model, int index)
     {
-        WriteString("<GroupType> " + groupType[index]);
+        WriteInteger("<GroupType>", groupType[index]);
         WriteObjectName("<FileName>", model.gameObject);
-        WriteString("<Instance> " + model.childCount);
-        WriteString("<IsActive> ");
+        WriteInteger("<Instance>", model.childCount);
+        WriteString("<IsActive>");
         for (int i = 0; i < model.childCount; ++i)
         {
-            if (model.GetChild(i).gameObject.activeSelf)
-                WriteString(0, "1 ");
+            if(model.GetChild(i).gameObject.activeSelf)
+                binaryWriter.Write(1);
             else
-                WriteString(0, "0 ");
+                binaryWriter.Write(0);
         }
-        WriteLineString("");
-        WriteLineString(0, "<Transforms> ");
+        WriteString("<Transforms>");
         for (int i = 0; i < model.childCount; ++i)
         {
             Vector3[] v = new Vector3[3];
             v[0] = model.GetChild(i).localPosition;
             v[1] = model.GetChild(i).localRotation.eulerAngles;
             v[2] = model.GetChild(i).localScale;
-            WriteVectors(0, v);
+            WriteVectors(v);
         }
     }
-
 
     void Start()
     {
         binaryWriter = new BinaryWriter(File.Open(string.Copy(gameObject.name).Replace(" ", "_") + ".bin", FileMode.Create));
-        
+
         for (int i = 0; i < transform.childCount; ++i)
         {
             Transform child = transform.GetChild(i);
             WriteScene(child, i);
         }
-
+        WriteString("</Scene>");
         binaryWriter.Flush();
         binaryWriter.Close();
 

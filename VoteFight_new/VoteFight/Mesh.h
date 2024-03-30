@@ -50,3 +50,14 @@ public:
 
 	virtual void Render(int subSetIndex);
 };
+
+class CRectMesh : public CMesh
+{
+private:
+	int m_vertexCount = 6;
+
+public:
+	CRectMesh();
+	~CRectMesh();
+	virtual void Render();
+};

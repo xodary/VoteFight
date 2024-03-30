@@ -1694,8 +1694,8 @@ void CBitmap::UpdateShaderVariable(ID3D12GraphicsCommandList* pd3dCommandList, C
 	XMFLOAT4X4 xmf4x4Texture = Matrix4x4::Identity();
 	xmf4x4Texture._11 = float(m_pMesh->m_SheetRect.right - m_pMesh->m_SheetRect.left) / float(1000);
 	xmf4x4Texture._22 = float(m_pMesh->m_SheetRect.bottom - m_pMesh->m_SheetRect.top) / float(1000);
-	xmf4x4Texture._31 = float(m_pMesh->m_SheetRect.left) / float(1000);
-	xmf4x4Texture._32 = float(m_pMesh->m_SheetRect.top) / float(1000);
+	xmf4x4Texture._31 = 0.5;
+	xmf4x4Texture._32 = 0.5;
 	XMStoreFloat4x4(m_pcbMappedGameObject, XMMatrixTranspose(XMLoadFloat4x4(&xmf4x4Texture)));
 
 	D3D12_GPU_VIRTUAL_ADDRESS d3dGpuVirtualAddress = m_pd3dcbGameObject->GetGPUVirtualAddress();

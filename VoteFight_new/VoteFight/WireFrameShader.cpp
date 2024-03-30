@@ -37,5 +37,5 @@ D3D12_SHADER_BYTECODE CWireFrameShader::CreateVertexShader(ID3DBlob* d3d12Shader
 
 D3D12_SHADER_BYTECODE CWireFrameShader::CreatePixelShader(ID3DBlob* d3d12ShaderBlob, int stateNum)
 {
-	return CShader::Compile("main.hlsl", "PS_Green", "ps_5_1", d3d12ShaderBlob);
+	return CShader::Compile("main.hlsl", "PS_Red", "ps_5_1", d3d12ShaderBlob);
 }

@@ -6,10 +6,9 @@
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #endif
 
-#define WIN32_LEAN_AND_MEAN
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-
-#define SERVER_PORT				9000
+#define SERVER_IP "127.0.0.1"
+#define SERVER_PORT	9000
+#define MAX_CLIENT_CAPACITY 3
 
 #define EPSILON				    0.01f
 
@@ -21,7 +20,6 @@
 #define DEPTH_BUFFER_WIDTH	    2048
 #define DEPTH_BUFFER_HEIGHT     2048
 
-#define MAX_PLAYER_CAPACITY		2
 #define MAX_NPC_COUNT			15
 #define MAX_LIGHTS              3
 #define MAX_BONES				70
@@ -74,6 +72,7 @@ enum class GROUP_TYPE
 	STRUCTURE,
 	PLAYER,
 	SKYBOX,
+	UI,
 	TERRAIN,
 	COUNT
 };
@@ -93,6 +92,7 @@ enum class COMPONENT_TYPE
 enum class CAMERA_TYPE
 {
 	MAIN,
+	UI,
 
 	COUNT
 };

@@ -310,3 +310,53 @@ void CMesh::Render(int subSetIndex)
 		d3d12GraphicsCommandList->DrawInstanced(static_cast<UINT>(m_positions.size()), 1, 0, 0);
 	}
 }
+
+CRectMesh::CRectMesh()
+{
+	float fsize = 1;
+	vector<XMFLOAT2> uv(6); 
+	m_positions.resize(6);
+
+	m_positions[0] = XMFLOAT3(-fsize, +fsize, 0);
+	m_positions[1] = XMFLOAT3(+fsize, +fsize, 0);
+	m_positions[2] = XMFLOAT3(-fsize, -fsize, 0);
+	m_positions[3] = XMFLOAT3(-fsize, -fsize, 0);
+	m_positions[4] = XMFLOAT3(+fsize, +fsize, 0);
+	m_positions[5] = XMFLOAT3(+fsize, -fsize, 0);
+
+	uv[0] = XMFLOAT2(0, 0);
+	uv[1] = XMFLOAT2(1, 0);
+	uv[2] = XMFLOAT2(0, 1);
+	uv[3] = XMFLOAT2(0, 1);
+	uv[4] = XMFLOAT2(1, 0);
+	uv[5] = XMFLOAT2(1, 1);
+
+	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
+	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
+
+	m_d3d12PositionBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, m_positions.data(), sizeof(XMFLOAT3) * m_positions.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_d3d12PositionUploadBuffer.GetAddressOf());
+	m_d3d12PositionBufferView.BufferLocation = m_d3d12PositionBuffer->GetGPUVirtualAddress();
+	m_d3d12PositionBufferView.StrideInBytes = sizeof(XMFLOAT3);
+	m_d3d12PositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_positions.size();
+
+	m_d3d12TexCoordBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, uv.data(), sizeof(XMFLOAT2) * uv.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_d3d12TexCoordUploadBuffer.GetAddressOf());
+	m_d3d12TexCoordBufferView.BufferLocation = m_d3d12TexCoordBuffer->GetGPUVirtualAddress();
+	m_d3d12TexCoordBufferView.StrideInBytes = sizeof(XMFLOAT2);
+	m_d3d12TexCoordBufferView.SizeInBytes = sizeof(XMFLOAT2) * uv.size();
+}
+
+CRectMesh::~CRectMesh()
+{
+}
+
+void CRectMesh::Render()
+{
+	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
+	d3d12GraphicsCommandList->IASetPrimitiveTopology(m_d3d12PrimitiveTopology);
+
+	// Position Buffer View와 UV Buffer View 2개의 View가 있음.
+	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[2] = { m_d3d12PositionBufferView, m_d3d12TexCoordBufferView };
+	d3d12GraphicsCommandList->IASetVertexBuffers(0, 2, pVertexBufferViews);
+
+	d3d12GraphicsCommandList->DrawInstanced(m_positions.size(), 1, 0, 0);
+}

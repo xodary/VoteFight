@@ -1,10 +1,10 @@
-cbuffer cbGameFrameworkInfo : register(b0)
+cbuffer CB_GameFramework : register(b0)
 {
     float gfTotalTime : packoffset(c0);
     float gfElapsedTime : packoffset(c0.y);
 };
 
-cbuffer cbCameraInfo : register(b1)
+cbuffer CB_Camera : register(b1)
 {
     matrix gmtxView : packoffset(c0);
     matrix gmtxProjection : packoffset(c4);
@@ -40,13 +40,13 @@ struct LIGHT
 };
 
 #define MAX_LIGHTS 3
-cbuffer cbLights : register(b2)
+cbuffer CB_Light : register(b2)
 {
     LIGHT m_lights[MAX_LIGHTS];
     Fog m_fog;
 };
 
-cbuffer cbGameObjectInfo : register(b3)
+cbuffer CB_Object : register(b3)
 {
     matrix gmtxGameObject : packoffset(c0);
     float4 gvColor : packoffset(c4);
@@ -54,10 +54,12 @@ cbuffer cbGameObjectInfo : register(b3)
     float2 gvTextureScale : packoffset(c5.y);
 };
 
-cbuffer cbSpriteInfo : register(b4)
+cbuffer CB_Sprite : register(b4)
 {
-    int2 gnSpriteSize : packoffset(c0);
-    int gnFrameIndex : packoffset(c0.z);
+    float width : packoffset(c0);
+    float height : packoffset(c0.y);
+    float left : packoffset(c0.z);
+    float top : packoffset(c0.w);
 };
 
 #define MAX_VERTEX_INFLUENCES			4
@@ -147,8 +149,6 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
     return cColor;
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 struct VS_SKINNED_STANDARD_INPUT
 {
 	float3 position : POSITION;
@@ -206,6 +206,80 @@ float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
     float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
 
     return (cColor);
+}
+
+
+// ======== UI =========
+struct VS_UI_INPUT
+{
+    float3 position : POSITION;
+    float2 uv : TEXCOORD;
+};
+
+struct VS_UI_OUTPUT
+{
+    float4 position : SV_POSITION;
+    float2 uv : TEXCOORD;
+};
+
+VS_UI_OUTPUT VS_UI(VS_UI_INPUT input)
+{
+    VS_UI_OUTPUT output;
+   
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    output.uv = input.uv;
+
+    return output;
+}
+
+VS_UI_OUTPUT VS_UI_SPRITE(VS_UI_INPUT input)
+{
+    VS_UI_OUTPUT output;
+   
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    //output.uv = mul(float3(input.uv, 1.0f), (float3x3) (gmtxTexture)).xy;
+    //if (gmtxTexture._31 == 0.0f)
+    //    output.uv += 0.5;
+    
+    output.uv.x = input.uv.x * width + left;
+    output.uv.y = input.uv.y * height + top;
+	
+    return output;
+}
+
+float4 PS_UI(VS_UI_OUTPUT input) : SV_TARGET
+{
+    float4 textureColor;
+	
+    // 이 텍스처 좌표 위치에서 샘플러를 사용하여 텍스처에서 픽셀 색상을 샘플링합니다.
+    textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
+
+    return textureColor;
+}
+
+// ======== BOUNDING_BOX =========
+struct VS_POSITION_INPUT
+{
+    float3 position : POSITION;
+};
+
+struct VS_POSITION_OUTPUT
+{
+    float4 positionH : SV_POSITION;
+};
+
+VS_POSITION_OUTPUT VS_Position(VS_POSITION_INPUT input)
+{
+    VS_POSITION_OUTPUT output;
+	
+    output.positionH = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    //output.positionH = float4(input.position, 1.0f);
+    return (output);
+}
+
+float4 PS_Red(VS_POSITION_OUTPUT input) : SV_TARGET
+{
+    return (float4(1.0f, 0.0f, 0.0f, 1.0f));
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "GameFramework.h"
-
+#include "CollisionManager.h"
 #include "TimeManager.h"
 #include "AssetManager.h"
 #include "InputManager.h"
@@ -125,6 +125,9 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 {
 	m_hWnd = hWnd;
 	m_resolution = resolution;
+
+	// ConnectServer();
+	ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -408,8 +411,8 @@ void CGameFramework::CreateRootSignature()
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::GameFramework)].InitAsConstantBufferView(0);					    // CB_GameFramework : register(b0)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CAMERA)].InitAsConstantBufferView(1);						        // CB_Camera : register(b1)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::GAME_SCENE)].InitAsConstantBufferView(2);					        // CB_GameScene : register(b2)
-	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::OBJECT)].InitAsConstants(23, 3);							        // CB_Object : register(b3)
-	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::SPRITE)].InitAsConstants(3, 4);							        // CB_Sprite : register(b4)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::OBJECT)].InitAsConstants(26, 3);							        // CB_Object : register(b3)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::SPRITE)].InitAsConstants(4, 4);							        // CB_Sprite : register(b4)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::BONE_OFFSET)].InitAsConstantBufferView(5);						// CB_BoneOffset : register(b5)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::BONE_TRANSFORM)].InitAsConstantBufferView(6);					    // CB_BoneTransform : register(b6)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::ALBEDO_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[0]); // albedoMap : register(t0)
@@ -571,6 +574,7 @@ void CGameFramework::PopulateCommandList()
 
 	CSceneManager::GetInstance()->Update();
 	CCameraManager::GetInstance()->Update();
+	CCollisionManager::GetInstance()->Update();
 
 	PreRender();
 
@@ -606,7 +610,51 @@ void CGameFramework::AdvanceFrame()
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
 	MoveToNextFrame();
+}
 
 
+// Server
 
+void CGameFramework::ConnectServer()
+{
+	WSADATA Wsa{};
+
+	if (WSAStartup(MAKEWORD(2, 2), &Wsa))
+	{
+		cout << "윈속을 초기화하지 못했습니다." << endl;
+		exit(1);
+	}
+
+	m_SocketInfo.m_Socket = socket(AF_INET, SOCK_STREAM, 0);
+
+	if (m_SocketInfo.m_Socket == INVALID_SOCKET)
+	{
+		Server::ErrorQuit("socket()");
+	}
+
+	m_SocketInfo.m_SocketAddress.sin_family = AF_INET;
+	m_SocketInfo.m_SocketAddress.sin_addr.s_addr = inet_addr(SERVER_IP);
+	m_SocketInfo.m_SocketAddress.sin_port = htons(SERVER_PORT);
+
+	int ReturnValue{ connect(m_SocketInfo.m_Socket, (SOCKADDR*)&m_SocketInfo.m_SocketAddress, sizeof(m_SocketInfo.m_SocketAddress)) };
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		Server::ErrorQuit("connect()");
+	}
+
+	// 플레이어 아이디를 수신한다.
+	ReturnValue = recv(m_SocketInfo.m_Socket, (char*)&m_SocketInfo.m_ID, sizeof(UINT), MSG_WAITALL);
+
+	if (ReturnValue == SOCKET_ERROR)
+	{
+		Server::ErrorDisplay("recv()");
+	}
+	else if (m_SocketInfo.m_ID == UINT_MAX)
+	{
+		MessageBox(m_hWnd, TEXT("현재 정원이 꽉찼거나, 게임이 이미 시작되어 참여할 수 없습니다."), TEXT("VOTE FIGHT"), MB_ICONSTOP | MB_OK);
+		PostQuitMessage(0);
+	}
+
+	//CreateEvents();
 }

@@ -1,0 +1,84 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="리소스 파일">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="헤더 파일\00. Dependency">
+      <UniqueIdentifier>{98aedde2-6770-4cc2-bf02-ee19dfa87790}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\01. Manager">
+      <UniqueIdentifier>{a607aa72-7956-4cf3-862b-606a7a7674c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\01. Manager">
+      <UniqueIdentifier>{44907061-bbd8-4332-9abf-0925741e3f35}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\00.Dependency">
+      <UniqueIdentifier>{30a67082-6072-4652-b92c-6e72500eb2c0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\02. Server">
+      <UniqueIdentifier>{403b820f-c795-4233-9851-ff0b3d4ba676}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\02. Server">
+      <UniqueIdentifier>{1831a50e-d191-4809-819d-3a92b9f0609e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="func.cpp">
+      <Filter>소스 파일\00.Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="udt.cpp">
+      <Filter>소스 파일\00.Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="pch.cpp">
+      <Filter>소스 파일\00.Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>소스 파일\00.Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="server.cpp">
+      <Filter>소스 파일\02. Server</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>소스 파일\02. Server</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="func.h">
+      <Filter>헤더 파일\00. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="udt.h">
+      <Filter>헤더 파일\00. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>헤더 파일\00. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>헤더 파일\00. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader12.h">
+      <Filter>헤더 파일\00. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DX12.h">
+      <Filter>헤더 파일\00. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="server.h">
+      <Filter>헤더 파일\02. Server</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>헤더 파일\02. Server</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
