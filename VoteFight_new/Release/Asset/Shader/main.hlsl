@@ -75,8 +75,6 @@ cbuffer cbBoneTransformInfo : register(b6)
     matrix gpmtxBoneTransforms[SKINNED_ANIMATION_BONES];
 };
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
 //#define _WITH_VERTEX_LIGHTING
 
 #define MATERIAL_ALBEDO_MAP			0x01
@@ -282,36 +280,31 @@ float4 PS_Red(VS_POSITION_OUTPUT input) : SV_TARGET
     return (float4(1.0f, 0.0f, 0.0f, 1.0f));
 }
 
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-Texture2D gtxtTerrainBaseTexture : register(t1);
-SamplerState gssWrap : register(s0);
-
 struct VS_TERRAIN_INPUT
 {
     float3 position : POSITION;
-    float2 uv0 : TEXCOORD;
+    float2 uv : TEXCOORD;
 };
 
 struct VS_TERRAIN_OUTPUT
 {
     float4 position : SV_POSITION;
-    float2 uv0 : TEXCOORD;
+    float2 uv : TEXCOORD;
 };
 
-VS_TERRAIN_OUTPUT VSTerrain(VS_TERRAIN_INPUT input)
+VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
 {
     VS_TERRAIN_OUTPUT output;
 
     output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-    output.uv0 = input.uv0;
+    output.uv = input.uv;
 
     return (output);
 }
 
-float4 PSTerrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
+float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
 {
-    float4 cBaseTexColor = gtxtTerrainBaseTexture.Sample(gssWrap, input.uv0);
+    float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
     float4 cColor = cBaseTexColor;
 
     return (cColor);

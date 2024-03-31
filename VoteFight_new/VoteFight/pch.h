@@ -27,6 +27,7 @@
 #include <queue>
 #include <stack>
 #include <functional>
+#include <atlbase.h>
 
 using namespace std;
 

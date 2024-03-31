@@ -85,8 +85,8 @@ void CGameScene::Init()
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
 	// 터레인 추가
-	CObject* Terrain_object = new CTerrain(100.f, 100.f);
-	AddObject(GROUP_TYPE::TERRAIN, Terrain_object);
+	object = new CTerrain(257.f, 257.f);
+	AddObject(GROUP_TYPE::TERRAIN, object);
 
 	//// 충돌 그룹 설정
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);

@@ -14,6 +14,15 @@ CHeightMapImage::CHeightMapImage(LPCTSTR pFileName, int nWidth, int nLength, XMF
 	BYTE* pHeightMapPixels = new BYTE[m_nWidth * m_nLength];
 
 	HANDLE hFile = ::CreateFile(pFileName, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_ATTRIBUTE_READONLY, NULL);
+	if (hFile == INVALID_HANDLE_VALUE) {
+		// 파일을 열지 못한 경우 예외 처리
+		DWORD dwError = GetLastError();
+		// 오류 처리 방법에 따라 적절한 조치를 취합니다.
+		// 예를 들어, 오류 메시지 출력 또는 기타 처리를 수행할 수 있습니다.
+		// 이 예제에서는 오류 코드를 출력하는 방식으로 처리합니다.
+		std::cerr << "Failed to open file. Error code: " << dwError << std::endl;
+		return; // 또는 적절한 처리 후 반환합니다.
+	}
 	DWORD dwBytesRead;
 	::ReadFile(hFile, pHeightMapPixels, (m_nWidth * m_nLength), &dwBytesRead, NULL);
 	::CloseHandle(hFile);
@@ -92,11 +101,23 @@ XMFLOAT3 CHeightMapImage::GetHeightMapNormal(int x, int z)
 
 CTerrain::CTerrain(int nWidth, int nLength )
 {
+	SetActive(true);
+
 	m_nWidth = nWidth;
 	m_nLength = nLength;
-	m_xmf3Scale = XMFLOAT3(5.f, 5.f, 5.f);
-	LPCTSTR pFileName = L"Release\Asset\Texture\FightVote_terrain.raw";
-	m_pHeightMapImage = new CHeightMapImage(pFileName, nWidth, nLength, m_xmf3Scale);
+	m_xmf3Scale = XMFLOAT3(1.f, 1.f, 1.f);
+
+	// String to LPCTSTR
+	string strPath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\FightVote_terrain.raw";
+	const char* cPath = strPath.c_str();
+	wchar_t* wmsg = new wchar_t[strlen(cPath) + 1]; //memory allocation
+	size_t nConverted = 0;
+	mbstowcs_s(&nConverted, wmsg, strlen(cPath) + 1, cPath, _TRUNCATE);
+	
+	m_pHeightMapImage = new CHeightMapImage(wmsg, nWidth, nLength, m_xmf3Scale);
+	delete[]wmsg;
+
+	// m_pHeightMapImage = new CHeightMapImage(_T("C:\\directX_work\\VoteFight_new\\Release\\Asset\\Terrain\\FightVote_terrain.raw"), nWidth, nLength, m_xmf3Scale);
 	MakeHeightMapGridMesh(0, 0, nWidth, nLength, m_xmf3Scale, m_pHeightMapImage);
 
 	string strTerrain = "Terrain";
@@ -116,14 +137,14 @@ CTerrain::~CTerrain()
 
 void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, void* pContext)
 {
-	m_maxVertexCount = m_vertexCount = nWidth * nLength;
+	m_vertexCount = nWidth * nLength;
 
 	m_nWidth = nWidth;
 	m_nLength = nLength;
 	m_xmf3Scale = xmf3Scale;
 
-	XMFLOAT3* m_pxmf3Positions = new XMFLOAT3[m_maxVertexCount];
-	XMFLOAT2* m_pxmf2TextureCoords0 = new XMFLOAT2[m_maxVertexCount];
+	XMFLOAT3* pxmf3Positions = new XMFLOAT3[m_vertexCount];
+	XMFLOAT2* pxmf2TextureCoords = new XMFLOAT2[m_vertexCount];
 
 	int cxHeightMap = m_nWidth;
 	int czHeightMap = m_nLength;
@@ -134,8 +155,9 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 		for (int x = xStart; x < (xStart + nWidth); x++, i++)
 		{
 			fHeight = OnGetHeight(x, z, pContext);
-			m_pxmf3Positions[i] = XMFLOAT3((x*m_xmf3Scale.x), fHeight, (z*m_xmf3Scale.z));
-			m_pxmf2TextureCoords0[i] = XMFLOAT2(float(x) / float(cxHeightMap - 1), float(czHeightMap - 1 - z) / float(czHeightMap - 1));
+			//fHeight = 0.0f;
+			pxmf3Positions[i] = XMFLOAT3((x*m_xmf3Scale.x), fHeight, (z*m_xmf3Scale.z));
+			pxmf2TextureCoords[i] = XMFLOAT2(float(x) / float(cxHeightMap - 1), float(czHeightMap - 1 - z) / float(czHeightMap - 1));
 			if (fHeight < fMinHeight) fMinHeight = fHeight;
 			if (fHeight > fMaxHeight) fMaxHeight = fHeight;
 		}
@@ -143,22 +165,18 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 
-	m_d3d12VertexBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, m_pxmf3Positions, sizeof(XMFLOAT3) * m_vertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_d3d12VertexUploadBuffer.GetAddressOf());
+	m_d3d12VertexBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, pxmf3Positions, sizeof(XMFLOAT3) * m_vertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_d3d12VertexUploadBuffer.GetAddressOf());
 	m_d3d12VertexBufferView.BufferLocation = m_d3d12VertexBuffer->GetGPUVirtualAddress();
 	m_d3d12VertexBufferView.StrideInBytes = sizeof(XMFLOAT3);
-	m_d3d12VertexBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_maxVertexCount;
+	m_d3d12VertexBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_vertexCount;
 
-	m_d3d12TextureCoord0Buffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, m_pxmf2TextureCoords0, sizeof(XMFLOAT2) * m_vertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_d3d12TextureCoord0UploadBuffer);
-	m_d3d12TextureCoord0BufferView.BufferLocation = m_d3d12TextureCoord0Buffer->GetGPUVirtualAddress();
-	m_d3d12TextureCoord0BufferView.StrideInBytes = sizeof(XMFLOAT2);
-	m_d3d12TextureCoord0BufferView.SizeInBytes = sizeof(XMFLOAT2) * m_maxVertexCount;
+	m_d3d12TextureCoordBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, pxmf2TextureCoords, sizeof(XMFLOAT2) * m_vertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_d3d12TextureCoordUploadBuffer);
+	m_d3d12TextureCoordBufferView.BufferLocation = m_d3d12TextureCoordBuffer->GetGPUVirtualAddress();
+	m_d3d12TextureCoordBufferView.StrideInBytes = sizeof(XMFLOAT2);
+	m_d3d12TextureCoordBufferView.SizeInBytes = sizeof(XMFLOAT2) * m_vertexCount;
 
-	m_nSubMeshes = 1;
-	m_pnSubSetIndices = new int[m_nSubMeshes];
-	m_ppnSubSetIndices = new UINT*[m_nSubMeshes];
-
-	m_pnSubSetIndices[0] = ((nWidth * 2)*(nLength - 1)) + ((nLength - 1) - 1);
-	m_ppnSubSetIndices[0] = new UINT[m_pnSubSetIndices[0]];
+	m_indices = ((nWidth * 2)*(nLength - 1)) + ((nLength - 1) - 1);
+	UINT* pnSubSetIndices = new UINT[m_indices];
 
 	for (int j = 0, z = 0; z < nLength - 1; z++)
 	{
@@ -166,26 +184,26 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 		{
 			for (int x = 0; x < nWidth; x++)
 			{
-				if ((x == 0) && (z > 0)) m_ppnSubSetIndices[0][j++] = (UINT)(x + (z * nWidth));
-				m_ppnSubSetIndices[0][j++] = (UINT)(x + (z * nWidth));
-				m_ppnSubSetIndices[0][j++] = (UINT)((x + (z * nWidth)) + nWidth);
+				if ((x == 0) && (z > 0)) pnSubSetIndices[j++] = (UINT)(x + (z * nWidth));
+				pnSubSetIndices[j++] = (UINT)(x + (z * nWidth));
+				pnSubSetIndices[j++] = (UINT)((x + (z * nWidth)) + nWidth);
 			}
 		}
 		else
 		{
 			for (int x = nWidth - 1; x >= 0; x--)
 			{
-				if (x == (nWidth - 1)) m_ppnSubSetIndices[0][j++] = (UINT)(x + (z * nWidth));
-				m_ppnSubSetIndices[0][j++] = (UINT)(x + (z * nWidth));
-				m_ppnSubSetIndices[0][j++] = (UINT)((x + (z * nWidth)) + nWidth);
+				if (x == (nWidth - 1)) pnSubSetIndices[j++] = (UINT)(x + (z * nWidth));
+				pnSubSetIndices[j++] = (UINT)(x + (z * nWidth));
+				pnSubSetIndices[j++] = (UINT)((x + (z * nWidth)) + nWidth);
 			}
 		}
 	}
 
-	m_d3d12IndexBuffers[0] = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, m_ppnSubSetIndices[0], sizeof(UINT) * m_pnSubSetIndices[0], D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, m_d3d12IndexUploadBuffers[0].GetAddressOf());
-	m_d3d12IndexBufferViews[0].BufferLocation = m_d3d12IndexBuffers[0]->GetGPUVirtualAddress();
-	m_d3d12IndexBufferViews[0].Format = DXGI_FORMAT_R32_UINT;
-	m_d3d12IndexBufferViews[0].SizeInBytes = sizeof(UINT) * m_pnSubSetIndices[0];
+	m_d3d12IndexBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, pnSubSetIndices, sizeof(UINT) * m_indices, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_INDEX_BUFFER, m_d3d12IndexUploadBuffer.GetAddressOf());
+	m_d3d12IndexBufferView.BufferLocation = m_d3d12IndexBuffer->GetGPUVirtualAddress();
+	m_d3d12IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
+	m_d3d12IndexBufferView.SizeInBytes = sizeof(UINT) * m_indices;
 }
 
 float CTerrain::OnGetHeight(int x, int z, void* pContext)
@@ -199,24 +217,23 @@ float CTerrain::OnGetHeight(int x, int z, void* pContext)
 }
 
 
-void CTerrain::Render(CCamera* camera, int subSetIndex)
+void CTerrain::Render(CCamera* camera)
 {
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
-	D3D12_VERTEX_BUFFER_VIEW vertex_and_Texture_BufferViews[] = { m_d3d12VertexBufferView,m_d3d12TextureCoord0BufferView };
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] = { m_d3d12VertexBufferView, m_d3d12TextureCoordBufferView };
 
-	vector<D3D12_INDEX_BUFFER_VIEW> IndexBufferViews[] = { m_d3d12IndexBufferViews };
+	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	d3d12GraphicsCommandList->IASetVertexBuffers(0, 2, vertexBufferViews);
 
+	CMaterial* material = GetMaterials()[0];
 
-	// =================================================================================
+	material->SetPipelineState(RENDER_TYPE::STANDARD);
+	XMFLOAT4X4 xmf4x4world = Matrix4x4::Identity();
+	d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::OBJECT), 16, &xmf4x4world, 0);
+	material->UpdateShaderVariables();
 
-	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	d3d12GraphicsCommandList->IASetVertexBuffers(0, 2, vertex_and_Texture_BufferViews);
-
-	d3d12GraphicsCommandList->IASetIndexBuffer(IndexBufferViews[0].data());
-
-	d3d12GraphicsCommandList->DrawIndexedInstanced(static_cast<UINT>(IndexBufferViews[subSetIndex].size()), 1, 0, 0, 0);
-
+	d3d12GraphicsCommandList->IASetIndexBuffer(&m_d3d12IndexBufferView);
+	d3d12GraphicsCommandList->DrawIndexedInstanced(m_indices, 1, 0, 0, 0);
 }
 
 XMFLOAT4 CTerrain::Add(const XMFLOAT4& vec0, const XMFLOAT4& vec1)

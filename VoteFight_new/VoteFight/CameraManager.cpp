@@ -42,7 +42,7 @@ void CCameraManager::Init()
 	camera->SetScissorRect(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y));
 	camera->SetOffset(XMFLOAT3(0.0f, 3.f, -5.f));
 	camera->SetSpeed(12.0f);
-	camera->GeneratePerspectiveProjectionMatrix(90.0f, resolution.x / resolution.y, 1.0f, 200.0f);
+	camera->GeneratePerspectiveProjectionMatrix(90.0f, resolution.x / resolution.y, 1.0f, 500.0f);
 	camera->GenerateViewMatrix(XMFLOAT3(0.0f, 5.0f, -10.0f), XMFLOAT3(0.0f, 0.0f, 1.0f));
 	camera->CreateShaderVariables();
 	m_cameras.push_back(camera);

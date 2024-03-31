@@ -96,14 +96,4 @@ void CSkyBox::Render(CCamera* camera)
 	material->UpdateShaderVariables();
 
 	d3d12GraphicsCommandList->DrawInstanced(m_maxVertexCount, 1, 0, 0);
-
-	const vector<CObject*>& children = GetChildren();
-
-	for (const auto& child : children)
-	{
-		if (child->IsActive() && !child->IsDeleted())
-		{
-			child->Render(camera);
-		}
-	}
 }
