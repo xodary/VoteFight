@@ -107,6 +107,31 @@ struct VS_STANDARD_OUTPUT
 	float3 bitangentW : BITANGENT;
 };
 
+
+static float gfLaplacians[9] = { -1.0f, -1.0f, -1.0f, -1.0f, 8.0f, -1.0f, -1.0f, -1.0f, -1.0f };
+static int2 gnOffsets[9] = { { -1, -1 }, { 0, -1 }, { 1, -1 }, { -1, 0 }, { 0, 0 }, { 1, 0 }, { -1, 1 }, { 0, 1 }, { 1, 1 } };
+
+float4 Edge(float4 position)
+{
+    float3 EdgeColor = float3(1, 0, 0);
+    int EdgeSize = 9;
+
+    int Edge = false;
+   // float fObjectID = gtxtInputTextures[0][int2(position.xy)].r;
+    Edge = true;
+    for (int i = 0; i < EdgeSize; i++)
+    {
+      //  if (fObjectID != gtxtInputTextures[0][int2(position.xy) + gnOffsets[i]].r)
+      //      Edge = true; // 오브젝트 별 테두리
+    }
+
+    if (Edge)
+        return (float4(EdgeColor, 1));
+    else
+        return (float4(0, 0, 0, 0));
+}
+
+
 VS_STANDARD_OUTPUT VS_Main(VS_STANDARD_INPUT input)
 {
 	VS_STANDARD_OUTPUT output;
@@ -144,6 +169,7 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
     // return (lerp(cColor, cIllumination, 0.5f));
 	
     // float4 cColor = float4(0, 0, 0, 1);
+    cColor = cColor + Edge(input.position);
     return cColor;
 }
 

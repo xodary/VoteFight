@@ -108,7 +108,7 @@ CTerrain::CTerrain(int nWidth, int nLength )
 	m_xmf3Scale = XMFLOAT3(1.f, 1.f, 1.f);
 
 	// String to LPCTSTR
-	string strPath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\FightVote_terrain.raw";
+	string strPath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\VoteFightHeightMap.raw";
 	const char* cPath = strPath.c_str();
 	wchar_t* wmsg = new wchar_t[strlen(cPath) + 1]; //memory allocation
 	size_t nConverted = 0;

@@ -93,6 +93,7 @@ enum class CAMERA_TYPE
 {
 	MAIN,
 	UI,
+	LIGHT,
 
 	COUNT
 };
