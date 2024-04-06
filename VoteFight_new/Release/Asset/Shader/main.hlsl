@@ -176,6 +176,36 @@ VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
 
 	return(output);
 }
+// ======== Bilboard =========
+struct VS_BILBOARD_INPUT
+{
+    float3 position : POSITION;
+};
+
+struct VS_BILBOARD_OUTPUT
+{
+    float3 positionL : POSITION;
+    float4 position : SV_POSITION;
+};
+
+VS_BILBOARD_OUTPUT VS_Bilboard(VS_BILBOARD_INPUT input)
+{
+    VS_BILBOARD_OUTPUT output;
+    
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    output.positionL = input.position;
+
+    return (output);
+}
+
+float4 PS_Bilboard(VS_BILBOARD_OUTPUT input) : SV_TARGET
+{
+    float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.positionL.xy);
+    float4 cColor = cBaseTexColor;
+    
+    return (cColor);
+}
+
 
 // ======== Skybox =========
 struct VS_SKYBOX_CUBEMAP_INPUT
@@ -202,7 +232,6 @@ VS_SKYBOX_CUBEMAP_OUTPUT VS_SkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
 float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 {
     float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
-
     return (cColor);
 }
 
@@ -280,6 +309,7 @@ float4 PS_Red(VS_POSITION_OUTPUT input) : SV_TARGET
     return (float4(1.0f, 0.0f, 0.0f, 1.0f));
 }
 
+// ======== TERRAIN =========
 struct VS_TERRAIN_INPUT
 {
     float3 position : POSITION;

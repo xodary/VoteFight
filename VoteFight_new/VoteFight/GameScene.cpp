@@ -16,6 +16,7 @@
 #include "Transform.h"
 #include "Camera.h"
  #include"Terrain.h"
+ #include"Bilboard.h"
 
 CGameScene::CGameScene() :
 	m_d3d12GameScene(),
@@ -84,9 +85,14 @@ void CGameScene::Init()
 	CObject* object = new CSkyBox();
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
+
 	// 터레인 추가
 	object = new CTerrain(257.f, 257.f);
 	AddObject(GROUP_TYPE::TERRAIN, object);
+
+	// 빌보드 추가
+	object = new CBilboard();
+	AddObject(GROUP_TYPE::BILBOARD, object);
 
 	//// 충돌 그룹 설정
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);

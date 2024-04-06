@@ -255,6 +255,12 @@
     <ClInclude Include="WireFrameShader.h">
       <Filter>헤더 파일\06. Asset\Shader</Filter>
     </ClInclude>
+    <ClInclude Include="Bilboard.h">
+      <Filter>헤더 파일\05. Object\05-02. Bilboard</Filter>
+    </ClInclude>
+    <ClInclude Include="BilboardShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -381,6 +387,12 @@
       <Filter>소스 파일\02. Manager</Filter>
     </ClCompile>
     <ClCompile Include="WireFrameShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="Bilboard.cpp">
+      <Filter>소스 파일\05. Object\05-02. Bilboard</Filter>
+    </ClCompile>
+    <ClCompile Include="BilboardShader.cpp">
       <Filter>소스 파일\06. Asset\Shader</Filter>
     </ClCompile>
   </ItemGroup>

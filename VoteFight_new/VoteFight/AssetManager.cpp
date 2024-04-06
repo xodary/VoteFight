@@ -8,6 +8,7 @@
 #include "SkyboxShader.h"
 #include "UIShader.h"
 #include "TerrainShader.h"
+#include "BilboardShader.h"
 #include "Material.h"
 #include "Animation.h"
 
@@ -153,6 +154,11 @@ void CAssetManager::LoadShaders()
 
 	shader = new CTerrainShader();
 	shader->SetName("Terrain");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CBilboardShader();
+	shader->SetName("Bilboard");
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 }
