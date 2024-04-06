@@ -433,9 +433,12 @@ void CAssetManager::Init()
 	m_assetPath = assetPath;
 
 	LoadMeshes("Meshes.bin");
+	LoadMeshes("Meshess.bin");
 	LoadTextures("Textures.bin");
+	LoadTextures("Texturesss.bin");
 	LoadShaders();
 	LoadMaterials("Materials.bin");
+	LoadMaterials("Materialsss.bin");
 }
 
 void CAssetManager::CreateShaderResourceViews()
