@@ -77,9 +77,13 @@ void CGameScene::Exit()
 
 void CGameScene::Init()
 {
+	CreateTerrain();
+
 	// 씬 로드
 	Load("GameScene.bin");
 	Load("BinaryScene.bin");
+	Load("BinaryScene.bin");
+	Load("Woods.bin");
 	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
@@ -88,12 +92,11 @@ void CGameScene::Init()
 
 
 	// 터레인 추가
-	object = new CTerrain(257.f, 257.f);
-	AddObject(GROUP_TYPE::TERRAIN, object);
+	// AddObject(GROUP_TYPE::TERRAIN, object);
 
 	// 빌보드 추가
-	object = new CBilboard();
-	AddObject(GROUP_TYPE::BILBOARD, object);
+	//object = new CBilboard();
+	//AddObject(GROUP_TYPE::BILBOARD, object);
 
 	//// 충돌 그룹 설정
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);

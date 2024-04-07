@@ -154,8 +154,7 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	{
 		for (int x = xStart; x < (xStart + nWidth); x++, i++)
 		{
-			fHeight = OnGetHeight(x, z, pContext);
-			//fHeight = 0.0f;
+			fHeight = OnGetHeight(x, z);
 			pxmf3Positions[i] = XMFLOAT3((x*m_xmf3Scale.x), fHeight, (z*m_xmf3Scale.z));
 			pxmf2TextureCoords[i] = XMFLOAT2(float(x) / float(cxHeightMap - 1), float(czHeightMap - 1 - z) / float(czHeightMap - 1));
 			if (fHeight < fMinHeight) fMinHeight = fHeight;
@@ -206,12 +205,11 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	m_d3d12IndexBufferView.SizeInBytes = sizeof(UINT) * m_indices;
 }
 
-float CTerrain::OnGetHeight(int x, int z, void* pContext)
+float CTerrain::OnGetHeight(int x, int z)
 {
-	CHeightMapImage* pHeightMapImage = (CHeightMapImage*)pContext;
-	BYTE* pHeightMapPixels = pHeightMapImage->GetHeightMapPixels();
-	XMFLOAT3 xmf3Scale = pHeightMapImage->GetScale();
-	int nWidth = pHeightMapImage->GetHeightMapWidth();
+	BYTE* pHeightMapPixels = m_pHeightMapImage->GetHeightMapPixels();
+	XMFLOAT3 xmf3Scale = m_pHeightMapImage->GetScale();
+	int nWidth = m_pHeightMapImage->GetHeightMapWidth();
 	float fHeight = pHeightMapPixels[x + (z * nWidth)] * xmf3Scale.y;
 	return(fHeight);
 }

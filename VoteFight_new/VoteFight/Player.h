@@ -37,7 +37,6 @@ public:
 
 	virtual void Update();
 
-	BYTE MoveDirection = 0x0000000;
 	bool b_front = false;
 	bool b_right = false;
 	bool b_back = false;

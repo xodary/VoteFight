@@ -434,11 +434,15 @@ void CAssetManager::Init()
 
 	LoadMeshes("Meshes.bin");
 	LoadMeshes("Meshess.bin");
+	LoadMeshes("FireWoodMesh.bin");
 	LoadTextures("Textures.bin");
 	LoadTextures("Texturesss.bin");
+	LoadTextures("Texturesss.bin");
+	LoadTextures("FireWoodTextures.bin");
 	LoadShaders();
 	LoadMaterials("Materials.bin");
 	LoadMaterials("Materialsss.bin");
+	LoadMaterials("FireWoodMaterials.bin");
 }
 
 void CAssetManager::CreateShaderResourceViews()

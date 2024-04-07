@@ -56,7 +56,7 @@ public:
 
 	void MakeHeightMapGridMesh( int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, void* pContext);
 
-	float OnGetHeight(int x, int z, void* pContext);
+	float OnGetHeight(int x, int z);
 	virtual void Render(CCamera* camera);
 
 	XMFLOAT4 Add(const XMFLOAT4&, const XMFLOAT4&);
