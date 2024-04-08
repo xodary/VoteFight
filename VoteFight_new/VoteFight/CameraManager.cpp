@@ -55,11 +55,11 @@ void CCameraManager::Init()
 	camera->CreateShaderVariables();
 	m_cameras.push_back(camera);
 
-	//camera = new CCamera(CAMERA_TYPE::LIGHT);
-	//camera->SetViewport(0, 0, DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 0.0f, 1.0f);
-	//camera->SetScissorRect(0, 0, DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT);
-	//camera->CreateShaderVariables();
-	//m_cameras.push_back(camera);
+	camera = new CCamera(CAMERA_TYPE::LIGHT);
+	camera->SetViewport(0, 0, DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 0.0f, 1.0f);
+	camera->SetScissorRect(0, 0, DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT);
+	camera->CreateShaderVariables();
+	m_cameras.push_back(camera);
 }
 
 void CCameraManager::Update()

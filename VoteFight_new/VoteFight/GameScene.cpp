@@ -41,6 +41,7 @@ void CGameScene::CreateShaderVariables()
 	m_d3d12GameScene = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, nullptr, bytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, nullptr);
 	DX::ThrowIfFailed(m_d3d12GameScene->Map(0, nullptr, reinterpret_cast<void**>(&m_mappedGameScene)));
 
+	m_mappedGameScene->gcGlobalAmbientLight = XMFLOAT4(0,1,0,1);
 	m_mappedGameScene->m_fog.m_color = XMFLOAT4(0.025f, 0.025f, 0.05f, 1.0f);
 	m_mappedGameScene->m_fog.m_density = 0.015f;
 }
@@ -82,7 +83,6 @@ void CGameScene::Init()
 	// 씬 로드
 	Load("GameScene.bin");
 	Load("BinaryScene.bin");
-	Load("BinaryScene.bin");
 	Load("Woods.bin");
 	LoadUI("GameSceneUI.bin");
 
@@ -105,16 +105,19 @@ void CGameScene::Init()
 
 	// 조명(Light) 생성
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
-	/*
+
+	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.4f, 0.3f, 0.8f, 1.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 0.0f);
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 100.0f, 130.0f);
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, -1.0f));
-	m_mappedGameScene->m_lights[0].m_color = XMFLOAT4(0.5f, 0.5f, 0.6f, 0.0f);
-	m_mappedGameScene->m_lights[0].m_range = 2000.0f;
+	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
+	/*
 	m_towerLightAngle = XMConvertToRadians(90.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::SPOT);

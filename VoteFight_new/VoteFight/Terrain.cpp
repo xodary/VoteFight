@@ -243,3 +243,31 @@ XMFLOAT4 CTerrain::Add(const XMFLOAT4& vec0, const XMFLOAT4& vec1)
 	addVector.w = vec0.w + vec1.w;
 	return addVector;
 }
+
+/*
+
+struct LIGHT
+{
+	bool m_isActive;
+
+	float3 m_position;
+	float3 m_direction;
+
+	int m_type;
+
+	float4 m_color;
+
+	float3 m_attenuation;
+	float m_fallOff;
+	float m_range;
+	float m_theta;
+	float m_phi;
+
+	bool m_shadowMapping;
+	matrix m_toTexCoord;
+};
+cbuffer CB_Light : register(b2)
+{
+	LIGHT m_lights[MAX_LIGHTS];
+	Fog m_fog;
+};*/

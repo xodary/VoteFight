@@ -10,33 +10,41 @@
 #define _WITH_THETA_PHI_CONES
 //#define _WITH_REFLECT
 
+struct Fogz
+{
+    float4 m_color;
+    float m_density;
+};
+
 struct LIGHT
 {
-    float4 m_cAmbient;
-    float4 m_cDiffuse;
-    float4 m_cSpecular;
-    float3 m_vPosition;
-    float m_fFalloff;
-    float3 m_vDirection;
-    float m_fTheta; //cos(m_fTheta)
-    float3 m_vAttenuation;
-    float m_fPhi; //cos(m_fPhi)
-    bool m_bEnable;
-    int m_nType;
-    float m_fRange;
-    float padding;
+    bool m_isActive;
+			   
+    float3 m_position;
+    float3 m_direction;
+			   
+    int m_type;
+			   
+    float4 m_color;
+			   
+    float3 m_attenuation;
+    float m_fallOff;
+    float m_range;
+    float m_theta;
+    float m_phi;
+			   
+    bool m_shadowMapping;
+    matrix m_toTexCoord;
 };
 
-cbuffer cbLights : register(b4)
+cbuffer CB_Light : register(b2)
 {
-    LIGHT gLights[MAX_LIGHTS];
-    float4 gcGlobalAmbientLight;
-    int gnLights;
+    LIGHT m_lights[MAX_LIGHTS];
+    Fog m_fog;
 };
-
 float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
 {
-    float3 vToLight = -gLights[nIndex].m_vDirection;
+    float3 vToLight = -m_lights[nIndex].m_position;
     float fDiffuseFactor = dot(vToLight, vNormal);
     float fSpecularFactor = 0.0f;
     if (fDiffuseFactor > 0.0f)
@@ -132,6 +140,8 @@ float4 SpotLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
     return (float4(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
+#include "main.hlsl"
+
 float4 Lighting(float3 vPosition, float3 vNormal)
 {
     float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
@@ -141,17 +151,17 @@ float4 Lighting(float3 vPosition, float3 vNormal)
 	[unroll(MAX_LIGHTS)]
     for (int i = 0; i < gnLights; i++)
     {
-        if (gLights[i].m_bEnable)
+        if (m_lights[i].m_isActive)
         {
-            if (gLights[i].m_nType == DIRECTIONAL_LIGHT)
+            if (m_lights[i].m_type == DIRECTIONAL_LIGHT)
             {
                 cColor += DirectionalLight(i, vNormal, vToCamera);
             }
-            else if (gLights[i].m_nType == POINT_LIGHT)
+            else if (m_lights[i].m_type == POINT_LIGHT)
             {
                 cColor += PointLight(i, vPosition, vNormal, vToCamera);
             }
-            else if (gLights[i].m_nType == SPOT_LIGHT)
+            else if (m_lights[i].m_type == SPOT_LIGHT)
             {
                 cColor += SpotLight(i, vPosition, vNormal, vToCamera);
             }
@@ -162,4 +172,3 @@ float4 Lighting(float3 vPosition, float3 vNormal)
 
     return (cColor);
 }
-

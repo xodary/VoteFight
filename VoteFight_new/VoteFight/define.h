@@ -153,6 +153,7 @@ enum class TRIGGER_TYPE
 enum class RENDER_TYPE
 {
 	STANDARD,
+	DEPTH_WRITE,
 
 	COUNT
 };

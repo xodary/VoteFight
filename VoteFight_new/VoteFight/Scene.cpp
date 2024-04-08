@@ -189,11 +189,11 @@ void CScene::Update()
 
 void CScene::PreRender()
 {
-
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
 
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
+
 
 	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
 	{
@@ -201,7 +201,7 @@ void CScene::PreRender()
 		{
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
-				object->PreRender(camera);
+		//		object->PreRender(camera);
 			}
 		}
 	}
