@@ -118,6 +118,8 @@ public:
 	ID3D12DescriptorHeap* GetRtvDescriptorHeap();
 	ID3D12DescriptorHeap* GetDsvDescriptorHeap();
 	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap();
+	
+	inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_d3d12DsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart()); }
 
 	UINT GetRtvDescriptorIncrementSize();
 	UINT GetDsvDescriptorIncrementSize();
@@ -128,4 +130,13 @@ public:
 
 	// Server
 	void ConnectServer();
+
+public:
+	void ResourceBarriersBegin(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers) { barriers.clear(); }
+	void ResourceBarriersEnd(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList) {
+		size_t num = barriers.size();
+		if (num > 0)
+			commandList->ResourceBarrier(num, barriers.data());
+	}
+
 };

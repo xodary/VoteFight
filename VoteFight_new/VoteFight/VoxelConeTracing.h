@@ -1,9 +1,13 @@
 #pragma once
+#include "Object.h"
+
+#define VCT_SCENE_VOLUME_SIZE 256
+#define VCT_MIPS 6
 
 class DXRSRenderTarget
 {
 public:
-	DXRSRenderTarget(ID3D12Device* device, DXRS::DescriptorHeapManager* descriptorManger, int width, int height, DXGI_FORMAT aFormat, D3D12_RESOURCE_FLAGS flags, LPCWSTR name, int depth = -1, int mips = 1, D3D12_RESOURCE_STATES defaultState = D3D12_RESOURCE_STATE_RENDER_TARGET);
+	DXRSRenderTarget(DESC::DescriptorHeapManager* descriptorManger, int width, int height, DXGI_FORMAT aFormat, D3D12_RESOURCE_FLAGS flags, LPCWSTR name, int depth = -1, int mips = 1, D3D12_RESOURCE_STATES defaultState = D3D12_RESOURCE_STATE_RENDER_TARGET);
 	~DXRSRenderTarget();
 
 	ID3D12Resource* GetResource() { return mRenderTarget.Get(); }
@@ -14,17 +18,17 @@ public:
 	void TransitionTo(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES stateAfter);
 	D3D12_RESOURCE_STATES GetCurrentState() { return mCurrentResourceState; }
 
-	DXRS::DescriptorHandle& GetRTV(int mip = 0)
+	DESC::DescriptorHandle& GetRTV(int mip = 0)
 	{
 		return mDescriptorRTVMipsHandles[mip];
 	}
 
-	DXRS::DescriptorHandle& GetSRV()
+	DESC::DescriptorHandle& GetSRV()
 	{
 		return mDescriptorSRV;
 	}
 
-	DXRS::DescriptorHandle& GetUAV(int mip = 0)
+	DESC::DescriptorHandle& GetUAV(int mip = 0)
 	{
 		return mDescriptorUAVMipsHandles[mip];
 	}
@@ -36,12 +40,12 @@ private:
 	D3D12_RESOURCE_STATES mCurrentResourceState;
 
 	//DXRS::DescriptorHandle mDescriptorUAV;
-	DXRS::DescriptorHandle mDescriptorSRV;
+	DESC::DescriptorHandle mDescriptorSRV;
 	//DXRS::DescriptorHandle mDescriptorRTV;
 	ComPtr<ID3D12Resource> mRenderTarget;
 
-	std::vector<DXRS::DescriptorHandle> mDescriptorUAVMipsHandles;
-	std::vector<DXRS::DescriptorHandle> mDescriptorRTVMipsHandles;
+	std::vector<DESC::DescriptorHandle> mDescriptorUAVMipsHandles;
+	std::vector<DESC::DescriptorHandle> mDescriptorRTVMipsHandles;
 };
 
 class DXRSExampleGIScene 
@@ -55,8 +59,14 @@ public:
 	DXRSExampleGIScene() {}
 	~DXRSExampleGIScene() {}
 
-	void DXRSExampleGIScene::InitVoxelConeTracing(ID3D12Device* device, DXRS::DescriptorHeapManager* descriptorManager);
-	void DXRSExampleGIScene::RenderVoxelConeTracing(ID3D12Device* device, ID3D12GraphicsCommandList* commandList, DXRS::GPUDescriptorHeap* gpuDescriptorHeap, RenderQueue aQueue, bool useAsyncCompute);
+	void InitVoxelConeTracing(DESC::DescriptorHeapManager* descriptorManager);
+	void RenderObject(std::unique_ptr<CObject>& aModel, std::function<void(std::unique_ptr<CObject>&)> aCallback);
+	void RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDescriptorHeap, RenderQueue aQueue, bool useAsyncCompute);
+
+	std::vector<CD3DX12_RESOURCE_BARRIER> mBarriers;
+	std::vector<std::unique_ptr<CObject>> mRenderableObjects;
+
+	CGameFramework* framework;
 
 		// Voxel Cone Tracing
 	RootSignature mVCTVoxelizationRS;
@@ -119,4 +129,11 @@ public:
 	bool mVCTUseMainCompute = true;
 	bool mVCTMainRTUseUpsampleAndBlur = true;
 	float mVCTGIPower = 1.0f;
+
+	D3D12_RASTERIZER_DESC mRasterizerState;
+	D3D12_RASTERIZER_DESC mRasterizerStateNoCullNoDepth;
+	D3D12_BLEND_DESC mBlendState;
+	D3D12_DEPTH_STENCIL_DESC mDepthStateDisabled;
+	D3D12_DEPTH_STENCIL_DESC mDepthStateRW;
+
 };

@@ -350,9 +350,6 @@ void CPlayerWalkState::Update(CObject* object)
 	}
 
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	float y = transform->GetRotation().y;
-	if (y > 180) y -= 360;
-	float angle = 0;
 
 	if (KEY_HOLD(KEY::W)) {
 		if (KEY_HOLD(KEY::D))

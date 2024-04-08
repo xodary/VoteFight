@@ -149,6 +149,8 @@
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
+    <ClInclude Include="DescriptorHeap.h" />
+    <ClInclude Include="Buffer.h" />
     <ClInclude Include="func.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
@@ -158,9 +160,11 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectShader.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PipelineStateObject.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerStates.h" />
     <ClInclude Include="RigidBody.h" />
+    <ClInclude Include="RootSignature.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Shader.h" />
@@ -199,6 +203,12 @@
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="DescriptorHeap.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Buffer.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="DDSTextureLoader12.cpp" />
     <ClCompile Include="func.cpp" />
@@ -212,9 +222,11 @@
     <ClCompile Include="pch.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
+    <ClCompile Include="PipelineStateObject.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerStates.cpp" />
     <ClCompile Include="RigidBody.cpp" />
+    <ClCompile Include="RootSignature.cpp" />
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Shader.cpp" />
@@ -246,6 +258,24 @@
     <FxCompile Include="..\Release\Asset\Shader\main.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingAnisoMipmapMainCS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingAnisoMipmapPrepareCS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingCS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingPS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingVoxelization.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingVoxelizationDebug.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
