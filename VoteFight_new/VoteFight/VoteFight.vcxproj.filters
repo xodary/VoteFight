@@ -124,6 +124,12 @@
     <Filter Include="헤더 파일\05. Object\05-05. UI">
       <UniqueIdentifier>{b1a89df2-6be8-4a79-b84b-72e594a257d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\09. Light">
+      <UniqueIdentifier>{a675d1a8-f3bc-43f6-bde4-c905ff3134d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\09. Light">
+      <UniqueIdentifier>{db3b096f-13d2-4767-93cb-3d49ae03abae}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -255,6 +261,9 @@
     <ClInclude Include="WireFrameShader.h">
       <Filter>헤더 파일\06. Asset\Shader</Filter>
     </ClInclude>
+    <ClInclude Include="VoxelConeTracing.h">
+      <Filter>헤더 파일\09. Light</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -382,6 +391,9 @@
     </ClCompile>
     <ClCompile Include="WireFrameShader.cpp">
       <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="VoxelConeTracing.cpp">
+      <Filter>소스 파일\09. Light</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

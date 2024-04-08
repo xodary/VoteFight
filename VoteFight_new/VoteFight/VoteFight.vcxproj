@@ -183,6 +183,9 @@
     <ClInclude Include="udt.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UIShader.h" />
+    <ClInclude Include="VoxelConeTracing.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="WireFrameShader.h" />
   </ItemGroup>
   <ItemGroup>
@@ -234,6 +237,9 @@
     <ClCompile Include="udt.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="UIShader.cpp" />
+    <ClCompile Include="VoxelConeTracing.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="WireFrameShader.cpp" />
   </ItemGroup>
   <ItemGroup>
