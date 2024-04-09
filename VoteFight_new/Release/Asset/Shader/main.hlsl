@@ -82,8 +82,15 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
 {
  
     float3 vToLight = -m_lights[nIndex].m_position;
-    float fDiffuseFactor = dot(vToLight, vNormal);
-    float fSpecularFactor = 0.0f;
+    float fDiffuseFactor = dot(vNormal, vToLight);
+    if (fDiffuseFactor > 0.7)
+        fDiffuseFactor = 1;
+    else if (fDiffuseFactor > 0.4)
+        fDiffuseFactor = 0.3;
+    else if (fDiffuseFactor > 0.1)
+        fDiffuseFactor = 0.0;
+    
+       float fSpecularFactor = 0.0f;
     if (fDiffuseFactor > 0.0f)
     {
         float3 vHalf = normalize(vToCamera + vToLight);

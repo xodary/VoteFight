@@ -90,7 +90,8 @@ void CGameScene::Init()
 	CObject* object = new CSkyBox();
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
-	// 빌보드 추가
+	// 2024 - 04 - 10
+	// 빌보드 추가 - 아직 미완성
 	//object = new CBilboard();
 	//AddObject(GROUP_TYPE::BILBOARD, object);
 
@@ -103,8 +104,8 @@ void CGameScene::Init()
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
 	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.4f, 0.3f, 0.8f, 1.0f);
-	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(0.5f, 0.5f, 0.5f, 0.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.4f, 0.4f, 0.3f, 1.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 0.0f);
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
