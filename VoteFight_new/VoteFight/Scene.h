@@ -38,7 +38,7 @@ public:
 	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
 	void DeleteGroupObject(GROUP_TYPE groupType);
 
-	void CreateTerrain() { m_terrain = new CTerrain(257.f, 257.f); };
+	void CreateTerrain() { m_terrain = new CTerrain(257,257); };
 	float GetTerrainHeight(float x, float y) { 
 		if (m_terrain)
 			return m_terrain->OnGetHeight(x, y);

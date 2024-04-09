@@ -90,10 +90,6 @@ void CGameScene::Init()
 	CObject* object = new CSkyBox();
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
-
-	// 터레인 추가
-	// AddObject(GROUP_TYPE::TERRAIN, object);
-
 	// 빌보드 추가
 	//object = new CBilboard();
 	//AddObject(GROUP_TYPE::BILBOARD, object);

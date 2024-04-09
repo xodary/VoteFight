@@ -114,11 +114,11 @@ CTerrain::CTerrain(int nWidth, int nLength )
 	size_t nConverted = 0;
 	mbstowcs_s(&nConverted, wmsg, strlen(cPath) + 1, cPath, _TRUNCATE);
 	
-	m_pHeightMapImage = new CHeightMapImage(wmsg, nWidth, nLength, m_xmf3Scale);
+	m_pHeightMapImage = new CHeightMapImage(wmsg, 257, 257, m_xmf3Scale);
 	delete[]wmsg;
 
 	// m_pHeightMapImage = new CHeightMapImage(_T("C:\\directX_work\\VoteFight_new\\Release\\Asset\\Terrain\\FightVote_terrain.raw"), nWidth, nLength, m_xmf3Scale);
-	MakeHeightMapGridMesh(0, 0, nWidth, nLength, m_xmf3Scale, m_pHeightMapImage);
+	MakeHeightMapGridMesh(0, 0, 257, 257, m_xmf3Scale, m_pHeightMapImage);
 
 	string strTerrain = "Terrain";
 	CMaterial* material = CAssetManager::GetInstance()->CreateMaterial(strTerrain);

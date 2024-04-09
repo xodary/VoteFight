@@ -434,6 +434,7 @@ void CAssetManager::Init()
 
 	LoadMeshes("Meshes.bin");
 	LoadMeshes("Meshess.bin");
+	LoadMeshes("Meshesss.bin");
 	LoadMeshes("FireWoodMesh.bin");
 	LoadTextures("Textures.bin");
 	LoadTextures("Texturesss.bin");
@@ -441,7 +442,8 @@ void CAssetManager::Init()
 	LoadTextures("FireWoodTextures.bin");
 	LoadShaders();
 	LoadMaterials("Materials.bin");
-	LoadMaterials("Materialsss.bin");
+	LoadMaterials("Materialss.bin");
+	LoadMaterials("WhiteHouse.bin");
 	LoadMaterials("FireWoodMaterials.bin");
 }
 
