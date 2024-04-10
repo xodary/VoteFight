@@ -174,6 +174,11 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	m_d3d12TextureCoordBufferView.StrideInBytes = sizeof(XMFLOAT2);
 	m_d3d12TextureCoordBufferView.SizeInBytes = sizeof(XMFLOAT2) * m_vertexCount;
 
+	m_d3d12NormalBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, pxmf2TextureCoords, sizeof(XMFLOAT2) * m_vertexCount, D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, &m_d3d12NormalUploadBuffer);
+	m_d3d12TNormalBufferView.BufferLocation = m_d3d12TextureCoordBuffer->GetGPUVirtualAddress();
+	m_d3d12TNormalBufferView.StrideInBytes = sizeof(XMFLOAT2);
+	m_d3d12TNormalBufferView.SizeInBytes = sizeof(XMFLOAT2) * m_vertexCount;
+
 	m_indices = ((nWidth * 2)*(nLength - 1)) + ((nLength - 1) - 1);
 	UINT* pnSubSetIndices = new UINT[m_indices];
 
@@ -243,31 +248,3 @@ XMFLOAT4 CTerrain::Add(const XMFLOAT4& vec0, const XMFLOAT4& vec1)
 	addVector.w = vec0.w + vec1.w;
 	return addVector;
 }
-
-/*
-
-struct LIGHT
-{
-	bool m_isActive;
-
-	float3 m_position;
-	float3 m_direction;
-
-	int m_type;
-
-	float4 m_color;
-
-	float3 m_attenuation;
-	float m_fallOff;
-	float m_range;
-	float m_theta;
-	float m_phi;
-
-	bool m_shadowMapping;
-	matrix m_toTexCoord;
-};
-cbuffer CB_Light : register(b2)
-{
-	LIGHT m_lights[MAX_LIGHTS];
-	Fog m_fog;
-};*/

@@ -46,6 +46,10 @@ protected:
 	ComPtr<ID3D12Resource>	        m_d3d12TextureCoordUploadBuffer;
 	D3D12_VERTEX_BUFFER_VIEW        m_d3d12TextureCoordBufferView;
 
+	ComPtr<ID3D12Resource>	        m_d3d12NormalBuffer;
+	ComPtr<ID3D12Resource>	        m_d3d12NormalUploadBuffer;
+	D3D12_VERTEX_BUFFER_VIEW        m_d3d12TNormalBufferView;
+
 	ComPtr<ID3D12Resource>  m_d3d12IndexBuffer;
 	ComPtr<ID3D12Resource>  m_d3d12IndexUploadBuffer;
 	D3D12_INDEX_BUFFER_VIEW	m_d3d12IndexBufferView;

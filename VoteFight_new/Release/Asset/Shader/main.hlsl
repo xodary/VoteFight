@@ -83,13 +83,13 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
  
     float3 vToLight = -m_lights[nIndex].m_position;
     float fDiffuseFactor = dot(vNormal, vToLight);
+    
     if (fDiffuseFactor > 0.7)
         fDiffuseFactor = 1;
     else if (fDiffuseFactor > 0.4)
         fDiffuseFactor = 0.3;
     else if (fDiffuseFactor > 0.1)
         fDiffuseFactor = 0.0;
-    
        float fSpecularFactor = 0.0f;
     if (fDiffuseFactor > 0.0f)
     {
@@ -97,9 +97,20 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
         fSpecularFactor = max(dot(vHalf, vNormal), 0.0f);
     }
  
-    return ((m_lights[nIndex].m_xmf4Ambient) +
-                (m_lights[nIndex].m_xmf4Diffuse * fDiffuseFactor) + 
+    float rim = abs(dot(vNormal, vToCamera));
+    if (rim > 0.7)
+        rim = 1.3;
+    else if (rim > 0.3)
+        rim = 1;
+    else
+        rim = -2;
+    
+    float4 cColor = ((m_lights[nIndex].m_xmf4Ambient) +
+                (m_lights[nIndex].m_xmf4Diffuse * fDiffuseFactor) +
                 (m_lights[nIndex].m_xmf4Specular * fSpecularFactor));
+    cColor.rgb = cColor.rgb * rim;
+    return cColor;
+
 }
 
 
@@ -138,6 +149,8 @@ float4 Lighting(float3 vPosition, float3 vNormal)
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
     cColor += DirectionalLight(0, vNormal, vToCamera);
     // cColor += (gcGlobalAmbientLight);
+    
+    
     return (cColor);
 }
 
