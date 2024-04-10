@@ -43,7 +43,7 @@ public:
 		{}
 	};
 
-	CBuffer(DESC::DescriptorHeapManager* descriptorManager, Description& description, LPCWSTR name = nullptr, unsigned char* data = nullptr);
+	CBuffer(Description& description, LPCWSTR name = nullptr, unsigned char* data = nullptr);
 	CBuffer() {}
 	virtual ~CBuffer();
 

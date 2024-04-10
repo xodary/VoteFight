@@ -276,6 +276,9 @@
     <ClInclude Include="PipelineStateObject.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="DepthWriteShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -418,6 +421,9 @@
     </ClCompile>
     <ClCompile Include="PipelineStateObject.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthWriteShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -3,11 +3,13 @@
 #include "Buffer.h"
 #include <string>
 
-CBuffer::CBuffer(DESC::DescriptorHeapManager* descriptorManager, Description& description, LPCWSTR name, unsigned char* data)
+CBuffer::CBuffer(Description& description, LPCWSTR name, unsigned char* data)
 	: mDescription(description)
 	, mData(data)
 	, mCBVMappedData(nullptr)
 {
+	DESC::DescriptorHeapManager* descriptorManager = DESC::DescriptorHeapManager::GetInstance();
+
 	mBufferSize = mDescription.mNumElements * mDescription.mElementSize;
 
 	if (mDescription.mDescriptorType & DescriptorType::CBV)

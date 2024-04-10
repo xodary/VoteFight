@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "Mesh.h"
 #include "GameFramework.h"
 #include "VoxelConeTracing.h"
 #include "DescriptorHeap.h"
@@ -7,9 +8,72 @@
 #include "RootSignature.h"
 #include "PipelineStateObject.h"
 
-DXRSRenderTarget::DXRSRenderTarget(DESC::DescriptorHeapManager* descriptorManager, int width, int height, DXGI_FORMAT aFormat, D3D12_RESOURCE_FLAGS flags, LPCWSTR name, int depth, int mips, D3D12_RESOURCE_STATES defaultState)
+CDepthBuffer::CDepthBuffer(ID3D12Device* device, DESC::DescriptorHeapManager* descriptorManager, int width, int height, DXGI_FORMAT aFormat)
+{
+    mWidth = width;
+    mHeight = height;
+    mFormat = aFormat;
+
+    D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+    depthOptimizedClearValue.Format = aFormat;
+    depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+    depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+    DXGI_FORMAT format = DXGI_FORMAT_R32_TYPELESS;
+
+    if (aFormat == DXGI_FORMAT_D16_UNORM)
+    {
+        format = DXGI_FORMAT_R16_TYPELESS;
+    }
+
+    DX::ThrowIfFailed(device->CreateCommittedResource(
+        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
+        D3D12_HEAP_FLAG_NONE,
+        &CD3DX12_RESOURCE_DESC::Tex2D(format, width, height, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
+        mCurrentResourceState,
+        &depthOptimizedClearValue,
+        IID_PPV_ARGS(&mDepthStencilResource)
+    ));
+
+    // DSV
+    mDescriptorDSV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+    D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
+    depthStencilDesc.Format = aFormat;
+    depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+    depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+    device->CreateDepthStencilView(mDepthStencilResource.Get(), &depthStencilDesc, mDescriptorDSV.GetCPUHandle());
+
+    // SRV
+    mDescriptorSRV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
+    format = DXGI_FORMAT_R32_FLOAT;
+    if (aFormat == DXGI_FORMAT_D16_UNORM)
+    {
+        format = DXGI_FORMAT_R16_UNORM;
+    }
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.Format = format;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
+    srvDesc.Texture2D.MipLevels = 1;
+
+    device->CreateShaderResourceView(mDepthStencilResource.Get(), &srvDesc, mDescriptorSRV.GetCPUHandle());
+}
+
+void CDepthBuffer::TransitionTo(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES stateAfter)
+{
+    if (stateAfter != mCurrentResourceState)
+    {
+        barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(GetResource(), mCurrentResourceState, stateAfter));
+        mCurrentResourceState = stateAfter;
+    }
+}
+
+CRenderTarget::CRenderTarget(int width, int height, DXGI_FORMAT aFormat, D3D12_RESOURCE_FLAGS flags, LPCWSTR name, int depth, int mips, D3D12_RESOURCE_STATES defaultState)
 {
     ID3D12Device* device = CGameFramework::GetInstance()->GetDevice();
+    DESC::DescriptorHeapManager* descriptorManager = DESC::DescriptorHeapManager::GetInstance();
 
     mWidth = width;
     mHeight = height;
@@ -141,7 +205,7 @@ DXRSRenderTarget::DXRSRenderTarget(DESC::DescriptorHeapManager* descriptorManage
     //}
 }
 
-void DXRSRenderTarget::TransitionTo(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES stateAfter)
+void CRenderTarget::TransitionTo(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES stateAfter)
 {
     if (stateAfter != mCurrentResourceState)
     {
@@ -158,7 +222,7 @@ namespace {
     static const float clearColorWhite[] = { 1.0f, 1.0f, 1.0f, 1.0f };
 }
 
-void DXRSExampleGIScene::InitVoxelConeTracing(DESC::DescriptorHeapManager* descriptorManager)
+void VCT::InitVoxelConeTracing()
 {
     framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
@@ -183,8 +247,8 @@ void DXRSExampleGIScene::InitVoxelConeTracing(DESC::DescriptorHeapManager* descr
         DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
         D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
-        mVCTVoxelization3DRT = new DXRSRenderTarget(device, descriptorManager, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE, format, flags, L"Voxelization Scene Data 3D", VCT_SCENE_VOLUME_SIZE);
-        mVCTVoxelization3DRT_CopyForAsync = new DXRSRenderTarget(device, descriptorManager, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE, format, flags, L"Voxelization Scene Data 3D Copy", VCT_SCENE_VOLUME_SIZE);
+        mVCTVoxelization3DRT = new CRenderTarget(VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE, format, flags, L"Voxelization Scene Data 3D", VCT_SCENE_VOLUME_SIZE);
+        mVCTVoxelization3DRT_CopyForAsync = new CRenderTarget(VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE, format, flags, L"Voxelization Scene Data 3D Copy", VCT_SCENE_VOLUME_SIZE);
 
         //create root signature
         D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
@@ -317,7 +381,7 @@ void DXRSExampleGIScene::InitVoxelConeTracing(DESC::DescriptorHeapManager* descr
         cbDesc.mElementSize = sizeof(VCTVoxelizationCBData);
         cbDesc.mState = D3D12_RESOURCE_STATE_GENERIC_READ;
         cbDesc.mDescriptorType = CBuffer::DescriptorType::CBV;
-        mVCTVoxelizationCB = new CBuffer(device, descriptorManager, framework->GetGraphicsCommandList(), cbDesc, L"VCT Voxelization Pass CB");
+        mVCTVoxelizationCB = new CBuffer(cbDesc, L"VCT Voxelization Pass CB");
 
         XMMATRIX mCameraView;
         XMMATRIX mCameraProjection;
@@ -337,7 +401,7 @@ void DXRSExampleGIScene::InitVoxelConeTracing(DESC::DescriptorHeapManager* descr
         DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
         D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET;
 
-        mVCTVoxelizationDebugRT = new DXRSRenderTarget(device, descriptorManager, 1920, 1080, format, flags, L"Voxelization Debug RT");
+        mVCTVoxelizationDebugRT = new CRenderTarget(1920, 1080, format, flags, L"Voxelization Debug RT");
 
         //create root signature
         D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
@@ -646,7 +710,7 @@ void DXRSExampleGIScene::InitVoxelConeTracing(DESC::DescriptorHeapManager* descr
 //    }
 }
 
-void DXRSExampleGIScene::RenderObject(std::unique_ptr<CObject>& aModel, std::function<void(std::unique_ptr<CObject>&)> aCallback)
+void VCT::RenderObject(std::unique_ptr<CObject>& aModel, std::function<void(std::unique_ptr<CObject>&)> aCallback)
 {
     if (aCallback) {
         aCallback(aModel);
@@ -654,7 +718,7 @@ void DXRSExampleGIScene::RenderObject(std::unique_ptr<CObject>& aModel, std::fun
 }
 
 
-void DXRSExampleGIScene::RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDescriptorHeap, RenderQueue aQueue, bool useAsyncCompute)
+void VCT::RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDescriptorHeap, RenderQueue aQueue, bool useAsyncCompute)
 {
     framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
@@ -704,19 +768,44 @@ void DXRSExampleGIScene::RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDesc
     commandList->ClearUnorderedAccessViewFloat(uavHandle.GetGPUHandle(), mVCTVoxelization3DRT->GetUAV().GetCPUHandle(), mVCTVoxelization3DRT->GetResource(), clearColorBlack, 0, nullptr);
 
     srvHandle = gpuDescriptorHeap->GetHandleBlock(1);
+
     gpuDescriptorHeap->AddToHandle(device, srvHandle, mShadowDepth->GetSRV());
 
     for (auto& model : mRenderableObjects) {
         RenderObject(model, [this, gpuDescriptorHeap, commandList, &cbvHandle, &uavHandle, &srvHandle, device](std::unique_ptr<CObject>& anObject) {
             cbvHandle = gpuDescriptorHeap->GetHandleBlock(2);
             gpuDescriptorHeap->AddToHandle(device, cbvHandle, mVCTVoxelizationCB->GetCBV());
-            gpuDescriptorHeap->AddToHandle(device, cbvHandle, anObject->GetCB()->GetCBV());
+
+            __declspec(align(16)) struct ModelConstantBuffer
+            {
+                XMMATRIX	World;
+                XMFLOAT4	DiffuseColor;
+            };
+
+            CBuffer::Description desc;
+            desc.mElementSize = sizeof(ModelConstantBuffer);
+            desc.mState = D3D12_RESOURCE_STATE_GENERIC_READ;
+            desc.mDescriptorType = CBuffer::DescriptorType::CBV;
+
+            CBuffer* mBufferCB = new CBuffer(desc, L"Model CB");
+
+            ModelConstantBuffer cbData = {};
+            cbData.World = XMMatrixIdentity();
+            cbData.DiffuseColor = XMFLOAT4(1, 0, 0, 0);
+            memcpy(mBufferCB->Map(), &cbData, sizeof(cbData));
+
+            gpuDescriptorHeap->AddToHandle(device, cbvHandle, mBufferCB->GetCBV());
 
             commandList->SetGraphicsRootDescriptorTable(0, cbvHandle.GetGPUHandle());
             commandList->SetGraphicsRootDescriptorTable(1, srvHandle.GetGPUHandle());
             commandList->SetGraphicsRootDescriptorTable(2, uavHandle.GetGPUHandle());
 
-            anObject->Render();
+            //anObject->Render();
+
+            commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+            CMesh* mesh = anObject->GetMesh();
+            mesh->Render(0);
             });
     }
 

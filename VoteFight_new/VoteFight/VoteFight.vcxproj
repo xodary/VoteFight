@@ -149,6 +149,7 @@
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
+    <ClInclude Include="DepthWriteShader.h" />
     <ClInclude Include="DescriptorHeap.h" />
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="func.h" />
@@ -203,6 +204,7 @@
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="DepthWriteShader.cpp" />
     <ClCompile Include="DescriptorHeap.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
     </ClCompile>

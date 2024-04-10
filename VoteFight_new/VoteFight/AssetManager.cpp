@@ -11,6 +11,7 @@
 #include "TerrainShader.h"
 #include "Material.h"
 #include "Animation.h"
+#include "DepthWriteShader.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -155,6 +156,11 @@ void CAssetManager::LoadShaders()
 	shader = new CTerrainShader();
 	shader->SetName("Terrain");
 	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CDepthWriteShader();
+	shader->SetName("DepthWrite");
+	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 

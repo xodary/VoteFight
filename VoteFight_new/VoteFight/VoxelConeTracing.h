@@ -4,11 +4,45 @@
 #define VCT_SCENE_VOLUME_SIZE 256
 #define VCT_MIPS 6
 
-class DXRSRenderTarget
+class CDepthBuffer
 {
 public:
-	DXRSRenderTarget(DESC::DescriptorHeapManager* descriptorManger, int width, int height, DXGI_FORMAT aFormat, D3D12_RESOURCE_FLAGS flags, LPCWSTR name, int depth = -1, int mips = 1, D3D12_RESOURCE_STATES defaultState = D3D12_RESOURCE_STATE_RENDER_TARGET);
-	~DXRSRenderTarget();
+	CDepthBuffer(ID3D12Device* device, DESC::DescriptorHeapManager* descriptorManager, int width, int height, DXGI_FORMAT format);
+	~CDepthBuffer();
+
+	ID3D12Resource* GetResource() { return mDepthStencilResource.Get(); }
+	DXGI_FORMAT GetFormat() { return mFormat; }
+	void TransitionTo(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES stateAfter);
+
+	DESC::DescriptorHandle GetDSV()
+	{
+		return mDescriptorDSV;
+	}
+
+	DESC::DescriptorHandle& GetSRV()
+	{
+		return mDescriptorSRV;
+	}
+
+	const int GetWidth() { return mWidth; }
+	const int GetHeight() { return mHeight; }
+
+private:
+
+	int mWidth, mHeight;
+	DXGI_FORMAT mFormat;
+	D3D12_RESOURCE_STATES mCurrentResourceState;
+
+	DESC::DescriptorHandle mDescriptorDSV;
+	DESC::DescriptorHandle mDescriptorSRV;
+	ComPtr<ID3D12Resource> mDepthStencilResource;
+};
+
+class CRenderTarget
+{
+public:
+	CRenderTarget(int width, int height, DXGI_FORMAT aFormat, D3D12_RESOURCE_FLAGS flags, LPCWSTR name, int depth = -1, int mips = 1, D3D12_RESOURCE_STATES defaultState = D3D12_RESOURCE_STATE_RENDER_TARGET);
+	~CRenderTarget();
 
 	ID3D12Resource* GetResource() { return mRenderTarget.Get(); }
 
@@ -48,7 +82,7 @@ private:
 	std::vector<DESC::DescriptorHandle> mDescriptorRTVMipsHandles;
 };
 
-class DXRSExampleGIScene 
+class VCT 
 {
 	enum RenderQueue {
 		GRAPHICS_QUEUE,
@@ -56,10 +90,10 @@ class DXRSExampleGIScene
 	};
 
 public:
-	DXRSExampleGIScene() {}
-	~DXRSExampleGIScene() {}
+	VCT() {}
+	~VCT() {}
 
-	void InitVoxelConeTracing(DESC::DescriptorHeapManager* descriptorManager);
+	void InitVoxelConeTracing();
 	void RenderObject(std::unique_ptr<CObject>& aModel, std::function<void(std::unique_ptr<CObject>&)> aCallback);
 	void RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDescriptorHeap, RenderQueue aQueue, bool useAsyncCompute);
 
@@ -83,13 +117,13 @@ public:
 	ComputePSO mVCTMainUpsampleAndBlurPSO;
 	RootSignature mVCTVoxelizationDebugRS;
 	GraphicsPSO mVCTVoxelizationDebugPSO;
-	DXRSRenderTarget* mVCTVoxelization3DRT = nullptr;
-	DXRSRenderTarget* mVCTVoxelization3DRT_CopyForAsync = nullptr;
-	DXRSRenderTarget* mVCTVoxelizationDebugRT = nullptr;
-	DXRSRenderTarget* mVCTMainRT = nullptr;
-	DXRSRenderTarget* mVCTMainUpsampleAndBlurRT = nullptr;
-	DXRSRenderTarget* mVCTAnisoMipmappinPrepare3DRTs[6] = { nullptr };
-	DXRSRenderTarget* mVCTAnisoMipmappinMain3DRTs[6] = { nullptr };
+	CRenderTarget* mVCTVoxelization3DRT = nullptr;
+	CRenderTarget* mVCTVoxelization3DRT_CopyForAsync = nullptr;
+	CRenderTarget* mVCTVoxelizationDebugRT = nullptr;
+	CRenderTarget* mVCTMainRT = nullptr;
+	CRenderTarget* mVCTMainUpsampleAndBlurRT = nullptr;
+	CRenderTarget* mVCTAnisoMipmappinPrepare3DRTs[6] = { nullptr };
+	CRenderTarget* mVCTAnisoMipmappinMain3DRTs[6] = { nullptr };
 	__declspec(align(16)) struct VCTVoxelizationCBData
 	{
 		XMMATRIX WorldVoxelCube;
@@ -113,10 +147,11 @@ public:
 		float SamplingFactor;
 		float VoxelSampleOffset;
 	};
-	DXRSBuffer* mVCTVoxelizationCB = nullptr;
-	DXRSBuffer* mVCTAnisoMipmappingCB = nullptr;
-	DXRSBuffer* mVCTMainCB = nullptr;
-	std::vector<DXRSBuffer*> mVCTAnisoMipmappingMainCB;
+	CBuffer* mVCTVoxelizationCB = nullptr;
+	CBuffer* mVCTAnisoMipmappingCB = nullptr;
+	CBuffer* mVCTMainCB = nullptr;
+	std::vector<CBuffer*> mVCTAnisoMipmappingMainCB;
+	CDepthBuffer* mShadowDepth = nullptr;
 	bool mVCTRenderDebug = false;
 	float mWorldVoxelScale = VCT_SCENE_VOLUME_SIZE * 0.5f;
 	float mVCTIndirectDiffuseStrength = 1.0f;
