@@ -3,7 +3,7 @@
 
 class CPlayerIdleState : public CState, public CSingleton<CPlayerIdleState>
 {
-	friend class CSingleton;
+	friend class CSingleton<CPlayerIdleState>;
 
 private:
 	CPlayerIdleState();
@@ -18,7 +18,7 @@ public:
 
 class CPlayerWalkState : public CState, public CSingleton<CPlayerWalkState>
 {
-	friend class CSingleton;
+	friend class CSingleton<CPlayerWalkState>;
 
 private:
 	CPlayerWalkState();
@@ -33,7 +33,7 @@ public:
 
 class CPlayerRunState : public CState, public CSingleton<CPlayerRunState>
 {
-	friend class CSingleton;
+	friend class CSingleton<CPlayerRunState>;
 
 private:
 	CPlayerRunState();
@@ -48,7 +48,7 @@ public:
 
 class CPlayerLeftTurn : public CState, public CSingleton<CPlayerLeftTurn>
 {
-	friend class CSingleton;
+	friend class CSingleton<CPlayerLeftTurn>;
 	float restAngle;
 	float lookAngle;
 
@@ -65,7 +65,7 @@ public:
 
 class CPlayerRightTurn : public CState, public CSingleton<CPlayerRightTurn>
 {
-	friend class CSingleton;
+	friend class CSingleton<CPlayerRightTurn>;
 	float restAngle;
 	float lookAngle;
 

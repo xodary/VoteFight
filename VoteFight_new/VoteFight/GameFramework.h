@@ -11,7 +11,7 @@ struct CB_GameFramework
 
 class CGameFramework : public CSingleton<CGameFramework>
 {
-	friend class CSingleton;
+	friend class CSingleton<CGameFramework>;
 
 private:
 	// 윈도우 관련 멤버 변수

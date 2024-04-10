@@ -1,12 +1,14 @@
 #include "pch.h"
 #include "Mesh.h"
-#include "GameFramework.h"
-#include "VoxelConeTracing.h"
 #include "DescriptorHeap.h"
+#include "GameFramework.h"
 #include "Shader.h"
 #include "Buffer.h"
 #include "RootSignature.h"
 #include "PipelineStateObject.h"
+#include "VoxelConeTracing.h"
+#include "SceneManager.h"
+#include "Scene.h"
 
 CDepthBuffer::CDepthBuffer(ID3D12Device* device, DESC::DescriptorHeapManager* descriptorManager, int width, int height, DXGI_FORMAT aFormat)
 {
@@ -298,12 +300,18 @@ void VCT::InitVoxelConeTracing()
         }
 
         // Define the vertex input layout.
+        //D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
+        //{
+        //   { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        //   { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        //   { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+        //   { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+        //};
+
         D3D12_INPUT_ELEMENT_DESC inputElementDescs[] =
         {
            { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-           { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 12, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-           { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 24, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-           { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 36, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+           { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
         };
 
         mRasterizerState.FillMode = D3D12_FILL_MODE_SOLID;
@@ -383,9 +391,9 @@ void VCT::InitVoxelConeTracing()
         cbDesc.mDescriptorType = CBuffer::DescriptorType::CBV;
         mVCTVoxelizationCB = new CBuffer(cbDesc, L"VCT Voxelization Pass CB");
 
-        XMMATRIX mCameraView;
-        XMMATRIX mCameraProjection;
-        XMMATRIX mLightViewProjection;
+        XMMATRIX mCameraView = XMMatrixIdentity();
+        XMMATRIX mCameraProjection = XMMatrixIdentity();
+        XMMATRIX mLightViewProjection = XMMatrixIdentity();
 
         VCTVoxelizationCBData data = {};
         float scale = 1.0f;
@@ -718,17 +726,19 @@ void VCT::RenderObject(std::unique_ptr<CObject>& aModel, std::function<void(std:
 }
 
 
-void VCT::RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDescriptorHeap, RenderQueue aQueue, bool useAsyncCompute)
+void VCT::RenderVoxelConeTracing()
 {
     framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
     ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
+    DESC::DescriptorHeapManager* descriptorManager = DESC::DescriptorHeapManager::GetInstance();
+    DESC::GPUDescriptorHeap* gpuDescriptorHeap = descriptorManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
-    RECT rect;
-    GetClientRect(CGameFramework::GetInstance()->GetHwnd(), &rect);
+    RECT Winrect;
+    GetClientRect(CGameFramework::GetInstance()->GetHwnd(), &Winrect);
 
-    CD3DX12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, rect.right, rect.bottom);
-    CD3DX12_RECT rect = CD3DX12_RECT(0.0f, 0.0f, rect.right, rect.bottom);
+    CD3DX12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, Winrect.right, Winrect.bottom);
+    CD3DX12_RECT rect = CD3DX12_RECT(0.0f, 0.0f, Winrect.right, Winrect.bottom);
 
     auto clearVCTMainRT = [this, commandList]() {
         commandList->SetPipelineState(mVCTMainPSO.GetPipelineStateObject());
@@ -769,7 +779,10 @@ void VCT::RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDescriptorHeap, Ren
 
     srvHandle = gpuDescriptorHeap->GetHandleBlock(1);
 
-    gpuDescriptorHeap->AddToHandle(device, srvHandle, mShadowDepth->GetSRV());
+    // gpuDescriptorHeap->AddToHandle(device, srvHandle, mShadowDepth->GetSRV());
+
+    CObject* player = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::STRUCTURE)[0];
+    mRenderableObjects.emplace_back(player);
 
     for (auto& model : mRenderableObjects) {
         RenderObject(model, [this, gpuDescriptorHeap, commandList, &cbvHandle, &uavHandle, &srvHandle, device](std::unique_ptr<CObject>& anObject) {
@@ -829,22 +842,23 @@ void VCT::RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDescriptorHeap, Ren
     framework->ResourceBarriersBegin(mBarriers);
     mVCTVoxelization3DRT->TransitionTo(mBarriers, commandList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     framework->ResourceBarriersEnd(mBarriers, commandList);
+    
+    {
+        DESC::DescriptorHandle cbvHandle;
+        DESC::DescriptorHandle uavHandle;
 
-    DESC::DescriptorHandle cbvHandle;
-    DESC::DescriptorHandle uavHandle;
+        cbvHandle = gpuDescriptorHeap->GetHandleBlock(1);
+        gpuDescriptorHeap->AddToHandle(device, cbvHandle, mVCTVoxelizationCB->GetCBV());
 
-    cbvHandle = gpuDescriptorHeap->GetHandleBlock(1);
-    gpuDescriptorHeap->AddToHandle(device, cbvHandle, mVCTVoxelizationCB->GetCBV());
+        uavHandle = gpuDescriptorHeap->GetHandleBlock(1);
+        gpuDescriptorHeap->AddToHandle(device, uavHandle, mVCTVoxelization3DRT->GetUAV());
 
-    uavHandle = gpuDescriptorHeap->GetHandleBlock(1);
-    gpuDescriptorHeap->AddToHandle(device, uavHandle, mVCTVoxelization3DRT->GetUAV());
+        commandList->SetGraphicsRootDescriptorTable(0, cbvHandle.GetGPUHandle());
+        commandList->SetGraphicsRootDescriptorTable(1, uavHandle.GetGPUHandle());
 
-    commandList->SetGraphicsRootDescriptorTable(0, cbvHandle.GetGPUHandle());
-    commandList->SetGraphicsRootDescriptorTable(1, uavHandle.GetGPUHandle());
-
-    commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
-    commandList->DrawInstanced(VCT_SCENE_VOLUME_SIZE * VCT_SCENE_VOLUME_SIZE * VCT_SCENE_VOLUME_SIZE, 1, 0, 0);
-
+        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+        commandList->DrawInstanced(VCT_SCENE_VOLUME_SIZE * VCT_SCENE_VOLUME_SIZE * VCT_SCENE_VOLUME_SIZE, 1, 0, 0);
+    }
     //if (!useAsyncCompute || (useAsyncCompute && aQueue == COMPUTE_QUEUE)) {
     //    PIXBeginEvent(commandList, 0, "VCT Mipmapping prepare CS");
     //    {

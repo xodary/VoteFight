@@ -1,5 +1,9 @@
 #pragma once
 #include "Object.h"
+#include "DescriptorHeap.h"
+#include "RootSignature.h"
+#include "PipelineStateObject.h"
+#include "Buffer.h"
 
 #define VCT_SCENE_VOLUME_SIZE 256
 #define VCT_MIPS 6
@@ -82,8 +86,10 @@ private:
 	std::vector<DESC::DescriptorHandle> mDescriptorRTVMipsHandles;
 };
 
-class VCT 
+class VCT : public CSingleton<VCT>
 {
+	friend class CSingleton<VCT>;
+
 	enum RenderQueue {
 		GRAPHICS_QUEUE,
 		COMPUTE_QUEUE
@@ -95,7 +101,7 @@ public:
 
 	void InitVoxelConeTracing();
 	void RenderObject(std::unique_ptr<CObject>& aModel, std::function<void(std::unique_ptr<CObject>&)> aCallback);
-	void RenderVoxelConeTracing(DESC::GPUDescriptorHeap* gpuDescriptorHeap, RenderQueue aQueue, bool useAsyncCompute);
+	void RenderVoxelConeTracing();
 
 	std::vector<CD3DX12_RESOURCE_BARRIER> mBarriers;
 	std::vector<std::unique_ptr<CObject>> mRenderableObjects;

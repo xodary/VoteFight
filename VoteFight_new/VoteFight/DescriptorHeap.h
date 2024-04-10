@@ -99,9 +99,9 @@ namespace DESC
 
 	class DescriptorHeapManager : public CSingleton<DescriptorHeapManager>
 	{
-		friend class CSingleton;
+		friend class CSingleton<DescriptorHeapManager>;
 	public:
-		DescriptorHeapManager(ID3D12Device* device);
+		DescriptorHeapManager();
 		~DescriptorHeapManager();
 
 		DescriptorHandle CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType);

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "DescriptorHeap.h"
 #include "GameFramework.h"
 
@@ -122,8 +123,9 @@ namespace DESC
 		mCurrentDescriptorIndex = 0;
 	}
 
-	DescriptorHeapManager::DescriptorHeapManager(ID3D12Device* device)
+	DescriptorHeapManager::DescriptorHeapManager()
 	{
+		ID3D12Device* device = CGameFramework::GetInstance()->GetDevice();
 		ZeroMemory(mCPUDescriptorHeaps, sizeof(mCPUDescriptorHeaps));
 
 		static const int MaxNoofSRVDescriptors = 4 * 4096;

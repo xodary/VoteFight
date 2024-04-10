@@ -6,7 +6,7 @@
 #include "InputManager.h"
 #include "CameraManager.h"
 #include "SceneManager.h"
-
+#include "VoxelConeTracing.h"
 #include "Texture.h"
 
 CGameFramework::CGameFramework() :
@@ -142,6 +142,9 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CSceneManager::GetInstance()->Init();
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
+
+	// VoxelConeTracing Initialization
+	VCT::GetInstance()->InitVoxelConeTracing();
 
 	// RenderTarget, DepthStencil
 	CreateRtvAndDsvDescriptorHeaps();
@@ -559,7 +562,10 @@ void CGameFramework::PreRender()
 
 void CGameFramework::Render()
 {
-	CSceneManager::GetInstance()->Render();
+	//CSceneManager::GetInstance()->Render();
+
+	// VoxelConeTracing Rendering
+	VCT::GetInstance()->RenderVoxelConeTracing();
 }
 
 void CGameFramework::PostRender()
