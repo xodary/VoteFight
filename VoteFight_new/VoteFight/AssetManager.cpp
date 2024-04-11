@@ -158,10 +158,10 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CDepthWriteShader();
-	shader->SetName("DepthWrite");
-	shader->CreatePipelineStates(3);
-	m_shaders.emplace(shader->GetName(), shader);
+	//shader = new CDepthWriteShader();
+	//shader->SetName("DepthWrite");
+	//shader->CreatePipelineStates(3);
+	//m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)
@@ -442,15 +442,10 @@ void CAssetManager::Init()
 void CAssetManager::CreateShaderResourceViews()
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
-	DESC::DescriptorHeapManager* descheapManager = DESC::DescriptorHeapManager::GetInstance();
-	// D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-	// D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
+	D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
 	UINT descriptorIncrementSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-	DESC::DescriptorHandle CPUhandle = descheapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	
-	D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = CPUhandle.GetCPUHandle();
-	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CPUhandle.GetGPUHandle();
 	for (const auto& texture : m_textures)
 	{
 		ID3D12Resource* pShaderResource = texture.second->GetTexture();

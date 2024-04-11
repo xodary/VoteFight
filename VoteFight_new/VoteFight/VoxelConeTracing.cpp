@@ -9,212 +9,8 @@
 #include "VoxelConeTracing.h"
 #include "SceneManager.h"
 #include "Scene.h"
-
-CDepthBuffer::CDepthBuffer(ID3D12Device* device, DESC::DescriptorHeapManager* descriptorManager, int width, int height, DXGI_FORMAT aFormat)
-{
-    mWidth = width;
-    mHeight = height;
-    mFormat = aFormat;
-
-    D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
-    depthOptimizedClearValue.Format = aFormat;
-    depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
-    depthOptimizedClearValue.DepthStencil.Stencil = 0;
-
-    DXGI_FORMAT format = DXGI_FORMAT_R32_TYPELESS;
-
-    if (aFormat == DXGI_FORMAT_D16_UNORM)
-    {
-        format = DXGI_FORMAT_R16_TYPELESS;
-    }
-
-    DX::ThrowIfFailed(device->CreateCommittedResource(
-        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-        D3D12_HEAP_FLAG_NONE,
-        &CD3DX12_RESOURCE_DESC::Tex2D(format, width, height, 1, 1, 1, 0, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL),
-        mCurrentResourceState,
-        &depthOptimizedClearValue,
-        IID_PPV_ARGS(&mDepthStencilResource)
-    ));
-
-    // DSV
-    mDescriptorDSV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
-    D3D12_DEPTH_STENCIL_VIEW_DESC depthStencilDesc = {};
-    depthStencilDesc.Format = aFormat;
-    depthStencilDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-    depthStencilDesc.Flags = D3D12_DSV_FLAG_NONE;
-
-    device->CreateDepthStencilView(mDepthStencilResource.Get(), &depthStencilDesc, mDescriptorDSV.GetCPUHandle());
-
-    // SRV
-    mDescriptorSRV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
-    format = DXGI_FORMAT_R32_FLOAT;
-    if (aFormat == DXGI_FORMAT_D16_UNORM)
-    {
-        format = DXGI_FORMAT_R16_UNORM;
-    }
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.Format = format;
-    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    srvDesc.Texture2D.MipLevels = 1;
-
-    device->CreateShaderResourceView(mDepthStencilResource.Get(), &srvDesc, mDescriptorSRV.GetCPUHandle());
-}
-
-void CDepthBuffer::TransitionTo(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES stateAfter)
-{
-    if (stateAfter != mCurrentResourceState)
-    {
-        barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(GetResource(), mCurrentResourceState, stateAfter));
-        mCurrentResourceState = stateAfter;
-    }
-}
-
-CRenderTarget::CRenderTarget(int width, int height, DXGI_FORMAT aFormat, D3D12_RESOURCE_FLAGS flags, LPCWSTR name, int depth, int mips, D3D12_RESOURCE_STATES defaultState)
-{
-    ID3D12Device* device = CGameFramework::GetInstance()->GetDevice();
-    DESC::DescriptorHeapManager* descriptorManager = DESC::DescriptorHeapManager::GetInstance();
-
-    mWidth = width;
-    mHeight = height;
-    mDepth = depth;
-    mFormat = aFormat;
-
-    XMFLOAT4 clearColor = { 0, 0, 0, 1 };
-    DXGI_FORMAT format = aFormat;
-
-    // Describe and create a Texture2D/3D
-    D3D12_RESOURCE_DESC textureDesc = {};
-    textureDesc.MipLevels = mips;
-    textureDesc.Format = format;
-    textureDesc.Width = width;
-    textureDesc.Height = height;
-    textureDesc.DepthOrArraySize = (depth > 0) ? depth : 1;
-    textureDesc.Flags = flags;
-    textureDesc.SampleDesc.Count = 1;
-    textureDesc.SampleDesc.Quality = 0;
-    textureDesc.Dimension = (depth > 0) ? D3D12_RESOURCE_DIMENSION_TEXTURE3D : D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-
-    D3D12_CLEAR_VALUE optimizedClearValue = {};
-    optimizedClearValue.Format = format;
-    optimizedClearValue.Color[0] = clearColor.x;
-    optimizedClearValue.Color[1] = clearColor.y;
-    optimizedClearValue.Color[2] = clearColor.z;
-    optimizedClearValue.Color[3] = clearColor.w;
-
-    mCurrentResourceState = defaultState;
-
-    DX::ThrowIfFailed(device->CreateCommittedResource(
-        &CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
-        D3D12_HEAP_FLAG_NONE,
-        &textureDesc,
-        mCurrentResourceState,
-        &optimizedClearValue,
-        IID_PPV_ARGS(&mRenderTarget)));
-
-    mRenderTarget->SetName(name);
-
-    D3D12_DESCRIPTOR_HEAP_FLAGS flagsHeap = D3D12_DESCRIPTOR_HEAP_FLAGS::D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-
-    // Describe and create a SRV for the texture.
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    srvDesc.Format = aFormat;
-    if (depth > 0) {
-        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
-        srvDesc.Texture3D.MipLevels = mips;
-    }
-    else {
-        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-        srvDesc.Texture2D.MipLevels = mips;
-    }
-
-    mDescriptorSRV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    device->CreateShaderResourceView(mRenderTarget.Get(), &srvDesc, mDescriptorSRV.GetCPUHandle());
-
-    mDescriptorUAVMipsHandles.resize(mips);
-    mDescriptorRTVMipsHandles.resize(mips);
-
-    for (int mipLevel = 0; mipLevel < mips; mipLevel++)
-    {
-        D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-        rtvDesc.Format = aFormat;
-        if (depth > 0) {
-            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
-            rtvDesc.Texture3D.MipSlice = mipLevel;
-            rtvDesc.Texture3D.WSize = (depth >> mipLevel);
-        }
-        else {
-            rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-            rtvDesc.Texture2D.MipSlice = mipLevel;
-        }
-
-        D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-        uavDesc.Format = aFormat;
-        if (depth > 0) {
-            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
-            uavDesc.Texture3D.MipSlice = mipLevel;
-            uavDesc.Texture3D.WSize = (depth >> mipLevel);
-        }
-        else {
-            uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-            uavDesc.Texture2D.MipSlice = mipLevel;
-        }
-
-        mDescriptorRTVMipsHandles[mipLevel] = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-        device->CreateRenderTargetView(mRenderTarget.Get(), &rtvDesc, mDescriptorRTVMipsHandles[mipLevel].GetCPUHandle());
-
-        if (flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
-        {
-            mDescriptorUAVMipsHandles[mipLevel] = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-            device->CreateUnorderedAccessView(mRenderTarget.Get(), nullptr, &uavDesc, mDescriptorUAVMipsHandles[mipLevel].GetCPUHandle());
-        }
-    }
-
-    //D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-    //rtvDesc.Format = aFormat;
-    //if (depth > 0) {
-    //	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
-    //	rtvDesc.Texture3D.MipSlice = 0;
-    //	rtvDesc.Texture3D.WSize = depth;
-    //}
-    //else {
-    //	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-    //	rtvDesc.Texture2D.MipSlice = 0;
-    //}
-
-    //D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-    //uavDesc.Format = aFormat;
-    //if (depth > 0) {
-    //	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
-    //	uavDesc.Texture3D.MipSlice = 0;
-    //	uavDesc.Texture3D.WSize = depth;
-    //}
-    //else {
-    //	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-    //	uavDesc.Texture2D.MipSlice = 0;
-    //}
-
-    //mDescriptorRTV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    //device->CreateRenderTargetView(mRenderTarget.Get(), &rtvDesc, mDescriptorRTV.GetCPUHandle());
-
-    //if (flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
-    //{
-    //	mDescriptorUAV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    //	device->CreateUnorderedAccessView(mRenderTarget.Get(), nullptr, &uavDesc, mDescriptorUAV.GetCPUHandle());
-    //}
-}
-
-void CRenderTarget::TransitionTo(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES stateAfter)
-{
-    if (stateAfter != mCurrentResourceState)
-    {
-        barriers.push_back(CD3DX12_RESOURCE_BARRIER::Transition(GetResource(), mCurrentResourceState, stateAfter));
-        mCurrentResourceState = stateAfter;
-    }
-}
+#include "RenderTarget.h"
+#include "DepthBuffer.h"
 
 namespace {
     D3D12_HEAP_PROPERTIES UploadHeapProps = { D3D12_HEAP_TYPE_UPLOAD, D3D12_CPU_PAGE_PROPERTY_UNKNOWN, D3D12_MEMORY_POOL_UNKNOWN, 0, 0 };
@@ -283,19 +79,19 @@ void VCT::InitVoxelConeTracing()
         DX::ThrowIfFailed(D3DCompileFromFile(L"C:\\directX_work\\VoteFight_new\\Release\\Asset\\Shader\\VoxelConeTracingVoxelization.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VSMain", "vs_5_1", compileFlags, 0, &vertexShader, &errorBlob));
         if (errorBlob)
         {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+            cout << (char*)errorBlob->GetBufferPointer() << endl;
             errorBlob->Release();
         }
         DX::ThrowIfFailed(D3DCompileFromFile(L"C:\\directX_work\\VoteFight_new\\Release\\Asset\\Shader\\VoxelConeTracingVoxelization.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "GSMain", "gs_5_1", compileFlags, 0, &geometryShader, &errorBlob));
         if (errorBlob)
         {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+            cout << (char*)errorBlob->GetBufferPointer() << endl;
             errorBlob->Release();
         }
         DX::ThrowIfFailed(D3DCompileFromFile(L"C:\\directX_work\\VoteFight_new\\Release\\Asset\\Shader\\VoxelConeTracingVoxelization.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PSMain", "ps_5_1", compileFlags, 0, &pixelShader, &errorBlob));
         if (errorBlob)
         {
-            OutputDebugStringA((char*)errorBlob->GetBufferPointer());
+            cout << (char*)errorBlob->GetBufferPointer() << endl;
             errorBlob->Release();
         }
 
@@ -437,8 +233,23 @@ void VCT::InitVoxelConeTracing()
         ID3DBlob* errorBlob = nullptr;
 
         DX::ThrowIfFailed(D3DCompileFromFile(L"C:\\directX_work\\VoteFight_new\\Release\\Asset\\Shader\\VoxelConeTracingVoxelizationDebug.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "VSMain", "vs_5_1", compileFlags, 0, &vertexShader, &errorBlob));
+        if (errorBlob)
+        {
+            cout << (char*)errorBlob->GetBufferPointer() << endl;
+            errorBlob->Release();
+        }
         DX::ThrowIfFailed(D3DCompileFromFile(L"C:\\directX_work\\VoteFight_new\\Release\\Asset\\Shader\\VoxelConeTracingVoxelizationDebug.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "GSMain", "gs_5_1", compileFlags, 0, &geometryShader, &errorBlob));
+        if (errorBlob)
+        {
+            cout << (char*)errorBlob->GetBufferPointer() << endl;
+            errorBlob->Release();
+        }
         DX::ThrowIfFailed(D3DCompileFromFile(L"C:\\directX_work\\VoteFight_new\\Release\\Asset\\Shader\\VoxelConeTracingVoxelizationDebug.hlsl", nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, "PSMain", "ps_5_1", compileFlags, 0, &pixelShader, &errorBlob));
+        if (errorBlob)
+        {
+            cout << (char*)errorBlob->GetBufferPointer() << endl;
+            errorBlob->Release();
+        }
 
         DXGI_FORMAT formats[1];
         formats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -731,8 +542,8 @@ void VCT::RenderVoxelConeTracing()
     framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
     ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
-    DESC::DescriptorHeapManager* descriptorManager = DESC::DescriptorHeapManager::GetInstance();
-    DESC::GPUDescriptorHeap* gpuDescriptorHeap = descriptorManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    DescriptorHeapManager* descriptorManager = DescriptorHeapManager::GetInstance();
+    GPUDescriptorHeap* gpuDescriptorHeap = descriptorManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     RECT Winrect;
     GetClientRect(CGameFramework::GetInstance()->GetHwnd(), &Winrect);
@@ -769,9 +580,9 @@ void VCT::RenderVoxelConeTracing()
     mVCTVoxelization3DRT->TransitionTo(mBarriers, commandList, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
     framework->ResourceBarriersEnd(mBarriers, commandList);
 
-    DESC::DescriptorHandle cbvHandle;
-    DESC::DescriptorHandle uavHandle;
-    DESC::DescriptorHandle srvHandle;
+    DescriptorHandle cbvHandle;
+    DescriptorHandle uavHandle;
+    DescriptorHandle srvHandle;
     uavHandle = gpuDescriptorHeap->GetHandleBlock(1);
     gpuDescriptorHeap->AddToHandle(device, uavHandle, mVCTVoxelization3DRT->GetUAV());
 
@@ -844,8 +655,8 @@ void VCT::RenderVoxelConeTracing()
     framework->ResourceBarriersEnd(mBarriers, commandList);
     
     {
-        DESC::DescriptorHandle cbvHandle;
-        DESC::DescriptorHandle uavHandle;
+        DescriptorHandle cbvHandle;
+        DescriptorHandle uavHandle;
 
         cbvHandle = gpuDescriptorHeap->GetHandleBlock(1);
         gpuDescriptorHeap->AddToHandle(device, cbvHandle, mVCTVoxelizationCB->GetCBV());

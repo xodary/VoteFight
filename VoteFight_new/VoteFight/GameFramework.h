@@ -2,6 +2,7 @@
 
 class CPostProcessingShader;
 class CUILayer;
+class DescriptorHeapManager;
 
 struct CB_GameFramework
 {
@@ -45,6 +46,9 @@ private:
 
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12CbvSrvUavDescriptorHeap;
 
+	// Descriptor Heap Manager
+	shared_ptr<DescriptorHeapManager> m_DescriptorHeapManager;
+
 	ComPtr<ID3D12Fence>				  m_d3d12Fence;
 	UINT64							  m_fenceValues[m_swapChainBufferCount];
 	HANDLE							  m_fenceEvent;
@@ -52,18 +56,14 @@ private:
 	ComPtr<ID3D12RootSignature>		  m_d3d12RootSignature;
 
 	ComPtr<ID3D12Resource>			  m_d3d12GameFramework;
-	CB_GameFramework* m_mappedGameFramework;
-
-	//shared_ptr<CTexture>			  m_RenderingResultTexture;
-	//shared_ptr<CPostProcessingShader> m_PostProcessingShader;
-
-	//shared_ptr<CUILayer>			  m_UILayer;
+	CB_GameFramework*				  m_mappedGameFramework;
 
 	// Server
 	SOCKET_INFO						  m_SocketInfo{};
 
 	HANDLE							  m_ReceiveEvent{};
 	HANDLE							  m_RenderingEvent{};
+
 
 private:
 	CGameFramework();
@@ -118,6 +118,8 @@ public:
 	ID3D12DescriptorHeap* GetRtvDescriptorHeap();
 	ID3D12DescriptorHeap* GetDsvDescriptorHeap();
 	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap();
+
+	DescriptorHeapManager* GetDescriptorHeapManager();
 	
 	inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_d3d12DsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart()); }
 

@@ -8,7 +8,7 @@ CBuffer::CBuffer(Description& description, LPCWSTR name, unsigned char* data)
 	, mData(data)
 	, mCBVMappedData(nullptr)
 {
-	DESC::DescriptorHeapManager* descriptorManager = DESC::DescriptorHeapManager::GetInstance();
+	DescriptorHeapManager* descriptorManager = CGameFramework::GetInstance()->GetDescriptorHeapManager();
 
 	mBufferSize = mDescription.mNumElements * mDescription.mElementSize;
 

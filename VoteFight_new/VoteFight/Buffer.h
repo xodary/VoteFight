@@ -49,8 +49,8 @@ public:
 
 	ID3D12Resource* GetResource() { return mBuffer.Get(); }
 
-	DESC::DescriptorHandle& GetSRV() { return mDescriptorSRV; }
-	DESC::DescriptorHandle& GetCBV() { return mDescriptorCBV; }
+	DescriptorHandle& GetSRV() { return mDescriptorSRV; }
+	DescriptorHandle& GetCBV() { return mDescriptorCBV; }
 
 	unsigned char* Map()
 	{
@@ -73,9 +73,9 @@ private:
 	ComPtr<ID3D12Resource> mBuffer;
 	ComPtr<ID3D12Resource> mBufferUpload;
 
-	DESC::DescriptorHandle mDescriptorCBV;
-	DESC::DescriptorHandle mDescriptorSRV;
+	DescriptorHandle mDescriptorCBV;
+	DescriptorHandle mDescriptorSRV;
 
-	void CreateResources(DESC::DescriptorHeapManager* descriptorManager);
+	void CreateResources(DescriptorHeapManager* descriptorManager);
 };
 
