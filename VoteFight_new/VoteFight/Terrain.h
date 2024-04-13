@@ -48,7 +48,7 @@ protected:
 
 	ComPtr<ID3D12Resource>	        m_d3d12NormalBuffer;
 	ComPtr<ID3D12Resource>	        m_d3d12NormalUploadBuffer;
-	D3D12_VERTEX_BUFFER_VIEW        m_d3d12TNormalBufferView;
+	D3D12_VERTEX_BUFFER_VIEW        m_d3d12NormalBufferView;
 
 	ComPtr<ID3D12Resource>  m_d3d12IndexBuffer;
 	ComPtr<ID3D12Resource>  m_d3d12IndexUploadBuffer;
@@ -61,7 +61,8 @@ public:
 	void MakeHeightMapGridMesh( int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, void* pContext);
 
 	float OnGetHeight(int x, int z);
-	virtual void Render(CCamera* camera);
+	void CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices, vector<XMFLOAT3>& new_NorVecs);
+		virtual void Render(CCamera* camera);
 
 	XMFLOAT4 Add(const XMFLOAT4&, const XMFLOAT4&);
 };

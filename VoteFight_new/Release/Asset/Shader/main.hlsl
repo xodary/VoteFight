@@ -81,34 +81,22 @@ cbuffer CB_Sprite : register(b4)
 float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
 {
  
-    float3 vToLight = -m_lights[nIndex].m_position;
-    float fDiffuseFactor = dot(vNormal, vToLight);
-    
-    if (fDiffuseFactor > 0.7)
-        fDiffuseFactor = 1;
-    else if (fDiffuseFactor > 0.4)
-        fDiffuseFactor = 0.3;
-    else if (fDiffuseFactor > 0.1)
-        fDiffuseFactor = 0.0;
-       float fSpecularFactor = 0.0f;
+    float3 vToLight = m_lights[nIndex].m_position;
+    float fDiffuseFactor = dot(vNormal, vToLight) * 0.7 + 0.3;
+    fDiffuseFactor = fDiffuseFactor * 5;
+    fDiffuseFactor = ceil(fDiffuseFactor) / 5;
+   
+    float fSpecularFactor = 0.0f;
     if (fDiffuseFactor > 0.0f)
     {
         float3 vHalf = normalize(vToCamera + vToLight);
         fSpecularFactor = max(dot(vHalf, vNormal), 0.0f);
     }
  
-    float rim = abs(dot(vNormal, vToCamera));
-    if (rim > 0.7)
-        rim = 1.3;
-    else if (rim > 0.3)
-        rim = 1;
-    else
-        rim = -2;
     
     float4 cColor = ((m_lights[nIndex].m_xmf4Ambient) +
                 (m_lights[nIndex].m_xmf4Diffuse * fDiffuseFactor) +
                 (m_lights[nIndex].m_xmf4Specular * fSpecularFactor));
-    cColor.rgb = cColor.rgb * rim;
     return cColor;
 
 }
@@ -146,7 +134,7 @@ float4 Lighting(float3 vPosition, float3 vNormal)
     float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     
-    float4 cColor = float4(0.0f, 0.0f, 0.0f, 0.0f);
+    float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
     cColor += DirectionalLight(0, vNormal, vToCamera);
     // cColor += (gcGlobalAmbientLight);
     
@@ -154,6 +142,19 @@ float4 Lighting(float3 vPosition, float3 vNormal)
     return (cColor);
 }
 
+float4 franelOuterLine(float3 vPosition, float3 vNormal, float4 cColor)
+{
+    float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
+    float3 vToCamera = normalize(vCameraPosition - vPosition);
+    float rim = abs(dot(vNormal, vToCamera));
+    float4 newColor = cColor;
+    if (rim > 0.1)
+        rim = 1.0;
+    else 
+        rim = 0;
+    newColor.rgb = newColor.rgb * rim;
+    return newColor;
+}
 
 //----------------------------------------------------------
 #define MAX_VERTEX_INFLUENCES			4
@@ -237,8 +238,10 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
 		normalW = normalize(input.normalW);
     }
     float4 cIllumination = Lighting(input.positionW, normalW);
-    return (lerp(cColor, cIllumination, 0.5f));
-    // return cColor;
+  // cColor = (lerp(cColor, cIllumination, 0.5f));
+    cColor = cColor * cIllumination;
+   cColor = franelOuterLine(input.positionW,normalW, cColor);
+    return cColor;
 
 }
 
@@ -409,12 +412,14 @@ struct VS_TERRAIN_INPUT
 {
     float3 position : POSITION;
     float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
 };
 
 struct VS_TERRAIN_OUTPUT
 {
     float4 position : SV_POSITION;
     float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
 };
 
 VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
@@ -422,7 +427,8 @@ VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
     VS_TERRAIN_OUTPUT output;
 
     output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-  
+    output.normal = mul(input.normal, (float3x3) gmtxGameObject);
+	
     output.uv = input.uv;
 
     return (output);
@@ -432,8 +438,12 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
 {
     float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
     float4 cColor = cBaseTexColor;
+    float3 normal = normalize(input.normal);
+    float4 cIllumination = Lighting(input.position.xyz, normal);
+    //return (lerp(cColor, cIllumination, 0.5f));
     
-    return cColor;
+    return cColor * cIllumination;
+
 }
 
 

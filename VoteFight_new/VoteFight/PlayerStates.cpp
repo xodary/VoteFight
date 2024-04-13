@@ -106,8 +106,8 @@ void CPlayerIdleState::Update(CObject* object)
 			wannaLook = 90.f;
 		else
 			return;
-
-		player->SetTurnAngle(wannaLook);
+		wannaLook -= 45.0f;
+		player->SetTurnAngle(wannaLook );
 		float nowRotation = wannaLook - transform->GetRotation().y;
 		cout << nowRotation << endl;
 		if ((0 < nowRotation && nowRotation <= 180) || nowRotation < -180)
