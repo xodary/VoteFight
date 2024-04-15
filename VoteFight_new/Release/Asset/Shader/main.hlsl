@@ -148,7 +148,7 @@ float4 franelOuterLine(float3 vPosition, float3 vNormal, float4 cColor)
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     float rim = abs(dot(vNormal, vToCamera));
     float4 newColor = cColor;
-    if (rim > 0.1)
+    if (rim > 0.3)
         rim = 1.0;
     else 
         rim = 0;
@@ -440,9 +440,11 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     float4 cColor = cBaseTexColor;
     float3 normal = normalize(input.normal);
     float4 cIllumination = Lighting(input.position.xyz, normal);
-    //return (lerp(cColor, cIllumination, 0.5f));
-    
-    return cColor * cIllumination;
+    cColor = cColor * cIllumination;
+   //  cColor = franelOuterLine(input.position, normal, cColor);
+    // return (lerp(cColor, cIllumination, 0.2f));
+    return cColor;
+    // return cColor * cIllumination;
 
 }
 

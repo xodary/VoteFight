@@ -76,7 +76,8 @@ void CScene::Load(const string& fileName)
 
 					object->SetActive(isActives[i]);
 					XMFLOAT3 currPosition = transforms[3 * i];
-					currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
+					if(fileName != "FenceScene.bin")currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
+					cout << fileName << endl;
 					transform->SetPosition(currPosition);
 					//transform->SetPosition(XMFLOAT3(currPosition.x, GetTerrainHeight(currPosition.x, currPosition.z), currPosition.z));
 					transform->SetRotation(transforms[3 * i + 1]);

@@ -436,15 +436,19 @@ void CAssetManager::Init()
 	LoadMeshes("Meshess.bin");
 	LoadMeshes("Meshesss.bin");
 	LoadMeshes("FireWoodMesh.bin");
+	LoadMeshes("Fence_Mesh.bin");
+	// LoadMeshes("Homer_Meshs.bin");
 	LoadTextures("Textures.bin");
 	LoadTextures("Texturesss.bin");
-	LoadTextures("Texturesss.bin");
 	LoadTextures("FireWoodTextures.bin");
+	LoadTextures("Fence_Texture.bin");
+	// LoadTextures("Homer_texture.bin");
 	LoadShaders();
 	LoadMaterials("Materials.bin");
 	LoadMaterials("Materialss.bin");
 	LoadMaterials("WhiteHouse.bin");
-	LoadMaterials("FireWoodMaterials.bin");
+	LoadMaterials("Fence_Material.bin");
+	// LoadMaterials("Homer_Material.bin");
 }
 
 void CAssetManager::CreateShaderResourceViews()

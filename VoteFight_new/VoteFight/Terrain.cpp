@@ -225,6 +225,11 @@ float CTerrain::OnGetHeight(int x, int z)
 
 void CTerrain::CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices,  vector<XMFLOAT3>& new_NorVecs)
 {
+	for (size_t i = 0; i < m_nWidth; i++)
+	for (size_t j = 0; j < m_nLength; j++)
+		new_NorVecs.push_back(m_pHeightMapImage->GetHeightMapNormal(i,j));
+				
+	/*
 	for (size_t i = 0; i < m_indices/3; i++)
 	{
 		UINT index0 = pnSubSetIndices[i * 3 + 0];
@@ -241,11 +246,9 @@ void CTerrain::CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* ver
 
 		XMFLOAT3 normal;
 		normal = Vector3::CrossProduct(a, b);
-		normal = Vector3::Normalize(normal);
-		new_NorVecs.push_back(normal);
-		new_NorVecs.push_back(normal);
 		new_NorVecs.push_back(normal);
 	}
+	*/
 }
 
 
