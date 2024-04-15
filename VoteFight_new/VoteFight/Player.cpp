@@ -104,3 +104,8 @@ void CPlayer::Update()
 	CObject::Update();
 	
 }
+
+void CPlayer::OnCollisionEnter(CObject* collidedObject)
+{
+	cout << collidedObject->GetName() << endl;
+}

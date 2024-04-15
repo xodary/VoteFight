@@ -446,6 +446,7 @@ void CAssetManager::Init()
 	LoadShaders();
 	LoadMaterials("Materials.bin");
 	LoadMaterials("Materialss.bin");
+	LoadMaterials("FireWoodMaterials.bin");
 	LoadMaterials("WhiteHouse.bin");
 	LoadMaterials("Fence_Material.bin");
 	// LoadMaterials("Homer_Material.bin");
@@ -457,7 +458,6 @@ void CAssetManager::CreateShaderResourceViews()
 	D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
 	UINT descriptorIncrementSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
 
 	for (const auto& texture : m_textures)
 	{

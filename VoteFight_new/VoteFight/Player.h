@@ -53,4 +53,6 @@ public:
 	//void Rotate(float Pitch, float Yaw, float Roll, float ElapsedTime, float NearestHitDistance);
 
 	//void IsCollidedByEventTrigger(const XMFLOAT3& NewPosition);
+
+	virtual void OnCollisionEnter(CObject* collidedObject);
 };

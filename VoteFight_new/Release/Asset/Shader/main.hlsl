@@ -151,7 +151,7 @@ float4 franelOuterLine(float3 vPosition, float3 vNormal, float4 cColor)
     if (rim > 0.3)
         rim = 1.0;
     else 
-        rim = 0;
+        rim = -1;
     newColor.rgb = newColor.rgb * rim;
     return newColor;
 }
@@ -321,9 +321,14 @@ VS_SKYBOX_CUBEMAP_OUTPUT VS_SkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
 {
     VS_SKYBOX_CUBEMAP_OUTPUT output;
 
-    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-    output.positionL = input.position;
+    float3 rotatePosition = float3(0, input.position.y, 0);
+    float RotateSpeed = 0.04f;
 
+    rotatePosition.x = input.position.x * cos(gfTotalTime * RotateSpeed) + input.position.z * sin(gfTotalTime * RotateSpeed);
+    rotatePosition.z = input.position.x * -sin(gfTotalTime * RotateSpeed) + input.position.z * cos(gfTotalTime * RotateSpeed);
+    
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    output.positionL = rotatePosition;
     return (output);
 }
 
