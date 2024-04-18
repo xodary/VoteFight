@@ -1,5 +1,4 @@
 #pragma once
-
 // 싱글톤 패턴을 위한 최상위 객체
 template <typename T>
 class CSingleton abstract
@@ -26,23 +25,4 @@ public:
 	virtual void Init()
 	{
 	}
-};
-
-
-
-// 패킷 데이터
-
-struct SOCKET_INFO
-{
-	UINT		m_ID{};
-	SOCKET      m_Socket{};
-	SOCKADDR_IN m_SocketAddress{};
-};
-
-struct CLIENT_TO_SERVER_DATA
-{
-	UINT	   m_SceneState{};
-
-	UINT	   m_InputMask{};
-	XMFLOAT4X4 m_WorldMatrix{};
 };

@@ -6,10 +6,6 @@
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #endif
 
-#define SERVER_IP "127.0.0.1"
-#define SERVER_PORT	9000
-#define MAX_CLIENT_CAPACITY 3
-
 #define EPSILON				    0.01f
 
 #define FRAME_BUFFER_WIDTH		1920
