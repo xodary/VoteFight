@@ -157,6 +157,8 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="NPC.h" />
+    <ClInclude Include="NPCStates.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectShader.h" />
     <ClInclude Include="pch.h" />
@@ -208,6 +210,8 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="NPC.cpp" />
+    <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectShader.cpp" />
     <ClCompile Include="pch.cpp">

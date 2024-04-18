@@ -145,7 +145,7 @@ const string& CScene::GetName()
 	return m_name;
 }
 
-void CScene::AddObject(GROUP_TYPE groupType, CObject* object)
+void CScene::AddObject(const GROUP_TYPE& groupType, CObject* object)
 {
 	if (object != nullptr)
 	{
@@ -182,6 +182,7 @@ void CScene::Update()
 		{
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
+				if (m_terrain && object->GetInstanceID() != (UINT)GROUP_TYPE::UI)object->CheckInTerrainSpace(*this);
 				object->Update();
 			}
 		}

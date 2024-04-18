@@ -34,7 +34,8 @@ public:
 	void SetName(const string& name);
 	const string& GetName();
 
-	void AddObject(GROUP_TYPE groupType, CObject* object);
+	void AddObject(const GROUP_TYPE& groupType, CObject* object);
+
 	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
 	void DeleteGroupObject(GROUP_TYPE groupType);
 
@@ -48,6 +49,7 @@ public:
 			return		0.f;
 		}
 	};
+	CTerrain* GetTerrain() const { return m_terrain; };
 
 	virtual void Init() = 0;
 

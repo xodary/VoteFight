@@ -140,8 +140,12 @@ void CGameScene::Init()
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 }
 
+// 2024 04 18일 이시영 수정 
+// Update할떄마다 플레이어 Y 를 터레인 높이 값에 변환시킴
 void CGameScene::Update()
 {
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	objects[0]->SetTerrainY(this);
 	CScene::Update();
 }
 
