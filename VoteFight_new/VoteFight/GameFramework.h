@@ -11,7 +11,7 @@ struct CB_GameFramework
 
 class CGameFramework : public CSingleton<CGameFramework>
 {
-	friend class CSingleton;
+	friend class CSingleton<CGameFramework>;
 
 private:
 	// 윈도우 관련 멤버 변수
@@ -58,9 +58,6 @@ private:
 	//shared_ptr<CPostProcessingShader> m_PostProcessingShader;
 
 	//shared_ptr<CUILayer>			  m_UILayer;
-
-	// Server
-	SOCKET_INFO						  m_SocketInfo{};
 
 	HANDLE							  m_ReceiveEvent{};
 	HANDLE							  m_RenderingEvent{};
@@ -125,7 +122,4 @@ public:
 	void Init(HWND hWnd, const XMFLOAT2& resolution);
 
 	void AdvanceFrame();
-
-	// Server
-	void ConnectServer();
 };

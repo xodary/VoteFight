@@ -2,7 +2,7 @@
 
 class CTimeManager : public CSingleton<CTimeManager>
 {
-	friend class CSingleton;
+	friend class CSingleton<CTimeManager>;
 
 private:
 	LARGE_INTEGER m_previousCount;

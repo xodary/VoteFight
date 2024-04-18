@@ -30,7 +30,7 @@ struct KeyInfo
 //    - Tap, Hold, Away
 class CInputManager : public CSingleton<CInputManager>
 {
-	friend class CSingleton;
+	friend class CSingleton<CInputManager>;
 
 private:
 	int      m_virtualKey[(int)KEY::COUNT]; // 가상 키 값은 KEY의 순서와 일치해야 한다.

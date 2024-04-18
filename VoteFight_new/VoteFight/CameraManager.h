@@ -4,7 +4,7 @@ class CCamera;
 
 class CCameraManager : public CSingleton<CCameraManager>
 {
-	friend class CSingleton;
+	friend class CSingleton<CCameraManager>;
 
 private:
 	vector<CCamera*> m_cameras;
