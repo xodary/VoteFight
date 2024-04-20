@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AssetManager.h"
+#include "DescriptorHeap.h"
 #include "GameFramework.h"
 #include "SkinnedMesh.h"
 #include "Texture.h"
@@ -11,6 +12,7 @@
 #include "BilboardShader.h"
 #include "Material.h"
 #include "Animation.h"
+#include "DepthWriteShader.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -160,6 +162,11 @@ void CAssetManager::LoadShaders()
 	shader = new CBilboardShader();
 	shader->SetName("Bilboard");
 	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CDepthWriteShader();
+	shader->SetName("DepthWrite");
+	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 

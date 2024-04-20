@@ -185,6 +185,63 @@ SamplerState samplerState : register(s0);
 SamplerState pcfSamplerState : register(s1);
 SamplerState gssClamp : register(s2);
 
+struct VS_POSITION_INPUT
+{
+    float3 position : POSITION;
+};
+
+struct VS_POSITION_OUTPUT
+{
+    float4 position : SV_POSITION;
+};
+
+// ======== Depth Write =========
+VS_POSITION_OUTPUT VS_Position(VS_POSITION_INPUT input)
+{
+    VS_POSITION_OUTPUT output;
+    
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+
+    return (output);
+}
+
+struct VS_POSITION_SKINNING_INPUT
+{
+    float3 position : POSITION;
+    int4 indices : BONEINDEX;
+    float4 weights : BONEWEIGHT;
+};
+
+VS_POSITION_OUTPUT VS_Position_Skinning(VS_POSITION_SKINNING_INPUT input)
+{
+    VS_POSITION_OUTPUT output;
+
+    float4x4 mtxVertexToBoneWorld = (float4x4) 0.0f;
+    for (int i = 0; i < MAX_VERTEX_INFLUENCES; i++)
+    {
+        mtxVertexToBoneWorld += input.weights[i] * mul(gpmtxBoneOffsets[input.indices[i]], gpmtxBoneTransforms[input.indices[i]]);
+    }
+    output.position = mul(mul(mul(float4(input.position, 1.0f), mtxVertexToBoneWorld),gmtxView), gmtxProjection);
+
+    return (output);
+}
+
+struct PS_DEPTH_OUTPUT
+{
+    float fzPosition : SV_Target;
+    float fDepth : SV_Depth;
+};
+
+PS_DEPTH_OUTPUT PS_DepthWrite(VS_POSITION_SKINNING_INPUT input)
+{
+    PS_DEPTH_OUTPUT output;
+
+    output.fzPosition = input.position.z;
+    output.fDepth = input.position.z;
+
+    return (output);
+}
+
 struct VS_STANDARD_INPUT
 {
 	float3 position : POSITION;
@@ -388,24 +445,6 @@ float4 PS_UI(VS_UI_OUTPUT input) : SV_TARGET
 }
 
 // ======== BOUNDING_BOX =========
-struct VS_POSITION_INPUT
-{
-    float3 position : POSITION;
-};
-
-struct VS_POSITION_OUTPUT
-{
-    float4 positionH : SV_POSITION;
-};
-
-VS_POSITION_OUTPUT VS_Position(VS_POSITION_INPUT input)
-{
-    VS_POSITION_OUTPUT output;
-	
-    output.positionH = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-    //output.positionH = float4(input.position, 1.0f);
-    return (output);
-}
 
 float4 PS_Red(VS_POSITION_OUTPUT input) : SV_TARGET
 {

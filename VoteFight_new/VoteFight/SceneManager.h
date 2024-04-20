@@ -4,7 +4,7 @@ class CScene;
 
 class CSceneManager : public CSingleton<CSceneManager>
 {
-	friend class CSingleton;
+	friend class CSingleton<CSceneManager>;
 
 private:
 	vector<CScene*> m_scenes;

@@ -1,13 +1,14 @@
 #include "pch.h"
-#include "GameFramework.h"
 #include "CollisionManager.h"
 #include "TimeManager.h"
 #include "AssetManager.h"
 #include "InputManager.h"
 #include "CameraManager.h"
 #include "SceneManager.h"
-
+#include "DescriptorHeap.h"
+#include "VoxelConeTracing.h"
 #include "Texture.h"
+#include "GameFramework.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -30,6 +31,7 @@ CGameFramework::CGameFramework() :
 	m_d3d12DsvDescriptorHeap(),
 	m_dsvDescriptorIncrementSize(),
 	m_d3d12CbvSrvUavDescriptorHeap(),
+	m_DescriptorHeapManager(),
 	m_d3d12Fence(),
 	m_fenceValues{},
 	m_fenceEvent(),
@@ -111,6 +113,11 @@ ID3D12DescriptorHeap* CGameFramework::GetCbvSrvUavDescriptorHeap()
 	return m_d3d12CbvSrvUavDescriptorHeap.Get();
 }
 
+DescriptorHeapManager* CGameFramework::GetDescriptorHeapManager()
+{
+	return m_DescriptorHeapManager.get();
+}
+
 UINT CGameFramework::GetRtvDescriptorIncrementSize()
 {
 	return m_rtvDescriptorIncrementSize;
@@ -142,6 +149,9 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CSceneManager::GetInstance()->Init();
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
+
+	// VoxelConeTracing Initialization
+	// VCT::GetInstance()->InitVoxelConeTracing();
 
 	// RenderTarget, DepthStencil
 	CreateRtvAndDsvDescriptorHeaps();
@@ -338,31 +348,18 @@ void CGameFramework::CreateRenderTargetViews()
 		D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 	}
 
-	// DepthWrite
-	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-	D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
+	// // DepthWrite
+	// CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+	// D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
+	// 
+	// d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	// d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	// d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
+	// d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
+	// 
+	// m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
+	// D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 
-	d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
-	d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
-
-	m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
-	D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
-
-	// PostProcessing
-	//m_RenderingResultTexture = make_shared<CTexture>();
-	//m_RenderingResultTexture->CreateTexture2D(m_d3d12Device.Get(), TEXTURE_TYPE_ALBEDO_MAP, static_cast<UINT>(m_resolution.x), static_cast<UINT>(m_resolution.y), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R8G8B8A8_UNORM, { 0.0f, 0.0f, 0.0f, 1.0f } });
-	//CTextureManager::GetInstance()->RegisterTexture(TEXT("RenderingResult"), m_RenderingResultTexture);
-
-	//D3D12_RENDER_TARGET_VIEW_DESC D3D12RenderTargetViewDesc{};
-
-	//D3D12RenderTargetViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	//D3D12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	//D3D12RenderTargetViewDesc.Texture2D.MipSlice = 0;
-	//D3D12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
-
-	//m_d3d12Device->CreateRenderTargetView(m_RenderingResultTexture->GetResource(), &D3D12RenderTargetViewDesc, D3D12RtvCPUDescriptorHandle);
 }
 
 void CGameFramework::CreateDepthStencilView()
@@ -560,6 +557,9 @@ void CGameFramework::PreRender()
 void CGameFramework::Render()
 {
 	CSceneManager::GetInstance()->Render();
+
+	// VoxelConeTracing Rendering
+	//VCT::GetInstance()->RenderVoxelConeTracing();
 }
 
 void CGameFramework::PostRender()
