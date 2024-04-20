@@ -158,10 +158,10 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	//shader = new CDepthWriteShader();
-	//shader->SetName("DepthWrite");
-	//shader->CreatePipelineStates(3);
-	//m_shaders.emplace(shader->GetName(), shader);
+	shader = new CDepthWriteShader();
+	shader->SetName("DepthWrite");
+	shader->CreatePipelineStates(2);
+	m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)

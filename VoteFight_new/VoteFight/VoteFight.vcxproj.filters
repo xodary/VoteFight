@@ -267,24 +267,6 @@
     <ClInclude Include="DepthWriteShader.h">
       <Filter>헤더 파일\06. Asset\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="Buffer.h">
-      <Filter>헤더 파일\09. Light</Filter>
-    </ClInclude>
-    <ClInclude Include="DescriptorHeap.h">
-      <Filter>헤더 파일\09. Light</Filter>
-    </ClInclude>
-    <ClInclude Include="PipelineStateObject.h">
-      <Filter>헤더 파일\09. Light</Filter>
-    </ClInclude>
-    <ClInclude Include="RootSignature.h">
-      <Filter>헤더 파일\09. Light</Filter>
-    </ClInclude>
-    <ClInclude Include="DepthBuffer.h">
-      <Filter>헤더 파일\09. Light</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderTarget.h">
-      <Filter>헤더 파일\09. Light</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -419,45 +401,9 @@
     <ClCompile Include="DepthWriteShader.cpp">
       <Filter>소스 파일\06. Asset\Shader</Filter>
     </ClCompile>
-    <ClCompile Include="DescriptorHeap.cpp">
-      <Filter>소스 파일\09. Light</Filter>
-    </ClCompile>
-    <ClCompile Include="PipelineStateObject.cpp">
-      <Filter>소스 파일\09. Light</Filter>
-    </ClCompile>
-    <ClCompile Include="RootSignature.cpp">
-      <Filter>소스 파일\09. Light</Filter>
-    </ClCompile>
-    <ClCompile Include="Buffer.cpp">
-      <Filter>소스 파일\09. Light</Filter>
-    </ClCompile>
-    <ClCompile Include="DepthBuffer.cpp">
-      <Filter>소스 파일\09. Light</Filter>
-    </ClCompile>
-    <ClCompile Include="RenderTarget.cpp">
-      <Filter>소스 파일\09. Light</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Release\Asset\Shader\main.hlsl">
-      <Filter>셰이더 파일</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingAnisoMipmapMainCS.hlsl">
-      <Filter>셰이더 파일</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingAnisoMipmapPrepareCS.hlsl">
-      <Filter>셰이더 파일</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingCS.hlsl">
-      <Filter>셰이더 파일</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingPS.hlsl">
-      <Filter>셰이더 파일</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingVoxelization.hlsl">
-      <Filter>셰이더 파일</Filter>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingVoxelizationDebug.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>
