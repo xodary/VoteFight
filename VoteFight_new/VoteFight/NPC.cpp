@@ -14,7 +14,7 @@ CNPC::CNPC() :
 	m_spineAngle(),
 	m_turnAngle()
 {
-	SetName("Player");
+	SetName("NPC");
 }
 
 CNPC::~CNPC()
@@ -39,13 +39,13 @@ void CNPC::SetSpineAngle(float angle)
 
 void CNPC::Init()
 {
-	//CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 
-//	stateMachine->SetCurrentState(CNPCIdleState::GetInstance());
+	stateMachine->SetCurrentState(CNPCIdleState::GetInstance());
 
-	//CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
+	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
-	//animator->SetWeight("idle", 1.0f);
+	animator->SetWeight("idle", 1.0f);
 }
 
 void CNPC::Update()
@@ -56,6 +56,4 @@ void CNPC::Update()
 
 void CNPC::OnCollisionEnter(CObject* collidedObject)
 {
-	cout << collidedObject->GetName() << endl;
-	collidedObject->SetDeleted(true);
 }

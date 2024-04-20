@@ -85,7 +85,7 @@ void CGameScene::Init()
 	Load("BinaryScene.bin");
 	Load("Woods.bin");
 	Load("FenceScene.bin");
-	// Load("Homer_link_Scene.bin");
+	Load("Homer_link_Scene.bin");
 	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가

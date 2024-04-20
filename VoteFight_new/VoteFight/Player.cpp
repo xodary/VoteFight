@@ -111,9 +111,11 @@ void CPlayer::Update()
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
 {
 	cout << collidedObject->GetName() << endl;
+	/*
 	m_Inventory->addItem(CItem(collidedObject->GetName(), 1));
 	collidedObject->SetDeleted(true);
 	m_Inventory->displayInventory();
+	*/
 }
 
 
