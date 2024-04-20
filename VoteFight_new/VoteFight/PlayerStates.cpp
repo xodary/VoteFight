@@ -108,8 +108,8 @@ void CPlayerIdleState::Update(CObject* object)
 			wannaLook = 90.f;
 		else
 			return;
-
-		player->SetTurnAngle(wannaLook);
+		wannaLook -= 45.0f;
+		player->SetTurnAngle(wannaLook );
 		float nowRotation = wannaLook - transform->GetRotation().y;
 		cout << nowRotation << endl;
 		if ((0 < nowRotation && nowRotation <= 180) || nowRotation < -180)
@@ -452,7 +452,7 @@ void CPlayerRunState::Update(CObject* object)
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::D))
 	{
-		rigidBody->AddForce(Vector3::ScalarProduct(transform->GetForward(), 15000.0f * DT));
+		rigidBody->AddForce(Vector3::ScalarProduct(XMFLOAT3(transform->GetForward()), 15000.0f * DT));
 	}
 
 	if (Math::IsZero(rigidBody->GetSpeedXZ()))

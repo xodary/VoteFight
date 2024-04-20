@@ -50,6 +50,7 @@ public:
 	virtual void UpdateShaderVariables();
 
 	void Translate(const XMFLOAT3& shift);
+	
 	void Rotate(const XMFLOAT3& rotation);
 	void LookTo(const XMFLOAT3& direction);
 	void AddScale(const XMFLOAT3& scale);

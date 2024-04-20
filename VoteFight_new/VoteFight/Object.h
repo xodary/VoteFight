@@ -13,6 +13,8 @@ class CCollider;
 
 class CCamera;
 
+class CScene;
+
 class CObject
 {
 private:
@@ -53,6 +55,9 @@ public:
 
 	void SetMesh(CMesh* mesh);
 	CMesh* GetMesh();
+
+	void SetTerrainY( CScene* curScene);
+	void CheckInTerrainSpace(const CScene& curScene);
 
 	void AddMaterial(CMaterial* material);
 	const vector<CMaterial*>& GetMaterials();

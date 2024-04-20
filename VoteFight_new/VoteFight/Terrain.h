@@ -46,18 +46,25 @@ protected:
 	ComPtr<ID3D12Resource>	        m_d3d12TextureCoordUploadBuffer;
 	D3D12_VERTEX_BUFFER_VIEW        m_d3d12TextureCoordBufferView;
 
+	ComPtr<ID3D12Resource>	        m_d3d12NormalBuffer;
+	ComPtr<ID3D12Resource>	        m_d3d12NormalUploadBuffer;
+	D3D12_VERTEX_BUFFER_VIEW        m_d3d12NormalBufferView;
+
 	ComPtr<ID3D12Resource>  m_d3d12IndexBuffer;
 	ComPtr<ID3D12Resource>  m_d3d12IndexUploadBuffer;
 	D3D12_INDEX_BUFFER_VIEW	m_d3d12IndexBufferView;
 
 public:
-	CTerrain(int nWidth = 100.f, int nLength = 100.f);
+	CTerrain(int nWidth = 257.f, int nLength = 257.f);
 	virtual ~CTerrain();
 
 	void MakeHeightMapGridMesh( int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, void* pContext);
 
-	float OnGetHeight(int x, int z, void* pContext);
-	virtual void Render(CCamera* camera);
+	int GetWidth() { return m_nWidth;};
+	float GetLength(){ return m_nLength; };
+	float OnGetHeight(int x, int z);
+	void CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices, vector<XMFLOAT3>& new_NorVecs);
+		virtual void Render(CCamera* camera);
 
 	XMFLOAT4 Add(const XMFLOAT4&, const XMFLOAT4&);
 };

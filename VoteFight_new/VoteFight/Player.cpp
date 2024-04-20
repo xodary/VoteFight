@@ -20,6 +20,7 @@ CPlayer::CPlayer() :
 	m_turnAngle()
 {
 	SetName("Player");
+	m_Inventory = new CInventory();
 }
 
 CPlayer::~CPlayer()
@@ -85,6 +86,8 @@ void CPlayer::Init()
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
 	animator->SetWeight("idle", 1.0f);
+	m_Inventory = new CInventory();
+
 }
 
 void CPlayer::SwapWeapon(WEAPON_TYPE weaponType)
@@ -102,4 +105,26 @@ void CPlayer::Shoot()
 void CPlayer::Update()
 {
 	CObject::Update();
+	
+}
+
+void CPlayer::OnCollisionEnter(CObject* collidedObject)
+{
+	cout << collidedObject->GetName() << endl;
+	m_Inventory->addItem(CItem(collidedObject->GetName(), 1));
+	collidedObject->SetDeleted(true);
+	m_Inventory->displayInventory();
+}
+
+
+
+//
+/// 아이템 및 인벤토리 
+
+CInventory::CInventory()
+{
+}
+
+CInventory::~CInventory()
+{
 }

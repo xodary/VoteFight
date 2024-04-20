@@ -140,6 +140,8 @@
     <ClInclude Include="Animator.h" />
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetManager.h" />
+    <ClInclude Include="Bilboard.h" />
+    <ClInclude Include="BilboardShader.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraManager.h" />
     <ClInclude Include="Character.h" />
@@ -155,6 +157,8 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="NPC.h" />
+    <ClInclude Include="NPCStates.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectShader.h" />
     <ClInclude Include="pch.h" />
@@ -193,6 +197,8 @@
     <ClCompile Include="Animator.cpp" />
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="AssetManager.cpp" />
+    <ClCompile Include="Bilboard.cpp" />
+    <ClCompile Include="BilboardShader.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraManager.cpp" />
     <ClCompile Include="Character.cpp" />
@@ -207,6 +213,8 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="NPC.cpp" />
+    <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectShader.cpp" />
     <ClCompile Include="pch.cpp">
@@ -246,6 +254,8 @@
     <FxCompile Include="..\Release\Asset\Shader\main.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
     </FxCompile>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

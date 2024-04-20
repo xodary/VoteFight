@@ -71,6 +71,7 @@ enum class GROUP_TYPE
 {
 	STRUCTURE,
 	PLAYER,
+	BILBOARD,
 	SKYBOX,
 	TERRAIN,
 	UI,
@@ -93,6 +94,7 @@ enum class CAMERA_TYPE
 {
 	MAIN,
 	UI,
+	LIGHT,
 
 	COUNT
 };
@@ -151,6 +153,7 @@ enum class TRIGGER_TYPE
 enum class RENDER_TYPE
 {
 	STANDARD,
+	DEPTH_WRITE,
 
 	COUNT
 };

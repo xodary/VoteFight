@@ -8,6 +8,7 @@
 #include "SkyboxShader.h"
 #include "UIShader.h"
 #include "TerrainShader.h"
+#include "BilboardShader.h"
 #include "Material.h"
 #include "Animation.h"
 
@@ -153,6 +154,11 @@ void CAssetManager::LoadShaders()
 
 	shader = new CTerrainShader();
 	shader->SetName("Terrain");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CBilboardShader();
+	shader->SetName("Bilboard");
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 }
@@ -427,9 +433,23 @@ void CAssetManager::Init()
 	m_assetPath = assetPath;
 
 	LoadMeshes("Meshes.bin");
+	LoadMeshes("Meshess.bin");
+	LoadMeshes("Meshesss.bin");
+	LoadMeshes("FireWoodMesh.bin");
+	LoadMeshes("Fence_Mesh.bin");
+	//LoadMeshes("Homer_Meshs.bin");
 	LoadTextures("Textures.bin");
+	LoadTextures("Texturesss.bin");
+	LoadTextures("FireWoodTextures.bin");
+	LoadTextures("Fence_Texture.bin");
+	//LoadTextures("Homer_texture.bin");
 	LoadShaders();
 	LoadMaterials("Materials.bin");
+	LoadMaterials("Materialss.bin");
+	LoadMaterials("FireWoodMaterials.bin");
+	LoadMaterials("WhiteHouse.bin");
+	LoadMaterials("Fence_Material.bin");
+//	LoadMaterials("Homer_Material.bin");
 }
 
 void CAssetManager::CreateShaderResourceViews()
@@ -438,7 +458,6 @@ void CAssetManager::CreateShaderResourceViews()
 	D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
 	UINT descriptorIncrementSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-
 
 	for (const auto& texture : m_textures)
 	{

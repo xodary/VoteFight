@@ -108,17 +108,17 @@ CTerrain::CTerrain(int nWidth, int nLength )
 	m_xmf3Scale = XMFLOAT3(1.f, 1.f, 1.f);
 
 	// String to LPCTSTR
-	string strPath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\FightVote_terrain.raw";
+	string strPath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\VoteFightHeightMap.raw";
 	const char* cPath = strPath.c_str();
 	wchar_t* wmsg = new wchar_t[strlen(cPath) + 1]; //memory allocation
 	size_t nConverted = 0;
 	mbstowcs_s(&nConverted, wmsg, strlen(cPath) + 1, cPath, _TRUNCATE);
 	
-	m_pHeightMapImage = new CHeightMapImage(wmsg, nWidth, nLength, m_xmf3Scale);
+	m_pHeightMapImage = new CHeightMapImage(wmsg, 257, 257, m_xmf3Scale);
 	delete[]wmsg;
 
 	// m_pHeightMapImage = new CHeightMapImage(_T("C:\\directX_work\\VoteFight_new\\Release\\Asset\\Terrain\\FightVote_terrain.raw"), nWidth, nLength, m_xmf3Scale);
-	MakeHeightMapGridMesh(0, 0, nWidth, nLength, m_xmf3Scale, m_pHeightMapImage);
+	MakeHeightMapGridMesh(0, 0, 257, 257, m_xmf3Scale, m_pHeightMapImage);
 
 	string strTerrain = "Terrain";
 	CMaterial* material = CAssetManager::GetInstance()->CreateMaterial(strTerrain);
@@ -154,8 +154,7 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	{
 		for (int x = xStart; x < (xStart + nWidth); x++, i++)
 		{
-			fHeight = OnGetHeight(x, z, pContext);
-			//fHeight = 0.0f;
+			fHeight = OnGetHeight(x, z);
 			pxmf3Positions[i] = XMFLOAT3((x*m_xmf3Scale.x), fHeight, (z*m_xmf3Scale.z));
 			pxmf2TextureCoords[i] = XMFLOAT2(float(x) / float(cxHeightMap - 1), float(czHeightMap - 1 - z) / float(czHeightMap - 1));
 			if (fHeight < fMinHeight) fMinHeight = fHeight;
@@ -204,26 +203,62 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	m_d3d12IndexBufferView.BufferLocation = m_d3d12IndexBuffer->GetGPUVirtualAddress();
 	m_d3d12IndexBufferView.Format = DXGI_FORMAT_R32_UINT;
 	m_d3d12IndexBufferView.SizeInBytes = sizeof(UINT) * m_indices;
+
+	vector<XMFLOAT3> norVec3s;
+	CreateNormalDate(pnSubSetIndices, pxmf3Positions, norVec3s);
+	m_d3d12NormalBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, norVec3s.data(), sizeof(XMFLOAT3) * norVec3s.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_d3d12NormalUploadBuffer.GetAddressOf());
+	m_d3d12NormalBufferView.BufferLocation = m_d3d12NormalBuffer->GetGPUVirtualAddress();
+	m_d3d12NormalBufferView.StrideInBytes = sizeof(XMFLOAT3);
+	m_d3d12NormalBufferView.SizeInBytes = sizeof(XMFLOAT3) * norVec3s.size();
+	cout << norVec3s.size() << '\n';
+
 }
 
-float CTerrain::OnGetHeight(int x, int z, void* pContext)
+float CTerrain::OnGetHeight(int x, int z)
 {
-	CHeightMapImage* pHeightMapImage = (CHeightMapImage*)pContext;
-	BYTE* pHeightMapPixels = pHeightMapImage->GetHeightMapPixels();
-	XMFLOAT3 xmf3Scale = pHeightMapImage->GetScale();
-	int nWidth = pHeightMapImage->GetHeightMapWidth();
+	BYTE* pHeightMapPixels = m_pHeightMapImage->GetHeightMapPixels();
+	XMFLOAT3 xmf3Scale = m_pHeightMapImage->GetScale();
+	int nWidth = m_pHeightMapImage->GetHeightMapWidth();
 	float fHeight = pHeightMapPixels[x + (z * nWidth)] * xmf3Scale.y;
 	return(fHeight);
+}
+
+void CTerrain::CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices,  vector<XMFLOAT3>& new_NorVecs)
+{
+	for (size_t i = 0; i < m_nWidth; i++)
+	for (size_t j = 0; j < m_nLength; j++)
+		new_NorVecs.push_back(m_pHeightMapImage->GetHeightMapNormal(i,j));
+				
+	/*
+	for (size_t i = 0; i < m_indices/3; i++)
+	{
+		UINT index0 = pnSubSetIndices[i * 3 + 0];
+		UINT index1 = pnSubSetIndices[i * 3 + 1];
+		UINT index2 = pnSubSetIndices[i * 3 + 2];
+
+		XMFLOAT3 v0 = vertices[index0];
+		XMFLOAT3 v1 = vertices[index1];
+		XMFLOAT3 v2 = vertices[index2];
+
+		XMFLOAT3 a = XMFLOAT3( v0.x - v2.x , v0.y - v2.y, v0.z - v2.z);
+		XMFLOAT3 b = XMFLOAT3( v0.x - v1.x , v0.y - v1.y, v0.z - v1.z);
+
+
+		XMFLOAT3 normal;
+		normal = Vector3::CrossProduct(a, b);
+		new_NorVecs.push_back(normal);
+	}
+	*/
 }
 
 
 void CTerrain::Render(CCamera* camera)
 {
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
-	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] = { m_d3d12VertexBufferView, m_d3d12TextureCoordBufferView };
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] = { m_d3d12VertexBufferView, m_d3d12TextureCoordBufferView, m_d3d12NormalBufferView };
 
 	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-	d3d12GraphicsCommandList->IASetVertexBuffers(0, 2, vertexBufferViews);
+	d3d12GraphicsCommandList->IASetVertexBuffers(0, 3, vertexBufferViews);
 
 	CMaterial* material = GetMaterials()[0];
 

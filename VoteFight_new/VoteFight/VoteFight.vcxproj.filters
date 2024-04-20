@@ -264,6 +264,18 @@
     <ClInclude Include="VoxelConeTracing.h">
       <Filter>헤더 파일\09. Light</Filter>
     </ClInclude>
+    <ClInclude Include="Bilboard.h">
+      <Filter>헤더 파일\05. Object\05-02. Bilboard</Filter>
+    </ClInclude>
+    <ClInclude Include="BilboardShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="NPC.h">
+      <Filter>헤더 파일\05. Object\05-01. Character</Filter>
+    </ClInclude>
+    <ClInclude Include="NPCStates.h">
+      <Filter>헤더 파일\08. State</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -394,6 +406,18 @@
     </ClCompile>
     <ClCompile Include="VoxelConeTracing.cpp">
       <Filter>소스 파일\09. Light</Filter>
+    </ClCompile>
+    <ClCompile Include="Bilboard.cpp">
+      <Filter>소스 파일\05. Object\05-02. Bilboard</Filter>
+    </ClCompile>
+    <ClCompile Include="BilboardShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="NPC.cpp">
+      <Filter>소스 파일\05. Object\05-01. Character</Filter>
+    </ClCompile>
+    <ClCompile Include="NPCStates.cpp">
+      <Filter>소스 파일\08. State</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

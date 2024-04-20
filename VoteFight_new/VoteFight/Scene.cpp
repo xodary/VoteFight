@@ -75,7 +75,11 @@ void CScene::Load(const string& fileName)
 					CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 					object->SetActive(isActives[i]);
-					transform->SetPosition(transforms[3 * i]);
+					XMFLOAT3 currPosition = transforms[3 * i];
+					if(fileName != "FenceScene.bin")currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
+					cout << fileName << endl;
+					transform->SetPosition(currPosition);
+					//transform->SetPosition(XMFLOAT3(currPosition.x, GetTerrainHeight(currPosition.x, currPosition.z), currPosition.z));
 					transform->SetRotation(transforms[3 * i + 1]);
 					transform->SetScale(transforms[3 * i + 2]);
 					transform->Update();
@@ -141,7 +145,7 @@ const string& CScene::GetName()
 	return m_name;
 }
 
-void CScene::AddObject(GROUP_TYPE groupType, CObject* object)
+void CScene::AddObject(const GROUP_TYPE& groupType, CObject* object)
 {
 	if (object != nullptr)
 	{
@@ -178,6 +182,7 @@ void CScene::Update()
 		{
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
+				if (m_terrain && object->GetInstanceID() != (UINT)GROUP_TYPE::UI)object->CheckInTerrainSpace(*this);
 				object->Update();
 			}
 		}
@@ -186,6 +191,23 @@ void CScene::Update()
 
 void CScene::PreRender()
 {
+	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
+
+	camera->RSSetViewportsAndScissorRects();
+	camera->UpdateShaderVariables();
+
+
+	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
+	{
+		for (const auto& object : m_objects[i])
+		{
+			if ((object->IsActive()) && (!object->IsDeleted()))
+			{
+		//		object->PreRender(camera);
+			}
+		}
+	}
+
 }
 
 void CScene::Render()
@@ -194,6 +216,9 @@ void CScene::Render()
 
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
+
+	if (m_terrain)
+		m_terrain->Render(camera);
 
 	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
 	{
