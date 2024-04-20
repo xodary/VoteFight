@@ -114,11 +114,11 @@ CTerrain::CTerrain(int nWidth, int nLength )
 	size_t nConverted = 0;
 	mbstowcs_s(&nConverted, wmsg, strlen(cPath) + 1, cPath, _TRUNCATE);
 	
-	m_pHeightMapImage = new CHeightMapImage(wmsg, 257, 257, m_xmf3Scale);
+	m_pHeightMapImage = new CHeightMapImage(wmsg, TERRAIN_WIDTH, TERRAIN_HEIGHT, m_xmf3Scale);
 	delete[]wmsg;
 
 	// m_pHeightMapImage = new CHeightMapImage(_T("C:\\directX_work\\VoteFight_new\\Release\\Asset\\Terrain\\FightVote_terrain.raw"), nWidth, nLength, m_xmf3Scale);
-	MakeHeightMapGridMesh(0, 0, 257, 257, m_xmf3Scale, m_pHeightMapImage);
+	MakeHeightMapGridMesh(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT, m_xmf3Scale, m_pHeightMapImage);
 
 	string strTerrain = "Terrain";
 	CMaterial* material = CAssetManager::GetInstance()->CreateMaterial(strTerrain);
@@ -127,6 +127,9 @@ CTerrain::CTerrain(int nWidth, int nLength )
 
 	material->SetTexture(texture);
 	material->AddShader(shader);
+	shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
+	material->AddShader(shader);
+
 	material->SetStateNum(0);
 	AddMaterial(material);
 }
@@ -251,6 +254,24 @@ void CTerrain::CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* ver
 	*/
 }
 
+void CTerrain::PreRender(CCamera* camera)
+{
+	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
+	
+	XMFLOAT4X4 xmf4x4world = Matrix4x4::Identity();
+	d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::OBJECT), 16, &xmf4x4world, 0);
+
+	CMaterial* material = GetMaterials()[0];
+	material->SetPipelineState(RENDER_TYPE::DEPTH_WRITE);
+
+	D3D12_VERTEX_BUFFER_VIEW vertexBufferViews[] = { m_d3d12VertexBufferView, m_d3d12TextureCoordBufferView, m_d3d12NormalBufferView };
+
+	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+	d3d12GraphicsCommandList->IASetVertexBuffers(0, 3, vertexBufferViews);
+
+	d3d12GraphicsCommandList->IASetIndexBuffer(&m_d3d12IndexBufferView);
+	d3d12GraphicsCommandList->DrawIndexedInstanced(m_indices, 1, 0, 0, 0);
+}
 
 void CTerrain::Render(CCamera* camera)
 {

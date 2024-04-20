@@ -105,14 +105,14 @@ void CGameScene::Init()
 	// 조명(Light) 생성
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
-	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.73f, 0.73f, 0.73f, 1.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(0.3f, 0.3f, 0.3f, 0.0f);
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 0.0f, 1.0f);
-	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(-10.0f, 100.0f, 0.0f);
+	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.1f, -1.0f, 0.0f));
 	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
@@ -165,7 +165,7 @@ void CGameScene::PreRender()
 
 			if ((light != nullptr) && (light->m_isActive) && (light->m_shadowMapping))
 			{
-				float nearPlaneDist = 5.0f;
+				float nearPlaneDist = 0.0;
 				float farPlaneDist = light->m_range;
 
 				switch ((LIGHT_TYPE)light->m_type)
@@ -222,6 +222,7 @@ void CGameScene::PreRender()
 						}
 					}
 				}
+				m_terrain->PreRender(camera);
 
 				DX::ResourceTransition(d3d12GraphicsCommandList, depthTexture->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 			}
@@ -232,5 +233,22 @@ void CGameScene::PreRender()
 void CGameScene::Render()
 {
 	CScene::Render();
+
+	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
+
+	// [Debug] Render DepthTexture
+	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
+	D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
+	D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
+	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+	CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
+
+	texture->UpdateShaderVariable();
+	shader->SetPipelineState(2);
+	d3d12GraphicsCommandList->RSSetViewports(1, &d3d12Viewport);
+	d3d12GraphicsCommandList->RSSetScissorRects(1, &d3d12ScissorRect);
+	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	d3d12GraphicsCommandList->DrawInstanced(6, 1, 0, 0);
+
 }
 

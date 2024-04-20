@@ -128,8 +128,6 @@ void CAssetManager::LoadTextures(const string& fileName)
 	texture->SetName("DepthWrite");
 	texture->Create(static_cast<UINT64>(DEPTH_BUFFER_WIDTH), static_cast<UINT>(DEPTH_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } }, TEXTURE_TYPE::SHADOW_MAP);
 	m_textures.emplace(texture->GetName(), texture);
-
-	// PostProcessing Texture
 }
 
 void CAssetManager::LoadShaders()
@@ -166,7 +164,7 @@ void CAssetManager::LoadShaders()
 
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
-	shader->CreatePipelineStates(2);
+	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 

@@ -348,17 +348,17 @@ void CGameFramework::CreateRenderTargetViews()
 		D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 	}
 
-	// // DepthWrite
-	// CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-	// D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
-	// 
-	// d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	// d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	// d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
-	// d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
-	// 
-	// m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
-	// D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
+	 // DepthWrite
+	 CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+	 D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
+	 
+	 d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	 d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	 d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
+	 d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
+	 
+	 m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
+	 D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 
 }
 
@@ -417,11 +417,12 @@ void CGameFramework::CreateRootSignature()
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::SHADOW_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[3]); // shadowMap : register(t3)
 
 	D3D12_ROOT_SIGNATURE_FLAGS d3d12RootSignatureFlags = { D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT }; // IA단계를 허용, 스트림 출력 단계를 허용
-	CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[3] = {};
+	CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[4] = {};
 
 	d3d12SamplerDesc[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 1, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);                            // samplerState : register(s0)
 	d3d12SamplerDesc[1].Init(1, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 1, D3D12_COMPARISON_FUNC_LESS_EQUAL, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL); // pcfSamplerState : register(s1)
 	d3d12SamplerDesc[2].Init(2, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 1, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);						   // gssClamp : register(s2)
+	d3d12SamplerDesc[3].Init(3, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 1, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);						   // gssClamp : register(s2)
 
 	CD3DX12_ROOT_SIGNATURE_DESC d3d12RootSignatureDesc = {};
 

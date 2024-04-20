@@ -1,5 +1,5 @@
 // --------------define----------------
-#define MAX_LIGHTS			3 
+#define MAX_LIGHTS			1 
 #define POINT_LIGHT			1
 #define SPOT_LIGHT			2
 #define DIRECTIONAL_LIGHT	3
@@ -128,16 +128,57 @@ float4 SpotLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
     */
 }
 
+#define FRAME_BUFFER_WIDTH		1920
+#define FRAME_BUFFER_HEIGHT		1080
 
-float4 Lighting(float3 vPosition, float3 vNormal)
+#define _DEPTH_BUFFER_WIDTH		FRAME_BUFFER_WIDTH * 4
+#define _DEPTH_BUFFER_HEIGHT	FRAME_BUFFER_HEIGHT * 4
+
+#define DELTA_X					(1.0f / _DEPTH_BUFFER_WIDTH)
+#define DELTA_Y					(1.0f / _DEPTH_BUFFER_HEIGHT)
+
+#define MAX_DEPTH_TEXTURES		MAX_LIGHTS
+
+Texture2D<float> gtxtDepthTextures[MAX_DEPTH_TEXTURES] : register(t3);
+SamplerState samplerState : register(s0);
+SamplerComparisonState pcfSamplerState : register(s1);
+SamplerState gssClamp : register(s2);
+
+float Compute3x3ShadowFactor(float2 uv, float fDepth, uint nIndex)
+{
+    float fPercentLit = gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv, fDepth).r;
+    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, 0.0f), fDepth).r;
+    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, 0.0f), fDepth).r;
+    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, +DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, +DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, +DELTA_Y), fDepth).r;
+    
+    return (fPercentLit / 9.0f);
+}
+
+
+float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs[MAX_LIGHTS])
 {
     float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-    cColor += DirectionalLight(0, vNormal, vToCamera);
-    // cColor += (gcGlobalAmbientLight);
     
+[unroll]
+    for (int i = 0; i < MAX_LIGHTS; i++)
+    {
+        float fShadowFactor = 1.0f;
+        fShadowFactor = Compute3x3ShadowFactor(uvs[i].xy / uvs[i].ww, uvs[i].z / uvs[i].w, i);
+
+        cColor += DirectionalLight(i, vNormal, vToCamera) * fShadowFactor;
+        
+        if (fShadowFactor == 0.0)
+            cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+        // cColor += (gcGlobalAmbientLight);
+    }
     
     return (cColor);
 }
@@ -176,71 +217,11 @@ cbuffer cbBoneTransformInfo : register(b6)
 
 #define MATERIAL_ALBEDO_MAP			0x01
 #define MATERIAL_NORMAL_MAP			0x02
+#define MATERIAL_SHADOW_MAP			0x04
 
 Texture2D gtxtAlbedoTexture : register(t0);
 Texture2D gtxtNormalTexture : register(t1);
 TextureCube gtxtCubeTexture : register(t2);
-
-SamplerState samplerState : register(s0);
-SamplerState pcfSamplerState : register(s1);
-SamplerState gssClamp : register(s2);
-
-struct VS_POSITION_INPUT
-{
-    float3 position : POSITION;
-};
-
-struct VS_POSITION_OUTPUT
-{
-    float4 position : SV_POSITION;
-};
-
-// ======== Depth Write =========
-VS_POSITION_OUTPUT VS_Position(VS_POSITION_INPUT input)
-{
-    VS_POSITION_OUTPUT output;
-    
-    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-
-    return (output);
-}
-
-struct VS_POSITION_SKINNING_INPUT
-{
-    float3 position : POSITION;
-    int4 indices : BONEINDEX;
-    float4 weights : BONEWEIGHT;
-};
-
-VS_POSITION_OUTPUT VS_Position_Skinning(VS_POSITION_SKINNING_INPUT input)
-{
-    VS_POSITION_OUTPUT output;
-
-    float4x4 mtxVertexToBoneWorld = (float4x4) 0.0f;
-    for (int i = 0; i < MAX_VERTEX_INFLUENCES; i++)
-    {
-        mtxVertexToBoneWorld += input.weights[i] * mul(gpmtxBoneOffsets[input.indices[i]], gpmtxBoneTransforms[input.indices[i]]);
-    }
-    output.position = mul(mul(mul(float4(input.position, 1.0f), mtxVertexToBoneWorld),gmtxView), gmtxProjection);
-
-    return (output);
-}
-
-struct PS_DEPTH_OUTPUT
-{
-    float fzPosition : SV_Target;
-    float fDepth : SV_Depth;
-};
-
-PS_DEPTH_OUTPUT PS_DepthWrite(VS_POSITION_SKINNING_INPUT input)
-{
-    PS_DEPTH_OUTPUT output;
-
-    output.fzPosition = input.position.z;
-    output.fDepth = input.position.z;
-
-    return (output);
-}
 
 struct VS_STANDARD_INPUT
 {
@@ -251,28 +232,73 @@ struct VS_STANDARD_INPUT
 	float3 bitangent : BITANGENT;
 };
 
+struct VS_SKINNED_STANDARD_INPUT
+{
+    float3 position : POSITION;
+    float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
+    int4 indices : BONEINDEX;
+    float4 weights : BONEWEIGHT;
+};
+
 struct VS_STANDARD_OUTPUT
 {
-	float4 position : SV_POSITION;
+    float4 position : SV_POSITION;
     float3 positionW : POSITION;
-    float2 uv : TEXCOORD;
-	float3 normalW : NORMAL;
-	float3 tangentW : TANGENT;
-	float3 bitangentW : BITANGENT;
+    float2 uv : TEXCOORD0;
+    float3 normalW : NORMAL;
+    float3 tangentW : TANGENT;
+    float3 bitangentW : BITANGENT;
+    
+    float4 uvs[MAX_LIGHTS] : TEXCOORD1;
 };
 
 VS_STANDARD_OUTPUT VS_Main(VS_STANDARD_INPUT input)
 {
 	VS_STANDARD_OUTPUT output;
-
-	output.positionW = mul(float4(input.position, 1.0f), gmtxGameObject).xyz;
+    
+    float4 pW = mul(float4(input.position, 1.0f), gmtxGameObject);
+    output.positionW = pW.xyz;
 	output.normalW = mul(input.normal, (float3x3)gmtxGameObject);
 	output.tangentW = mul(input.tangent, (float3x3)gmtxGameObject);
 	output.bitangentW = mul(input.bitangent, (float3x3)gmtxGameObject);
-	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
+    output.position = mul(mul(pW, gmtxView), gmtxProjection);
 	output.uv = input.uv;
+    
+    for (int i = 0; i < MAX_LIGHTS; i++)
+    {
+        output.uvs[i] = mul(pW, m_lights[i].m_toTexCoord);
+    }
 
 	return(output);
+}
+
+VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
+{
+    VS_STANDARD_OUTPUT output;
+
+    float4x4 mtxVertexToBoneWorld = (float4x4) 0.0f;
+    for (int i = 0; i < MAX_VERTEX_INFLUENCES; i++)
+    {
+        mtxVertexToBoneWorld += input.weights[i] * mul(gpmtxBoneOffsets[input.indices[i]], gpmtxBoneTransforms[input.indices[i]]);
+    }
+    float4 positionW = mul(float4(input.position, 1.0f), mtxVertexToBoneWorld);
+    output.positionW = positionW.xyz;
+    output.normalW = mul(input.normal, (float3x3) mtxVertexToBoneWorld).xyz;
+    output.tangentW = mul(input.tangent, (float3x3) mtxVertexToBoneWorld).xyz;
+    output.bitangentW = mul(input.bitangent, (float3x3) mtxVertexToBoneWorld).xyz;
+
+    output.position = mul(mul(positionW, gmtxView), gmtxProjection);
+    output.uv = input.uv;
+    
+    for (int j = 0; j < MAX_LIGHTS; j++)
+    {
+        output.uvs[j] = mul(positionW, m_lights[j].m_toTexCoord);
+    }
+
+    return (output);
 }
 
 float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
@@ -294,43 +320,14 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
 	{
 		normalW = normalize(input.normalW);
     }
-    float4 cIllumination = Lighting(input.positionW, normalW);
+    float4 cIllumination = Lighting(input.positionW, normalW, input.uvs);
   // cColor = (lerp(cColor, cIllumination, 0.5f));
     cColor = cColor * cIllumination;
-   cColor = franelOuterLine(input.positionW,normalW, cColor);
+//    cColor = franelOuterLine(input.positionW,normalW, cColor);
     return cColor;
 
 }
 
-struct VS_SKINNED_STANDARD_INPUT
-{
-	float3 position : POSITION;
-	float2 uv : TEXCOORD;
-	float3 normal : NORMAL;
-	float3 tangent : TANGENT;
-	float3 bitangent : BITANGENT;
-	int4 indices : BONEINDEX;
-	float4 weights : BONEWEIGHT;
-};
-
-VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
-{
-	VS_STANDARD_OUTPUT output;
-
-	float4x4 mtxVertexToBoneWorld = (float4x4)0.0f;
-	for (int i = 0; i < MAX_VERTEX_INFLUENCES; i++)
-	{		mtxVertexToBoneWorld += input.weights[i] * mul(gpmtxBoneOffsets[input.indices[i]], gpmtxBoneTransforms[input.indices[i]]);
-	}
-	output.positionW = mul(float4(input.position, 1.0f), mtxVertexToBoneWorld).xyz;
-	output.normalW = mul(input.normal, (float3x3)mtxVertexToBoneWorld).xyz;
-	output.tangentW = mul(input.tangent, (float3x3)mtxVertexToBoneWorld).xyz;
-	output.bitangentW = mul(input.bitangent, (float3x3)mtxVertexToBoneWorld).xyz;
-
-	output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
-	output.uv = input.uv;
-
-	return(output);
-}
 // ======== Bilboard =========
 struct VS_BILBOARD_INPUT
 {
@@ -339,23 +336,23 @@ struct VS_BILBOARD_INPUT
 
 struct VS_BILBOARD_OUTPUT
 {
-    float3 positionL : POSITION;
     float4 position : SV_POSITION;
+    float3 positionW : POSITION;
 };
 
 VS_BILBOARD_OUTPUT VS_Bilboard(VS_BILBOARD_INPUT input)
 {
     VS_BILBOARD_OUTPUT output;
     
-    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-    output.positionL = input.position;
+    output.positionW = mul(float4(input.position, 1.0f), gmtxGameObject);
+    output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
 
     return (output);
 }
 
 float4 PS_Bilboard(VS_BILBOARD_OUTPUT input) : SV_TARGET
 {
-    float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.positionL.xy);
+    float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.positionW.xy);
     float4 cColor = cBaseTexColor;
     
     return (cColor);
@@ -445,10 +442,65 @@ float4 PS_UI(VS_UI_OUTPUT input) : SV_TARGET
 }
 
 // ======== BOUNDING_BOX =========
+struct VS_POSITION_INPUT
+{
+    float3 position : POSITION;
+};
+
+struct VS_POSITION_OUTPUT
+{
+    float4 positionH : SV_POSITION;
+};
+
+VS_POSITION_OUTPUT VS_Position(VS_POSITION_INPUT input)
+{
+    VS_POSITION_OUTPUT output;
+	
+    output.positionH = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    //output.positionH = float4(input.position, 1.0f);
+    return (output);
+}
 
 float4 PS_Red(VS_POSITION_OUTPUT input) : SV_TARGET
 {
     return (float4(1.0f, 0.0f, 0.0f, 1.0f));
+}
+
+struct VS_POSITION_SKINNING_INPUT
+{
+    float3 position : POSITION;
+    int4 indices : BONEINDEX;
+    float4 weights : BONEWEIGHT;
+};
+
+VS_POSITION_OUTPUT VS_Position_Skinning(VS_POSITION_SKINNING_INPUT input)
+{
+    VS_POSITION_OUTPUT output;
+
+    float4x4 mtxVertexToBoneWorld = (float4x4) 0.0f;
+    for (int i = 0; i < MAX_VERTEX_INFLUENCES; i++)
+    {
+        mtxVertexToBoneWorld += input.weights[i] * mul(gpmtxBoneOffsets[input.indices[i]], gpmtxBoneTransforms[input.indices[i]]);
+    }
+    output.positionH = mul(mul(mul(float4(input.position, 1.0f), mtxVertexToBoneWorld), gmtxView), gmtxProjection);
+
+    return (output);
+}
+
+struct PS_DEPTH_OUTPUT
+{
+    float fzPosition : SV_Target;
+    float fDepth : SV_Depth;
+};
+
+PS_DEPTH_OUTPUT PS_DepthWrite(VS_POSITION_OUTPUT input)
+{
+    PS_DEPTH_OUTPUT output;
+
+    output.fzPosition = input.positionH.z;
+    output.fDepth = input.positionH.z;
+    
+    return (output);
 }
 
 // ======== TERRAIN =========
@@ -462,19 +514,27 @@ struct VS_TERRAIN_INPUT
 struct VS_TERRAIN_OUTPUT
 {
     float4 position : SV_POSITION;
-    float2 uv : TEXCOORD;
+    float2 uv : TEXCOORD0;
     float3 normal : NORMAL;
+    
+    float4 uvs[MAX_LIGHTS] : TEXCOORD1;
 };
 
 VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
 {
     VS_TERRAIN_OUTPUT output;
-
-    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    
+    float4 pW = mul(float4(input.position, 1.0f), gmtxGameObject);
+    output.position = mul(mul(pW, gmtxView), gmtxProjection);
     output.normal = mul(input.normal, (float3x3) gmtxGameObject);
 	
     output.uv = input.uv;
-
+    
+    for (int j = 0; j < MAX_LIGHTS; j++)
+    {
+        output.uvs[j] = mul(pW, m_lights[j].m_toTexCoord);
+    }
+    
     return (output);
 }
 
@@ -483,9 +543,9 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
     float4 cColor = cBaseTexColor;
     float3 normal = normalize(input.normal);
-    float4 cIllumination = Lighting(input.position.xyz, normal);
+    float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs);
     cColor = cColor * cIllumination;
-   //  cColor = franelOuterLine(input.position, normal, cColor);
+    //  cColor = franelOuterLine(input.position, normal, cColor);
     // return (lerp(cColor, cIllumination, 0.2f));
     return cColor;
     // return cColor * cIllumination;
@@ -529,4 +589,58 @@ float4 PS_EAGE_Main(VS_EAGE_STANDARD_OUTPUT input) : SV_TARGET
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
   
     return cColor;
+}
+
+// ======== VIEW PORT =========
+struct VS_TEXTURED_OUTPUT
+{
+	float4 position : SV_POSITION;
+	float2 uv : TEXCOORD;
+};
+
+VS_TEXTURED_OUTPUT VS_ViewPort(uint nVertexID : SV_VertexID)
+{
+	VS_TEXTURED_OUTPUT output = (VS_TEXTURED_OUTPUT)0;
+
+	if (nVertexID == 0) { output.position = float4(-1.0f, +1.0f, 0.0f, 1.0f); output.uv = float2(0.0f, 0.0f); }
+	if (nVertexID == 1) { output.position = float4(+1.0f, +1.0f, 0.0f, 1.0f); output.uv = float2(1.0f, 0.0f); }
+	if (nVertexID == 2) { output.position = float4(+1.0f, -1.0f, 0.0f, 1.0f); output.uv = float2(1.0f, 1.0f); }
+	if (nVertexID == 3) { output.position = float4(-1.0f, +1.0f, 0.0f, 1.0f); output.uv = float2(0.0f, 0.0f); }
+	if (nVertexID == 4) { output.position = float4(+1.0f, -1.0f, 0.0f, 1.0f); output.uv = float2(1.0f, 1.0f); }
+	if (nVertexID == 5) { output.position = float4(-1.0f, -1.0f, 0.0f, 1.0f); output.uv = float2(0.0f, 1.0f); }
+
+	return(output);
+}
+
+float4 GetColorFromDepth(float fDepth)
+{
+	float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+
+	if (fDepth < 0.00625f) cColor = float4(1.0f, 0.0f, 0.0f, 1.0f);
+	else if (fDepth < 0.0125f) cColor = float4(0.0f, 1.0f, 0.0f, 1.0f);
+	else if (fDepth < 0.025f) cColor = float4(0.0f, 0.0f, 1.0f, 1.0f);
+	else if (fDepth < 0.05f) cColor = float4(1.0f, 1.0f, 0.0f, 1.0f);
+	else if (fDepth < 0.075f) cColor = float4(0.0f, 1.0f, 1.0f, 1.0f);
+	else if (fDepth < 0.1f) cColor = float4(1.0f, 0.5f, 0.5f, 1.0f);
+	else if (fDepth < 0.4f) cColor = float4(0.5f, 1.0f, 1.0f, 1.0f);
+	else if (fDepth < 0.6f) cColor = float4(1.0f, 0.0f, 1.0f, 1.0f);
+	else if (fDepth < 0.8f) cColor = float4(0.5f, 0.5f, 1.0f, 1.0f);
+	else if (fDepth < 0.9f) cColor = float4(0.5f, 1.0f, 0.5f, 1.0f);
+	else if (fDepth < 0.95f) cColor = float4(0.5f, 0.0f, 0.5f, 1.0f);
+	else if (fDepth < 0.99f) cColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+	else if (fDepth < 0.999f) cColor = float4(1.0f, 0.0f, 1.0f, 1.0f);
+	else if (fDepth == 1.0f) cColor = float4(0.5f, 0.5f, 0.5f, 1.0f);
+	else if (fDepth > 1.0f) cColor = float4(0.0f, 0.0f, 0.5f, 1.0f);
+	else cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+
+	return(cColor);
+}
+
+SamplerState gssBorder : register(s3);
+
+float4 PS_ViewPort(VS_TEXTURED_OUTPUT input) : SV_Target
+{
+	float fDepthFromLight0 = gtxtDepthTextures[0].SampleLevel(gssBorder, input.uv, 0).r;
+
+	return((float4)(fDepthFromLight0 * 0.8f));
 }
