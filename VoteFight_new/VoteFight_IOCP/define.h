@@ -1,9 +1,11 @@
 #pragma once
 
 #ifdef _UNICODE
-#pragma comment(linker, "/entry:wWinMainCRTStartup /subsystem:console")
+#define tcout wcout
+#define tcin  wcin
 #else
-#pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
+#define tcout cout
+#define tcin  cin
 #endif
 
 #define EPSILON				    0.01f
@@ -11,10 +13,10 @@
 #define FRAME_BUFFER_WIDTH		1920
 #define FRAME_BUFFER_HEIGHT		1080 
 
-#define TERRAIN_WIDTH			257
-#define TERRAIN_HEIGHT			257
-#define DEPTH_BUFFER_WIDTH	    (FRAME_BUFFER_WIDTH * 4)
-#define DEPTH_BUFFER_HEIGHT     (FRAME_BUFFER_HEIGHT * 4)
+#define TERRAIN_WIDTH			400
+#define TERRAIN_HEIGHT			400
+#define DEPTH_BUFFER_WIDTH	    2048
+#define DEPTH_BUFFER_HEIGHT     2048
 
 #define MAX_NPC_COUNT			15
 #define MAX_LIGHTS              3
@@ -67,10 +69,8 @@ enum class GROUP_TYPE
 {
 	STRUCTURE,
 	PLAYER,
-	BILBOARD,
 	SKYBOX,
-	TERRAIN,
-	UI,
+
 	COUNT
 };
 
@@ -89,8 +89,6 @@ enum class COMPONENT_TYPE
 enum class CAMERA_TYPE
 {
 	MAIN,
-	UI,
-	LIGHT,
 
 	COUNT
 };
@@ -149,7 +147,6 @@ enum class TRIGGER_TYPE
 enum class RENDER_TYPE
 {
 	STANDARD,
-	DEPTH_WRITE,
 
 	COUNT
 };

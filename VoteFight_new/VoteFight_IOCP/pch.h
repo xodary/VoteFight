@@ -1,13 +1,11 @@
 #pragma once
-#include "../VoteFight/ImaysNet/targetver.h"
+
+#include "./ImaysNet/targetver.h"
 
 #define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
-#define Align(value, alignment) (((value + alignment - 1) / alignment) * alignment)
-
-#include <SDKDDKVer.h>
 #ifdef _WIN32
 #include <Ws2tcpip.h>
 #include <winsock2.h>
@@ -18,16 +16,12 @@
 #endif
 
 // C 헤더 파일
-#pragma comment(lib, "ws2_32")
-#pragma warning(disable:4996)
-
 #include <atlconv.h>
 #include <assert.h>
 #include <cstdint>
 #include <memory.h>
 #include <stdio.h>
 #include <shellapi.h>
-#include <tchar.h>
 #include <wrl.h>
 
 // C++ 헤더 파일
@@ -40,8 +34,6 @@
 #include <mutex>
 #include <queue>
 #include <stack>
-#include <functional>
-#include <atlbase.h>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -80,26 +72,4 @@ using Microsoft::WRL::ComPtr;
 #include "udt.h"
 #include "func.h"
 
-namespace Vector4
-{
-	inline XMFLOAT4 Add(XMFLOAT4& xmf4Vector1, XMFLOAT4& xmf4Vector2)
-	{
-		XMFLOAT4 xmf4Result;
-		XMStoreFloat4(&xmf4Result, XMLoadFloat4(&xmf4Vector1) + XMLoadFloat4(&xmf4Vector2));
-		return(xmf4Result);
-	}
 
-	inline XMFLOAT4 Multiply(XMFLOAT4& xmf4Vector1, XMFLOAT4& xmf4Vector2)
-	{
-		XMFLOAT4 xmf4Result;
-		XMStoreFloat4(&xmf4Result, XMLoadFloat4(&xmf4Vector1) * XMLoadFloat4(&xmf4Vector2));
-		return(xmf4Result);
-	}
-
-	inline XMFLOAT4 Multiply(float fScalar, XMFLOAT4& xmf4Vector)
-	{
-		XMFLOAT4 xmf4Result;
-		XMStoreFloat4(&xmf4Result, fScalar * XMLoadFloat4(&xmf4Vector));
-		return(xmf4Result);
-	}
-}
