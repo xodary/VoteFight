@@ -69,12 +69,15 @@ void CScene::Load(const string& fileName)
 			{
 			case GROUP_TYPE::STRUCTURE:
 			case GROUP_TYPE::PLAYER:
+			case GROUP_TYPE::NPC:
 				for (int i = 0; i < instanceCount; ++i)
 				{
 					CObject* object = CObject::Load(modelFileName);
 					CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 					object->SetActive(isActives[i]);
+					object->SetGroupType((UINT)GROUP_TYPE(groupType));
+
 					XMFLOAT3 currPosition = transforms[3 * i];
 					if(fileName != "FenceScene.bin")currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
 					cout << fileName << endl;
@@ -182,8 +185,8 @@ void CScene::Update()
 		{
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
-				if (m_terrain && object->GetInstanceID() != (UINT)GROUP_TYPE::UI)object->CheckInTerrainSpace(*this);
 				object->Update();
+				if (m_terrain && object->GetInstanceID() != (UINT)GROUP_TYPE::UI)object->CheckInTerrainSpace(*this);
 			}
 		}
 	}

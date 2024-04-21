@@ -15,6 +15,7 @@ CNPC::CNPC() :
 	m_turnAngle()
 {
 	SetName("NPC");
+	m_Quest = new CQuest("첫 번째 퀘스트", "첫 번째 퀘스트를 완료하세요!", C_NPC_Item("FireWood_01", 1));
 }
 
 CNPC::~CNPC()
@@ -56,4 +57,13 @@ void CNPC::Update()
 
 void CNPC::OnCollisionEnter(CObject* collidedObject)
 {
+	if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::PLAYER)
+	{
+		if (!m_Quest->getCompletionStatus())
+		{
+			cout << "안녕!";
+			m_Quest->show();
+		}
+	}
 }
+

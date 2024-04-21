@@ -445,7 +445,7 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     float4 cColor = cBaseTexColor;
     float3 normal = normalize(input.normal);
     float4 cIllumination = Lighting(input.position.xyz, normal);
-    cColor = cColor * cIllumination;
+    // cColor = cColor * cIllumination;
    //  cColor = franelOuterLine(input.position, normal, cColor);
     // return (lerp(cColor, cIllumination, 0.2f));
     return cColor;

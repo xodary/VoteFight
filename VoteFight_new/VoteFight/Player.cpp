@@ -11,6 +11,7 @@
 #include "StateMachine.h"
 #include "Transform.h"
 #include "PlayerStates.h"
+#include "NPC.h"
 
 CPlayer::CPlayer() :
 	m_isAiming(),
@@ -110,14 +111,25 @@ void CPlayer::Update()
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
 {
-	cout << collidedObject->GetName() << endl;
-	/*
-	m_Inventory->addItem(CItem(collidedObject->GetName(), 1));
-	collidedObject->SetDeleted(true);
-	m_Inventory->displayInventory();
-	*/
-}
+	cout << collidedObject->GetInstanceID() << endl;
+	if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::STRUCTURE)
+	{
+		m_Inventory->addItem(collidedObject->GetName(), 1);
+		collidedObject->SetDeleted(true);
+	}
 
+}
+void CPlayer::OnCollisionExit(CObject* collidedObject)
+{
+	if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::NPC)
+	{
+		CNPC* targetNPC = (CNPC*)collidedObject;
+		if (!targetNPC->GetQuest()->getCompletionStatus())
+		{
+			m_Inventory->exchangeItem(targetNPC->GetQuest()->GetItemName(), targetNPC->GetQuest()->GetItemQuantity(), "tiket", 1);
+		}
+	}
+}
 
 
 //
@@ -129,4 +141,26 @@ CInventory::CInventory()
 
 CInventory::~CInventory()
 {
+}
+bool CInventory::exchangeItem(const string& itemName, int quantity, const string& newItemName, int newQuantity)
+{
+	// 아이템 검색
+	auto it = find_if(items.begin(), items.end(), [&](const pair<string, int>& item) {
+		return item.first == itemName;
+		});
+
+	// 아이템이 존재하지 않거나 요청된 수량보다 적을 경우 교환 실패
+	if (it == items.end() || it->second < quantity) {
+		cout << "교환 실패" << endl;
+		displayInventory();
+		return false;
+	}
+
+	deleteItem(itemName, quantity);
+
+	addItem(newItemName, newQuantity);
+
+	cout << "교환 성공" << endl;
+	displayInventory();
+	return true;
 }

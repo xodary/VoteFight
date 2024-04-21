@@ -255,14 +255,14 @@ void CObject::CheckInTerrainSpace(const CScene& curScene)
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	XMFLOAT3 curVec = transform->GetPosition();
 	if (curVec.x < 0)
-		curVec.x = 0;
+		curVec.x = 1;
 	else if (curVec.x > curScene.GetTerrain()->GetWidth())
-		curVec.x = curScene.GetTerrain()->GetWidth();
+		curVec.x = curScene.GetTerrain()->GetWidth() - 1;
 
 	if (curVec.z < 0)
-		curVec.z = 0;
+		curVec.z = 1;
 	else if (curVec.z > curScene.GetTerrain()->GetLength())
-		curVec.z = curScene.GetTerrain()->GetLength();
+		curVec.z = curScene.GetTerrain()->GetLength() -1;
 
 	transform->SetPosition(curVec);
 }

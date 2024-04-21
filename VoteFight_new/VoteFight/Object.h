@@ -20,7 +20,8 @@ class CObject
 private:
 	static UINT		    m_nextInstanceID;
 	UINT			    m_instanceID;
-		
+	UINT				m_GroupType;
+
 protected:
 	string              m_name;
 					    
@@ -55,6 +56,9 @@ public:
 
 	void SetMesh(CMesh* mesh);
 	CMesh* GetMesh();
+
+	void SetGroupType(const UINT GroupType) { m_GroupType = GroupType; };
+	UINT GetGroupType()const { return m_GroupType; };
 
 	void SetTerrainY( CScene* curScene);
 	void CheckInTerrainSpace(const CScene& curScene);

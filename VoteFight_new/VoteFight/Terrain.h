@@ -60,7 +60,7 @@ public:
 
 	void MakeHeightMapGridMesh( int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, void* pContext);
 
-	int GetWidth() { return m_nWidth;};
+	float GetWidth() { return m_nWidth;};
 	float GetLength(){ return m_nLength; };
 	float OnGetHeight(int x, int z);
 	void CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices, vector<XMFLOAT3>& new_NorVecs);

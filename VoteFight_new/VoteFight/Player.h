@@ -58,6 +58,7 @@ public:
 	//void IsCollidedByEventTrigger(const XMFLOAT3& NewPosition);
 
 	virtual void OnCollisionEnter(CObject* collidedObject);
+	virtual void OnCollisionExit(CObject* collidedObject);
 };
 
 class CItem {
@@ -87,31 +88,48 @@ public:
 // 인벤토리 클래스
 class CInventory {
 private:
-    vector<CItem> items;
+    vector<pair<string, int>> items;
 
 public:
-    // 아이템 추가
     CInventory();
     virtual ~CInventory();
-    void addItem(const CItem& item) {
-        bool found = false;
-        for (auto& it : items) {
-            if (it.getName() == item.getName()) {
-                it.increaseQuantity(item.getQuantity());
-                found = true;
-                break;
+
+    // 아이템 추가
+    void addItem(const string& itemName, int quantity) {
+        // 아이템 중복 검사 및 수량 증가
+        for (auto& item : items) {
+            if (item.first == itemName) {
+                item.second += quantity;
+                return;
             }
         }
-        if (!found) {
-            items.push_back(item);
+
+        // 아이템이 존재하지 않으면 추가
+        items.push_back(make_pair(itemName, quantity));
+    }
+
+    // 아이템 삭제
+    void deleteItem(const string& itemName, int quantity) {
+        // 아이템 검색 및 수량 감소
+        for (auto it = items.begin(); it != items.end(); ++it) {
+            if (it->first == itemName) {
+                it->second -= quantity;
+                if (it->second <= 0) {
+                    items.erase(it);
+                }
+                return;
+            }
         }
     }
+
+    // 아이템 교환
+    bool exchangeItem(const string& itemName, int quantity, const string& newItemName, int newQuantity);
 
     // 인벤토리 출력
     void displayInventory() const {
         cout << "Inventory:" << endl;
         for (const auto& item : items) {
-            cout << "Name: " << item.getName() << ", Quantity: " << item.getQuantity() << endl;
+            cout << "아이템 이름 : " << item.first << ", 개수: " << item.second << endl;
         }
     }
 };

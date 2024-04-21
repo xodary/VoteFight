@@ -99,6 +99,7 @@ void CGameScene::Init()
 
 	//// 충돌 그룹 설정
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);
+	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::NPC);
 
 	CreateShaderVariables();
 

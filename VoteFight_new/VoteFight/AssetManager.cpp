@@ -442,7 +442,7 @@ void CAssetManager::Init()
 	LoadTextures("Texturesss.bin");
 	LoadTextures("FireWoodTextures.bin");
 	LoadTextures("Fence_Texture.bin");
-	LoadTextures("Homer_texture.bin");
+	LoadTextures("Simpsons_texture.bin");
 	LoadShaders();
 	LoadMaterials("Materials.bin");
 	LoadMaterials("Materialss.bin");
