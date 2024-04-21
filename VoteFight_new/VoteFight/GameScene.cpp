@@ -105,16 +105,26 @@ void CGameScene::Init()
 	// 조명(Light) 생성
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
-	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
-	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.73f, 0.73f, 0.73f, 1.0f);
-	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(0.3f, 0.3f, 0.3f, 0.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// 쉐도우 매핑만 해주는 조명. 실제로 조명을 물체에 적용시키진 않는다.
+	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(-10.0f, 100.0f, 0.0f);
-	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.1f, -1.0f, 0.0f));
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(1.0f, 1.0f, 1.0f);	// Player 따라다님.
+	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
 	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
+
+	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// 물체에 조명을 적용시켜줌.
+	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_isActive = true;
+	m_mappedGameScene->m_lights[1].m_shadowMapping = false;
+	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
+	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
+	m_mappedGameScene->m_lights[1].m_range = 500.f;
 
 	/*
 	m_towerLightAngle = XMConvertToRadians(90.0f);
@@ -146,6 +156,9 @@ void CGameScene::Update()
 {
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	objects[0]->SetTerrainY(this);
+	CTransform* playerPosition = static_cast<CTransform*>(objects[0]->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
+
 	CScene::Update();
 }
 
@@ -176,7 +189,8 @@ void CGameScene::PreRender()
 					camera->GeneratePerspectiveProjectionMatrix(90.0f, static_cast<float>(DEPTH_BUFFER_WIDTH) / static_cast<float>(DEPTH_BUFFER_HEIGHT), nearPlaneDist, farPlaneDist);
 					break;
 				case LIGHT_TYPE::DIRECTIONAL:
-					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(TERRAIN_WIDTH), static_cast<float>(TERRAIN_HEIGHT), nearPlaneDist, farPlaneDist);
+					//camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(TERRAIN_WIDTH), static_cast<float>(TERRAIN_HEIGHT), nearPlaneDist, farPlaneDist);
+					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(100), static_cast<float>(100), nearPlaneDist, farPlaneDist);
 					break;
 				}
 

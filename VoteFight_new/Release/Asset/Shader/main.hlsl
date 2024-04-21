@@ -1,5 +1,7 @@
 // --------------define----------------
-#define MAX_LIGHTS			1 
+#define MAX_LIGHTS			2
+#define SHADOWMAP_LIGHT     0
+#define LIGHT_INDEX         1
 #define POINT_LIGHT			1
 #define SPOT_LIGHT			2
 #define DIRECTIONAL_LIGHT	3
@@ -131,54 +133,45 @@ float4 SpotLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
 #define FRAME_BUFFER_WIDTH		1920
 #define FRAME_BUFFER_HEIGHT		1080
 
-#define _DEPTH_BUFFER_WIDTH		FRAME_BUFFER_WIDTH * 4
-#define _DEPTH_BUFFER_HEIGHT	FRAME_BUFFER_HEIGHT * 4
+#define _DEPTH_BUFFER_WIDTH		2048
+#define _DEPTH_BUFFER_HEIGHT	2048
 
 #define DELTA_X					(1.0f / _DEPTH_BUFFER_WIDTH)
 #define DELTA_Y					(1.0f / _DEPTH_BUFFER_HEIGHT)
 
-#define MAX_DEPTH_TEXTURES		MAX_LIGHTS
-
-Texture2D<float> gtxtDepthTextures[MAX_DEPTH_TEXTURES] : register(t3);
+Texture2D<float> gtxtDepthTextures : register(t3);
 SamplerState samplerState : register(s0);
 SamplerComparisonState pcfSamplerState : register(s1);
 SamplerState gssClamp : register(s2);
 
-float Compute3x3ShadowFactor(float2 uv, float fDepth, uint nIndex)
+float Compute3x3ShadowFactor(float2 uv, float fDepth)
 {
-    float fPercentLit = gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv, fDepth).r;
-    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, 0.0f), fDepth).r;
-    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, 0.0f), fDepth).r;
-    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, -DELTA_Y), fDepth).r;
-    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, +DELTA_Y), fDepth).r;
-    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, -DELTA_Y), fDepth).r;
-    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, +DELTA_Y), fDepth).r;
-    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, -DELTA_Y), fDepth).r;
-    fPercentLit += gtxtDepthTextures[nIndex].SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, +DELTA_Y), fDepth).r;
+    float fPercentLit = gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv, fDepth).r;
+    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, 0.0f), fDepth).r;
+    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, 0.0f), fDepth).r;
+    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, -DELTA_Y), fDepth).r;
+    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, +DELTA_Y), fDepth).r;
+    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, -DELTA_Y), fDepth).r;
+    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, +DELTA_Y), fDepth).r;
+    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, -DELTA_Y), fDepth).r;
+    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, +DELTA_Y), fDepth).r;
     
-    return (fPercentLit / 9.0f);
+    return (fPercentLit);
 }
 
 
-float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs[MAX_LIGHTS])
+float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs)
 {
     float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
     
-[unroll]
-    for (int i = 0; i < MAX_LIGHTS; i++)
-    {
-        float fShadowFactor = 1.0f;
-        fShadowFactor = Compute3x3ShadowFactor(uvs[i].xy / uvs[i].ww, uvs[i].z / uvs[i].w, i);
+    
+    float fShadowFactor = 1.0f;
+    fShadowFactor = Compute3x3ShadowFactor(uvs.xy / uvs.ww, uvs.z / uvs.w);
 
-        cColor += DirectionalLight(i, vNormal, vToCamera) * fShadowFactor;
-        
-        if (fShadowFactor == 0.0)
-            cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-        // cColor += (gcGlobalAmbientLight);
-    }
+    cColor += DirectionalLight(LIGHT_INDEX, vNormal, vToCamera) * fShadowFactor;
     
     return (cColor);
 }
@@ -252,7 +245,7 @@ struct VS_STANDARD_OUTPUT
     float3 tangentW : TANGENT;
     float3 bitangentW : BITANGENT;
     
-    float4 uvs[MAX_LIGHTS] : TEXCOORD1;
+    float4 uvs : TEXCOORD1;
 };
 
 VS_STANDARD_OUTPUT VS_Main(VS_STANDARD_INPUT input)
@@ -267,10 +260,7 @@ VS_STANDARD_OUTPUT VS_Main(VS_STANDARD_INPUT input)
     output.position = mul(mul(pW, gmtxView), gmtxProjection);
 	output.uv = input.uv;
     
-    for (int i = 0; i < MAX_LIGHTS; i++)
-    {
-        output.uvs[i] = mul(pW, m_lights[i].m_toTexCoord);
-    }
+    output.uvs = mul(pW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
 
 	return(output);
 }
@@ -293,10 +283,7 @@ VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
     output.position = mul(mul(positionW, gmtxView), gmtxProjection);
     output.uv = input.uv;
     
-    for (int j = 0; j < MAX_LIGHTS; j++)
-    {
-        output.uvs[j] = mul(positionW, m_lights[j].m_toTexCoord);
-    }
+    output.uvs = mul(positionW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
 
     return (output);
 }
@@ -323,7 +310,7 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
     float4 cIllumination = Lighting(input.positionW, normalW, input.uvs);
   // cColor = (lerp(cColor, cIllumination, 0.5f));
     cColor = cColor * cIllumination;
-//    cColor = franelOuterLine(input.positionW,normalW, cColor);
+    cColor = franelOuterLine(input.positionW,normalW, cColor);
     return cColor;
 
 }
@@ -517,7 +504,7 @@ struct VS_TERRAIN_OUTPUT
     float2 uv : TEXCOORD0;
     float3 normal : NORMAL;
     
-    float4 uvs[MAX_LIGHTS] : TEXCOORD1;
+    float4 uvs : TEXCOORD1;
 };
 
 VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
@@ -530,10 +517,7 @@ VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
 	
     output.uv = input.uv;
     
-    for (int j = 0; j < MAX_LIGHTS; j++)
-    {
-        output.uvs[j] = mul(pW, m_lights[j].m_toTexCoord);
-    }
+    output.uvs = mul(pW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
     
     return (output);
 }
@@ -544,11 +528,11 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     float4 cColor = cBaseTexColor;
     float3 normal = normalize(input.normal);
     float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs);
-    cColor = cColor * cIllumination;
-    //  cColor = franelOuterLine(input.position, normal, cColor);
+    // cColor = cColor * cIllumination;
+    // cColor = franelOuterLine(input.position, normal, cColor);
     // return (lerp(cColor, cIllumination, 0.2f));
-    return cColor;
-    // return cColor * cIllumination;
+    //return cColor;
+    return cColor * cIllumination;
 
 }
 
@@ -640,7 +624,7 @@ SamplerState gssBorder : register(s3);
 
 float4 PS_ViewPort(VS_TEXTURED_OUTPUT input) : SV_Target
 {
-	float fDepthFromLight0 = gtxtDepthTextures[0].SampleLevel(gssBorder, input.uv, 0).r;
+	float fDepthFromLight0 = gtxtDepthTextures.SampleLevel(gssBorder, input.uv, 0).r;
 
 	return((float4)(fDepthFromLight0 * 0.8f));
 }
