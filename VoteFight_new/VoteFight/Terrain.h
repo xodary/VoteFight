@@ -64,7 +64,9 @@ public:
 	float GetLength(){ return m_nLength; };
 	float OnGetHeight(int x, int z);
 	void CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices, vector<XMFLOAT3>& new_NorVecs);
-		virtual void Render(CCamera* camera);
+	
+	virtual void PreRender(CCamera* camera);
+	virtual void Render(CCamera* camera);
 
 	XMFLOAT4 Add(const XMFLOAT4&, const XMFLOAT4&);
 };

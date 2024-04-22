@@ -434,8 +434,8 @@ void CObject::PreRender(CCamera* camera)
 	{
 		for (int i = 0; i < m_materials.size(); ++i)
 		{
-		//	m_materials[i]->SetPipelineState(RENDER_TYPE::DEPTH_WRITE);
-		//	m_mesh->Render(i);
+			m_materials[i]->SetPipelineState(RENDER_TYPE::DEPTH_WRITE);
+			m_mesh->Render(i);
 		}
 	}
 	*/

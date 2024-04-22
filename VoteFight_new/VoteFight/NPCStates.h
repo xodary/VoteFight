@@ -3,7 +3,7 @@
 
 class CNPCIdleState : public CState, public CSingleton<CNPCIdleState>
 {
-	friend class CSingleton;
+	friend class CSingleton<CNPCIdleState>;
 
 private:
 	CNPCIdleState();

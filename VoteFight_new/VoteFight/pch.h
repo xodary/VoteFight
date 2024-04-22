@@ -1,33 +1,51 @@
 #pragma once
+#include "../VoteFight/ImaysNet/targetver.h"
 
-// SDKDDKVer.h를 포함하면 최고 수준의 가용성을 가진 Windows 플랫폼이 정의됩니다.
-// 이전 Windows 플랫폼용 애플리케이션을 빌드하려는 경우에는 SDKDDKVer.h를 포함하기 전에
-// WinSDKVer.h를 포함하고 _WIN32_WINNT를 지원하려는 플랫폼으로 설정합니다.
+#define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 
+#define Align(value, alignment) (((value + alignment - 1) / alignment) * alignment)
+
 #include <SDKDDKVer.h>
+#ifdef _WIN32
+#include <Ws2tcpip.h>
+#include <winsock2.h>
+#include <tchar.h>
+#else
+#include <arpa/inet.h>
+#include <sys/socket.h>
+#endif
 
 // C 헤더 파일
 #pragma comment(lib, "ws2_32")
+#pragma warning(disable:4996)
 
-#include <winsock2.h>
+#include <atlconv.h>
+#include <assert.h>
+#include <cstdint>
 #include <memory.h>
+#include <stdio.h>
+#include <shellapi.h>
 #include <tchar.h>
 #include <wrl.h>
-#include <shellapi.h>
-#include <atlconv.h>
 
 // C++ 헤더 파일
-#include <iostream>
+#include <atomic>
+#include <exception>
 #include <fstream>
-#include <string>
-#include <vector>
-#include <unordered_map>
+#include <functional>
+#include <iostream>
+#include <memory>
+#include <mutex>
 #include <queue>
 #include <stack>
 #include <functional>
 #include <atlbase.h>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <vector>
 
 using namespace std;
 

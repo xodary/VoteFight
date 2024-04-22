@@ -124,6 +124,21 @@
     <Filter Include="헤더 파일\05. Object\05-05. UI">
       <UniqueIdentifier>{b1a89df2-6be8-4a79-b84b-72e594a257d7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\09. Light">
+      <UniqueIdentifier>{a675d1a8-f3bc-43f6-bde4-c905ff3134d6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\09. Light">
+      <UniqueIdentifier>{db3b096f-13d2-4767-93cb-3d49ae03abae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\10. Server">
+      <UniqueIdentifier>{d2e97117-8c60-44da-8280-bd08a6f55f0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\10. Server\0. ImaysNet">
+      <UniqueIdentifier>{f1178bcf-c746-4977-a40e-ca15bc897f5b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일\10. Server\1. ServerMGR">
+      <UniqueIdentifier>{7b112c99-1261-4443-9fff-7515ed2aa180}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -151,9 +166,6 @@
       <Filter>헤더 파일\02. Manager</Filter>
     </ClInclude>
     <ClInclude Include="InputManager.h">
-      <Filter>헤더 파일\02. Manager</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionManager.h">
       <Filter>헤더 파일\02. Manager</Filter>
     </ClInclude>
     <ClInclude Include="CameraManager.h">
@@ -255,6 +267,9 @@
     <ClInclude Include="WireFrameShader.h">
       <Filter>헤더 파일\06. Asset\Shader</Filter>
     </ClInclude>
+    <ClInclude Include="VoxelConeTracing.h">
+      <Filter>헤더 파일\09. Light</Filter>
+    </ClInclude>
     <ClInclude Include="Bilboard.h">
       <Filter>헤더 파일\05. Object\05-02. Bilboard</Filter>
     </ClInclude>
@@ -266,6 +281,45 @@
     </ClInclude>
     <ClInclude Include="NPCStates.h">
       <Filter>헤더 파일\08. State</Filter>
+    </ClInclude>
+    <ClInclude Include="DepthWriteShader.h">
+      <Filter>헤더 파일\06. Asset\Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="ServerManager.h">
+      <Filter>소스 파일\10. Server\1. ServerMGR</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Exception.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\ImaysNet.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Iocp.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\PacketQueue.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Poll.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Semaphore.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Socket.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\SocketInit.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\targetver.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Endpoint.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="CollisionManager.h">
+      <Filter>헤더 파일</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -395,6 +449,9 @@
     <ClCompile Include="WireFrameShader.cpp">
       <Filter>소스 파일\06. Asset\Shader</Filter>
     </ClCompile>
+    <ClCompile Include="VoxelConeTracing.cpp">
+      <Filter>소스 파일\09. Light</Filter>
+    </ClCompile>
     <ClCompile Include="Bilboard.cpp">
       <Filter>소스 파일\05. Object\05-02. Bilboard</Filter>
     </ClCompile>
@@ -406,6 +463,33 @@
     </ClCompile>
     <ClCompile Include="NPCStates.cpp">
       <Filter>소스 파일\08. State</Filter>
+    </ClCompile>
+    <ClCompile Include="DepthWriteShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader</Filter>
+    </ClCompile>
+    <ClCompile Include="ServerManager.cpp">
+      <Filter>소스 파일\10. Server\1. ServerMGR</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Exception.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Iocp.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\PacketQueue.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Poll.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Socket.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\SocketInit.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Endpoint.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

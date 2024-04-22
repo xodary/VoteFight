@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "AssetManager.h"
+#include "DescriptorHeap.h"
 #include "GameFramework.h"
 #include "SkinnedMesh.h"
 #include "Texture.h"
@@ -11,6 +12,7 @@
 #include "BilboardShader.h"
 #include "Material.h"
 #include "Animation.h"
+#include "DepthWriteShader.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -126,8 +128,6 @@ void CAssetManager::LoadTextures(const string& fileName)
 	texture->SetName("DepthWrite");
 	texture->Create(static_cast<UINT64>(DEPTH_BUFFER_WIDTH), static_cast<UINT>(DEPTH_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } }, TEXTURE_TYPE::SHADOW_MAP);
 	m_textures.emplace(texture->GetName(), texture);
-
-	// PostProcessing Texture
 }
 
 void CAssetManager::LoadShaders()
@@ -160,6 +160,11 @@ void CAssetManager::LoadShaders()
 	shader = new CBilboardShader();
 	shader->SetName("Bilboard");
 	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CDepthWriteShader();
+	shader->SetName("DepthWrite");
+	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 

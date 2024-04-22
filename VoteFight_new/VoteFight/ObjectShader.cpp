@@ -25,6 +25,7 @@ D3D12_INPUT_LAYOUT_DESC CObjectShader::CreateInputLayout(int stateNum)
 		d3d12InputElementDescs[3] = { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 3, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 		d3d12InputElementDescs[4] = { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 4, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 		break;
+
 	case 1: // With Skinning
 		inputElementCount = 7;
 		d3d12InputElementDescs = new D3D12_INPUT_ELEMENT_DESC[inputElementCount];
@@ -62,8 +63,6 @@ D3D12_SHADER_BYTECODE CObjectShader::CreateVertexShader(ID3DBlob* d3d12ShaderBlo
 	case 0: // Standard
 		return Compile("main.hlsl", "VS_Main", "vs_5_1", d3d12ShaderBlob);
 	case 1: // With Skinning
-		return Compile("main.hlsl", "VS_Main_Skinning", "vs_5_1", d3d12ShaderBlob);
-	case 2: // Terrain
 		return Compile("main.hlsl", "VS_Main_Skinning", "vs_5_1", d3d12ShaderBlob);
 	}
 

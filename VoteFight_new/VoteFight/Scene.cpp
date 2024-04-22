@@ -220,8 +220,7 @@ void CScene::Render()
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
 
-	if (m_terrain)
-		m_terrain->Render(camera);
+	if (m_terrain) m_terrain->Render(camera);
 
 	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
 	{

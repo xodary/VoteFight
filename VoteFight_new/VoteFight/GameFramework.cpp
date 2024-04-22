@@ -1,13 +1,16 @@
 #include "pch.h"
-#include "GameFramework.h"
 #include "CollisionManager.h"
+#include "GameFramework.h"
+#include "ServerManager.h"
 #include "TimeManager.h"
 #include "AssetManager.h"
 #include "InputManager.h"
 #include "CameraManager.h"
 #include "SceneManager.h"
-
+#include "DescriptorHeap.h"
+#include "VoxelConeTracing.h"
 #include "Texture.h"
+#include "GameFramework.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -30,6 +33,7 @@ CGameFramework::CGameFramework() :
 	m_d3d12DsvDescriptorHeap(),
 	m_dsvDescriptorIncrementSize(),
 	m_d3d12CbvSrvUavDescriptorHeap(),
+	m_DescriptorHeapManager(),
 	m_d3d12Fence(),
 	m_fenceValues{},
 	m_fenceEvent(),
@@ -111,6 +115,11 @@ ID3D12DescriptorHeap* CGameFramework::GetCbvSrvUavDescriptorHeap()
 	return m_d3d12CbvSrvUavDescriptorHeap.Get();
 }
 
+DescriptorHeapManager* CGameFramework::GetDescriptorHeapManager()
+{
+	return m_DescriptorHeapManager.get();
+}
+
 UINT CGameFramework::GetRtvDescriptorIncrementSize()
 {
 	return m_rtvDescriptorIncrementSize;
@@ -126,7 +135,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	// ConnectServer();
+	CServerManager::ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -142,6 +151,9 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CSceneManager::GetInstance()->Init();
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
+
+	// VoxelConeTracing Initialization
+	// VCT::GetInstance()->InitVoxelConeTracing();
 
 	// RenderTarget, DepthStencil
 	CreateRtvAndDsvDescriptorHeaps();
@@ -338,31 +350,18 @@ void CGameFramework::CreateRenderTargetViews()
 		D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 	}
 
-	// DepthWrite
-	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-	D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
+	 // DepthWrite
+	 CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+	 D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
+	 
+	 d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	 d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	 d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
+	 d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
+	 
+	 m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
+	 D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 
-	d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
-	d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
-
-	m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
-	D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
-
-	// PostProcessing
-	//m_RenderingResultTexture = make_shared<CTexture>();
-	//m_RenderingResultTexture->CreateTexture2D(m_d3d12Device.Get(), TEXTURE_TYPE_ALBEDO_MAP, static_cast<UINT>(m_resolution.x), static_cast<UINT>(m_resolution.y), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R8G8B8A8_UNORM, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R8G8B8A8_UNORM, { 0.0f, 0.0f, 0.0f, 1.0f } });
-	//CTextureManager::GetInstance()->RegisterTexture(TEXT("RenderingResult"), m_RenderingResultTexture);
-
-	//D3D12_RENDER_TARGET_VIEW_DESC D3D12RenderTargetViewDesc{};
-
-	//D3D12RenderTargetViewDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	//D3D12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	//D3D12RenderTargetViewDesc.Texture2D.MipSlice = 0;
-	//D3D12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
-
-	//m_d3d12Device->CreateRenderTargetView(m_RenderingResultTexture->GetResource(), &D3D12RenderTargetViewDesc, D3D12RtvCPUDescriptorHandle);
 }
 
 void CGameFramework::CreateDepthStencilView()
@@ -420,11 +419,12 @@ void CGameFramework::CreateRootSignature()
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::SHADOW_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[3]); // shadowMap : register(t3)
 
 	D3D12_ROOT_SIGNATURE_FLAGS d3d12RootSignatureFlags = { D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT }; // IA단계를 허용, 스트림 출력 단계를 허용
-	CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[3] = {};
+	CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[4] = {};
 
 	d3d12SamplerDesc[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 1, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);                            // samplerState : register(s0)
 	d3d12SamplerDesc[1].Init(1, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 1, D3D12_COMPARISON_FUNC_LESS_EQUAL, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL); // pcfSamplerState : register(s1)
 	d3d12SamplerDesc[2].Init(2, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, D3D12_TEXTURE_ADDRESS_MODE_CLAMP, 0.0f, 1, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);						   // gssClamp : register(s2)
+	d3d12SamplerDesc[3].Init(3, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, 0.0f, 1, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_STATIC_BORDER_COLOR_OPAQUE_BLACK, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);						   // gssClamp : register(s2)
 
 	CD3DX12_ROOT_SIGNATURE_DESC d3d12RootSignatureDesc = {};
 
@@ -560,6 +560,9 @@ void CGameFramework::PreRender()
 void CGameFramework::Render()
 {
 	CSceneManager::GetInstance()->Render();
+
+	// VoxelConeTracing Rendering
+	//VCT::GetInstance()->RenderVoxelConeTracing();
 }
 
 void CGameFramework::PostRender()
@@ -606,54 +609,10 @@ void CGameFramework::AdvanceFrame()
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
 
+	CServerManager::Tick();
+
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
 	MoveToNextFrame();
 }
 
-
-// Server
-
-void CGameFramework::ConnectServer()
-{
-	WSADATA Wsa{};
-
-	if (WSAStartup(MAKEWORD(2, 2), &Wsa))
-	{
-		cout << "윈속을 초기화하지 못했습니다." << endl;
-		exit(1);
-	}
-
-	m_SocketInfo.m_Socket = socket(AF_INET, SOCK_STREAM, 0);
-
-	if (m_SocketInfo.m_Socket == INVALID_SOCKET)
-	{
-		Server::ErrorQuit("socket()");
-	}
-
-	m_SocketInfo.m_SocketAddress.sin_family = AF_INET;
-	m_SocketInfo.m_SocketAddress.sin_addr.s_addr = inet_addr(SERVER_IP);
-	m_SocketInfo.m_SocketAddress.sin_port = htons(SERVER_PORT);
-
-	int ReturnValue{ connect(m_SocketInfo.m_Socket, (SOCKADDR*)&m_SocketInfo.m_SocketAddress, sizeof(m_SocketInfo.m_SocketAddress)) };
-
-	if (ReturnValue == SOCKET_ERROR)
-	{
-		Server::ErrorQuit("connect()");
-	}
-
-	// 플레이어 아이디를 수신한다.
-	ReturnValue = recv(m_SocketInfo.m_Socket, (char*)&m_SocketInfo.m_ID, sizeof(UINT), MSG_WAITALL);
-
-	if (ReturnValue == SOCKET_ERROR)
-	{
-		Server::ErrorDisplay("recv()");
-	}
-	else if (m_SocketInfo.m_ID == UINT_MAX)
-	{
-		MessageBox(m_hWnd, TEXT("현재 정원이 꽉찼거나, 게임이 이미 시작되어 참여할 수 없습니다."), TEXT("VOTE FIGHT"), MB_ICONSTOP | MB_OK);
-		PostQuitMessage(0);
-	}
-
-	//CreateEvents();
-}

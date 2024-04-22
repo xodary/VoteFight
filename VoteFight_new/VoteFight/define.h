@@ -6,19 +6,15 @@
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #endif
 
-#define SERVER_IP "127.0.0.1"
-#define SERVER_PORT	9000
-#define MAX_CLIENT_CAPACITY 3
-
 #define EPSILON				    0.01f
 
 #define FRAME_BUFFER_WIDTH		1920
 #define FRAME_BUFFER_HEIGHT		1080 
 
-#define TERRAIN_WIDTH			400
-#define TERRAIN_HEIGHT			400
-#define DEPTH_BUFFER_WIDTH	    2048
-#define DEPTH_BUFFER_HEIGHT     2048
+#define TERRAIN_WIDTH			257
+#define TERRAIN_HEIGHT			257
+#define DEPTH_BUFFER_WIDTH	    (FRAME_BUFFER_WIDTH * 4)
+#define DEPTH_BUFFER_HEIGHT     (FRAME_BUFFER_HEIGHT * 4)
 
 #define MAX_NPC_COUNT			15
 #define MAX_LIGHTS              3

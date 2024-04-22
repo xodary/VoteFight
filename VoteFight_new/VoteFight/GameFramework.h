@@ -2,6 +2,7 @@
 
 class CPostProcessingShader;
 class CUILayer;
+class DescriptorHeapManager;
 
 struct CB_GameFramework
 {
@@ -11,7 +12,7 @@ struct CB_GameFramework
 
 class CGameFramework : public CSingleton<CGameFramework>
 {
-	friend class CSingleton;
+	friend class CSingleton<CGameFramework>;
 
 private:
 	// 윈도우 관련 멤버 변수
@@ -45,6 +46,9 @@ private:
 
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12CbvSrvUavDescriptorHeap;
 
+	// Descriptor Heap Manager
+	std::shared_ptr<DescriptorHeapManager> m_DescriptorHeapManager;
+
 	ComPtr<ID3D12Fence>				  m_d3d12Fence;
 	UINT64							  m_fenceValues[m_swapChainBufferCount];
 	HANDLE							  m_fenceEvent;
@@ -52,18 +56,11 @@ private:
 	ComPtr<ID3D12RootSignature>		  m_d3d12RootSignature;
 
 	ComPtr<ID3D12Resource>			  m_d3d12GameFramework;
-	CB_GameFramework* m_mappedGameFramework;
-
-	//shared_ptr<CTexture>			  m_RenderingResultTexture;
-	//shared_ptr<CPostProcessingShader> m_PostProcessingShader;
-
-	//shared_ptr<CUILayer>			  m_UILayer;
-
-	// Server
-	SOCKET_INFO						  m_SocketInfo{};
+	CB_GameFramework*				  m_mappedGameFramework;
 
 	HANDLE							  m_ReceiveEvent{};
 	HANDLE							  m_RenderingEvent{};
+
 
 private:
 	CGameFramework();
@@ -119,6 +116,10 @@ public:
 	ID3D12DescriptorHeap* GetDsvDescriptorHeap();
 	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap();
 
+	DescriptorHeapManager* GetDescriptorHeapManager();
+	
+	inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_d3d12DsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart()); }
+
 	UINT GetRtvDescriptorIncrementSize();
 	UINT GetDsvDescriptorIncrementSize();
 
@@ -128,4 +129,13 @@ public:
 
 	// Server
 	void ConnectServer();
+
+public:
+	void ResourceBarriersBegin(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers) { barriers.clear(); }
+	void ResourceBarriersEnd(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList) {
+		size_t num = barriers.size();
+		if (num > 0)
+			commandList->ResourceBarrier(num, barriers.data());
+	}
+
 };

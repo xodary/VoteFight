@@ -15,7 +15,7 @@ union CollisionID
 
 class CCollisionManager : public CSingleton<CCollisionManager>
 {
-	friend class CSingleton;
+	friend class CSingleton<CCollisionManager>;
 
 private:
 	UINT						m_layerMask[static_cast<int>(GROUP_TYPE::COUNT)]; // 그룹 간의 충돌체크 여부
