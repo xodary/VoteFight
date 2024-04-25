@@ -34,9 +34,7 @@
     <ClCompile Include="ImaysNet\SocketInit.cpp">
       <Filter>00. ImatsNet</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
-      <Filter>01. Dependency</Filter>
-    </ClCompile>
+    <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01. Dependency">
