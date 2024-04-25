@@ -13,6 +13,7 @@
 #include "GameFramework.h"
 #include "Camera.h"
 #include <bitset>
+
 CPlayerIdleState::CPlayerIdleState()
 {
 }
@@ -54,6 +55,7 @@ void CPlayerIdleState::Update(CObject* object)
 		return;
 	}
 	*/
+
 	if (KEY_NONE(KEY::W) || KEY_NONE(KEY::S) || KEY_NONE(KEY::A) || KEY_NONE(KEY::D))
 	{
 		if (KEY_NONE(KEY::W))
@@ -351,37 +353,38 @@ void CPlayerWalkState::Update(CObject* object)
 
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
+	float angle = -45;
 	if (KEY_HOLD(KEY::W)) {
 		if (KEY_HOLD(KEY::D))
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 45, DT * 5), 0));
+			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 45 + angle, DT * 5), 0));
 		else if (KEY_HOLD(KEY::A))
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 315, DT * 5), 0));
+			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 315 + angle, DT * 5), 0));
 		else if (KEY_HOLD(KEY::S))
 			stateMachine->ChangeState(CPlayerIdleState::GetInstance());
 		else {
 			if (transform->GetRotation().y >= 180)
-				transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 360, DT * 5), 0));
+				transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 360 + angle, DT * 5), 0));
 			else
-				transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 0, DT * 5), 0));
+				transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 0 + angle, DT * 5), 0));
 		}
 	}
 	else if (KEY_HOLD(KEY::D)) {
 		if (KEY_HOLD(KEY::S))
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 135, DT * 5), 0));
+			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 135 + angle, DT * 5), 0));
 		else if (KEY_HOLD(KEY::A))
 			stateMachine->ChangeState(CPlayerIdleState::GetInstance());
 		else
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 90, DT * 5), 0));
+			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 90 + angle, DT * 5), 0));
 	}
 	else if (KEY_HOLD(KEY::S)) {
 		if (KEY_HOLD(KEY::A))
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 225, DT * 5), 0));
+			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 225 + angle, DT * 5), 0));
 		else {
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 180, DT * 5), 0));
+			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 180 + angle, DT * 5), 0));
 		}
 	}
 	else if (KEY_HOLD(KEY::A)) {
-		transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 270, DT * 5), 0));
+		transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 270 + angle, DT * 5), 0));
 	}
 
 

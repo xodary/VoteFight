@@ -209,6 +209,8 @@ void CCamera::Update()
 		XMFLOAT3 focusPosition = targetTransform->GetPosition();
 
 		transform->SetPosition(Vector3::Add(focusPosition, m_offset));
+		XMFLOAT3 originRotation = transform->GetRotation();
+		transform->SetRotation(XMFLOAT3(30, originRotation.y, originRotation.z));
 	}
 
 	RegenerateViewMatrix();
