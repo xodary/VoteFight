@@ -9,6 +9,7 @@
 #include "SkyboxShader.h"
 #include "UIShader.h"
 #include "TerrainShader.h"
+#include "BilboardShader.h"
 #include "Material.h"
 #include "Animation.h"
 #include "DepthWriteShader.h"
@@ -127,8 +128,6 @@ void CAssetManager::LoadTextures(const string& fileName)
 	texture->SetName("DepthWrite");
 	texture->Create(static_cast<UINT64>(DEPTH_BUFFER_WIDTH), static_cast<UINT>(DEPTH_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } }, TEXTURE_TYPE::SHADOW_MAP);
 	m_textures.emplace(texture->GetName(), texture);
-
-	// PostProcessing Texture
 }
 
 void CAssetManager::LoadShaders()
@@ -158,9 +157,14 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
+	shader = new CBilboardShader();
+	shader->SetName("Bilboard");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
-	shader->CreatePipelineStates(2);
+	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 
@@ -434,9 +438,23 @@ void CAssetManager::Init()
 	m_assetPath = assetPath;
 
 	LoadMeshes("Meshes.bin");
+	LoadMeshes("Meshess.bin");
+	LoadMeshes("Meshesss.bin");
+	LoadMeshes("FireWoodMesh.bin");
+	LoadMeshes("Fence_Mesh.bin");
+	LoadMeshes("Homer_Meshs.bin");
 	LoadTextures("Textures.bin");
+	LoadTextures("Texturesss.bin");
+	LoadTextures("FireWoodTextures.bin");
+	LoadTextures("Fence_Texture.bin");
+	LoadTextures("Simpsons_texture.bin");
 	LoadShaders();
 	LoadMaterials("Materials.bin");
+	LoadMaterials("Materialss.bin");
+	LoadMaterials("FireWoodMaterials.bin");
+	LoadMaterials("WhiteHouse.bin");
+	LoadMaterials("Fence_Material.bin");
+	LoadMaterials("Homer_Material.bin");
 }
 
 void CAssetManager::CreateShaderResourceViews()
@@ -445,7 +463,7 @@ void CAssetManager::CreateShaderResourceViews()
 	D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
 	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
 	UINT descriptorIncrementSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-	
+
 	for (const auto& texture : m_textures)
 	{
 		ID3D12Resource* pShaderResource = texture.second->GetTexture();

@@ -1,4 +1,5 @@
 #pragma once
+#include "Terrain.h"
 
 class CObject;
 
@@ -8,7 +9,6 @@ class CScene abstract
 
 private:
 	string			 m_name;
-
 	vector<CObject*> m_objects[static_cast<int>(GROUP_TYPE::COUNT)];
 
 protected:
@@ -33,9 +33,23 @@ public:
 	void SetName(const string& name);
 	const string& GetName();
 
-	void AddObject(GROUP_TYPE groupType, CObject* object);
+	void AddObject(const GROUP_TYPE& groupType, CObject* object);
+
 	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
 	void DeleteGroupObject(GROUP_TYPE groupType);
+
+	CTerrain* m_terrain = nullptr;
+	void CreateTerrain() { m_terrain = new CTerrain(257,257); };
+	float GetTerrainHeight(float x, float z) { 
+		if (m_terrain && x >= 0 && z >= 0)
+			return m_terrain->OnGetHeight(x, z);
+		else
+		{
+			cout << "터레인 생성 안됨" << endl;
+			return		0.f;
+		}
+	};
+	CTerrain* GetTerrain() const { return m_terrain; };
 
 	virtual void Init() = 0;
 

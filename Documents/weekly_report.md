@@ -221,3 +221,26 @@
 - 황유림: UI, 충돌처리, Voxel Cone Tracing 코드 해석
 - 이시영: 8방향 이동구현(이동중 방향전환 미구현), 터레인 코드 구현 ( 실행 안됨)
 - 엄미영: server 구조 수정 & client 필요한 부분 수정 / 초기 값 불러오기
+
+---
+
+# 24/03/29 ~ 24/04/04
+
+### weekly report
+- 03/29 회의 진행 [240404회의록](Meeting_report/report_240404.md)
+
+### weekly plan
+- 황유림: VCT 코드 적용시키기 (Descriptor Heap Manager 생성)
+- 엄미영: move 송수신 완료
+- 이시영: 외곽선 그리기 / 라이팅 처리 / 빌보드로 아이템 적용
+---
+
+# 24/04/04 ~ 24/04/16
+
+### weekly report
+- 03/29 회의 진행 [240416회의록](Meeting_report/report_240416.md)
+
+### weekly plan
+- 황유림: 디스크립터 힙을 매니저가 관리하도록 수정.
+- 이시영: 애니메이션 NPC 추가, 아이템 충돌 처리, 캐릭터 지형에 터레인에 맞춰 이동, 인벤토리 UI 아이템 획득 기능 추가
+- 엄미영: IOCP 에서의 move 완료 및 LOGIN

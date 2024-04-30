@@ -35,6 +35,13 @@ D3D12_SHADER_BYTECODE CShader::Compile(const string& fileName, const string& sha
 	}
 	else if (d3d12ErrorBlob.Get() != nullptr)
 	{
+		char* errorMessage = static_cast<char*>(d3d12ErrorBlob->GetBufferPointer());
+		size_t errorMessageSize = d3d12ErrorBlob->GetBufferSize();
+
+		// 문자열 출력 또는 다른 처리
+		std::string errorString(errorMessage, errorMessageSize);
+		OutputDebugStringA(errorString.c_str());
+
 		OutputDebugString(TEXT("쉐이더를 컴파일하지 못했습니다.\n"));
 	}
 

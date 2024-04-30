@@ -2,6 +2,7 @@
 #include "Object.h"
 #include "AssetManager.h"
 #include "Player.h"
+#include "NPC.h"
 #include "Mesh.h"
 #include "Shader.h"
 #include "Material.h"
@@ -12,6 +13,7 @@
 #include "Transform.h"
 #include "Camera.h"
 #include "SkinnedMesh.h"
+#include "Scene.h"
 
 UINT CObject::m_nextInstanceID = 0;
 
@@ -95,6 +97,7 @@ CObject* CObject::LoadFrame(ifstream& in)
 			// Character
 			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
+			case 2: object = new CNPC(); break;
 			}
 		}
 		else if (str == "<Name>")
@@ -236,6 +239,32 @@ void CObject::SetMesh(CMesh* mesh)
 CMesh* CObject::GetMesh()
 {
 	return m_mesh;
+}
+
+void CObject::SetTerrainY(CScene* curScene)
+{
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	XMFLOAT3 newVec = transform->GetPosition();
+	newVec.y = curScene->GetTerrainHeight(newVec.x, newVec.z);
+	transform->SetPosition(newVec);
+}
+
+
+void CObject::CheckInTerrainSpace(const CScene& curScene) 
+{
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	XMFLOAT3 curVec = transform->GetPosition();
+	if (curVec.x < 0)
+		curVec.x = 1;
+	else if (curVec.x > curScene.GetTerrain()->GetWidth())
+		curVec.x = curScene.GetTerrain()->GetWidth() - 1;
+
+	if (curVec.z < 0)
+		curVec.z = 1;
+	else if (curVec.z > curScene.GetTerrain()->GetLength())
+		curVec.z = curScene.GetTerrain()->GetLength() -1;
+
+	transform->SetPosition(curVec);
 }
 
 void CObject::AddMaterial(CMaterial* material)
@@ -399,6 +428,17 @@ void CObject::PreRender(CCamera* camera)
 {
 	UpdateShaderVariables();
 
+	/*
+	// DepthWrite의 경우, 직교 투영변환 행렬을 사용하기 때문에 프러스텀 컬링을 수행할 수 없다.
+	if (m_mesh != nullptr)
+	{
+		for (int i = 0; i < m_materials.size(); ++i)
+		{
+			m_materials[i]->SetPipelineState(RENDER_TYPE::DEPTH_WRITE);
+			m_mesh->Render(i);
+		}
+	}
+	*/
 	for (const auto& child : m_children)
 	{
 		if (child->IsActive() && !child->IsDeleted())

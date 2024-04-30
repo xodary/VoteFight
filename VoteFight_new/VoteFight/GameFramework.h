@@ -47,7 +47,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12CbvSrvUavDescriptorHeap;
 
 	// Descriptor Heap Manager
-	shared_ptr<DescriptorHeapManager> m_DescriptorHeapManager;
+	std::shared_ptr<DescriptorHeapManager> m_DescriptorHeapManager;
 
 	ComPtr<ID3D12Fence>				  m_d3d12Fence;
 	UINT64							  m_fenceValues[m_swapChainBufferCount];
@@ -57,9 +57,6 @@ private:
 
 	ComPtr<ID3D12Resource>			  m_d3d12GameFramework;
 	CB_GameFramework*				  m_mappedGameFramework;
-
-	// Server
-	SOCKET_INFO						  m_SocketInfo{};
 
 	HANDLE							  m_ReceiveEvent{};
 	HANDLE							  m_RenderingEvent{};

@@ -44,8 +44,8 @@ D3D12_RASTERIZER_DESC CDepthWriteShader::CreateRasterizerState(int stateNum)
 	case 0: // Standard
 	case 1: // With Skinning
 		d3d12RasterizerDesc.CullMode = D3D12_CULL_MODE_FRONT;
-		//d3d12RasterizerDesc.DepthBias = 500;
-		//d3d12RasterizerDesc.SlopeScaledDepthBias = 1.0f;
+		d3d12RasterizerDesc.DepthBias = 500;
+		d3d12RasterizerDesc.SlopeScaledDepthBias = 1.0f;
 		break;
 	}
 
@@ -60,8 +60,8 @@ D3D12_SHADER_BYTECODE CDepthWriteShader::CreateVertexShader(ID3DBlob* d3d12Shade
 		return Compile("main.hlsl", "VS_Position", "vs_5_1", d3d12ShaderBlob);
 	case 1: // With Skinning
 		return Compile("main.hlsl", "VS_Position_Skinning", "vs_5_1", d3d12ShaderBlob);
-	//case 2: // Debug Depth
-	//	return Compile("main.hlsl", "VS_ViewPort", "vs_5_1", d3d12ShaderBlob);
+	case 2: // Debug Depth
+		return Compile("main.hlsl", "VS_ViewPort", "vs_5_1", d3d12ShaderBlob);
 	}
 
 	return CShader::CreateVertexShader(d3d12ShaderBlob, stateNum);
@@ -74,8 +74,8 @@ D3D12_SHADER_BYTECODE CDepthWriteShader::CreatePixelShader(ID3DBlob* d3d12Shader
 	case 0: // Standard
 	case 1: // With Skinning
 		return Compile("main.hlsl", "PS_DepthWrite", "ps_5_1", d3d12ShaderBlob);
-	//case 2: // Debug Depth
-	//	return Compile("main.hlsl", "PS_ViewPort", "ps_5_1", d3d12ShaderBlob);
+	case 2: // Debug Depth
+		return Compile("main.hlsl", "PS_ViewPort", "ps_5_1", d3d12ShaderBlob);
 	}
 
 	return CShader::CreatePixelShader(d3d12ShaderBlob, stateNum);

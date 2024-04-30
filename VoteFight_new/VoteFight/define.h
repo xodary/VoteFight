@@ -6,19 +6,15 @@
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #endif
 
-#define SERVER_IP "127.0.0.1"
-#define SERVER_PORT	9000
-#define MAX_CLIENT_CAPACITY 3
-
 #define EPSILON				    0.01f
 
 #define FRAME_BUFFER_WIDTH		1920
 #define FRAME_BUFFER_HEIGHT		1080 
 
-#define TERRAIN_WIDTH			400
-#define TERRAIN_HEIGHT			400
-#define DEPTH_BUFFER_WIDTH	    2048
-#define DEPTH_BUFFER_HEIGHT     2048
+#define TERRAIN_WIDTH			257
+#define TERRAIN_HEIGHT			257
+#define DEPTH_BUFFER_WIDTH	    (FRAME_BUFFER_WIDTH * 4)
+#define DEPTH_BUFFER_HEIGHT     (FRAME_BUFFER_HEIGHT * 4)
 
 #define MAX_NPC_COUNT			15
 #define MAX_LIGHTS              3
@@ -69,8 +65,11 @@ enum class SCENE_TYPE
 
 enum class GROUP_TYPE
 {
-	STRUCTURE,
-	PLAYER,
+	STRUCTURE,	// 0 고정
+	PLAYER,	// 1 고정
+	NPC,		// 2 고정
+	BILBOARD,
+	GROUND_ITEM,
 	SKYBOX,
 	TERRAIN,
 	UI,
@@ -93,6 +92,7 @@ enum class CAMERA_TYPE
 {
 	MAIN,
 	UI,
+	LIGHT,
 
 	COUNT
 };
@@ -151,6 +151,7 @@ enum class TRIGGER_TYPE
 enum class RENDER_TYPE
 {
 	STANDARD,
+	DEPTH_WRITE,
 
 	COUNT
 };

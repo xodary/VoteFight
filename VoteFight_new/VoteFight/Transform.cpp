@@ -250,11 +250,11 @@ void CTransform::Update()
 	// W = S * R * T
 	// 월드 변환 행렬은 매프레임 변화한 이동, 회전, 신축정보를 반영하여 새로 계산한다.
 	m_worldMatrix = Matrix4x4::Identity();
-
 	CObject* parent = m_owner->GetParent();
 
 	if (parent != nullptr)
 	{
+
 		// scale 값을 이용하여 신축 행렬을 구한다.
 		m_worldMatrix = Matrix4x4::Multiply(m_worldMatrix, Matrix4x4::Scale(m_localScale));
 

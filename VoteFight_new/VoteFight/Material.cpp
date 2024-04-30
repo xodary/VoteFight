@@ -55,6 +55,9 @@ void CMaterial::SetTexture(CTexture* texture)
 		case TEXTURE_TYPE::NORMAL_MAP:
 			m_textureMask |= TEXTURE_MASK_NORMAL_MAP;
 			break;
+		case TEXTURE_TYPE::SHADOW_MAP:
+			m_textureMask |= TEXTURE_MASK_SHADOW_MAP;
+			break;
 		}
 
 		m_textures[static_cast<int>(texture->GetType())] = texture;
@@ -123,6 +126,10 @@ void CMaterial::Load(ifstream& in)
 				File::ReadStringFromFile(in, str);
 				
 				CShader* shader = CAssetManager::GetInstance()->GetShader(str);
+
+				AddShader(shader);
+
+				shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
 
 				AddShader(shader);
 			}

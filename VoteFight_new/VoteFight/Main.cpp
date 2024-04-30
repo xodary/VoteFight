@@ -87,7 +87,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
     AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
 
     XMFLOAT2 resolution = { (float)(rect.right - rect.left), (float)(rect.bottom - rect.top) };
-    HWND hWnd = CreateWindowW(L"WndClass", L"PRISON BREAKER", WS_OVERLAPPEDWINDOW, 0, 0, (int)resolution.x, (int)resolution.y, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(L"WndClass", L"FIGHT VOTE", WS_OVERLAPPEDWINDOW, 0, 0, (int)resolution.x, (int)resolution.y, nullptr, nullptr, hInstance, nullptr);
 
     if (hWnd == nullptr)
     {

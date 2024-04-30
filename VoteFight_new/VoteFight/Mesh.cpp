@@ -290,6 +290,7 @@ bool CMesh::CheckRayIntersection(const XMFLOAT3& rayOrigin, const XMFLOAT3& rayD
 	return intersected;
 }
 
+
 void CMesh::Render(int subSetIndex)
 {
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
