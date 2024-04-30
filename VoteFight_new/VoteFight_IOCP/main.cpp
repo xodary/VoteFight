@@ -40,9 +40,9 @@ shared_ptr<RemoteClient>	remoteClientCandidate;
 
 // Client 종료 처리 함수
 void	ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient);
-void	WorkerThread();
 void	ProcessAccept();
 void	PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet);
+void	WorkerThread();
 void	CloseServer();
 
 // 서버 프로그램 진입점
@@ -108,7 +108,7 @@ void WorkerThread()
 					continue;
 				}
 
-				if (readEvent.lpCompletionKey == 0) {    // Listetn socket
+				if (readEvent.lpCompletionKey == (ULONG_PTR)listenSocket.get()) {    // Listetn socket
 					ProcessAccept(); // Client Accept
 				}
 				else { // TCP Socket
