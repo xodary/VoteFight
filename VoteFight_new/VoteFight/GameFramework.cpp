@@ -117,7 +117,7 @@ ID3D12DescriptorHeap* CGameFramework::GetCbvSrvUavDescriptorHeap()
 
 DescriptorHeapManager* CGameFramework::GetDescriptorHeapManager()
 {
-	return m_DescriptorHeapManager.get();
+	return m_DescriptorHeapManager;
 }
 
 UINT CGameFramework::GetRtvDescriptorIncrementSize()
@@ -135,7 +135,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	CServerManager::ConnectServer();
+	// CServerManager::ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -152,8 +152,12 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
 
+
+	//CreateFullscreenQuadBuffers();
+	m_DescriptorHeapManager = new DescriptorHeapManager();
+
 	// VoxelConeTracing Initialization
-	// VCT::GetInstance()->InitVoxelConeTracing();
+	VCT::GetInstance()->InitVoxelConeTracing();
 
 	// RenderTarget, DepthStencil
 	CreateRtvAndDsvDescriptorHeaps();
@@ -180,6 +184,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	// 커맨드리스트가 모두 실행되었다면, 리소스 생성에 사용했던 모든 업로드 버퍼를 제거한다.
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
+
 }
 
 void CGameFramework::CreateDevice()
@@ -562,7 +567,7 @@ void CGameFramework::Render()
 	CSceneManager::GetInstance()->Render();
 
 	// VoxelConeTracing Rendering
-	//VCT::GetInstance()->RenderVoxelConeTracing();
+	VCT::GetInstance()->RenderVoxelConeTracing();
 }
 
 void CGameFramework::PostRender()
@@ -616,3 +621,55 @@ void CGameFramework::AdvanceFrame()
 	MoveToNextFrame();
 }
 
+void CGameFramework::CreateFullscreenQuadBuffers()
+{
+	{
+		struct FullscreenVertex
+		{
+			XMFLOAT4 position;
+			XMFLOAT2 uv;
+		};
+
+		// Define the geometry for a fullscreen triangle.
+		FullscreenVertex quadVertices[] =
+		{
+			{ { -1.0f, -1.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },       // Bottom left.
+			{ { -1.0f, 1.0f, 0.0f, 1.0f },{ 0.0f, 0.0f } },        // Top left.
+			{ { 1.0f, -1.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },        // Bottom right.
+			{ { 1.0f, 1.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },         // Top right.
+		};
+
+		const UINT vertexBufferSize = sizeof(quadVertices);
+
+		DX::ThrowIfFailed(m_d3d12Device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT /*D3D12_HEAP_TYPE_UPLOAD*/),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+			/*D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER*/ D3D12_RESOURCE_STATE_COPY_DEST /*D3D12_RESOURCE_STATE_GENERIC_READ*/,
+			nullptr,
+			IID_PPV_ARGS(&mFullscreenQuadVertexBuffer)));
+
+		DX::ThrowIfFailed(m_d3d12Device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&mFullscreenQuadVertexBufferUpload)));
+
+		// Copy data to the intermediate upload heap and then schedule a copy
+		// from the upload heap to the vertex buffer.
+		D3D12_SUBRESOURCE_DATA vertexData = {};
+		vertexData.pData = reinterpret_cast<BYTE*>(quadVertices);
+		vertexData.RowPitch = vertexBufferSize;
+		vertexData.SlicePitch = vertexData.RowPitch;
+
+		UpdateSubresources<1>(m_d3d12GraphicsCommandList.Get(), mFullscreenQuadVertexBuffer.Get(), mFullscreenQuadVertexBufferUpload.Get(), 0, 0, 1, &vertexData);
+		m_d3d12GraphicsCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mFullscreenQuadVertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+
+		// Initialize the vertex buffer view.
+		mFullscreenQuadVertexBufferView.BufferLocation = mFullscreenQuadVertexBuffer->GetGPUVirtualAddress();
+		mFullscreenQuadVertexBufferView.StrideInBytes = sizeof(FullscreenVertex);
+		mFullscreenQuadVertexBufferView.SizeInBytes = sizeof(quadVertices);
+	}
+}

@@ -78,15 +78,15 @@ void CGameScene::Exit()
 
 void CGameScene::Init()
 {
-	CreateTerrain();
+	//CreateTerrain();
 
 	// 씬 로드
 	Load("GameScene.bin");
-	Load("BinaryScene.bin");
-	Load("Woods.bin");
-	Load("FenceScene.bin");
-	Load("Homer_link_Scene.bin");
-	LoadUI("GameSceneUI.bin");
+	// Load("BinaryScene.bin");
+	// Load("Woods.bin");
+	// Load("FenceScene.bin");
+	// Load("Homer_link_Scene.bin");
+	// LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
 	CObject* object = new CSkyBox();
@@ -156,7 +156,7 @@ void CGameScene::Init()
 void CGameScene::Update()
 {
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	objects[0]->SetTerrainY(this);
+	if (m_terrain) objects[0]->SetTerrainY(this);
 	CTransform* playerPosition = static_cast<CTransform*>(objects[0]->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
 
@@ -225,7 +225,7 @@ void CGameScene::PreRender()
 				camera->UpdateShaderVariables();
 				depthTexture->UpdateShaderVariable();
 
-				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::PLAYER); ++i)
+				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::NPC); ++i)
 				{
 					const vector<CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
 
@@ -237,7 +237,7 @@ void CGameScene::PreRender()
 						}
 					}
 				}
-				m_terrain->PreRender(camera);
+				if (m_terrain) m_terrain->PreRender(camera);
 
 				DX::ResourceTransition(d3d12GraphicsCommandList, depthTexture->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 			}
@@ -255,7 +255,7 @@ void CGameScene::Render()
 	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
 	D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
 	D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
-	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+	CTexture* texture = CAssetManager::GetInstance()->GetTexture("VCT");
 	CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
 
 	texture->UpdateShaderVariable();

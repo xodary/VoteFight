@@ -47,7 +47,7 @@ private:
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12CbvSrvUavDescriptorHeap;
 
 	// Descriptor Heap Manager
-	std::shared_ptr<DescriptorHeapManager> m_DescriptorHeapManager;
+	DescriptorHeapManager*			  m_DescriptorHeapManager;
 
 	ComPtr<ID3D12Fence>				  m_d3d12Fence;
 	UINT64							  m_fenceValues[m_swapChainBufferCount];
@@ -91,6 +91,7 @@ private:
 	void PostRender();
 
 	void PopulateCommandList();
+
 
 	//shared_ptr<CPostProcessingShader> GetPostProcessingShader() const;
 
@@ -138,4 +139,11 @@ public:
 			commandList->ResourceBarrier(num, barriers.data());
 	}
 
+	void CreateFullscreenQuadBuffers();
+
+	ComPtr<ID3D12Resource>              mFullscreenQuadVertexBuffer;
+	ComPtr<ID3D12Resource>              mFullscreenQuadVertexBufferUpload;
+
+	D3D12_VERTEX_BUFFER_VIEW            mFullscreenQuadVertexBufferView;
+	D3D12_VERTEX_BUFFER_VIEW& GetFullscreenQuadBufferView() { return mFullscreenQuadVertexBufferView; }
 };
