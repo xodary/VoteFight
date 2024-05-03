@@ -500,6 +500,9 @@
     <ClCompile Include="Monster.cpp">
       <Filter>소스 파일\05. Object\05-01. Character</Filter>
     </ClCompile>
+    <ClCompile Include="MonsterStates.cpp">
+      <Filter>소스 파일\08. State</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Release\Asset\Shader\main.hlsl">

@@ -252,6 +252,7 @@
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Monster.cpp" />
+    <ClCompile Include="MonsterStates.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />
