@@ -181,6 +181,8 @@
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Monster.h" />
+    <ClInclude Include="MonsterStates.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="NPCStates.h" />
     <ClInclude Include="Object.h" />
@@ -249,6 +251,7 @@
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="Monster.cpp" />
     <ClCompile Include="NPC.cpp" />
     <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />

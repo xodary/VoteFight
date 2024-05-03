@@ -213,7 +213,7 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	m_d3d12NormalBufferView.BufferLocation = m_d3d12NormalBuffer->GetGPUVirtualAddress();
 	m_d3d12NormalBufferView.StrideInBytes = sizeof(XMFLOAT3);
 	m_d3d12NormalBufferView.SizeInBytes = sizeof(XMFLOAT3) * norVec3s.size();
-	cout << norVec3s.size() << '\n';
+	cout << "»çÀÌÁî" << norVec3s.size() << '\n';
 
 }
 
@@ -228,10 +228,25 @@ float CTerrain::OnGetHeight(int x, int z)
 
 void CTerrain::CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices,  vector<XMFLOAT3>& new_NorVecs)
 {
-	for (size_t i = 0; i < m_nWidth; i++)
-	for (size_t j = 0; j < m_nLength; j++)
-		new_NorVecs.push_back(m_pHeightMapImage->GetHeightMapNormal(i,j));
-				
+	
+	for (int j = 0, z = 0; z < m_nLength - 1; z++)
+	{
+		if ((z % 2) == 0)
+		{
+			for (int x = 0; x < m_nWidth; x++)
+			{
+				new_NorVecs.push_back(m_pHeightMapImage->GetHeightMapNormal(x, z));
+			}
+		}
+		else
+		{
+			for (int x = m_nWidth - 1; x >= 0; x--)
+			{
+				new_NorVecs.push_back(m_pHeightMapImage->GetHeightMapNormal(x, z));
+			}
+		}
+	}
+
 	/*
 	for (size_t i = 0; i < m_indices/3; i++)
 	{
