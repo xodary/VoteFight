@@ -74,9 +74,6 @@
     <ClInclude Include="D3DX12.h">
       <Filter>헤더 파일\00. Dependency</Filter>
     </ClInclude>
-    <ClInclude Include="server.h">
-      <Filter>헤더 파일\02. Server</Filter>
-    </ClInclude>
     <ClInclude Include="Protocol.h">
       <Filter>헤더 파일\02. Server</Filter>
     </ClInclude>

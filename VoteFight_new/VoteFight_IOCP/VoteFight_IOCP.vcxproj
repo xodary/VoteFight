@@ -147,9 +147,11 @@
     <ClCompile Include="ImaysNet\SocketInit.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="pch.cpp" />
+    <ClCompile Include="RemoteClient.cpp" />
     <ClCompile Include="udt.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\VoteFight_Server\server.h" />
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
@@ -165,6 +167,7 @@
     <ClInclude Include="ImaysNet\SocketInit.h" />
     <ClInclude Include="ImaysNet\targetver.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="RemoteClient.h" />
     <ClInclude Include="udt.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

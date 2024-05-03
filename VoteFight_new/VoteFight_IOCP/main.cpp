@@ -2,6 +2,8 @@
 #include "pch.h"
 #include "./ImaysNet/ImaysNet.h"
 
+#include "RemoteClient.h"
+
 using namespace std;
 
 volatile bool				stopServer = false;
@@ -9,29 +11,13 @@ const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 static unsigned long long	nextClientID{ 0 };		// Next Client ID
 
 vector<shared_ptr<thread>>	workerThreads;			// Worker Thread Vector
-recursive_mutex				mx;						// 재귀적 Mutex
-
 enum class IO_TYPE;									// I/O Type
 
-class RemoteClient {
-public:
-	shared_ptr<thread>		m_thread;			// Client thread
-	Socket					m_tcpConnection;	// Acceept Tcp
-	unsigned long long		m_id;				// Client ID
-
-public:
-	RemoteClient() : m_thread(), m_tcpConnection(SocketType::Tcp) {}
-	RemoteClient(SocketType _socketType) : m_tcpConnection(_socketType) {}
-};
-
-// 클라이언트 포인터와 클라이언트의 공유 포인터를 매핑하는 해시 맵
-unordered_map<RemoteClient*, shared_ptr<RemoteClient>>	remoteClients;
-
 // 클라이언트들을 가리키는 포인터를 저장하는 벡터
-vector<RemoteClient*>									remoteClients_ptr_v;
+vector<RemoteClient*>		remoteClients_ptr_v;
 
 // 삭제 클라이언트 목록
-list<shared_ptr<RemoteClient>>							deleteClinets;
+list<shared_ptr<RemoteClient>>		deleteClinets;
 
 Iocp						iocp(numWorkerTHREAD);	// IOCP Init
 recursive_mutex				mx_accept;				
@@ -83,10 +69,10 @@ void ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient)
 	// 에러 혹은 소켓 종료 시
 	_remoteClient->m_tcpConnection.Close();
 	{
-		lock_guard<recursive_mutex> lock_rc(mx);
-		remoteClients.erase(_remoteClient.get());	// 클라이언트 제거
+		lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
+		RemoteClient::m_remoteClients.erase(_remoteClient.get());	// 클라이언트 제거
 
-		cout << " >> Client left. There are " << remoteClients.size() << " connections.\n";
+		cout << " >> Client left. There are " << RemoteClient::m_remoteClients.size() << " connections.\n";
 	}
 }
 void WorkerThread()
@@ -114,8 +100,8 @@ void WorkerThread()
 				else { // TCP Socket
 					shared_ptr<RemoteClient> remoteClient;	// 처리할 클라이언트 가져오기
 					{
-						lock_guard<recursive_mutex> lock_rc(mx);
-						remoteClient = remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
+						lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
+						remoteClient = RemoteClient::m_remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
 					}
 
 					//
@@ -201,10 +187,10 @@ void ProcessAccept()
 			// I/O를 걸고 완료를 대기 상태로 변경
 			remoteClient->m_tcpConnection.m_isReadOverlapped = true;
 			{
-				lock_guard<recursive_mutex> lock_rc(mx);
-				remoteClients.insert({ remoteClient.get(), remoteClient });
+				lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
+				RemoteClient::m_remoteClients.insert({ remoteClient.get(), remoteClient });
 
-				cout << " >> Client joined. There are " << remoteClients.size() << " connections.\n";
+				cout << " >> Client joined. There are " << RemoteClient::m_remoteClients.size() << " connections.\n";
 			}
 		}
 
@@ -238,18 +224,18 @@ void CloseServer()
 	// i/o 완료 체크 & 소켓 닫기
 	listenSocket->Close();
 	{
-		lock_guard<recursive_mutex> lock_rc(mx);
+		lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
 
-		for (auto i : remoteClients)
+		for (auto i : RemoteClient::m_remoteClients)
 			i.second->m_tcpConnection.Close();
 
 		// 정리 중
 		cout << " >> Shutting down the server....\n";
-		while (remoteClients.size() > 0) {
+		while (RemoteClient::m_remoteClients.size() > 0) {
 			// I/O completion이 없는 상태의 RemoteClient를 제거
-			for (auto i = remoteClients.begin(); i != remoteClients.end(); ++i) {
+			for (auto i = RemoteClient::m_remoteClients.begin(); i != RemoteClient::m_remoteClients.end(); ++i) {
 				if (!i->second->m_tcpConnection.m_isReadOverlapped)
-					remoteClients.erase(i);
+					RemoteClient::m_remoteClients.erase(i);
 			}
 
 			// I/O completion이 발생 시 더 이상 Overlapped I/O를 걸지 말고 정리 신호 Flag.
@@ -263,7 +249,7 @@ void CloseServer()
 					listenSocket->m_isReadOverlapped = false;
 				}
 				else {
-					shared_ptr<RemoteClient> remoteClient = remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
+					shared_ptr<RemoteClient> remoteClient = RemoteClient::m_remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
 					if (remoteClient) {
 						remoteClient->m_tcpConnection.m_isReadOverlapped = false;
 					}

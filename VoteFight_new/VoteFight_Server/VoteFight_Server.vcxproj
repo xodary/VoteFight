@@ -146,7 +146,6 @@
     <ClInclude Include="func.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Protocol.h" />
-    <ClInclude Include="server.h" />
     <ClInclude Include="udt.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
