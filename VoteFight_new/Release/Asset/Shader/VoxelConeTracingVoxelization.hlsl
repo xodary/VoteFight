@@ -35,7 +35,7 @@ Texture2D<float> shadowBuffer : register(t0);
 
 SamplerComparisonState PcfShadowMapSampler : register(s0);
 
-GS_IN VSMain(VS_IN input)
+GS_IN VS_Main(VS_IN input)
 {
     GS_IN output = (GS_IN) 0;
     
@@ -85,7 +85,7 @@ float3 VoxelToWorld(float3 pos)
 }
 
 
-void PSMain(PS_IN input)
+void PS_Main(PS_IN input)
 {
     uint width;
     uint height;

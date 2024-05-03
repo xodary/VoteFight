@@ -19,6 +19,7 @@ protected:
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState(int stateNum);
 	virtual D3D12_STREAM_OUTPUT_DESC CreateStreamOutputState(int stateNum);
 
+	virtual ID3D12RootSignature* CreateRootSignature(int stateNum);
 	virtual D3D12_SHADER_BYTECODE CreateVertexShader(ID3DBlob* d3d12ShaderBlob, int stateNum);
 	virtual D3D12_SHADER_BYTECODE CreateHullShader(ID3DBlob* d3d12ShaderBlob, int stateNum);
 	virtual D3D12_SHADER_BYTECODE CreateDomainShader(ID3DBlob* d3d12ShaderBlob, int stateNum);

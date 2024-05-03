@@ -123,6 +123,11 @@ D3D12_STREAM_OUTPUT_DESC CShader::CreateStreamOutputState(int stateNum)
 	return d3d12StreamOutputDesc;
 }
 
+ID3D12RootSignature* CShader::CreateRootSignature(int stateNum)
+{
+	return CGameFramework::GetInstance()->GetRootSignature();
+}
+
 D3D12_SHADER_BYTECODE CShader::CreateVertexShader(ID3DBlob* d3d12ShaderBlob, int stateNum)
 {
 	D3D12_SHADER_BYTECODE d3d12ShaderByteCode = {};
@@ -180,7 +185,7 @@ void CShader::CreatePipelineState(int stateNum)
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC d3d12GraphicsPipelineState = {};
 	ComPtr<ID3DBlob> D3D12VertexShaderBlobs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 	
-	d3d12GraphicsPipelineState.pRootSignature = d3d12RootSignature;
+	d3d12GraphicsPipelineState.pRootSignature = CreateRootSignature(stateNum);
 	d3d12GraphicsPipelineState.VS = CreateVertexShader(D3D12VertexShaderBlobs[0].Get(), stateNum);
 	d3d12GraphicsPipelineState.HS = CreateHullShader(D3D12VertexShaderBlobs[1].Get(), stateNum);
 	d3d12GraphicsPipelineState.DS = CreateDomainShader(D3D12VertexShaderBlobs[2].Get(), stateNum);

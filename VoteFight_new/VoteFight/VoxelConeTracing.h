@@ -7,8 +7,6 @@
 #include "RenderTarget.h"
 #include "DepthBuffer.h"
 
-#define VCT_SCENE_VOLUME_SIZE 128
-#define VCT_MIPS 3
 
 class VCT : public CSingleton<VCT>
 {

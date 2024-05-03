@@ -40,7 +40,7 @@ void CTexture::Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
 
 	m_type = textureType;
-	m_d3d12Texture = DX::CreateTexture2DResource(d3d12Device, Width, Height, 1, 0, D3D12ResourceStates, D3D12ResourceFlags, DxgiFormat, D3D12ClearValue);
+	m_d3d12Texture = DX::CreateTextureResource(d3d12Device, Width, Height, 1, 0, D3D12ResourceStates, D3D12ResourceFlags, DxgiFormat, D3D12ClearValue);
 }
 
 void CTexture::Load(ifstream& in)

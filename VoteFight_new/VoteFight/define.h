@@ -16,6 +16,9 @@
 #define DEPTH_BUFFER_WIDTH	    (FRAME_BUFFER_WIDTH * 4)
 #define DEPTH_BUFFER_HEIGHT     (FRAME_BUFFER_HEIGHT * 4)
 
+#define VCT_SCENE_VOLUME_SIZE 128
+#define VCT_MIPS 3
+
 #define MAX_NPC_COUNT			15
 #define MAX_LIGHTS              3
 #define MAX_BONES				70

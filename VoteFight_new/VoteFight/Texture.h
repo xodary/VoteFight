@@ -5,17 +5,16 @@ class CTexture : public CAsset
 {
 	friend class CAssetManager;
 
-private:
+protected:
 	TEXTURE_TYPE			    m_type;
 
 	ComPtr<ID3D12Resource>		m_d3d12Texture;
 	ComPtr<ID3D12Resource>		m_d3d12UploadBuffer;
 	D3D12_GPU_DESCRIPTOR_HANDLE m_d3d12GpuDescriptorHandle;
 
-private:
+public:
 	CTexture();
 
-public:
 	virtual ~CTexture();
 
 	TEXTURE_TYPE GetType();

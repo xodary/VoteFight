@@ -38,7 +38,6 @@ void VCT::InitVoxelConeTracing()
     rtFormat = DXGI_FORMAT_R32G32B32A32_FLOAT;
     mGbufferRTs[2] = new CRenderTarget(FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT, rtFormat, flags, L"World Positions");
 
-
     // voxelization
     {
         D3D12_SAMPLER_DESC shadowSampler = {};
@@ -180,7 +179,6 @@ void VCT::InitVoxelConeTracing()
         mDepthStateDisabled.FrontFace.StencilFailOp = D3D12_STENCIL_OP_KEEP;
         mDepthStateDisabled.FrontFace.StencilDepthFailOp = D3D12_STENCIL_OP_KEEP;
         mDepthStateDisabled.BackFace = mDepthStateRW.FrontFace;
-
 
         mVCTVoxelizationPSO.SetRootSignature(mVCTVoxelizationRS);
         mVCTVoxelizationPSO.SetRasterizerState(mRasterizerStateNoCullNoDepth);

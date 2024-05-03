@@ -139,6 +139,12 @@
     <Filter Include="소스 파일\10. Server\1. ServerMGR">
       <UniqueIdentifier>{7b112c99-1261-4443-9fff-7515ed2aa180}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\06. Asset\Shader\VoxelConeTracing">
+      <UniqueIdentifier>{bf85a535-7b26-4116-95be-9e1b2478b976}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\06. Asset\Shader\VoxelConeTracing">
+      <UniqueIdentifier>{732ca077-ca17-4347-a24e-0e150cc1a72e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -339,6 +345,9 @@
     <ClInclude Include="RootSignature.h">
       <Filter>헤더 파일\09. Light</Filter>
     </ClInclude>
+    <ClInclude Include="VoxelizationShader.h">
+      <Filter>헤더 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -526,6 +535,9 @@
     </ClCompile>
     <ClCompile Include="DepthBuffer.cpp">
       <Filter>소스 파일\09. Light</Filter>
+    </ClCompile>
+    <ClCompile Include="VoxelizationShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
