@@ -151,7 +151,7 @@
     <ClCompile Include="udt.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\VoteFight_Server\server.h" />
+    <ClInclude Include="..\Packet.h" />
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />

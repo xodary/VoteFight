@@ -1,10 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "./ImaysNet/ImaysNet.h"
-
 #include "RemoteClient.h"
-
-using namespace std;
 
 volatile bool				stopServer = false;
 const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
@@ -210,6 +207,20 @@ void ProcessAccept()
 void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 {
 	switch (_Packet[1]) {
+
+	case PACKET_TYPE::P_CS_LOGIN_PACKET:
+	{
+		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
+		_Client->m_id = nextClientID++;
+		{	// Send connected client info
+			SC_INIT_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_INIT_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_INIT_PACKET;
+			send_packet.m_id = _Client->m_id;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+		break;
+	}
 	case PACKET_TYPE::P_CS_MOVE_PACKET:
 	{
 		break;
@@ -217,6 +228,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	default:
 		break;
 	}
+
 }
 void CloseServer()
 {

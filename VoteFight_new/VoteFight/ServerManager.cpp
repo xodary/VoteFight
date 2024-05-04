@@ -150,6 +150,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	switch (_Packet[1])
 	{
 	case  PACKET_TYPE::P_SC_INIT_PACKET: {
+		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
+		cout << "E_PACKET_SC_ADD_PLAYER" << endl;
 		
 		break;
 	}
