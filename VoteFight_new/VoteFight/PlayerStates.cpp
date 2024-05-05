@@ -138,6 +138,7 @@ void CPlayerIdleState::Update(CObject* object)
 		float y = centerY - cursor.y;
 
 		float angle = XMConvertToDegrees(atan2(x, y));
+		angle -= 45;
 		player->SetClickAngle(angle);
 		float look = transform->GetRotation().y;
 		if (look > 180) look -= 360;

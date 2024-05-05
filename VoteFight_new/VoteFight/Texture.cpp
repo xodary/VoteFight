@@ -35,6 +35,16 @@ const D3D12_GPU_DESCRIPTOR_HANDLE& CTexture::GetGpuDescriptorHandle()
 	return m_d3d12GpuDescriptorHandle;
 }
 
+void CTexture::SetCpuDescriptorHandle(const D3D12_CPU_DESCRIPTOR_HANDLE& d3d12CpuDescriptorHandle)
+{
+	m_d3d12CpuDescriptorHandle = d3d12CpuDescriptorHandle;
+}
+
+const D3D12_CPU_DESCRIPTOR_HANDLE& CTexture::GetCpuDescriptorHandle()
+{
+	return m_d3d12CpuDescriptorHandle;
+}
+
 void CTexture::Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3D12ResourceStates, D3D12_RESOURCE_FLAGS D3D12ResourceFlags, DXGI_FORMAT DxgiFormat, const D3D12_CLEAR_VALUE& D3D12ClearValue, TEXTURE_TYPE textureType)
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();

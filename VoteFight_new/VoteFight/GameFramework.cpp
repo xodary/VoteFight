@@ -11,6 +11,7 @@
 #include "VoxelConeTracing.h"
 #include "Texture.h"
 #include "GameFramework.h"
+#include "VoxelizationShader.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -151,13 +152,6 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CSceneManager::GetInstance()->Init();
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
-
-
-	//CreateFullscreenQuadBuffers();
-	m_DescriptorHeapManager = new DescriptorHeapManager();
-
-	// VoxelConeTracing Initialization
-	VCT::GetInstance()->InitVoxelConeTracing();
 
 	// RenderTarget, DepthStencil
 	CreateRtvAndDsvDescriptorHeaps();
@@ -578,8 +572,7 @@ void CGameFramework::Render()
 {
 	CSceneManager::GetInstance()->Render();
 
-	// VoxelConeTracing Rendering
-	VCT::GetInstance()->RenderVoxelConeTracing();
+	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render();
 }
 
 void CGameFramework::PostRender()

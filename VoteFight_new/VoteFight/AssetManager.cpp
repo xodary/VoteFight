@@ -13,6 +13,7 @@
 #include "Material.h"
 #include "Animation.h"
 #include "DepthWriteShader.h"
+#include "VoxelizationShader.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -165,6 +166,11 @@ void CAssetManager::LoadShaders()
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
 	shader->CreatePipelineStates(3);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CVoxelizationShader();
+	shader->SetName("Voxelization");
+	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 
@@ -480,6 +486,7 @@ void CAssetManager::CreateShaderResourceViews()
 		}
 		else
 			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, d3d12CpuDescriptorHandle);
+		texture.second->SetCpuDescriptorHandle(d3d12CpuDescriptorHandle);
 		texture.second->SetGpuDescriptorHandle(d3d12GpuDescriptorHandle);
 
 		d3d12CpuDescriptorHandle.ptr += descriptorIncrementSize;

@@ -255,7 +255,7 @@ void CGameScene::Render()
 	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
 	D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
 	D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
-	CTexture* texture = CAssetManager::GetInstance()->GetTexture("VCT");
+	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
 	CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
 
 	texture->UpdateShaderVariable();
@@ -264,6 +264,5 @@ void CGameScene::Render()
 	d3d12GraphicsCommandList->RSSetScissorRects(1, &d3d12ScissorRect);
 	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 	d3d12GraphicsCommandList->DrawInstanced(6, 1, 0, 0);
-
 }
 

@@ -583,8 +583,7 @@ void VCT::RenderVoxelConeTracing()
 
         srvHandle = gpuDescriptorHeap->GetHandleBlock(1);
 
-        // gpuDescriptorHeap->AddToHandle(device, srvHandle, mShadowDepth->GetSRV());
-
+        gpuDescriptorHeap->AddToHandle(device, srvHandle, mShadowDepth->GetSRV());
 
         for (auto& model : mRenderableObjects) {
             RenderObject(model, [this, gpuDescriptorHeap, commandList, &cbvHandle, &uavHandle, &srvHandle, device](std::unique_ptr<CObject>& anObject) {

@@ -22,10 +22,11 @@ namespace DX
 {
 	void ThrowIfFailed(HRESULT result)
 	{
-		if (FAILED(result))
+		if (FAILED(result) || result == S_FALSE)
 		{
 			char debugMessage[64] = {};
 
+			printf("%s", debugMessage);
 			printf_s(debugMessage, _countof(debugMessage), "[Error] HRESULT of 0x % x\n", result);
 			OutputDebugStringA(debugMessage);
 		}

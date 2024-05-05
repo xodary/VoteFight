@@ -15,13 +15,11 @@ cbuffer perModelInstanceCB : register(b1)
 struct VS_IN
 {
     float3 position : POSITION;
-    float3 normal : NORMAL;
 };
 
 struct GS_IN
 {
     float4 position : SV_POSITION;
-    float3 normal : TEXCOORD0;
 };
 
 struct PS_IN
@@ -44,7 +42,7 @@ GS_IN VS_Main(VS_IN input)
 }
 
 [maxvertexcount(3)]
-void GSMain(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
+void GS_Main(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
 {
     PS_IN output[3];
     output[0] = (PS_IN) 0;
