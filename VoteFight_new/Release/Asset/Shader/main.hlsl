@@ -159,14 +159,12 @@ float Compute3x3ShadowFactor(float2 uv, float fDepth)
     return (fPercentLit);
 }
 
-
 float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs)
 {
     float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-    
     
     float fShadowFactor = 1.0f;
     fShadowFactor = Compute3x3ShadowFactor(uvs.xy / uvs.ww, uvs.z / uvs.w);

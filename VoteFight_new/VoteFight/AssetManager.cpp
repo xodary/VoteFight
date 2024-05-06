@@ -125,7 +125,7 @@ void CAssetManager::LoadTextures(const string& fileName)
 	// DepthWrite Texture
 	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
 	CTexture* texture = new CTexture();
-
+	
 	texture->SetName("DepthWrite");
 	texture->Create(static_cast<UINT64>(DEPTH_BUFFER_WIDTH), static_cast<UINT>(DEPTH_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } }, TEXTURE_TYPE::SHADOW_MAP);
 	m_textures.emplace(texture->GetName(), texture);
@@ -466,9 +466,6 @@ void CAssetManager::Init()
 void CAssetManager::CreateShaderResourceViews()
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
-	D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
-	UINT descriptorIncrementSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	for (const auto& texture : m_textures)
 	{
@@ -482,15 +479,10 @@ void CAssetManager::CreateShaderResourceViews()
 			d3dShaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
 			d3dShaderResourceViewDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 
-			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, d3d12CpuDescriptorHandle);
+			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, texture.second->m_CPUDescriptorHandle.GetCPUHandle());
 		}
 		else
-			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, d3d12CpuDescriptorHandle);
-		texture.second->SetCpuDescriptorHandle(d3d12CpuDescriptorHandle);
-		texture.second->SetGpuDescriptorHandle(d3d12GpuDescriptorHandle);
-
-		d3d12CpuDescriptorHandle.ptr += descriptorIncrementSize;
-		d3d12GpuDescriptorHandle.ptr += descriptorIncrementSize;
+			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, texture.second->m_CPUDescriptorHandle.GetCPUHandle());
 	}
 }
 

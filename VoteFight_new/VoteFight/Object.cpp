@@ -467,12 +467,12 @@ void CObject::Render(CCamera* camera)
 
 	// [Debug] Render BoundingBox
 	CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
-
+	
 	if (collider != nullptr)
 	{
 		collider->Render(camera);
 	}
-
+	
 	for (const auto& child : m_children)
 	{
 		if (child->IsActive() && !child->IsDeleted())
@@ -480,5 +480,4 @@ void CObject::Render(CCamera* camera)
 			child->Render(camera);
 		}
 	}
-
 }

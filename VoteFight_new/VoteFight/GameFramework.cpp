@@ -33,7 +33,6 @@ CGameFramework::CGameFramework() :
 	m_d3d12DepthBuffer(),
 	m_d3d12DsvDescriptorHeap(),
 	m_dsvDescriptorIncrementSize(),
-	m_d3d12CbvSrvUavDescriptorHeap(),
 	m_DescriptorHeapManager(),
 	m_d3d12Fence(),
 	m_fenceValues{},
@@ -111,16 +110,6 @@ ID3D12DescriptorHeap* CGameFramework::GetDsvDescriptorHeap()
 	return m_d3d12DsvDescriptorHeap.Get();
 }
 
-ID3D12DescriptorHeap* CGameFramework::GetCbvSrvUavDescriptorHeap()
-{
-	return m_d3d12CbvSrvUavDescriptorHeap.Get();
-}
-
-DescriptorHeapManager* CGameFramework::GetDescriptorHeapManager()
-{
-	return m_DescriptorHeapManager;
-}
-
 UINT CGameFramework::GetRtvDescriptorIncrementSize()
 {
 	return m_rtvDescriptorIncrementSize;
@@ -147,6 +136,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	// Close 상태의 커맨드리스트를 Open 상태로 변경시킨다.
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Reset(m_d3d12CommandAllocator.Get(), nullptr));
 
+	m_DescriptorHeapManager = new DescriptorHeapManager();
 	CAssetManager::GetInstance()->Init();
 	CCameraManager::GetInstance()->Init();
 	CSceneManager::GetInstance()->Init();
@@ -161,7 +151,6 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	// Constant / Shader Resource / Unoreded Access
 	// 모든 텍스처를 로드했다면, 해당 개수만큼 Descriptor Heap을 할당한다.
 	// * 이 프레임워크에서 CbvSrvUav Descriptor Heap은 텍스처(SRV)만을 저장한다.
-	CreateCbvSrvUavDescriptorHeaps();
 	CreateShaderResourceViews();
 
 	CreateShaderVariables();
@@ -325,18 +314,6 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 	m_dsvDescriptorIncrementSize = m_d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
-void CGameFramework::CreateCbvSrvUavDescriptorHeaps()
-{
-	D3D12_DESCRIPTOR_HEAP_DESC D3D12DescriptorHeapDesc = {};
-
-	D3D12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	D3D12DescriptorHeapDesc.NumDescriptors = CAssetManager::GetInstance()->GetTextureCount();
-	D3D12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	D3D12DescriptorHeapDesc.NodeMask = 0;
-
-	DX::ThrowIfFailed(m_d3d12Device->CreateDescriptorHeap(&D3D12DescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(m_d3d12CbvSrvUavDescriptorHeap.GetAddressOf())));
-}
-
 void CGameFramework::CreateRenderTargetViews()
 {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE D3D12RtvCpuDescriptorHandle(m_d3d12RtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
@@ -360,19 +337,6 @@ void CGameFramework::CreateRenderTargetViews()
 	 
 	 m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
 	 D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
-
-	 //// DepthWrite
-	 //texture = CAssetManager::GetInstance()->GetTexture("Voxelization");
-	 //D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
-
-	 //d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	 //d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
-	 //d3d12RenderTargetViewDesc.Texture3D.MipSlice = 0;
-	 //d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
-
-	 //m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
-	 //D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
-
 }
 
 void CGameFramework::CreateDepthStencilView()
@@ -392,11 +356,11 @@ void CGameFramework::CreateDepthStencilView()
 
 	// Depth Write
 	D3D12_DEPTH_STENCIL_VIEW_DESC d3d12DepthStencilViewDesc = {};
-
+	
 	d3d12DepthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
 	d3d12DepthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
 	d3d12DepthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
-
+	
 	m_d3d12DepthBuffer = DX::CreateTextureResource(m_d3d12Device.Get(), DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 1, 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, DXGI_FORMAT_D32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_D32_FLOAT, {1.0f, 0.0f} });
 	m_d3d12Device->CreateDepthStencilView(m_d3d12DepthBuffer.Get(), &d3d12DepthStencilViewDesc, D3D12DsvCPUDescriptorHandle);
 }
@@ -465,7 +429,10 @@ void CGameFramework::CreateShaderVariables()
 void CGameFramework::UpdateShaderVariables()
 {
 	m_d3d12GraphicsCommandList->SetGraphicsRootSignature(m_d3d12RootSignature.Get());
-	m_d3d12GraphicsCommandList->SetDescriptorHeaps(1, m_d3d12CbvSrvUavDescriptorHeap.GetAddressOf());
+	GPUDescriptorHeap* gpuDescriptorHeap = m_DescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	gpuDescriptorHeap->Reset();
+	ID3D12DescriptorHeap* ppHeaps = gpuDescriptorHeap->GetHeap();
+	m_d3d12GraphicsCommandList->SetDescriptorHeaps(1, &ppHeaps);
 
 	m_mappedGameFramework->m_totalTime += DT;
 	m_mappedGameFramework->m_elapsedTime = DT;

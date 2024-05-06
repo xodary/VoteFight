@@ -6,6 +6,11 @@
 #include "AssetManager.h"
 #include "Camera.h"
 #include "CameraManager.h"
+#include "SceneManager.h"
+#include "Scene.h"
+#include "Mesh.h"
+#include "Transform.h"
+#include "GameScene.h"
 
 CVoxelizationShader::CVoxelizationShader()
 {
@@ -20,24 +25,20 @@ CVoxelizationShader::CVoxelizationShader()
         D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
         m_VCTVoxelization3DRT->SetName("Voxelization");
-        m_VCTVoxelization3DRT->Create(static_cast<UINT64>(VCT_SCENE_VOLUME_SIZE), static_cast<UINT>(VCT_SCENE_VOLUME_SIZE), D3D12_RESOURCE_STATE_COMMON, flags, format, D3D12_CLEAR_VALUE{ format, { 1.0f, 1.0f, 1.0f, 1.0f } }, 1, VCT_SCENE_VOLUME_SIZE);
+        m_VCTVoxelization3DRT->Create(static_cast<UINT64>(VCT_SCENE_VOLUME_SIZE), static_cast<UINT>(VCT_SCENE_VOLUME_SIZE), D3D12_RESOURCE_STATE_COMMON, flags, format, D3D12_CLEAR_VALUE{ format, { 1.0f, 1.0f, 1.0f, 1.0f } }, 2, VCT_SCENE_VOLUME_SIZE);
     }
     
     // Descriptor Heap 持失
     {
-        D3D12_DESCRIPTOR_HEAP_DESC D3D12DescriptorHeapDesc = {};
+        m_DescriptorHeapManager = new DescriptorHeapManager();
 
-        // CBV SRV UAV 
-        D3D12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        D3D12DescriptorHeapDesc.NumDescriptors = 4;
-        D3D12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-        D3D12DescriptorHeapDesc.NodeMask = 0;
-        DX::ThrowIfFailed(device->CreateDescriptorHeap(&D3D12DescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(&CbvSrvUavDescriptorHeap)));
+        D3D12_DESCRIPTOR_HEAP_DESC D3D12DescriptorHeapDesc = {};
 
         // RTV
         D3D12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
         D3D12DescriptorHeapDesc.NumDescriptors = 1;
         D3D12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+        D3D12DescriptorHeapDesc.NodeMask = 0;
         DX::ThrowIfFailed(device->CreateDescriptorHeap(&D3D12DescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(&RtvDescriptorHeap)));
 
         // DSV
@@ -45,9 +46,6 @@ CVoxelizationShader::CVoxelizationShader()
         D3D12DescriptorHeapDesc.NumDescriptors = 1;
         DX::ThrowIfFailed(device->CreateDescriptorHeap(&D3D12DescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(&DsvDescriptorHeap)));
     }
-
-    D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptorHandle = CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    UINT descriptorIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // CBV 持失
     {
@@ -59,32 +57,23 @@ CVoxelizationShader::CVoxelizationShader()
         D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc;
         cbvDesc.SizeInBytes = bytes;
         cbvDesc.BufferLocation = m_VoxelizationBuffer->GetGPUVirtualAddress();
-        device->CreateConstantBufferView(&cbvDesc, CpuDescriptorHandle);
+        m_cpuVoxelization = m_DescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CreateConstantBufferView(&cbvDesc, m_cpuVoxelization.GetCPUHandle());
 
         bytes = (sizeof(CB_MODEL) + 255) & ~255;
 
         m_ModelBuffer = DX::CreateBufferResource(device, commandList, nullptr, bytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, nullptr);
         DX::ThrowIfFailed(m_ModelBuffer->Map(0, nullptr, reinterpret_cast<void**>(&m_ModelMappedData)));
 
-
         cbvDesc.SizeInBytes = bytes;
         cbvDesc.BufferLocation = m_ModelBuffer->GetGPUVirtualAddress();
-        CpuDescriptorHandle.ptr += descriptorIncrementSize;
-        device->CreateConstantBufferView(&cbvDesc, CpuDescriptorHandle);
+        m_cpuModel = m_DescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+        device->CreateConstantBufferView(&cbvDesc, m_cpuModel.GetCPUHandle());
 
     }
     
     // SRV 持失
     {
-        ID3D12Resource* pShaderResource = m_VCTVoxelization3DRT->GetTexture();
-        D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc = {};
-        srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-        srvDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-        srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE3D;
-        srvDesc.Texture3D.MipLevels = 1;
-
-        CpuDescriptorHandle.ptr += descriptorIncrementSize;
-        device->CreateShaderResourceView(pShaderResource, &srvDesc, CpuDescriptorHandle);
     }
 
     // Texture税 RTV 持失
@@ -104,15 +93,13 @@ CVoxelizationShader::CVoxelizationShader()
 
     // Texture税 UAV 持失
     {
-        CpuDescriptorHandle.ptr += descriptorIncrementSize;
-
         D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
         uavDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
         uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
         uavDesc.Texture3D.MipSlice = 0;
         uavDesc.Texture3D.WSize = (VCT_SCENE_VOLUME_SIZE >> 0);
 
-        device->CreateUnorderedAccessView(m_VCTVoxelization3DRT->GetTexture(), nullptr, &uavDesc, CpuDescriptorHandle);
+        device->CreateUnorderedAccessView(m_VCTVoxelization3DRT->GetTexture(), nullptr, &uavDesc, m_VCTVoxelization3DRT->GetCPUHandle().GetCPUHandle());
     }
 
 }
@@ -131,7 +118,7 @@ ID3D12RootSignature* CVoxelizationShader::CreateRootSignature(int stateNum)
 {
     CGameFramework* framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
-    ID3D12RootSignature* rootSignature = {};
+    rootSignature = {};
 
     // Voxelization Root Signature 持失
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
@@ -281,20 +268,23 @@ void CVoxelizationShader::UpdateShaderVariables()
     CGameFramework* framework = CGameFramework::GetInstance();
     ID3D12GraphicsCommandList* commandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
     
-    CCamera* pCamera = CCameraManager::GetInstance()->GetMainCamera();
-    XMMATRIX mCameraView = XMLoadFloat4x4(&pCamera->GetViewMatrix());
-    XMMATRIX mCameraProjection = XMLoadFloat4x4(&pCamera->GetProjectionMatrix());
+    std::vector<CCamera*> cameras = CCameraManager::GetInstance()->GetCameras();
+    XMMATRIX mCameraView = XMLoadFloat4x4(&cameras[0]->GetViewMatrix());
+    XMMATRIX mCameraProjection = XMLoadFloat4x4(&cameras[0]->GetProjectionMatrix());
     XMMATRIX viewprojection = mCameraView * mCameraProjection;
-    XMMATRIX mLightViewProjection = XMMatrixIdentity();
+    XMMATRIX mLightViewProjection = XMLoadFloat4x4(&cameras[2]->GetLight()->m_toTexCoord);
 
-    XMStoreFloat4x4(&m_VoxelizationMappedData->WorldVoxelCube, XMMatrixScaling(0.1, 0.1, 0.1));
+    XMStoreFloat4x4(&m_VoxelizationMappedData->WorldVoxelCube, XMMatrixScaling(1.0f, 1.0f, 1.0f));
     XMStoreFloat4x4(&m_VoxelizationMappedData->ViewProjection, viewprojection);
-    XMStoreFloat4x4(&m_VoxelizationMappedData->ShadowViewProjection, viewprojection);
+    XMStoreFloat4x4(&m_VoxelizationMappedData->ShadowViewProjection, mLightViewProjection);
     float mWorldVoxelScale = VCT_SCENE_VOLUME_SIZE * 0.5f;
     memcpy(&m_VoxelizationMappedData->WorldVoxelScale, &mWorldVoxelScale, sizeof(float));
 
-    //XMStoreFloat4x4(&m_ModelMappedData->World, XMMatrixTranspose(XMLoadFloat4x4(&m_xmf4x4World)));
-    //memcpy(&m_ModelMappedData->DiffuseColor, &m_xmf4x4World, sizeof(float));
+    CObject* object = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::STRUCTURE)[0];
+    CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+    XMStoreFloat4x4(&m_ModelMappedData->World, XMLoadFloat4x4(&transform->GetWorldMatrix()));
+    XMFLOAT4 f4 = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+    memcpy(&m_ModelMappedData->DiffuseColor, &f4, sizeof(XMFLOAT4));
 }
 
 void CVoxelizationShader::Render()
@@ -302,6 +292,9 @@ void CVoxelizationShader::Render()
     CGameFramework* framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
     ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
+    GPUDescriptorHeap* gpuDescriptorHeap = m_DescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    gpuDescriptorHeap->Reset();
+    ID3D12DescriptorHeap* ppHeaps = gpuDescriptorHeap->GetHeap();
 
     CD3DX12_VIEWPORT vctViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE);
     CD3DX12_RECT vctRect = CD3DX12_RECT(0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE);
@@ -310,55 +303,51 @@ void CVoxelizationShader::Render()
     commandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
 
     SetPipelineState(0);
-    commandList->SetGraphicsRootSignature(CreateRootSignature(0));
-    commandList->SetDescriptorHeaps(1, &CbvSrvUavDescriptorHeap);
-
-    D3D12_GPU_DESCRIPTOR_HANDLE GpuDescriptorHandle = CbvSrvUavDescriptorHeap->GetGPUDescriptorHandleForHeapStart();
-    D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptorHandle = CbvSrvUavDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    UINT descriptorIncrementSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    commandList->SetGraphicsRootSignature(rootSignature);
+    commandList->SetDescriptorHeaps(1, &ppHeaps);
 
     // CBV
     UpdateShaderVariables();
 
     // CBV
-    commandList->SetGraphicsRootDescriptorTable(0, GpuDescriptorHandle);
-    GpuDescriptorHandle.ptr += descriptorIncrementSize;
-    CpuDescriptorHandle.ptr += descriptorIncrementSize;
-    commandList->SetGraphicsRootDescriptorTable(1, GpuDescriptorHandle);
-    GpuDescriptorHandle.ptr += descriptorIncrementSize;
-    CpuDescriptorHandle.ptr += descriptorIncrementSize;
+    DescriptorHandle cbv1Handle = gpuDescriptorHeap->GetHandleBlock(1);
+    DescriptorHandle cbv2Handle = gpuDescriptorHeap->GetHandleBlock(1);
+    gpuDescriptorHeap->AddToHandle(device, cbv1Handle, m_cpuVoxelization);
+    gpuDescriptorHeap->AddToHandle(device, cbv2Handle, m_cpuModel);
+    commandList->SetGraphicsRootDescriptorTable(0, cbv1Handle.GetGPUHandle());
+    commandList->SetGraphicsRootDescriptorTable(1, cbv2Handle.GetGPUHandle());
 
     // SRV    
-    
-    ID3D12DescriptorHeap* frameworkHeap = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap();
-    commandList->SetDescriptorHeaps(1, &frameworkHeap);
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuhandle = CAssetManager::GetInstance()->GetTexture("DepthWrite")->GetGpuDescriptorHandle();
-    commandList->SetGraphicsRootDescriptorTable(2, gpuhandle);
-    commandList->SetDescriptorHeaps(1, &CbvSrvUavDescriptorHeap);
-    GpuDescriptorHandle.ptr += descriptorIncrementSize;
-    CpuDescriptorHandle.ptr += descriptorIncrementSize;
+    DescriptorHandle srvHandle = gpuDescriptorHeap->GetHandleBlock(1);
+    gpuDescriptorHeap->AddToHandle(device, srvHandle, CAssetManager::GetInstance()->GetTexture("DepthWrite")->GetCPUHandle());
+    commandList->SetGraphicsRootDescriptorTable(2, srvHandle.GetGPUHandle());
 
     // UAV
+    DescriptorHandle uavHandle = gpuDescriptorHeap->GetHandleBlock(1);
     DX::ResourceTransition(commandList, m_VCTVoxelization3DRT->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+    gpuDescriptorHeap->AddToHandle(device, uavHandle, m_VCTVoxelization3DRT->GetCPUHandle());
     float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    commandList->ClearUnorderedAccessViewFloat(GpuDescriptorHandle, CpuDescriptorHandle, m_VCTVoxelization3DRT->GetTexture(), clearColorBlack, 0, nullptr);
+    commandList->ClearUnorderedAccessViewFloat(uavHandle.GetGPUHandle(), m_VCTVoxelization3DRT->GetCPUHandle().GetCPUHandle(), m_VCTVoxelization3DRT->GetTexture(), clearColorBlack, 0, nullptr);
 
-    commandList->SetGraphicsRootDescriptorTable(3, GpuDescriptorHandle);
-    GpuDescriptorHandle.ptr += descriptorIncrementSize;
-    CpuDescriptorHandle.ptr += descriptorIncrementSize;
+    commandList->SetGraphicsRootDescriptorTable(3, uavHandle.GetGPUHandle());
+
+    CObject* object = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::STRUCTURE)[0];
+    object->GetMesh()->Render(0);
+
     DX::ResourceTransition(commandList, m_VCTVoxelization3DRT->GetTexture(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON);
 }
 
-void CVoxelizationShader::VCTTexture::Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3D12ResourceStates, D3D12_RESOURCE_FLAGS D3D12ResourceFlags, DXGI_FORMAT DxgiFormat, const D3D12_CLEAR_VALUE& D3D12ClearValue, int rootSignature, UINT16 depth, UINT16 mips)
+void CVoxelizationShader::VCTTexture::Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3D12ResourceStates, D3D12_RESOURCE_FLAGS D3D12ResourceFlags, DXGI_FORMAT DxgiFormat, const D3D12_CLEAR_VALUE& D3D12ClearValue, int RS, UINT16 depth, UINT16 mips)
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
 
-	rootSignature = rootSignature;
+	rootSignature = RS;
 
 	ComPtr<ID3D12Resource> texture = nullptr;
-	CD3DX12_HEAP_PROPERTIES d3d12HeapProperties(D3D12_HEAP_TYPE_DEFAULT);
+	CD3DX12_HEAP_PROPERTIES d3d12HeapProperties(D3D12_HEAP_TYPE_DEFAULT); //D3D12_HEAP_TYPE_READBACK
 	CD3DX12_RESOURCE_DESC d3d12ResourceDesc = { D3D12_RESOURCE_DIMENSION_TEXTURE3D, 0, Width, Height, depth, mips, DxgiFormat, 1, 0, D3D12_TEXTURE_LAYOUT_UNKNOWN, D3D12ResourceFlags };
-
+    
 	DX::ThrowIfFailed(d3d12Device->CreateCommittedResource(&d3d12HeapProperties, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc, D3D12ResourceStates, &D3D12ClearValue, __uuidof(ID3D12Resource), reinterpret_cast<void**>(texture.GetAddressOf())));
+    
     m_d3d12Texture = texture.Get();
 }

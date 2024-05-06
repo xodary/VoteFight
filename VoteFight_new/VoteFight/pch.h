@@ -58,6 +58,7 @@ using namespace std;
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 
+
 #include "D3DX12.h"
 #include "DDSTextureLoader12.h"
 #include <D3D11on12.h>
@@ -108,4 +109,37 @@ template <typename T>
 inline T DivideByMultiple(T value, size_t alignment)
 {
 	return (T)((value + alignment - 1) / alignment);
+}
+
+#include <filesystem>
+#include <shlobj.h>
+#include "pix3.h"
+
+static std::wstring GetLatestWinPixGpuCapturerPath_Cpp17()
+{
+    LPWSTR programFilesPath = nullptr;
+    SHGetKnownFolderPath(FOLDERID_ProgramFiles, KF_FLAG_DEFAULT, NULL, &programFilesPath);
+
+    std::filesystem::path pixInstallationPath = programFilesPath;
+    pixInstallationPath /= "Microsoft PIX";
+
+    std::wstring newestVersionFound;
+
+    for (auto const& directory_entry : std::filesystem::directory_iterator(pixInstallationPath))
+    {
+        if (directory_entry.is_directory())
+        {
+            if (newestVersionFound.empty() || newestVersionFound < directory_entry.path().filename().c_str())
+            {
+                newestVersionFound = directory_entry.path().filename().c_str();
+            }
+        }
+    }
+
+    if (newestVersionFound.empty())
+    {
+        // TODO: Error, no PIX installation found
+    }
+
+    return pixInstallationPath / newestVersionFound / L"WinPixGpuCapturer.dll";
 }

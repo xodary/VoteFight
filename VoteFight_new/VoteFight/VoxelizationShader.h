@@ -20,7 +20,7 @@ class CVoxelizationShader : public CShader
 	friend class CAssetManager;
 
 	class VCTTexture : public CTexture {
-		int			    rootSignature;
+		int					rootSignature;
 	public:
 		void Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3D12ResourceStates, D3D12_RESOURCE_FLAGS D3D12ResourceFlags, DXGI_FORMAT DxgiFormat, const D3D12_CLEAR_VALUE& D3D12ClearValue, int rootSignature, UINT16 depth=-1, UINT16 mips=1);
 	};
@@ -30,14 +30,18 @@ private:
 
 	ComPtr<ID3D12Resource>					   m_VoxelizationBuffer;
 	CB_VOXELIZATION*						   m_VoxelizationMappedData;
+	DescriptorHandle						   m_cpuVoxelization;
 	ComPtr<ID3D12Resource>					   m_ModelBuffer;
 	CB_MODEL*								   m_ModelMappedData;
+	DescriptorHandle						   m_cpuModel;
 
 	VCTTexture*								   m_VCTVoxelization3DRT;
-	ID3D12DescriptorHeap*					   CbvSrvUavDescriptorHeap;
+
 	ID3D12DescriptorHeap*					   RtvDescriptorHeap;
 	ID3D12DescriptorHeap*					   DsvDescriptorHeap;
+	ID3D12RootSignature*					   rootSignature;
 
+	DescriptorHeapManager*					   m_DescriptorHeapManager;
 public:
 	virtual ~CVoxelizationShader();
 

@@ -104,4 +104,6 @@ void PS_Main(PS_IN input)
     float shadow = shadowBuffer.SampleCmpLevelZero(PcfShadowMapSampler, shadowcoord.xy, shadowcoord.z);
 
     outputTexture[finalVoxelPos] = colorRes * float4(shadow, shadow, shadow, 1.0f);
+    
+    //return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }

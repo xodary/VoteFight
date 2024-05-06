@@ -126,16 +126,16 @@ DescriptorHeapManager::DescriptorHeapManager()
 	ID3D12Device* device = CGameFramework::GetInstance()->GetDevice();
 	ZeroMemory(mCPUDescriptorHeaps, sizeof(mCPUDescriptorHeaps));
 
-	static const int MaxNoofSRVDescriptors = 4 * 4096;
+	static const int MaxNoofSRVDescriptors = 128;
 
 	mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxNoofSRVDescriptors);
-	mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 128);
-	mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 128);
-	mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
+	//mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 128);
+	//mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_DSV] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 128);
+	//mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
 
 	ZeroMemory(mGPUDescriptorHeaps, sizeof(mGPUDescriptorHeaps));
 	mGPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = new GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxNoofSRVDescriptors);
-	mGPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
+	//mGPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER] = new GPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER, 16);
 }
 
 DescriptorHeapManager::~DescriptorHeapManager()
@@ -150,9 +150,4 @@ DescriptorHeapManager::~DescriptorHeapManager()
 DescriptorHandle DescriptorHeapManager::CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType)
 {
 	return mCPUDescriptorHeaps[heapType]->GetNewHandle();
-}
-
-DescriptorHandle DescriptorHeapManager::CreateGPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE heapType, UINT count)
-{
-	return mGPUDescriptorHeaps[heapType]->GetHandleBlock(count);
 }
