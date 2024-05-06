@@ -86,11 +86,16 @@ void CGameScene::Init()
 	Load("Woods.bin");
 	Load("FenceScene.bin");
 	Load("Homer_link_Scene.bin");
+	Load("Homer_Solider_Scene.bin");
+	Load("Marge_Police_Scene.bin");
 	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
 	CObject* object = new CSkyBox();
 	AddObject(GROUP_TYPE::SKYBOX, object);
+
+	//object = new CTerrain(257,257,1);
+	//AddObject(GROUP_TYPE::TERRAIN, object);
 
 	// 2024 - 04 - 10
 	// 빌보드 추가 - 아직 미완성
@@ -147,6 +152,7 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
+
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 }
@@ -225,7 +231,7 @@ void CGameScene::PreRender()
 				camera->UpdateShaderVariables();
 				depthTexture->UpdateShaderVariable();
 
-				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::PLAYER); ++i)
+				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::MONSTER); ++i)
 				{
 					const vector<CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
 

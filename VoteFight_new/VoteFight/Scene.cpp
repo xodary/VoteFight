@@ -29,7 +29,12 @@ void CScene::Load(const string& fileName)
 {
 	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
 	ifstream in(filePath, ios::binary);
-	string str, modelFileName;
+	if (!in)
+	{
+		cout << "파일 : " << filePath << "을 찾지 못함" << endl;
+		return;
+	}
+		string str, modelFileName;
 	GROUP_TYPE groupType = {};
 
 	while (true)
@@ -79,7 +84,8 @@ void CScene::Load(const string& fileName)
 					object->SetGroupType((UINT)GROUP_TYPE(groupType));
 
 					XMFLOAT3 currPosition = transforms[3 * i];
-					if(fileName != "FenceScene.bin")currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
+					//if(fileName != "FenceScene.bin")currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
+				currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
 					cout << fileName << endl;
 					transform->SetPosition(currPosition);
 					//transform->SetPosition(XMFLOAT3(currPosition.x, GetTerrainHeight(currPosition.x, currPosition.z), currPosition.z));
@@ -186,7 +192,9 @@ void CScene::Update()
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
 				object->Update();
-				if (m_terrain && object->GetInstanceID() != (UINT)GROUP_TYPE::UI)object->CheckInTerrainSpace(*this);
+				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI &&
+					object->GetInstanceID() != (UINT)GROUP_TYPE::TERRAIN))object->CheckInTerrainSpace(*this);
+		
 			}
 		}
 	}

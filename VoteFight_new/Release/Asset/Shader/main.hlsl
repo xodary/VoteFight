@@ -182,7 +182,7 @@ float4 franelOuterLine(float3 vPosition, float3 vNormal, float4 cColor)
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     float rim = abs(dot(vNormal, vToCamera));
     float4 newColor = cColor;
-    if (rim > 0.3)
+    if (rim > 0.2)
         rim = 1.0;
     else 
         rim = -1;
@@ -376,7 +376,10 @@ VS_SKYBOX_CUBEMAP_OUTPUT VS_SkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
 float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 {
     float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
-    return (cColor);
+    float4 afterColor = float4(1, 0, 0, 0);
+    
+    float4 newColor = lerp(cColor, afterColor, gfTotalTime * 0.04);
+    return (newColor);
 }
 
 
@@ -518,7 +521,6 @@ VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
     output.uv = input.uv;
     
     output.uvs = mul(pW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
-    
     return (output);
 }
 
@@ -529,9 +531,9 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     float3 normal = normalize(input.normal);
     float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs);
     cColor = cColor * cIllumination;
+    
     // cColor = franelOuterLine(input.position, normal, cColor);
-    return (lerp(cColor, cIllumination, 0.6f));
-    //return cColor;
+        return cColor;
     //return cColor * cIllumination;
 
 }

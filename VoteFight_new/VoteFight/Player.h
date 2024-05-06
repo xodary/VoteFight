@@ -58,6 +58,7 @@ public:
 	//void IsCollidedByEventTrigger(const XMFLOAT3& NewPosition);
 
 	virtual void OnCollisionEnter(CObject* collidedObject);
+	virtual void OnCollision(CObject* collidedObject);
 	virtual void OnCollisionExit(CObject* collidedObject);
 };
 

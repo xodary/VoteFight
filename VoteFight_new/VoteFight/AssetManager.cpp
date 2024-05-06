@@ -153,7 +153,12 @@ void CAssetManager::LoadShaders()
 	m_shaders.emplace(shader->GetName(), shader);
 
 	shader = new CTerrainShader();
-	shader->SetName("Terrain");
+	shader->SetName("Terrain1");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CTerrainShader();
+	shader->SetName("Terrain2");
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
@@ -437,24 +442,11 @@ void CAssetManager::Init()
 	strcat_s(assetPath, 255, "\\Release\\Asset\\");
 	m_assetPath = assetPath;
 
-	LoadMeshes("Meshes.bin");
-	LoadMeshes("Meshess.bin");
-	LoadMeshes("Meshesss.bin");
-	LoadMeshes("FireWoodMesh.bin");
-	LoadMeshes("Fence_Mesh.bin");
-	LoadMeshes("Homer_Meshs.bin");
-	LoadTextures("Textures.bin");
-	LoadTextures("Texturesss.bin");
-	LoadTextures("FireWoodTextures.bin");
-	LoadTextures("Fence_Texture.bin");
-	LoadTextures("Simpsons_texture.bin");
+	
+	SceneLoadMeshes();
+	SceneLoadTextures();
 	LoadShaders();
-	LoadMaterials("Materials.bin");
-	LoadMaterials("Materialss.bin");
-	LoadMaterials("FireWoodMaterials.bin");
-	LoadMaterials("WhiteHouse.bin");
-	LoadMaterials("Fence_Material.bin");
-	LoadMaterials("Homer_Material.bin");
+	SceneLoadMaterials();
 }
 
 void CAssetManager::CreateShaderResourceViews()
@@ -499,4 +491,36 @@ void CAssetManager::ReleaseUploadBuffers()
 	{
 		p.second->ReleaseUploadBuffers();
 	}
+}
+
+void CAssetManager::SceneLoadMeshes()
+{
+	LoadMeshes("Meshes.bin");
+	LoadMeshes("Meshess.bin");
+	LoadMeshes("Meshesss.bin");
+	LoadMeshes("FireWoodMesh.bin");
+	LoadMeshes("Fence_Mesh.bin");
+	LoadMeshes("Homer_Meshs.bin");
+	LoadMeshes("Homer_Solider_Mesh.bin");
+	LoadMeshes("Marge_Police_Mesh.bin");
+}
+
+void CAssetManager::SceneLoadMaterials()
+{
+	LoadMaterials("Materials.bin");
+	LoadMaterials("Materialss.bin");
+	LoadMaterials("FireWoodMaterials.bin");
+	LoadMaterials("WhiteHouse.bin");
+	LoadMaterials("Fence_Material.bin");
+	LoadMaterials("Homer_Material.bin");
+	LoadMaterials("rpgpp_lt_building_05_Material.bin");
+}
+
+void CAssetManager::SceneLoadTextures()
+{
+	LoadTextures("Textures.bin");
+	LoadTextures("Texturesss.bin");
+	LoadTextures("FireWoodTextures.bin");
+	LoadTextures("Fence_Texture.bin");
+	LoadTextures("Simpsons_texture.bin");
 }

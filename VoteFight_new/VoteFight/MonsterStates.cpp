@@ -32,8 +32,8 @@ void CMonsterIdleState::Exit(CObject* object)
 
 void CMonsterIdleState::Update(CObject* object)
 {
-	CNPC* npc = static_cast<CNPC*>(object);
-	CStateMachine* stateMachine = static_cast<CStateMachine*>(npc->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-	CTransform* transform = static_cast<CTransform*>(npc->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CMonster* monster = static_cast<CMonster*>(object);
+	CStateMachine* stateMachine = static_cast<CStateMachine*>(monster->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+	CTransform* transform = static_cast<CTransform*>(monster->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 }

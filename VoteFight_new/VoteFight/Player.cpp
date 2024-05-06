@@ -107,6 +107,7 @@ void CPlayer::Update()
 {
 	CObject::Update();
 	
+
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
@@ -119,16 +120,23 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 	}
 
 }
-void CPlayer::OnCollisionExit(CObject* collidedObject)
+void CPlayer::OnCollision(CObject* collidedObject)
 {
-	if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::NPC)
+	if (KEY_TAP(KEY::F))
 	{
-		CNPC* targetNPC = (CNPC*)collidedObject;
-		if (!targetNPC->GetQuest()->getCompletionStatus())
+		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::NPC)
 		{
-			m_Inventory->exchangeItem(targetNPC->GetQuest()->GetItemName(), targetNPC->GetQuest()->GetItemQuantity(), "tiket", 1);
+			CNPC* targetNPC = (CNPC*)collidedObject;
+			if (!targetNPC->GetQuest()->getCompletionStatus())
+			{
+				m_Inventory->exchangeItem(targetNPC->GetQuest()->GetItemName(), targetNPC->GetQuest()->GetItemQuantity(), "tiket", 1);
+			}
 		}
 	}
+}
+void CPlayer::OnCollisionExit(CObject* collidedObject)
+{
+	
 }
 
 
