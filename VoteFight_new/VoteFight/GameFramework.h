@@ -127,9 +127,6 @@ public:
 
 	void AdvanceFrame();
 
-	// Server
-	void ConnectServer();
-
 public:
 	void ResourceBarriersBegin(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers) { barriers.clear(); }
 	void ResourceBarriersEnd(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList) {

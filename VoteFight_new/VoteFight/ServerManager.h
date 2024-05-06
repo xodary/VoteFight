@@ -12,6 +12,8 @@ public:
 	static char*				m_SERVERIP;
 	static int					m_id;
 
+	static bool					m_isLogin;
+
 public:
 	static void					ConnectServer();
 	static void					Tick();

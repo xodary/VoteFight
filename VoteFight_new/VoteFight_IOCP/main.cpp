@@ -86,6 +86,7 @@ void WorkerThread()
 				auto p_readOverlapped = (EXP_OVER*)readEvent.lpOverlapped;
 
 				if (IO_TYPE::IO_SEND == p_readOverlapped->m_ioType) {
+					cout << " >> Send - size : " << (int)p_readOverlapped->m_buf[0] << endl;
 					cout << " >> Send - type : " << (int)p_readOverlapped->m_buf[1] << endl;
 					p_readOverlapped->m_isReadOverlapped = false;
 					continue;
@@ -212,12 +213,35 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
 		_Client->m_id = nextClientID++;
+
 		{	// Send connected client info
 			SC_INIT_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_INIT_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_INIT_PACKET;
 			send_packet.m_id = _Client->m_id;
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+		 
+		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (rc.second->m_id == _Client->m_id)
+				continue;
+			SC_ADD_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_ADD_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+			send_packet.m_id = rc.second->m_id;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+
+		// Send connected client infomation to other client (다른 모든 클라이언트에게 특정 클라이언트의 정보를 보냄)
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (rc.second->m_id == _Client->m_id)
+				continue;
+			SC_ADD_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_ADD_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+			send_packet.m_id = _Client->m_id;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 		break;
 	}

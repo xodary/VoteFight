@@ -99,7 +99,6 @@
     <ClInclude Include="ImaysNet\targetver.h">
       <Filter>00. ImatsNet</Filter>
     </ClInclude>
-    <ClInclude Include="..\Packet.h" />
     <ClInclude Include="RemoteClient.h">
       <Filter>02. RemoteClient</Filter>
     </ClInclude>

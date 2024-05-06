@@ -608,7 +608,6 @@ void CGameFramework::AdvanceFrame()
 
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
-
 	CServerManager::Tick();
 
 	PopulateCommandList();

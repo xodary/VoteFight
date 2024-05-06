@@ -17,7 +17,8 @@ recursive_mutex CServerManager::m_mutex;
 shared_ptr<Socket> CServerManager::m_tcpSocket;
 
 // 클라이언트 ID
-int	CServerManager::m_id{ -1 };
+int		CServerManager::m_id{ -1 };
+bool	CServerManager::m_isLogin{ false };
 
 // 소켓 수신 콜백 함수
 void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_over, DWORD recv_flag)
@@ -25,6 +26,10 @@ void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_ove
 	// 수신된 데이터를 갖고 오기 위한 버퍼와 수신된 데이터 길이
 	char* recv_buf = reinterpret_cast<EXP_OVER*>(recv_over)->m_buf;
 	int recv_buf_Length = num_bytes;
+
+	cout << " >> Packet Size - " << (int)recv_buf[0] << endl;
+	cout << " >> num_bytes - " << num_bytes << endl;
+	cout << " >> Packet Type - " << (int)recv_buf[1] << endl;
 
 	{ 
 		// 수신된 데이터 처리
@@ -87,7 +92,13 @@ void CServerManager::ConnectServer()	// 서버 연결 함수
 	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());*/
 
 	m_tcpSocket->Bind(Endpoint::Any);
-	CServerManager::Connetion();		// 엱결
+	CServerManager::Connetion();		// 연결
+
+	CS_LOGIN_PACKET send_packet;
+	send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+	send_packet.m_type = PACKET_TYPE::P_CS_LOGIN_PACKET;
+	PacketQueue::AddSendPacket(&send_packet);
+
 	CServerManager::Do_Recv();			// 데이터 수신 시작
 }
 
@@ -152,6 +163,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case  PACKET_TYPE::P_SC_INIT_PACKET: {
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
 		cout << "E_PACKET_SC_ADD_PLAYER" << endl;
+
 		
 		break;
 	}
