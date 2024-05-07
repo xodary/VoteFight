@@ -376,10 +376,7 @@ VS_SKYBOX_CUBEMAP_OUTPUT VS_SkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
 float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 {
     float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
-    float4 afterColor = float4(1, 0, 0, 0);
-    
-    float4 newColor = lerp(cColor, afterColor, gfTotalTime * 0.04);
-    return (newColor);
+    return (cColor);
 }
 
 

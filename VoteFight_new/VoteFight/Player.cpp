@@ -12,6 +12,7 @@
 #include "Transform.h"
 #include "PlayerStates.h"
 #include "NPC.h"
+#include "UI.h"
 
 CPlayer::CPlayer() :
 	m_isAiming(),
@@ -112,18 +113,27 @@ void CPlayer::Update()
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
 {
-	cout << collidedObject->GetInstanceID() << endl;
-	if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::STRUCTURE)
+	switch (collidedObject->GetGroupType())
 	{
-		m_Inventory->addItem(collidedObject->GetName(), 1);
-		collidedObject->SetDeleted(true);
+	case (UINT)GROUP_TYPE::STRUCTURE:
+	case (UINT)GROUP_TYPE::NPC:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "Pick")
+				m_UI[i]->SetActive(true);
+		}
+		break;
 	}
-
 }
 void CPlayer::OnCollision(CObject* collidedObject)
 {
 	if (KEY_TAP(KEY::F))
 	{
+		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::STRUCTURE)
+		{
+			m_Inventory->addItem(collidedObject->GetName(), 1);
+			collidedObject->SetDeleted(true);
+		}
 		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::NPC)
 		{
 			CNPC* targetNPC = (CNPC*)collidedObject;
@@ -136,7 +146,26 @@ void CPlayer::OnCollision(CObject* collidedObject)
 }
 void CPlayer::OnCollisionExit(CObject* collidedObject)
 {
-	
+	switch (collidedObject->GetGroupType())
+	{
+	case (UINT)GROUP_TYPE::STRUCTURE:
+	case (UINT)GROUP_TYPE::NPC:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "Pick")
+				m_UI[i]->SetActive(false);
+		}
+		break;
+	}
+}
+
+void CPlayer::SetUI(CUI* ui)
+{
+	if (&ui != nullptr)m_UI.push_back(ui);
+	cout << ui->GetName() << endl;
+	if (ui->GetName() == "Pick")
+		ui->SetActive(false);
+//	m_UI->SetActive(false);
 }
 
 

@@ -84,8 +84,7 @@ void CScene::Load(const string& fileName)
 					object->SetGroupType((UINT)GROUP_TYPE(groupType));
 
 					XMFLOAT3 currPosition = transforms[3 * i];
-					//if(fileName != "FenceScene.bin")currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
-				currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
+					currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
 					cout << fileName << endl;
 					transform->SetPosition(currPosition);
 					//transform->SetPosition(XMFLOAT3(currPosition.x, GetTerrainHeight(currPosition.x, currPosition.z), currPosition.z));
@@ -120,7 +119,7 @@ void CScene::LoadUI(const string& fileName)
 		if (str == "<UI>")
 		{
 			CUI* ui = CUI::Load(in);
-
+			ui->SetGroupType((UINT)GROUP_TYPE::UI);
 			AddObject(GROUP_TYPE::UI, ui);
 		}
 		else if (str == "</UIs>")

@@ -3,6 +3,7 @@
 
 class CItem;
 class CInventory;
+class CUI;
 
 class CPlayer : public CCharacter
 {
@@ -15,6 +16,7 @@ private:
 	float	 m_clickAngle;
 
     CInventory* m_Inventory;
+    vector<CUI*> m_UI;
 public:
 	CPlayer();
 	virtual ~CPlayer();
@@ -60,6 +62,8 @@ public:
 	virtual void OnCollisionEnter(CObject* collidedObject);
 	virtual void OnCollision(CObject* collidedObject);
 	virtual void OnCollisionExit(CObject* collidedObject);
+
+    void SetUI(CUI* ui);
 };
 
 class CItem {

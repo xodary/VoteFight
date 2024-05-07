@@ -82,6 +82,7 @@ void CGameScene::Init()
 
 	// 씬 로드
 	Load("GameScene.bin");
+	Load("Fir_Tree_Scene.bin");
 	Load("BinaryScene.bin");
 	Load("Woods.bin");
 	Load("FenceScene.bin");
@@ -155,6 +156,12 @@ void CGameScene::Init()
 
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
+
+	vector<CObject*> UIs = GetGroupObject(GROUP_TYPE::UI);
+	for (int i = 0; i < UIs.size(); ++i)
+	{
+		static_cast<CPlayer*>(objects[0])->SetUI(static_cast<CUI*>(UIs[i]));
+	}
 }
 
 // 2024 04 18일 이시영 수정 

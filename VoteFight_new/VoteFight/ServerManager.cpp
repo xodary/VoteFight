@@ -87,8 +87,8 @@ void CServerManager::ConnectServer()	// 서버 연결 함수
 	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());*/
 
 	m_tcpSocket->Bind(Endpoint::Any);
-	CServerManager::Connetion();		// 엱결
-	CServerManager::Do_Recv();			// 데이터 수신 시작
+	//CServerManager::Connetion();		// 엱결
+	//CServerManager::Do_Recv();			// 데이터 수신 시작
 }
 
 void CServerManager::Tick()				//주기적인 작업 실행 함수
