@@ -83,8 +83,8 @@ cbuffer CB_Sprite : register(b4)
 float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
 {
  
-    float3 vToLight = m_lights[nIndex].m_position;
-    float fDiffuseFactor = dot(vNormal, vToLight) * 0.7 + 0.3;
+    float3 vToLight = m_lights[nIndex].m_direction;
+    float fDiffuseFactor = dot(vNormal, vToLight) * 0.5 + 0.5;
     fDiffuseFactor = fDiffuseFactor * 5;
     fDiffuseFactor = ceil(fDiffuseFactor) / 5;
    

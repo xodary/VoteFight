@@ -118,18 +118,18 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(1.0f, 1.0f, 1.0f);	// Player 따라다님.
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player 따라다님.
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
 	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
-	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// 물체에 조명을 적용시켜줌.
-	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
-	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// 물체에 조명을 적용시켜줌.
+	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.7f, 0.7f, 0.7f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
 	m_mappedGameScene->m_lights[1].m_shadowMapping = false;
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);	
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 500.f;
 
