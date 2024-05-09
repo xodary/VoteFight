@@ -7,7 +7,6 @@
 #include "AssetManager.h"
 #include "CameraManager.h"
 #include "CollisionManager.h"
-#include "Player.h"
 #include "Texture.h"
 #include "UI.h"
 #include "Shader.h"
@@ -17,6 +16,8 @@
 #include "Camera.h"
  #include"Terrain.h"
  #include"Bilboard.h"
+
+CGameScene* CGameScene::m_CGameScene;
 
 CGameScene::CGameScene() :
 	m_d3d12GameScene(),
@@ -237,6 +238,7 @@ void CGameScene::PreRender()
 						}
 					}
 				}
+
 				m_terrain->PreRender(camera);
 
 				DX::ResourceTransition(d3d12GraphicsCommandList, depthTexture->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
