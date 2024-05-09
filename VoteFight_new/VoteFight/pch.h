@@ -1,5 +1,5 @@
 #pragma once
-#include "../VoteFight/ImaysNet/targetver.h"
+#include "../VoteFight/targetver.h"
 
 #define _CRT_SECURE_NO_WARNINGS
 #define WIN32_LEAN_AND_MEAN
@@ -81,6 +81,9 @@ using Microsoft::WRL::ComPtr;
 #include "udt.h"
 #include "func.h"
 
+// PIX
+#include "..\packages\WinPixEventRuntime.1.0.240308001\Include\WinPixEventRuntime\pix3.h"
+
 namespace Vector4
 {
 	inline XMFLOAT4 Add(XMFLOAT4& xmf4Vector1, XMFLOAT4& xmf4Vector2)
@@ -113,7 +116,6 @@ inline T DivideByMultiple(T value, size_t alignment)
 
 #include <filesystem>
 #include <shlobj.h>
-#include "pix3.h"
 
 static std::wstring GetLatestWinPixGpuCapturerPath_Cpp17()
 {

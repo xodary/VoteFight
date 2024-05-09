@@ -20,12 +20,16 @@ CVoxelizationShader::CVoxelizationShader()
     // Voxelization 3D Render Target 咆胶媚 积己
     {
         m_VCTVoxelization3DRT = new VCTTexture();
+        mVCTVoxelizationDebugRT = new VCTTexture();
 
         DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
         D3D12_RESOURCE_FLAGS flags = D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS;
 
         m_VCTVoxelization3DRT->SetName("Voxelization");
+        mVCTVoxelizationDebugRT->SetName("VoxelizationDebug");
+        
         m_VCTVoxelization3DRT->Create(static_cast<UINT64>(VCT_SCENE_VOLUME_SIZE), static_cast<UINT>(VCT_SCENE_VOLUME_SIZE), D3D12_RESOURCE_STATE_COMMON, flags, format, D3D12_CLEAR_VALUE{ format, { 1.0f, 1.0f, 1.0f, 1.0f } }, 2, VCT_SCENE_VOLUME_SIZE);
+        mVCTVoxelizationDebugRT->Create(static_cast<UINT64>(FRAME_BUFFER_WIDTH), static_cast<UINT>(FRAME_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, flags, format, D3D12_CLEAR_VALUE{ format, { 1.0f, 1.0f, 1.0f, 1.0f } }, 2, VCT_SCENE_VOLUME_SIZE);
     }
     
     // Descriptor Heap 积己
@@ -102,6 +106,7 @@ CVoxelizationShader::CVoxelizationShader()
         device->CreateUnorderedAccessView(m_VCTVoxelization3DRT->GetTexture(), nullptr, &uavDesc, m_VCTVoxelization3DRT->GetCPUHandle().GetCPUHandle());
     }
 
+    //
 }
 
 CVoxelizationShader::~CVoxelizationShader()
@@ -119,27 +124,44 @@ ID3D12RootSignature* CVoxelizationShader::CreateRootSignature(int stateNum)
     CGameFramework* framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
     rootSignature = {};
-
-    // Voxelization Root Signature 积己
+    CD3DX12_ROOT_SIGNATURE_DESC d3d12RootSignatureDesc = {};
     D3D12_ROOT_SIGNATURE_FLAGS rootSignatureFlags =
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
         D3D12_ROOT_SIGNATURE_FLAG_ALLOW_STREAM_OUTPUT |
         D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
-    CD3DX12_DESCRIPTOR_RANGE d3d12DescriptorRanges[4] = {};
-    d3d12DescriptorRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
-    d3d12DescriptorRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);
-    d3d12DescriptorRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);	
-    d3d12DescriptorRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);	
-    CD3DX12_ROOT_PARAMETER d3d12RootParameters[4] = {};
-    d3d12RootParameters[0].InitAsDescriptorTable(1, &d3d12DescriptorRanges[0]);
-    d3d12RootParameters[1].InitAsDescriptorTable(1, &d3d12DescriptorRanges[1]);
-    d3d12RootParameters[2].InitAsDescriptorTable(1, &d3d12DescriptorRanges[2]);
-    d3d12RootParameters[3].InitAsDescriptorTable(1, &d3d12DescriptorRanges[3]);
-    CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[1] = {};
-    d3d12SamplerDesc[0].Init(0, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 16, D3D12_COMPARISON_FUNC_LESS_EQUAL, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);
-    CD3DX12_ROOT_SIGNATURE_DESC d3d12RootSignatureDesc = {};
-    d3d12RootSignatureDesc.Init(_countof(d3d12RootParameters), d3d12RootParameters, _countof(d3d12SamplerDesc), d3d12SamplerDesc, rootSignatureFlags);
+
+    switch (stateNum) {
+    case 0:
+    {
+        CD3DX12_DESCRIPTOR_RANGE d3d12DescriptorRanges[4] = {};
+        d3d12DescriptorRanges[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+        d3d12DescriptorRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 1);
+        d3d12DescriptorRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);
+        d3d12DescriptorRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
+        CD3DX12_ROOT_PARAMETER d3d12RootParameters[4] = {};
+        d3d12RootParameters[0].InitAsDescriptorTable(1, &d3d12DescriptorRanges[0]);
+        d3d12RootParameters[1].InitAsDescriptorTable(1, &d3d12DescriptorRanges[1]);
+        d3d12RootParameters[2].InitAsDescriptorTable(1, &d3d12DescriptorRanges[2]);
+        d3d12RootParameters[3].InitAsDescriptorTable(1, &d3d12DescriptorRanges[3]);
+        CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[1] = {};
+        d3d12SamplerDesc[0].Init(0, D3D12_FILTER_COMPARISON_MIN_MAG_LINEAR_MIP_POINT, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_BORDER, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 16, D3D12_COMPARISON_FUNC_LESS_EQUAL, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);
+        d3d12RootSignatureDesc.Init(_countof(d3d12RootParameters), d3d12RootParameters, _countof(d3d12SamplerDesc), d3d12SamplerDesc, rootSignatureFlags);
+    }
+    break;
+    case 1:
+    {
+        CD3DX12_DESCRIPTOR_RANGE d3d12DescriptorRangesDebug[2] = {};
+        d3d12DescriptorRangesDebug[0].Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);
+        d3d12DescriptorRangesDebug[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_UAV, 1, 0);
+        CD3DX12_ROOT_PARAMETER d3d12RootParametersDebug[2] = {};
+        d3d12RootParametersDebug[0].InitAsDescriptorTable(1, &d3d12DescriptorRangesDebug[0]);
+        d3d12RootParametersDebug[1].InitAsDescriptorTable(1, &d3d12DescriptorRangesDebug[1]);
+        d3d12RootSignatureDesc.Init(_countof(d3d12RootParametersDebug), d3d12RootParametersDebug, 0, nullptr, rootSignatureFlags);
+    }
+    break;
+    }
+    // Voxelization Root Signature 积己
     ComPtr<ID3DBlob> d3d12SignatureBlob = nullptr, d3d12ErrorBlob = nullptr;
     DX::ThrowIfFailed(D3D12SerializeRootSignature(&d3d12RootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1, d3d12SignatureBlob.GetAddressOf(), d3d12ErrorBlob.GetAddressOf()));
     if (d3d12ErrorBlob) {
@@ -272,7 +294,7 @@ void CVoxelizationShader::UpdateShaderVariables()
     XMMATRIX mCameraView = XMLoadFloat4x4(&cameras[0]->GetViewMatrix());
     XMMATRIX mCameraProjection = XMLoadFloat4x4(&cameras[0]->GetProjectionMatrix());
     XMMATRIX viewprojection = mCameraView * mCameraProjection;
-    XMMATRIX mLightViewProjection = XMLoadFloat4x4(&cameras[2]->GetLight()->m_toTexCoord);
+    XMMATRIX mLightViewProjection = XMLoadFloat4x4(&cameras[2]->GetViewMatrix()) * XMLoadFloat4x4(&cameras[2]->GetProjectionMatrix());
 
     XMStoreFloat4x4(&m_VoxelizationMappedData->WorldVoxelCube, XMMatrixScaling(1.0f, 1.0f, 1.0f));
     XMStoreFloat4x4(&m_VoxelizationMappedData->ViewProjection, viewprojection);
@@ -287,54 +309,113 @@ void CVoxelizationShader::UpdateShaderVariables()
     memcpy(&m_ModelMappedData->DiffuseColor, &f4, sizeof(XMFLOAT4));
 }
 
-void CVoxelizationShader::Render()
+void CVoxelizationShader::Render(int stateNum)
 {
     CGameFramework* framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
     ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
     GPUDescriptorHeap* gpuDescriptorHeap = m_DescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    gpuDescriptorHeap->Reset();
-    ID3D12DescriptorHeap* ppHeaps = gpuDescriptorHeap->GetHeap();
+    ID3D12DescriptorHeap* ppHeaps = nullptr;
 
-    CD3DX12_VIEWPORT vctViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE);
-    CD3DX12_RECT vctRect = CD3DX12_RECT(0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE);
-    commandList->RSSetViewports(1, &vctViewport);
-    commandList->RSSetScissorRects(1, &vctRect);
-    commandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
+    switch (stateNum) {
+    case 0:
+    {
+        gpuDescriptorHeap->Reset();
+        ppHeaps = gpuDescriptorHeap->GetHeap();
 
-    SetPipelineState(0);
-    commandList->SetGraphicsRootSignature(rootSignature);
-    commandList->SetDescriptorHeaps(1, &ppHeaps);
+        CD3DX12_VIEWPORT vctViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE);
+        CD3DX12_RECT vctRect = CD3DX12_RECT(0.0f, 0.0f, VCT_SCENE_VOLUME_SIZE, VCT_SCENE_VOLUME_SIZE);
+        commandList->RSSetViewports(1, &vctViewport);
+        commandList->RSSetScissorRects(1, &vctRect);
+        commandList->OMSetRenderTargets(0, nullptr, FALSE, nullptr);
 
-    // CBV
-    UpdateShaderVariables();
+        SetPipelineState(0);
+        commandList->SetGraphicsRootSignature(rootSignature);
+        commandList->SetDescriptorHeaps(1, &ppHeaps);
 
-    // CBV
-    DescriptorHandle cbv1Handle = gpuDescriptorHeap->GetHandleBlock(1);
-    DescriptorHandle cbv2Handle = gpuDescriptorHeap->GetHandleBlock(1);
-    gpuDescriptorHeap->AddToHandle(device, cbv1Handle, m_cpuVoxelization);
-    gpuDescriptorHeap->AddToHandle(device, cbv2Handle, m_cpuModel);
-    commandList->SetGraphicsRootDescriptorTable(0, cbv1Handle.GetGPUHandle());
-    commandList->SetGraphicsRootDescriptorTable(1, cbv2Handle.GetGPUHandle());
+        // CBV
+        // UpdateShaderVariables();
+        std::vector<CCamera*> cameras = CCameraManager::GetInstance()->GetCameras();
+        XMMATRIX mCameraView = XMLoadFloat4x4(&cameras[0]->GetViewMatrix());
+        XMMATRIX mCameraProjection = XMLoadFloat4x4(&cameras[0]->GetProjectionMatrix());
+        XMMATRIX viewprojection = mCameraView * mCameraProjection;
+        XMMATRIX mLightViewProjection = XMLoadFloat4x4(&cameras[2]->GetViewMatrix()) * XMLoadFloat4x4(&cameras[2]->GetProjectionMatrix());
 
-    // SRV    
-    DescriptorHandle srvHandle = gpuDescriptorHeap->GetHandleBlock(1);
-    gpuDescriptorHeap->AddToHandle(device, srvHandle, CAssetManager::GetInstance()->GetTexture("DepthWrite")->GetCPUHandle());
-    commandList->SetGraphicsRootDescriptorTable(2, srvHandle.GetGPUHandle());
+        XMStoreFloat4x4(&m_VoxelizationMappedData->WorldVoxelCube, XMMatrixScaling(1.0f, 1.0f, 1.0f));
+        XMStoreFloat4x4(&m_VoxelizationMappedData->ViewProjection, viewprojection);
+        XMStoreFloat4x4(&m_VoxelizationMappedData->ShadowViewProjection, mLightViewProjection);
+        float mWorldVoxelScale = VCT_SCENE_VOLUME_SIZE * 0.5f;
+        memcpy(&m_VoxelizationMappedData->WorldVoxelScale, &mWorldVoxelScale, sizeof(float));
 
-    // UAV
-    DescriptorHandle uavHandle = gpuDescriptorHeap->GetHandleBlock(1);
-    DX::ResourceTransition(commandList, m_VCTVoxelization3DRT->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
-    gpuDescriptorHeap->AddToHandle(device, uavHandle, m_VCTVoxelization3DRT->GetCPUHandle());
-    float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
-    commandList->ClearUnorderedAccessViewFloat(uavHandle.GetGPUHandle(), m_VCTVoxelization3DRT->GetCPUHandle().GetCPUHandle(), m_VCTVoxelization3DRT->GetTexture(), clearColorBlack, 0, nullptr);
+        CObject* object = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::STRUCTURE)[0];
+        CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+        XMStoreFloat4x4(&m_ModelMappedData->World, XMLoadFloat4x4(&transform->GetWorldMatrix()));
+        XMFLOAT4 f4 = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
+        memcpy(&m_ModelMappedData->DiffuseColor, &f4, sizeof(XMFLOAT4));
 
-    commandList->SetGraphicsRootDescriptorTable(3, uavHandle.GetGPUHandle());
+        // CBV
+        DescriptorHandle cbv1Handle = gpuDescriptorHeap->GetHandleBlock(1);
+        DescriptorHandle cbv2Handle = gpuDescriptorHeap->GetHandleBlock(1);
+        gpuDescriptorHeap->AddToHandle(device, cbv1Handle, m_cpuVoxelization);
+        gpuDescriptorHeap->AddToHandle(device, cbv2Handle, m_cpuModel);
+        commandList->SetGraphicsRootDescriptorTable(0, cbv1Handle.GetGPUHandle());
+        commandList->SetGraphicsRootDescriptorTable(1, cbv2Handle.GetGPUHandle());
 
-    CObject* object = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::STRUCTURE)[0];
-    object->GetMesh()->Render(0);
+        // SRV
+        DescriptorHandle srvHandle = gpuDescriptorHeap->GetHandleBlock(1);
+        gpuDescriptorHeap->AddToHandle(device, srvHandle, CAssetManager::GetInstance()->GetTexture("DepthWrite")->GetCPUHandle());
+        commandList->SetGraphicsRootDescriptorTable(2, srvHandle.GetGPUHandle());
 
-    DX::ResourceTransition(commandList, m_VCTVoxelization3DRT->GetTexture(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON);
+        // UAV
+        DescriptorHandle uavHandle = gpuDescriptorHeap->GetHandleBlock(1);
+        DX::ResourceTransition(commandList, m_VCTVoxelization3DRT->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        gpuDescriptorHeap->AddToHandle(device, uavHandle, m_VCTVoxelization3DRT->GetCPUHandle());
+        float clearColorBlack[] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        commandList->ClearUnorderedAccessViewFloat(uavHandle.GetGPUHandle(), m_VCTVoxelization3DRT->GetCPUHandle().GetCPUHandle(), m_VCTVoxelization3DRT->GetTexture(), clearColorBlack, 0, nullptr);
+
+        commandList->SetGraphicsRootDescriptorTable(3, uavHandle.GetGPUHandle());
+
+        object->GetMesh()->Render(0);
+
+        DX::ResourceTransition(commandList, m_VCTVoxelization3DRT->GetTexture(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON);
+    }
+    return;
+    case 1:
+    {
+        CD3DX12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
+        CD3DX12_RECT rect = CD3DX12_RECT(0.0f, 0.0f, FRAME_BUFFER_WIDTH, FRAME_BUFFER_HEIGHT);
+
+        commandList->RSSetViewports(1, &viewport);
+        commandList->RSSetScissorRects(1, &rect);
+
+        gpuDescriptorHeap->Reset();
+        ppHeaps = gpuDescriptorHeap->GetHeap();
+
+        CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
+        XMMATRIX mCameraView = XMLoadFloat4x4(&camera->GetViewMatrix());
+        XMMATRIX mCameraProjection = XMLoadFloat4x4(&camera->GetProjectionMatrix());
+        XMMATRIX viewprojection = mCameraView * mCameraProjection;
+
+        XMStoreFloat4x4(&m_VoxelizationMappedData->WorldVoxelCube, XMMatrixScaling(1.0f, 1.0f, 1.0f));
+        XMStoreFloat4x4(&m_VoxelizationMappedData->ViewProjection, viewprojection);
+        float mWorldVoxelScale = VCT_SCENE_VOLUME_SIZE * 0.5f;
+        memcpy(&m_VoxelizationMappedData->WorldVoxelScale, &mWorldVoxelScale, sizeof(float));
+
+        DescriptorHandle cbv1Handle = gpuDescriptorHeap->GetHandleBlock(1);
+        gpuDescriptorHeap->AddToHandle(device, cbv1Handle, m_cpuVoxelization);
+        commandList->SetGraphicsRootDescriptorTable(0, cbv1Handle.GetGPUHandle());
+
+        DescriptorHandle uavHandle = gpuDescriptorHeap->GetHandleBlock(1);
+        DX::ResourceTransition(commandList, m_VCTVoxelization3DRT->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
+        gpuDescriptorHeap->AddToHandle(device, uavHandle, m_VCTVoxelization3DRT->GetCPUHandle());
+        commandList->SetGraphicsRootDescriptorTable(1, uavHandle.GetGPUHandle());
+
+        commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_POINTLIST);
+        commandList->DrawInstanced(VCT_SCENE_VOLUME_SIZE * VCT_SCENE_VOLUME_SIZE * VCT_SCENE_VOLUME_SIZE, 1, 0, 0);
+        DX::ResourceTransition(commandList, m_VCTVoxelization3DRT->GetTexture(), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, D3D12_RESOURCE_STATE_COMMON);
+    }
+    return;
+    }
 }
 
 void CVoxelizationShader::VCTTexture::Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3D12ResourceStates, D3D12_RESOURCE_FLAGS D3D12ResourceFlags, DXGI_FORMAT DxgiFormat, const D3D12_CLEAR_VALUE& D3D12ClearValue, int RS, UINT16 depth, UINT16 mips)

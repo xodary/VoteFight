@@ -1,4 +1,4 @@
-﻿#include "../pch.h"
+﻿#include "pch.h"
 #include "Iocp.h"
 #include "Socket.h"
 #include "Exception.h"

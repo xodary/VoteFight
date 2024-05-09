@@ -114,16 +114,16 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
 	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(1.0f, 1.0f, 1.0f);	// Player 따라다님.
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
-	m_mappedGameScene->m_lights[0].m_range = 500.f;
+	m_mappedGameScene->m_lights[0].m_range = 100.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
-	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// 물체에 조명을 적용시켜줌.
+	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);		// 물체에 조명을 적용시켜줌.
 	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
 	m_mappedGameScene->m_lights[1].m_shadowMapping = false;
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 0.0f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 0.0f, -1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 500.f;
 
@@ -157,6 +157,7 @@ void CGameScene::Update()
 {
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	if (m_terrain) objects[0]->SetTerrainY(this);
+
 	CTransform* playerPosition = static_cast<CTransform*>(objects[0]->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
 
@@ -179,7 +180,7 @@ void CGameScene::PreRender()
 
 			if ((light != nullptr) && (light->m_isActive) && (light->m_shadowMapping))
 			{
-				float nearPlaneDist = 0.0;
+				float nearPlaneDist = 3.0;
 				float farPlaneDist = light->m_range;
 
 				switch ((LIGHT_TYPE)light->m_type)
@@ -191,7 +192,7 @@ void CGameScene::PreRender()
 					break;
 				case LIGHT_TYPE::DIRECTIONAL:
 					//camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(TERRAIN_WIDTH), static_cast<float>(TERRAIN_HEIGHT), nearPlaneDist, farPlaneDist);
-					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(100), static_cast<float>(100), nearPlaneDist, farPlaneDist);
+					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(40), static_cast<float>(40), nearPlaneDist, farPlaneDist);
 					break;
 				}
 

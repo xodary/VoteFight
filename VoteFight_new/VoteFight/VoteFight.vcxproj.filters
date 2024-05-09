@@ -294,36 +294,6 @@
     <ClInclude Include="ServerManager.h">
       <Filter>소스 파일\10. Server\1. ServerMGR</Filter>
     </ClInclude>
-    <ClInclude Include="ImaysNet\Exception.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\ImaysNet.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\Iocp.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\PacketQueue.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\Poll.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\Semaphore.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\Socket.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\SocketInit.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\targetver.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\Endpoint.h">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClInclude>
     <ClInclude Include="Buffer.h">
       <Filter>헤더 파일\09. Light</Filter>
     </ClInclude>
@@ -347,6 +317,36 @@
     </ClInclude>
     <ClInclude Include="VoxelizationShader.h">
       <Filter>헤더 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="Iocp.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketQueue.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="Poll.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="Semaphore.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="Socket.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="SocketInit.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="Endpoint.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="Exception.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet.h">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -497,27 +497,6 @@
     <ClCompile Include="ServerManager.cpp">
       <Filter>소스 파일\10. Server\1. ServerMGR</Filter>
     </ClCompile>
-    <ClCompile Include="ImaysNet\Exception.cpp">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClCompile>
-    <ClCompile Include="ImaysNet\Iocp.cpp">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClCompile>
-    <ClCompile Include="ImaysNet\PacketQueue.cpp">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClCompile>
-    <ClCompile Include="ImaysNet\Poll.cpp">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClCompile>
-    <ClCompile Include="ImaysNet\Socket.cpp">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClCompile>
-    <ClCompile Include="ImaysNet\SocketInit.cpp">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClCompile>
-    <ClCompile Include="ImaysNet\Endpoint.cpp">
-      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
-    </ClCompile>
     <ClCompile Include="Buffer.cpp">
       <Filter>소스 파일\09. Light</Filter>
     </ClCompile>
@@ -538,6 +517,27 @@
     </ClCompile>
     <ClCompile Include="VoxelizationShader.cpp">
       <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketQueue.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="Poll.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="Socket.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="SocketInit.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="Endpoint.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="Exception.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="Iocp.cpp">
+      <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

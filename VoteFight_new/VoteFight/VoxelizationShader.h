@@ -9,6 +9,13 @@ struct CB_VOXELIZATION
 	float	   WorldVoxelScale;
 };
 
+struct CB_VOXELIZATION_DEBUG
+{
+	XMFLOAT4X4 WorldVoxelCube;
+	XMFLOAT4X4 ViewProjection;
+	float	   WorldVoxelScale;
+};
+
 struct CB_MODEL
 {
 	XMFLOAT4X4 World;
@@ -30,12 +37,17 @@ private:
 
 	ComPtr<ID3D12Resource>					   m_VoxelizationBuffer;
 	CB_VOXELIZATION*						   m_VoxelizationMappedData;
+
+	ComPtr<ID3D12Resource>					   m_VoxelizationDebufBuffer;
+	CB_VOXELIZATION_DEBUG*					   m_VoxelizationDebugMappedData;
+
 	DescriptorHandle						   m_cpuVoxelization;
 	ComPtr<ID3D12Resource>					   m_ModelBuffer;
 	CB_MODEL*								   m_ModelMappedData;
 	DescriptorHandle						   m_cpuModel;
 
 	VCTTexture*								   m_VCTVoxelization3DRT;
+	VCTTexture*								   mVCTVoxelizationDebugRT;
 
 	ID3D12DescriptorHeap*					   RtvDescriptorHeap;
 	ID3D12DescriptorHeap*					   DsvDescriptorHeap;
@@ -56,6 +68,6 @@ public:
 	virtual ID3D12RootSignature* CreateRootSignature(int stateNum);
 	
 	void UpdateShaderVariables();
-	void Render();
+	void Render(int stateNum);
 };
 

@@ -121,12 +121,13 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeader>Create</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>..\packages\WinPixEventRuntime.1.0.240308001\bin\x64\WinPixEventRuntime.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -168,43 +169,43 @@
     <ClInclude Include="DepthBuffer.h" />
     <ClInclude Include="DepthWriteShader.h" />
     <ClInclude Include="DescriptorHeap.h" />
+    <ClInclude Include="Endpoint.h" />
+    <ClInclude Include="Exception.h" />
     <ClInclude Include="func.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
-    <ClInclude Include="ImaysNet\Endpoint.h" />
-    <ClInclude Include="ImaysNet\Exception.h" />
-    <ClInclude Include="ImaysNet\ImaysNet.h" />
-    <ClInclude Include="ImaysNet\Iocp.h" />
-    <ClInclude Include="ImaysNet\PacketQueue.h" />
-    <ClInclude Include="ImaysNet\Poll.h" />
-    <ClInclude Include="ImaysNet\Semaphore.h" />
-    <ClInclude Include="ImaysNet\Socket.h" />
-    <ClInclude Include="ImaysNet\SocketInit.h" />
-    <ClInclude Include="ImaysNet\targetver.h" />
+    <ClInclude Include="ImaysNet.h" />
     <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Iocp.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="NPCStates.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectShader.h" />
+    <ClInclude Include="PacketQueue.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PipelineStateObject.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerStates.h" />
+    <ClInclude Include="Poll.h" />
     <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="RigidBody.h" />
     <ClInclude Include="RootSignature.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
+    <ClInclude Include="Semaphore.h" />
     <ClInclude Include="ServerManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SkinnedMesh.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SkyboxShader.h" />
+    <ClInclude Include="Socket.h" />
+    <ClInclude Include="SocketInit.h" />
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="StateMachine.h" />
+    <ClInclude Include="targetver.h" />
     <ClInclude Include="Terrain.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -248,18 +249,14 @@
     </ClCompile>
     <ClCompile Include="DepthWriteShader.cpp" />
     <ClCompile Include="DescriptorHeap.cpp" />
+    <ClCompile Include="Endpoint.cpp" />
+    <ClCompile Include="Exception.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="DDSTextureLoader12.cpp" />
     <ClCompile Include="func.cpp" />
     <ClCompile Include="GameScene.cpp" />
-    <ClCompile Include="ImaysNet\Endpoint.cpp" />
-    <ClCompile Include="ImaysNet\Exception.cpp" />
-    <ClCompile Include="ImaysNet\Iocp.cpp" />
-    <ClCompile Include="ImaysNet\PacketQueue.cpp" />
-    <ClCompile Include="ImaysNet\Poll.cpp" />
-    <ClCompile Include="ImaysNet\Socket.cpp" />
-    <ClCompile Include="ImaysNet\SocketInit.cpp" />
     <ClCompile Include="InputManager.cpp" />
+    <ClCompile Include="Iocp.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -267,6 +264,7 @@
     <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectShader.cpp" />
+    <ClCompile Include="PacketQueue.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -275,6 +273,7 @@
     </ClCompile>
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerStates.cpp" />
+    <ClCompile Include="Poll.cpp" />
     <ClCompile Include="RenderTarget.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </ClCompile>
@@ -289,6 +288,8 @@
     <ClCompile Include="SkinnedMesh.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SkyboxShader.cpp" />
+    <ClCompile Include="Socket.cpp" />
+    <ClCompile Include="SocketInit.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
     <ClCompile Include="State.cpp" />
     <ClCompile Include="StateMachine.cpp" />

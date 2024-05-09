@@ -1,7 +1,7 @@
 #include "pch.h"
 
-#include "./ImaysNet/ImaysNet.h"
-#include "./ImaysNet/PacketQueue.h"
+#include "ImaysNet.h"
+#include "PacketQueue.h"
 
 #include "ServerManager.h"
 #pragma comment(lib, "WS2_32.LIB")

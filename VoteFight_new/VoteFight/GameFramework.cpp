@@ -539,7 +539,8 @@ void CGameFramework::Render()
 {
 	CSceneManager::GetInstance()->Render();
 
-	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render();
+	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(0);
+	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
 }
 
 void CGameFramework::PostRender()

@@ -9,7 +9,8 @@
 #define EPSILON				    0.01f
 
 #define FRAME_BUFFER_WIDTH		1920
-#define FRAME_BUFFER_HEIGHT		1080 
+#define FRAME_BUFFER_HEIGHT		1080
+#define USE_PIX
 
 #define TERRAIN_WIDTH			257
 #define TERRAIN_HEIGHT			257
