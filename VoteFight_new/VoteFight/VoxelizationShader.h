@@ -26,34 +26,28 @@ class CVoxelizationShader : public CShader
 {
 	friend class CAssetManager;
 
-	class VCTTexture : public CTexture {
-		int					rootSignature;
-	public:
-		void Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3D12ResourceStates, D3D12_RESOURCE_FLAGS D3D12ResourceFlags, DXGI_FORMAT DxgiFormat, const D3D12_CLEAR_VALUE& D3D12ClearValue, int rootSignature, UINT16 depth=-1, UINT16 mips=1);
-	};
-
 private:
 	CVoxelizationShader();
 
 	ComPtr<ID3D12Resource>					   m_VoxelizationBuffer;
 	CB_VOXELIZATION*						   m_VoxelizationMappedData;
+	DescriptorHandle						   m_cpuVoxelization;
 
 	ComPtr<ID3D12Resource>					   m_VoxelizationDebufBuffer;
 	CB_VOXELIZATION_DEBUG*					   m_VoxelizationDebugMappedData;
+	DescriptorHandle						   m_cpuVoxelizationDebug;
 
-	DescriptorHandle						   m_cpuVoxelization;
 	ComPtr<ID3D12Resource>					   m_ModelBuffer;
 	CB_MODEL*								   m_ModelMappedData;
 	DescriptorHandle						   m_cpuModel;
 
-	VCTTexture*								   m_VCTVoxelization3DRT;
-	VCTTexture*								   mVCTVoxelizationDebugRT;
+	Texture3D*								   m_VCTVoxelization3DRT;
+	Texture3D*								   mVCTVoxelizationDebugRT;
 
-	ID3D12DescriptorHeap*					   RtvDescriptorHeap;
 	ID3D12DescriptorHeap*					   DsvDescriptorHeap;
-	ID3D12RootSignature*					   rootSignature;
+	ID3D12RootSignature*					   m_rootSignature[2];
 
-	DescriptorHeapManager*					   m_DescriptorHeapManager;
+	// DescriptorHeapManager*					   m_DescriptorHeapManager;
 public:
 	virtual ~CVoxelizationShader();
 
@@ -66,6 +60,8 @@ public:
 	virtual D3D12_DEPTH_STENCIL_DESC CreateDepthStencilState(int stateNum);
 	virtual D3D12_PRIMITIVE_TOPOLOGY_TYPE GetPrimitiveType(int stateNum);
 	virtual ID3D12RootSignature* CreateRootSignature(int stateNum);
+	virtual DXGI_FORMAT GetRTVFormat(int stateNum);
+	virtual DXGI_FORMAT GetDSVFormat(int stateNum);
 	
 	void UpdateShaderVariables();
 	void Render(int stateNum);

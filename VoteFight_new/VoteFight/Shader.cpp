@@ -168,7 +168,7 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE CShader::GetPrimitiveType(int stateNum)
 	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 }
 
-DXGI_FORMAT CShader::GetRTVFormat(int renderTargetNum, int stateNum)
+DXGI_FORMAT CShader::GetRTVFormat(int stateNum)
 {
 	return DXGI_FORMAT_R8G8B8A8_UNORM;
 }
@@ -199,7 +199,7 @@ void CShader::CreatePipelineState(int stateNum)
 	d3d12GraphicsPipelineState.SampleMask = UINT_MAX;
 	d3d12GraphicsPipelineState.PrimitiveTopologyType = GetPrimitiveType(stateNum);
 	d3d12GraphicsPipelineState.NumRenderTargets = 1;
-	d3d12GraphicsPipelineState.RTVFormats[0] = GetRTVFormat(0, stateNum);
+	d3d12GraphicsPipelineState.RTVFormats[0] = GetRTVFormat(stateNum);
 	d3d12GraphicsPipelineState.DSVFormat = GetDSVFormat(stateNum);
 	d3d12GraphicsPipelineState.SampleDesc.Count = 1;
 	d3d12GraphicsPipelineState.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
@@ -265,7 +265,7 @@ void CComputeShader::CreatePipelineState(int stateNum)
 	D3D12_COMPUTE_PIPELINE_STATE_DESC D3D12ComputePipelineStateDesc = {};
 	ComPtr<ID3DBlob> D3D12ComputeShaderBlob = {};
 
-	D3D12ComputePipelineStateDesc.pRootSignature = d3d12RootSignature;
+	D3D12ComputePipelineStateDesc.pRootSignature = CreateRootSignature(stateNum);
 	D3D12ComputePipelineStateDesc.CS = CreateComputeShader(D3D12ComputeShaderBlob.Get(), stateNum);
 	D3D12ComputePipelineStateDesc.NodeMask = 0;
 	D3D12ComputePipelineStateDesc.CachedPSO = D3D12CachedPipelineState;

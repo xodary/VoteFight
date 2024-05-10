@@ -170,7 +170,7 @@ void CAssetManager::LoadShaders()
 
 	shader = new CVoxelizationShader();
 	shader->SetName("Voxelization");
-	shader->CreatePipelineStates(1);
+	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 
@@ -479,10 +479,10 @@ void CAssetManager::CreateShaderResourceViews()
 			d3dShaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
 			d3dShaderResourceViewDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 
-			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, texture.second->m_CPUDescriptorHandle.GetCPUHandle());
+			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, texture.second->m_CBVSRVUAVHandle.GetCPUHandle());
 		}
 		else
-			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, texture.second->m_CPUDescriptorHandle.GetCPUHandle());
+			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, texture.second->m_CBVSRVUAVHandle.GetCPUHandle());
 	}
 }
 

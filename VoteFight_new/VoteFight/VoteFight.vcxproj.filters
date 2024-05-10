@@ -348,6 +348,9 @@
     <ClInclude Include="ImaysNet.h">
       <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
     </ClInclude>
+    <ClInclude Include="AnisoMipmap.h">
+      <Filter>헤더 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -538,6 +541,9 @@
     </ClCompile>
     <ClCompile Include="Iocp.cpp">
       <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
+    </ClCompile>
+    <ClCompile Include="AnisoMipmap.cpp">
+      <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

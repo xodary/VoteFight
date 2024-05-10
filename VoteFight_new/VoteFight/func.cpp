@@ -26,8 +26,7 @@ namespace DX
 		{
 			char debugMessage[64] = {};
 
-			printf("%s", debugMessage);
-			printf_s(debugMessage, _countof(debugMessage), "[Error] HRESULT of 0x % x\n", result);
+			printf("%s\n", "error");
 			OutputDebugStringA(debugMessage);
 		}
 	}

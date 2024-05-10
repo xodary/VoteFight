@@ -10,7 +10,7 @@ CTexture::CTexture() :
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
 	DescriptorHeapManager* descriptorManager = CGameFramework::GetInstance()->GetDescriptorHeapManager();
-	m_CPUDescriptorHandle = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	m_CBVSRVUAVHandle = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 CTexture::~CTexture()
@@ -98,7 +98,7 @@ void CTexture::UpdateShaderVariable()
 	DescriptorHeapManager* descriptorManager = framework->GetDescriptorHeapManager();
 	GPUDescriptorHeap* gpuDescriptorHeap = descriptorManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	DescriptorHandle srvHandle = gpuDescriptorHeap->GetHandleBlock(1);
-	gpuDescriptorHeap->AddToHandle(device, srvHandle, m_CPUDescriptorHandle);
+	gpuDescriptorHeap->AddToHandle(device, srvHandle, m_CBVSRVUAVHandle);
 
 	switch (m_type)
 	{
@@ -123,4 +123,17 @@ void CTexture::ReleaseUploadBuffers()
 	{
 		m_d3d12UploadBuffer.Reset();
 	}
+}
+
+void Texture3D::Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3D12ResourceStates, D3D12_RESOURCE_FLAGS D3D12ResourceFlags, DXGI_FORMAT DxgiFormat, const D3D12_CLEAR_VALUE& D3D12ClearValue, UINT16 depth, UINT16 mips)
+{
+	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
+
+	ComPtr<ID3D12Resource> texture = nullptr;
+	CD3DX12_HEAP_PROPERTIES d3d12HeapProperties(D3D12_HEAP_TYPE_DEFAULT); //D3D12_HEAP_TYPE_READBACK
+	CD3DX12_RESOURCE_DESC d3d12ResourceDesc = { D3D12_RESOURCE_DIMENSION_TEXTURE3D, 0, Width, Height, depth, mips, DxgiFormat, 1, 0, D3D12_TEXTURE_LAYOUT_UNKNOWN, D3D12ResourceFlags };
+
+	DX::ThrowIfFailed(d3d12Device->CreateCommittedResource(&d3d12HeapProperties, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc, D3D12ResourceStates, &D3D12ClearValue, __uuidof(ID3D12Resource), reinterpret_cast<void**>(texture.GetAddressOf())));
+
+	m_d3d12Texture = texture.Get();
 }
