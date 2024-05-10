@@ -73,7 +73,9 @@ enum class GROUP_TYPE
 	GROUND_ITEM,
 	SKYBOX,
 	TERRAIN,
+
 	UI,
+	Test,
 	COUNT
 };
 

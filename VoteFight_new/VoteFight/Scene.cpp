@@ -191,8 +191,8 @@ void CScene::Update()
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
 				object->Update();
-				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI &&
-					object->GetInstanceID() != (UINT)GROUP_TYPE::TERRAIN))object->CheckInTerrainSpace(*this);
+				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
+				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI ))object->CheckInTerrainSpace(*this);
 		
 			}
 		}

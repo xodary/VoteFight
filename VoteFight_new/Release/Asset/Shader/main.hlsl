@@ -13,10 +13,10 @@
 // ---------------- structs---------------------------
 struct LIGHT
 {
-    float4 m_xmf4Ambient;
-    float4 m_xmf4Diffuse;
-    float4 m_xmf4Specular;
-    float4 m_xmf3Position;
+    float4 m_xmf4Ambient;   // 전체적인 밝기를 결정
+    float4 m_xmf4Diffuse;   // 내적해서 빛을 계산 즉 명암을 결정
+    float4 m_xmf4Specular;  // 카메라의 반사빛을 결정
+    float4 m_xmf3Position;  // Driection은 안씀 spot이나 다른곳은 필요
     
     bool m_isActive;
 			   
@@ -84,7 +84,7 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
 {
  
     float3 vToLight = m_lights[nIndex].m_direction;
-    float fDiffuseFactor = dot(vNormal, vToLight) * 0.5 + 0.5;
+    float fDiffuseFactor = dot(vNormal, vToLight) * 0.6 + 0.4;
     fDiffuseFactor = fDiffuseFactor * 5;
     fDiffuseFactor = ceil(fDiffuseFactor) / 5;
    

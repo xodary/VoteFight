@@ -64,6 +64,7 @@ public:
 	virtual void OnCollisionExit(CObject* collidedObject);
 
     void SetUI(CUI* ui);
+    void SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, int NextItemsNum);
 };
 
 class CItem {
@@ -136,5 +137,14 @@ public:
         for (const auto& item : items) {
             cout << "아이템 이름 : " << item.first << ", 개수: " << item.second << endl;
         }
+    }
+
+    int getItems(const string& ItemName) {
+        for (const auto& item : items) {
+            if (item.first == ItemName) {
+                return item.second;
+            }
+        }
+        return 0; // 해당 아이템이 발견되지 않은 경우
     }
 };
