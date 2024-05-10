@@ -106,7 +106,6 @@ void CPlayer::Shoot()
 void CPlayer::Update()
 {
 	CObject::Update();
-	
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)

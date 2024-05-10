@@ -52,7 +52,8 @@ int CAnimator::GetFrameIndex(const string& key)
 
 void CAnimator::SetWeight(const string& key, float fWeight)
 {
-	m_animations[key]->SetWeight(fWeight);
+	m_weights[key] = fWeight;
+	//m_animations[key]->SetWeight(fWeight);
 }
 
 void CAnimator::Play(const string& key, bool isLoop, bool duplicatable)
@@ -66,6 +67,7 @@ void CAnimator::Play(const string& key, bool isLoop, bool duplicatable)
 	m_isLoop = isLoop;
 	m_isFinished = false;
 	m_bBlending = true;
+	//memcpy(&m_playingAnimations[key], &m_animations[key], sizeof(CAnimation*));
 	m_playingAnimations[key] = m_animations[key];
 	m_upAnimation = key;
 	m_frameIndices[key] = 0;
@@ -79,8 +81,8 @@ void CAnimator::BlendAnimation()
 		// 함수가 호출될 수록 m_nUpState에 해당하는 가중치는 0에서 1로 향하고, 나머지는 1에서 0으로 향한다.
 		// 1에서 0으로 향하는 나머지들과 0에서 1로 향하는 모든 가중치는 합해서 1.0이 되어야 한다.
 
-		float fUp = 1.0f - m_playingAnimations[m_upAnimation]->GetWeight();		// 비중이 낮아지는 애니메이션의 가중치를 모두 합한 값
-		float newUpWeight = m_playingAnimations[m_upAnimation]->GetWeight() + 5.f * DT;
+		float fUp = 1.0f - m_weights[m_upAnimation];		// 비중이 낮아지는 애니메이션의 가중치를 모두 합한 값
+		float newUpWeight = m_weights[m_upAnimation] + 5.f * DT;
 
 		// 비중이 완전히 기울면 블렌딩을 멈춘다.
 		if (newUpWeight >= 1.0f)
@@ -88,27 +90,28 @@ void CAnimator::BlendAnimation()
 			auto it = m_playingAnimations.begin();
 			while (it != m_playingAnimations.end()) {
 				if (it->first != m_upAnimation) {
-					it->second->SetWeight(0.0f);
-					it = m_playingAnimations.erase(it); // it이 다음 원소를 가리키도록 업데이트됩니다.
+					m_weights[it->first] = 0.0f;
+					// it->second->SetWeight(0.0f);
+					it = m_playingAnimations.erase(it); 
 				}
 				else {
-					++it; // 삭제하지 않을 원소는 다음 원소로 넘어갑니다.
+					++it; 
 				}
 			}
 			m_bBlending = false;
-			m_playingAnimations[m_upAnimation]->SetWeight(1.0f);
+			m_weights[m_upAnimation] = 1.0f;
 			return;
 		}
 
 		// 비중이 완전히 기울지 않았으면 블렌딩을 한다.
-		m_playingAnimations[m_upAnimation]->SetWeight(newUpWeight);
+		m_weights[m_upAnimation] = newUpWeight;
 		for (auto selected : m_playingAnimations)
 		{
 			// 모든 가중치의 합은 1.0이 되어야 한다.
 			// 그러므로 비중이 낮아지는 애니메이션의 감소 비율을 맞추어야 한다.
 			if (selected.first == m_upAnimation) continue;
-			float newWeight = (selected.second->GetWeight() / fUp) * (1 - newUpWeight);
-			selected.second->SetWeight(newWeight);
+			float newWeight = (m_weights[selected.first] / fUp) * (1 - newUpWeight);
+			m_weights[selected.first] = newWeight;
 		}
 	}
 }
@@ -292,7 +295,7 @@ void CSkinningAnimator::Update()
 					{
 						CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[i][j]->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-						transform->SetLocalPosition(Vector3::Add(transform->GetLocalPosition(), Vector3::ScalarProduct(bonePositions[i][j][m_frameIndices[selectedAnimation.first]], selectedAnimation.second->GetWeight())));
+						transform->SetLocalPosition(Vector3::Add(transform->GetLocalPosition(), Vector3::ScalarProduct(bonePositions[i][j][m_frameIndices[selectedAnimation.first]], m_weights[selectedAnimation.first])));
 						XMFLOAT3 Rotation = boneRotations[i][j][m_frameIndices[selectedAnimation.first]];
 						
 						// 상체 회전 (spine 기준)
@@ -304,8 +307,8 @@ void CSkinningAnimator::Update()
 						if (Rotation.x - transform->GetLocalRotation().x > 180) Rotation.x -= 360;
 						if (Rotation.y - transform->GetLocalRotation().y > 180) Rotation.y -= 360;
 						if (Rotation.z - transform->GetLocalRotation().z > 180) Rotation.z -= 360; 
-						transform->SetLocalRotation(Vector3::Add(transform->GetLocalRotation(), Vector3::ScalarProduct(Rotation, selectedAnimation.second->GetWeight())));
-						transform->SetLocalScale(Vector3::Add(transform->GetLocalScale(), Vector3::ScalarProduct(boneScales[i][j][m_frameIndices[selectedAnimation.first]], selectedAnimation.second->GetWeight())));
+						transform->SetLocalRotation(Vector3::Add(transform->GetLocalRotation(), Vector3::ScalarProduct(Rotation, m_weights[selectedAnimation.first])));
+						transform->SetLocalScale(Vector3::Add(transform->GetLocalScale(), Vector3::ScalarProduct(boneScales[i][j][m_frameIndices[selectedAnimation.first]], m_weights[selectedAnimation.first])));
 					}
 				}
 			}
