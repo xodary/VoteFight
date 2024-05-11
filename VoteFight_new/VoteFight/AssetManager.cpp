@@ -503,6 +503,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("Homer_Meshs.bin");
 	LoadMeshes("Homer_Solider_Mesh.bin");
 	LoadMeshes("Marge_Police_Mesh.bin");
+	LoadMeshes("Sea_Mesh.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
@@ -510,10 +511,11 @@ void CAssetManager::SceneLoadMaterials()
 	LoadMaterials("Materials.bin");
 	LoadMaterials("Materialss.bin");
 	LoadMaterials("FireWoodMaterials.bin");
-	LoadMaterials("WhiteHouse.bin");
+//	LoadMaterials("WhiteHouse.bin");
 	LoadMaterials("Fence_Material.bin");
 	LoadMaterials("Homer_Material.bin");
 	LoadMaterials("rpgpp_lt_building_05_Material.bin");
+	LoadMaterials("Sea_Material.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
@@ -523,4 +525,5 @@ void CAssetManager::SceneLoadTextures()
 	LoadTextures("FireWoodTextures.bin");
 	LoadTextures("Fence_Texture.bin");
 	LoadTextures("Simpsons_texture.bin");
+	LoadTextures("Sea_Textures.bin");
 }

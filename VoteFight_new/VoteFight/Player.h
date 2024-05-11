@@ -17,6 +17,8 @@ private:
 
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
+
+
 public:
 	CPlayer();
 	virtual ~CPlayer();
@@ -46,6 +48,7 @@ public:
 	bool b_right = false;
 	bool b_back = false;
 	bool b_left = false;
+    bool isMove = true;
 	//void ManagePistol(bool HasPistol);
 	//bool HasPistol() const;
 	//bool IsEquippedPistol() const;

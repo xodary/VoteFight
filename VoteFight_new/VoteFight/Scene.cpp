@@ -192,7 +192,7 @@ void CScene::Update()
 			{
 				object->Update();
 				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
-				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI ))object->CheckInTerrainSpace(*this);
+				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI ))object->InTerrainSpace(*this);
 		
 			}
 		}

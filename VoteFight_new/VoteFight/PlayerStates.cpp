@@ -319,6 +319,7 @@ void CPlayerWalkState::Enter(CObject* object)
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 	rigidBody->SetMaxSpeedXZ(400.0f);
+
 	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 400.0f * DT));
 }
 
@@ -391,7 +392,8 @@ void CPlayerWalkState::Update(CObject* object)
 
 	if (KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::W) || KEY_HOLD(KEY::D))
 	{
-		rigidBody->AddForce(Vector3::ScalarProduct(transform->GetForward(), 15000.0f * DT));
+
+		rigidBody->AddForce(Vector3::ScalarProduct(transform->GetForward(), 15000.0f * DT), player->isMove);
 	}
 
 	if (Math::IsZero(rigidBody->GetSpeedXZ()))
@@ -452,7 +454,7 @@ void CPlayerRunState::Update(CObject* object)
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::D))
 	{
-		rigidBody->AddForce(Vector3::ScalarProduct(XMFLOAT3(transform->GetForward()), 15000.0f * DT));
+		rigidBody->AddForce(Vector3::ScalarProduct(XMFLOAT3(transform->GetForward()), 15000.0f * DT), player->isMove);
 	}
 
 	if (Math::IsZero(rigidBody->GetSpeedXZ()))

@@ -9,10 +9,11 @@
 #include "Animator.h"
 #include "Camera.h"
 #include "StateMachine.h"
-#include "Transform.h"
 #include "PlayerStates.h"
 #include "NPC.h"
 #include "UI.h"
+
+#include "Transform.h"
 
 CPlayer::CPlayer() :
 	m_isAiming(),
@@ -117,6 +118,7 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 	switch (collidedObject->GetGroupType())
 	{
 	case (UINT)GROUP_TYPE::STRUCTURE:
+		isMove = false;
 	case (UINT)GROUP_TYPE::NPC:
 		for (size_t i = 0; i < m_UI.size(); i++)
 		{
@@ -151,6 +153,7 @@ void CPlayer::OnCollisionExit(CObject* collidedObject)
 	switch (collidedObject->GetGroupType())
 	{
 	case (UINT)GROUP_TYPE::STRUCTURE:
+		isMove = true;
 	case (UINT)GROUP_TYPE::NPC:
 		for (size_t i = 0; i < m_UI.size(); i++)
 		{

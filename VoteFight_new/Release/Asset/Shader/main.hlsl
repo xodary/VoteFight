@@ -10,6 +10,9 @@
 #define _WITH_LOCAL_VIEWER_HIGHLIGHTING
 #define _WITH_THETA_PHI_CONES
 
+#define OBJECT 0
+#define TERRAIN 1
+
 // ---------------- structs---------------------------
 struct LIGHT
 {
@@ -80,11 +83,18 @@ cbuffer CB_Sprite : register(b4)
 };
 //----------------------------------- Light Functions ------------------------------
 
-float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
+float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera, int ObjectType)
 {
  
     float3 vToLight = m_lights[nIndex].m_direction;
+    //float3 TIme_vToLight = vToLight;
+    //float RotateSpeed = 0.4f;
+    //TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
+    //TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
+    
     float fDiffuseFactor = dot(vNormal, vToLight) * 0.6 + 0.4;
+    
+    if (ObjectType == TERRAIN)    fDiffuseFactor = 0.6;
     fDiffuseFactor = fDiffuseFactor * 5;
     fDiffuseFactor = ceil(fDiffuseFactor) / 5;
    
@@ -94,7 +104,6 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
         float3 vHalf = normalize(vToCamera + vToLight);
         fSpecularFactor = max(dot(vHalf, vNormal), 0.0f);
     }
- 
     
     float4 cColor = ((m_lights[nIndex].m_xmf4Ambient) +
                 (m_lights[nIndex].m_xmf4Diffuse * fDiffuseFactor) +
@@ -126,8 +135,8 @@ float4 SpotLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
 
         return (((gLights[nIndex].m_cAmbient * gMaterial.m_cAmbient) + (gLights[nIndex].m_cDiffuse * fDiffuseFactor * gMaterial.m_cDiffuse) + (gLights[nIndex].m_cSpecular * fSpecularFactor * gMaterial.m_cSpecular)) * fAttenuationFactor * fSpotFactor);
     }
-    return (float4(0.0f, 0.0f, 0.0f, 0.0f));
     */
+    return (float4(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
 #define FRAME_BUFFER_WIDTH		1920
@@ -160,19 +169,18 @@ float Compute3x3ShadowFactor(float2 uv, float fDepth)
 }
 
 
-float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs)
+float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs, int ObjectType)
 {
     float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
     
-    
     float fShadowFactor = 1.0f;
-    fShadowFactor = Compute3x3ShadowFactor(uvs.xy / uvs.ww, uvs.z / uvs.w);
+    fShadowFactor = Compute3x3ShadowFactor(uvs.xy / uvs.ww, uvs.z / uvs.w) ;
 
-    cColor += DirectionalLight(LIGHT_INDEX, vNormal, vToCamera) * fShadowFactor;
-    
+    cColor += lerp(DirectionalLight(LIGHT_INDEX, vNormal, vToCamera, ObjectType), fShadowFactor, 0.7);
+ 
     return (cColor);
 }
 
@@ -182,7 +190,7 @@ float4 franelOuterLine(float3 vPosition, float3 vNormal, float4 cColor)
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     float rim = abs(dot(vNormal, vToCamera));
     float4 newColor = cColor;
-    if (rim > 0.2)
+    if (rim > 0.3)
         rim = 1.0;
     else 
         rim = -1;
@@ -307,7 +315,7 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
 	{
 		normalW = normalize(input.normalW);
     }
-    float4 cIllumination = Lighting(input.positionW, normalW, input.uvs);
+    float4 cIllumination = Lighting(input.positionW, normalW, input.uvs, OBJECT);
   // cColor = (lerp(cColor, cIllumination, 0.5f));
     cColor = cColor * cIllumination;
     cColor = franelOuterLine(input.positionW,normalW, cColor);
@@ -526,7 +534,7 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
     float4 cColor = cBaseTexColor;
     float3 normal = normalize(input.normal);
-    float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs);
+    float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs, TERRAIN);
     cColor = cColor * cIllumination;
     
     // cColor = franelOuterLine(input.position, normal, cColor);

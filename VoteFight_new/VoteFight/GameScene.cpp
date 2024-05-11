@@ -70,6 +70,18 @@ void CGameScene::Enter()
 
 	// CCameraManager::GetInstance()->GetMainCamera()->SetTarget(static_cast<CPlayer*>(objects[0]));
 	// CSoundManager::GetInstance()->Play(SOUND_TYPE_INGAME_BGM_1, 0.3f, false);
+	for (int i = 0; i < static_cast<int>(GROUP_TYPE::COUNT); ++i)
+	{
+		for (const auto& object : objects)
+		{
+			if ((object->IsActive()) && (!object->IsDeleted()))
+			{
+				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
+				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI))object->InTerrainSpace(*this);
+
+			}
+		}
+	}
 }
 
 void CGameScene::Exit()
@@ -89,6 +101,7 @@ void CGameScene::Init()
 	Load("Homer_link_Scene.bin");
 	Load("Homer_Solider_Scene.bin");
 	Load("Marge_Police_Scene.bin");
+	//Load("Sea_Scene.bin");
 	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
