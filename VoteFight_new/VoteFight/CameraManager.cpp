@@ -5,6 +5,9 @@
 #include "InputManager.h"
 #include "Camera.h"
 #include "Transform.h"
+#include "Scene.h"
+#include "SceneManager.h"
+#include "Player.h"
 
 CCameraManager::CCameraManager() :
 	m_cameras()

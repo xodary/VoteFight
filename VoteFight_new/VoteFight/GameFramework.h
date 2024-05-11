@@ -127,6 +127,8 @@ public:
 
 	void AdvanceFrame();
 
+	unsigned int my_id;
+
 public:
 	void ResourceBarriersBegin(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers) { barriers.clear(); }
 	void ResourceBarriersEnd(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList) {

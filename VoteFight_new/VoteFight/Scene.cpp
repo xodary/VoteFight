@@ -73,7 +73,6 @@ void CScene::Load(const string& fileName)
 			switch (groupType)
 			{
 			case GROUP_TYPE::STRUCTURE:
-			case GROUP_TYPE::PLAYER:
 			case GROUP_TYPE::NPC:
 				for (int i = 0; i < instanceCount; ++i)
 				{
@@ -95,6 +94,8 @@ void CScene::Load(const string& fileName)
 
 					AddObject(groupType, object);
 				}
+				break;
+			case GROUP_TYPE::PLAYER:
 				break;
 			}
 		}
