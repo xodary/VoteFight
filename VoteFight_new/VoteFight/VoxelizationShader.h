@@ -1,37 +1,36 @@
 #pragma once
 #include "Shader.h"
 
-struct CB_VOXELIZATION
-{
-	XMFLOAT4X4 WorldVoxelCube;
-	XMFLOAT4X4 ViewProjection;
-	XMFLOAT4X4 ShadowViewProjection;
-	float	   WorldVoxelScale;
-};
-
-struct CB_VOXELIZATION_DEBUG
-{
-	XMFLOAT4X4 WorldVoxelCube;
-	XMFLOAT4X4 ViewProjection;
-	float	   WorldVoxelScale;
-};
-
-struct CB_MODEL
-{
-	XMFLOAT4X4 World;
-	XMFLOAT4   DiffuseColor;
-};
-
 class CVoxelizationShader : public CShader
 {
 	friend class CAssetManager;
+	
+	struct CB_VOXELIZATION
+	{
+		XMFLOAT4X4 WorldVoxelCube;
+		XMFLOAT4X4 ViewProjection;
+		XMFLOAT4X4 ShadowViewProjection;
+		float	   WorldVoxelScale;
+	};
+
+	struct CB_VOXELIZATION_DEBUG
+	{
+		XMFLOAT4X4 WorldVoxelCube;
+		XMFLOAT4X4 ViewProjection;
+		float	   WorldVoxelScale;
+	};
+
+	struct CB_MODEL
+	{
+		XMFLOAT4X4 World;
+		XMFLOAT4   DiffuseColor;
+	};
 
 private:
 	CVoxelizationShader();
 
 	ComPtr<ID3D12Resource>					   m_VoxelizationBuffer;
 	CB_VOXELIZATION*						   m_VoxelizationMappedData;
-	DescriptorHandle						   m_cpuVoxelization;
 
 	ComPtr<ID3D12Resource>					   m_VoxelizationDebufBuffer;
 	CB_VOXELIZATION_DEBUG*					   m_VoxelizationDebugMappedData;
@@ -41,7 +40,6 @@ private:
 	CB_MODEL*								   m_ModelMappedData;
 	DescriptorHandle						   m_cpuModel;
 
-	Texture3D*								   m_VCTVoxelization3DRT;
 	Texture3D*								   mVCTVoxelizationDebugRT;
 
 	ID3D12DescriptorHeap*					   DsvDescriptorHeap;
@@ -65,5 +63,8 @@ public:
 
 	Texture3D* GetVoxelTexture() { return m_VCTVoxelization3DRT; }
 	void Render(int stateNum);
+
+	Texture3D*								   m_VCTVoxelization3DRT;
+	DescriptorHandle						   m_cpuVoxelization;
 };
 

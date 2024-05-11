@@ -13,6 +13,8 @@
 #include "GameFramework.h"
 #include "VoxelizationShader.h"
 #include "AnisoMipmap.h"
+#include "GBufferShader.h"
+#include "VCTMainShader.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -168,6 +170,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
 
+	CreateFullscreenQuadBuffers();
 }
 
 void CGameFramework::CreateDevice()
@@ -329,9 +332,9 @@ void CGameFramework::CreateRenderTargetViews()
 
 void CGameFramework::CreateDepthStencilView()
 {
-	CD3DX12_RESOURCE_DESC D3D12ResourceDesc(D3D12_RESOURCE_DIMENSION_TEXTURE2D, 0, static_cast<UINT>(m_resolution.x), static_cast<UINT>(m_resolution.y), 1, 1, DXGI_FORMAT_D24_UNORM_S8_UINT, (m_msaa4xEnable) ? static_cast<UINT>(4) : static_cast<UINT>(1), (m_msaa4xEnable) ? (m_msaa4xQualityLevels - 1) : 0, D3D12_TEXTURE_LAYOUT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	CD3DX12_RESOURCE_DESC D3D12ResourceDesc(D3D12_RESOURCE_DIMENSION_TEXTURE2D, 0, static_cast<UINT>(m_resolution.x), static_cast<UINT>(m_resolution.y), 1, 1, DXGI_FORMAT_D32_FLOAT, (m_msaa4xEnable) ? static_cast<UINT>(4) : static_cast<UINT>(1), (m_msaa4xEnable) ? (m_msaa4xQualityLevels - 1) : 0, D3D12_TEXTURE_LAYOUT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	CD3DX12_HEAP_PROPERTIES D3D312HeapProperties(D3D12_HEAP_TYPE_DEFAULT, 1, 1);
-	CD3DX12_CLEAR_VALUE D3D12ClearValue(DXGI_FORMAT_D24_UNORM_S8_UINT, 1.0f, 0);
+	CD3DX12_CLEAR_VALUE D3D12ClearValue(DXGI_FORMAT_D32_FLOAT, 1.0f, 0);
 
 	// 깊이-스텐실 버퍼를 생성한다.
 	DX::ThrowIfFailed(m_d3d12Device->CreateCommittedResource(&D3D312HeapProperties, D3D12_HEAP_FLAG_NONE, &D3D12ResourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &D3D12ClearValue, __uuidof(ID3D12Resource), reinterpret_cast<void**>(m_d3d12DepthStencilBuffer.GetAddressOf())));
@@ -516,10 +519,14 @@ void CGameFramework::Render()
 {
 	CSceneManager::GetInstance()->Render();
 
+	reinterpret_cast<CGBufferShader*>(CAssetManager::GetInstance()->GetShader("GBuffer"))->Render(0);
+
 	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(0);
 	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
-	reinterpret_cast<CAnisoMipmap*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(0);
-	reinterpret_cast<CAnisoMipmap*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
+	reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(0);
+	reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
+
+	reinterpret_cast<CVCTMainShader*>(CAssetManager::GetInstance()->GetShader("VCTMain"))->Render(0);
 }
 
 void CGameFramework::PostRender()

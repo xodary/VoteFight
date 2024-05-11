@@ -351,6 +351,12 @@
     <ClInclude Include="AnisoMipmap.h">
       <Filter>헤더 파일\06. Asset\Shader\VoxelConeTracing</Filter>
     </ClInclude>
+    <ClInclude Include="GBufferShader.h">
+      <Filter>헤더 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClInclude>
+    <ClInclude Include="VCTMainShader.h">
+      <Filter>헤더 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -545,6 +551,12 @@
     <ClCompile Include="AnisoMipmap.cpp">
       <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
     </ClCompile>
+    <ClCompile Include="GBufferShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="VCTMainShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="..\Release\Asset\Shader\main.hlsl">
@@ -572,6 +584,12 @@
       <Filter>셰이더 파일</Filter>
     </FxCompile>
     <FxCompile Include="..\Release\Asset\Shader\Common.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\GBuffer.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\UpsampleBlurCS.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
   </ItemGroup>

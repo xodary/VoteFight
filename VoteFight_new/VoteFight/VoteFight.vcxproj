@@ -167,6 +167,7 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="VCTMainShader.h" />
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
@@ -178,6 +179,7 @@
     <ClInclude Include="func.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
+    <ClInclude Include="GBufferShader.h" />
     <ClInclude Include="ImaysNet.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Iocp.h" />
@@ -250,6 +252,7 @@
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="VCTMainShader.cpp" />
     <ClCompile Include="DepthBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -262,6 +265,7 @@
     <ClCompile Include="DDSTextureLoader12.cpp" />
     <ClCompile Include="func.cpp" />
     <ClCompile Include="GameScene.cpp" />
+    <ClCompile Include="GBufferShader.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Iocp.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -330,6 +334,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\GBuffer.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+    </FxCompile>
     <FxCompile Include="..\Release\Asset\Shader\Light.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -343,6 +350,9 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\UpsampleBlurCS.hlsl">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
     </FxCompile>
     <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingAnisoMipmapMainCS.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>

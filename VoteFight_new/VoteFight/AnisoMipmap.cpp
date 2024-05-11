@@ -6,7 +6,7 @@
 #include "VoxelizationShader.h"
 #include "AnisoMipmap.h"
 
-CAnisoMipmap::CAnisoMipmap()
+CAnisoMipmapShader::CAnisoMipmapShader()
 {
     CGameFramework* framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
@@ -32,6 +32,8 @@ CAnisoMipmap::CAnisoMipmap()
             device->CreateUnorderedAccessView(mVCTAnisoMipmappinPrepare3DRTs[i]->GetTexture(), nullptr, &uavPrepareDesc, mVCTAnisoMipmappinPrepare3DRTs[i]->m_UAVHandle.GetCPUHandle());
             mVCTAnisoMipmappinMain3DRTs[i] = new Texture3D();
             mVCTAnisoMipmappinMain3DRTs[i]->Create(static_cast<UINT64>(size), static_cast<UINT>(size), D3D12_RESOURCE_STATE_UNORDERED_ACCESS, flags, format, D3D12_CLEAR_VALUE{ format, { 1.0f, 1.0f, 1.0f, 1.0f } }, size, VCT_MIPS);
+            mVCTAnisoMipmappinMain3DRTs[i]->m_SRVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+            device->CreateShaderResourceView(mVCTAnisoMipmappinMain3DRTs[i]->GetTexture(), nullptr, mVCTAnisoMipmappinMain3DRTs[i]->m_SRVHandle.GetCPUHandle());
         }
     }
     UINT bytes = (sizeof(CB_ANISO_MIPMAP) + 255) & ~255;
@@ -59,11 +61,11 @@ CAnisoMipmap::CAnisoMipmap()
     }
 }
 
-CAnisoMipmap::~CAnisoMipmap()
+CAnisoMipmapShader::~CAnisoMipmapShader()
 {
 }
 
-D3D12_SHADER_BYTECODE CAnisoMipmap::CreateComputeShader(ID3DBlob* d3d12ShaderBlob, int stateNum)
+D3D12_SHADER_BYTECODE CAnisoMipmapShader::CreateComputeShader(ID3DBlob* d3d12ShaderBlob, int stateNum)
 {
     switch (stateNum)
     {
@@ -76,7 +78,7 @@ D3D12_SHADER_BYTECODE CAnisoMipmap::CreateComputeShader(ID3DBlob* d3d12ShaderBlo
     return CComputeShader::CreateComputeShader(d3d12ShaderBlob, stateNum);
 }
 
-ID3D12RootSignature* CAnisoMipmap::CreateComputeRootSignature(int stateNum)
+ID3D12RootSignature* CAnisoMipmapShader::CreateComputeRootSignature(int stateNum)
 {
     CGameFramework* framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();
@@ -134,7 +136,7 @@ ID3D12RootSignature* CAnisoMipmap::CreateComputeRootSignature(int stateNum)
     return m_rootSignature[stateNum];
 }
 
-void CAnisoMipmap::Render(int stateNum)
+void CAnisoMipmapShader::Render(int stateNum)
 {
     CGameFramework* framework = CGameFramework::GetInstance();
     ID3D12Device* device = framework->GetDevice();

@@ -26,7 +26,7 @@ D3D12_SHADER_BYTECODE CShader::Compile(const string& fileName, const string& sha
 	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Shader\\" + fileName;
 	ComPtr<ID3DBlob> d3d12ErrorBlob = nullptr;
 
-	DX::ThrowIfFailed(D3DCompileFromFile(Utility::ConvertString(filePath).c_str(), nullptr, nullptr, shaderName.c_str(), shaderVersion.c_str(), compileFlags, 0, &d3d12CodeBlob, d3d12ErrorBlob.GetAddressOf()));
+	DX::ThrowIfFailed(D3DCompileFromFile(Utility::ConvertString(filePath).c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, shaderName.c_str(), shaderVersion.c_str(), compileFlags, 0, &d3d12CodeBlob, d3d12ErrorBlob.GetAddressOf()));
 
 	if (d3d12CodeBlob != nullptr)
 	{
@@ -61,13 +61,13 @@ D3D12_RASTERIZER_DESC CShader::CreateRasterizerState(int stateNum)
 
 	d3d12RasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 	d3d12RasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	d3d12RasterizerDesc.FrontCounterClockwise = false;
-	d3d12RasterizerDesc.DepthBias = 0;
-	d3d12RasterizerDesc.DepthBiasClamp = 0.0f;
-	d3d12RasterizerDesc.SlopeScaledDepthBias = 0.0f;
-	d3d12RasterizerDesc.DepthClipEnable = true;
-	d3d12RasterizerDesc.MultisampleEnable = false;
-	d3d12RasterizerDesc.AntialiasedLineEnable = false;
+	d3d12RasterizerDesc.FrontCounterClockwise = FALSE;
+	d3d12RasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+	d3d12RasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+	d3d12RasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+	d3d12RasterizerDesc.DepthClipEnable = TRUE;
+	d3d12RasterizerDesc.MultisampleEnable = FALSE;
+	d3d12RasterizerDesc.AntialiasedLineEnable = FALSE;
 	d3d12RasterizerDesc.ForcedSampleCount = 0;
 	d3d12RasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
@@ -175,7 +175,7 @@ DXGI_FORMAT CShader::GetRTVFormat(int stateNum)
 
 DXGI_FORMAT CShader::GetDSVFormat(int stateNum)
 {
-	return DXGI_FORMAT_D24_UNORM_S8_UINT;
+	return DXGI_FORMAT_D32_FLOAT;
 }
 
 void CShader::CreatePipelineState(int stateNum)

@@ -16,6 +16,8 @@
 #include "GameFramework.h"
 #include "VoxelizationShader.h"
 #include "AnisoMipmap.h"
+#include "GBufferShader.h"
+#include "VCTMainShader.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -165,6 +167,11 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
+	shader = new CGBufferShader();
+	shader->SetName("GBuffer");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
 	shader->CreatePipelineStates(3);
@@ -175,9 +182,14 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CAnisoMipmap();
+	shader = new CAnisoMipmapShader();
 	shader->SetName("AnisoMipmap");
 	shader->CreatePipelineStates(2);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CVCTMainShader();
+	shader->SetName("VCTMain");
+	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 }
 
