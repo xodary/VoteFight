@@ -9,7 +9,7 @@ protected:
 	int	  m_frameRate;
 	int	  m_frameCount;
 	float m_duration;
-	float m_weight;
+	// float m_weight;
 
 protected:
 	// 이 객체의 생성은 오로지 CAssetManager에 의해서만 일어난다.
@@ -23,8 +23,6 @@ public:
 	int GetFrameRate();
 	int GetFrameCount();
 	float GetDuration();
-	float GetWeight();
-	void SetWeight(float fWeight);
 	
 	virtual void Load(ifstream& in) = 0;
 };

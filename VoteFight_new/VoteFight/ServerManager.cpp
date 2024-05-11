@@ -4,6 +4,22 @@
 #include "./ImaysNet/PacketQueue.h"
 
 #include "ServerManager.h"
+#include "SceneManager.h"
+#include "GameScene.h"
+#include "PlayerStates.h"
+#include "TimeManager.h"
+#include "InputManager.h"
+#include "CameraManager.h"
+#include "Scene.h"
+#include "Player.h"
+#include "StateMachine.h"
+#include "RigidBody.h"
+#include "Animator.h"
+#include "Transform.h"
+#include "GameFramework.h"
+#include "Camera.h"
+
+#include "Object.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -17,7 +33,8 @@ recursive_mutex CServerManager::m_mutex;
 shared_ptr<Socket> CServerManager::m_tcpSocket;
 
 // 클라이언트 ID
-int	CServerManager::m_id{ -1 };
+int		CServerManager::m_id{ -1 };
+bool	CServerManager::m_isLogin{ false };
 
 // 소켓 수신 콜백 함수
 void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_over, DWORD recv_flag)
@@ -25,6 +42,10 @@ void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_ove
 	// 수신된 데이터를 갖고 오기 위한 버퍼와 수신된 데이터 길이
 	char* recv_buf = reinterpret_cast<EXP_OVER*>(recv_over)->m_buf;
 	int recv_buf_Length = num_bytes;
+
+	cout << " >> Packet Size - " << (int)recv_buf[0] << endl;
+	cout << " >> num_bytes - " << num_bytes << endl;
+	cout << " >> Packet Type - " << (int)recv_buf[1] << endl;
 
 	{ 
 		// 수신된 데이터 처리
@@ -87,8 +108,14 @@ void CServerManager::ConnectServer()	// 서버 연결 함수
 	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());*/
 
 	m_tcpSocket->Bind(Endpoint::Any);
-	//CServerManager::Connetion();		// 엱결
-	//CServerManager::Do_Recv();			// 데이터 수신 시작
+	CServerManager::Connetion();		// 연결
+
+	CS_LOGIN_PACKET send_packet;
+	send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+	send_packet.m_type = PACKET_TYPE::P_CS_LOGIN_PACKET;
+	PacketQueue::AddSendPacket(&send_packet);
+
+	CServerManager::Do_Recv();			// 데이터 수신 시작
 }
 
 void CServerManager::Tick()				//주기적인 작업 실행 함수
@@ -149,8 +176,68 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	// Packet Types Processing
 	switch (_Packet[1])
 	{
-	case  PACKET_TYPE::P_SC_INIT_PACKET: {
+
+	case PACKET_TYPE::P_SC_LOGIN_OK_PACKET:
+	{
+		SC_LOGIN_OK_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(_Packet);
+		cout << "SC_LOGIN_OK_PACKET" << endl;
+		CServerManager::m_id = recv_packet->m_id;
+		cout << "ClinetManager ID - " << CServerManager::m_id << endl;
+
+		CObject* object = CObject::Load("hugo_idle");
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		dynamic_cast<CPlayer*>(player)->m_id = recv_packet->m_id;
+		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(XMFLOAT3(10, 0, 10));
+		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		//animator->SetBlending(false);
+		animator->SetWeight("idle", 1.0f);
+		animator->Play("idle", true);
+		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::NPC, object);
+		break;
+	}
+
+	case  PACKET_TYPE::P_SC_ADD_PACKET: 
+	{
+		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
+		cout << "SC_ADD_PLAYER" << endl;
+
+		/*if (CGameScene::m_CGameScene->m_otherPlayers.size() < 3) {
+			CObject* object = CObject::Load("hugo_idle");
+			CPlayer* player = reinterpret_cast<CPlayer*>(object);
+			dynamic_cast<CPlayer*>(player)->m_id = recv_packet->m_id;
+			CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
+			CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			transform->SetPosition(XMFLOAT3(0, 0, 0));
+
+			CGameScene::m_CGameScene->m_otherPlayers.push_back(player);
+		} else {
+			cout << " Max Player!! " << endl;
+		}*/
+		break;
+	}
+
+	case PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET:
+	{
+		SC_WALK_ENTER_INFO_PACKET* recv_packet = reinterpret_cast<SC_WALK_ENTER_INFO_PACKET*>(_Packet);
+		// cout << "SC_WALK_ENTER_INFO_PACKET" << endl;
+
+		/*string ani_key = recv_packet->m_key;
+		float max_sed = recv_packet->m_maxSpeed;
+		float velocity = recv_packet->m_vel;
 		
+		// 플레이어 객체를 얻어와야 함. (실제 함수에선 객체를 인자로 받지 않?)
+		// CPlayer* player = GameFramework::MainGameFramework->m_pPlayer;
+
+		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		animator->Play(ani_key, true);
+
+		CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
+		CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+		rigidBody->SetMaxSpeedXZ(max_sed);
+		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), velocity * DT));*/
 		break;
 	}
 	default:

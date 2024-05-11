@@ -1,10 +1,7 @@
 #pragma once
 #include "pch.h"
 #include "./ImaysNet/ImaysNet.h"
-
 #include "RemoteClient.h"
-
-using namespace std;
 
 volatile bool				stopServer = false;
 const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
@@ -89,6 +86,7 @@ void WorkerThread()
 				auto p_readOverlapped = (EXP_OVER*)readEvent.lpOverlapped;
 
 				if (IO_TYPE::IO_SEND == p_readOverlapped->m_ioType) {
+					cout << " >> Send - size : " << (int)p_readOverlapped->m_buf[0] << endl;
 					cout << " >> Send - type : " << (int)p_readOverlapped->m_buf[1] << endl;
 					p_readOverlapped->m_isReadOverlapped = false;
 					continue;
@@ -210,13 +208,72 @@ void ProcessAccept()
 void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 {
 	switch (_Packet[1]) {
+
+	case PACKET_TYPE::P_CS_LOGIN_PACKET:
+	{
+		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
+		_Client->m_id = nextClientID++;
+
+		SC_LOGIN_OK_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_LOGIN_OK_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_OK_PACKET;
+		send_packet.m_id = _Client->m_id;
+		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		// cout << "SC_LOGIN_OK_PACKET" << endl;
+
+		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (rc.second->m_id == _Client->m_id)
+				continue;
+			SC_ADD_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_ADD_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+			send_packet.m_id = rc.second->m_id;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> send ) Send Add packet 1" << endl;
+		}
+
+		// Send connected client infomation to other client (다른 모든 클라이언트에게 특정 클라이언트의 정보를 보냄)
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (rc.second->m_id == _Client->m_id)
+				continue;
+			SC_ADD_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_ADD_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+			send_packet.m_id = _Client->m_id;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> send ) Send Add packet 2" << endl;
+		}
+		break;
+	}
+
+	case PACKET_TYPE::P_CS_WALK_ENTER_PACKET:
+	{
+		// cout << " >> recv ) CS_WALK_ENTER_PACKET" << endl;
+		CS_WALK_ENTER_PACEKET* recv_packet = reinterpret_cast<CS_WALK_ENTER_PACEKET*>(_Packet);
+		{
+			SC_WALK_ENTER_INFO_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_WALK_ENTER_INFO_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET;
+			send_packet.m_key = "lisaWalk";
+			send_packet.m_maxSpeed = 400.f;
+			send_packet.m_vel = 400.f;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			// cout << " >> send ) SC_WALK_ENTER_INFO_PACKET" << endl;
+		}
+		break;
+	}
+
 	case PACKET_TYPE::P_CS_MOVE_PACKET:
 	{
+		CS_MOVE_PACKET* recv_packet = reinterpret_cast<CS_MOVE_PACKET*>(_Packet);
+
 		break;
 	}
 	default:
 		break;
 	}
+
 }
 void CloseServer()
 {

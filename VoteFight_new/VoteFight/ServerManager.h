@@ -1,5 +1,4 @@
 #pragma once
-
 class Socket;
 
 class CServerManager{
@@ -11,6 +10,8 @@ public:
 
 	static char*				m_SERVERIP;
 	static int					m_id;
+
+	static bool					m_isLogin;
 
 public:
 	static void					ConnectServer();

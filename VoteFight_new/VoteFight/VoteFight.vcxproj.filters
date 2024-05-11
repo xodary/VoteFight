@@ -124,6 +124,7 @@
     <ClInclude Include="CollisionManager.h">
       <Filter>header</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Component.h">
       <Filter>header</Filter>
     </ClInclude>
@@ -190,6 +191,8 @@
     <ClInclude Include="ImaysNet\PacketQueue.h">
       <Filter>header</Filter>
     </ClInclude>
+=======
+>>>>>>> origin/Move
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01">
