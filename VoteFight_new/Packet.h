@@ -30,18 +30,12 @@ struct SC_LOGIN_OK_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
-	float				m_xPos;
-	float				m_yPos;
-	float				m_zPos;
 };
 
 struct SC_ADD_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
-	float				m_xPos;
-	float				m_yPos;
-	float				m_zPos;
 };
 
 struct SC_WALK_ENTER_INFO_PACKET {

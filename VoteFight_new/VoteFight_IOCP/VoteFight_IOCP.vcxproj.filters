@@ -1,0 +1,106 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>01. Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="udt.cpp">
+      <Filter>01. Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="func.cpp">
+      <Filter>01. Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="DDSTextrueLoader.cpp">
+      <Filter>01. Dependency</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Endpoint.cpp">
+      <Filter>00. ImatsNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Exception.cpp">
+      <Filter>00. ImatsNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Iocp.cpp">
+      <Filter>00. ImatsNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\PacketQueue.cpp">
+      <Filter>00. ImatsNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Poll.cpp">
+      <Filter>00. ImatsNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\Socket.cpp">
+      <Filter>00. ImatsNet</Filter>
+    </ClCompile>
+    <ClCompile Include="ImaysNet\SocketInit.cpp">
+      <Filter>00. ImatsNet</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="RemoteClient.cpp">
+      <Filter>02. RemoteClient</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="01. Dependency">
+      <UniqueIdentifier>{6a48e982-87da-41eb-b176-11680d82ac82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="00. ImatsNet">
+      <UniqueIdentifier>{dc64296d-5892-4bb7-a8ff-3e1a3c9ca192}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="02. RemoteClient">
+      <UniqueIdentifier>{c2e48fa0-39f3-47c9-a644-6672ab1426f1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pch.h">
+      <Filter>01. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="udt.h">
+      <Filter>01. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="define.h">
+      <Filter>01. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="func.h">
+      <Filter>01. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="D3DX12.h">
+      <Filter>01. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader12.h">
+      <Filter>01. Dependency</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Endpoint.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Exception.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\ImaysNet.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Iocp.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\PacketQueue.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Poll.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Semaphore.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\Socket.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\SocketInit.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="ImaysNet\targetver.h">
+      <Filter>00. ImatsNet</Filter>
+    </ClInclude>
+    <ClInclude Include="RemoteClient.h">
+      <Filter>02. RemoteClient</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

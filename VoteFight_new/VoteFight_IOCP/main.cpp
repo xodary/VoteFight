@@ -213,15 +213,13 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
 		_Client->m_id = nextClientID++;
+
 		SC_LOGIN_OK_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_LOGIN_OK_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_OK_PACKET;
 		send_packet.m_id = _Client->m_id;
-		send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
-		send_packet.m_yPos = _Client->getYpos();
-		send_packet.m_zPos = _Client->getZpos();
 		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-		// cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
+		// cout << "SC_LOGIN_OK_PACKET" << endl;
 
 		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
 		for (auto& rc : RemoteClient::m_remoteClients) {
@@ -231,9 +229,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
 			send_packet.m_id = rc.second->m_id;
-			send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
-			send_packet.m_yPos = _Client->getYpos();
-			send_packet.m_zPos = _Client->getZpos();
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> send ) Send Add packet 1" << endl;
 		}
@@ -246,9 +241,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
 			send_packet.m_id = _Client->m_id;
-			send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
-			send_packet.m_yPos = _Client->getYpos();
-			send_packet.m_zPos = _Client->getZpos();
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> send ) Send Add packet 2" << endl;
 		}
