@@ -10,7 +10,7 @@ CTexture::CTexture() :
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
 	DescriptorHeapManager* descriptorManager = CGameFramework::GetInstance()->GetDescriptorHeapManager();
-	m_CBVSRVUAVHandle = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	m_SRVHandle = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 CTexture::~CTexture()
@@ -98,7 +98,7 @@ void CTexture::UpdateShaderVariable()
 	DescriptorHeapManager* descriptorManager = framework->GetDescriptorHeapManager();
 	GPUDescriptorHeap* gpuDescriptorHeap = descriptorManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 	DescriptorHandle srvHandle = gpuDescriptorHeap->GetHandleBlock(1);
-	gpuDescriptorHeap->AddToHandle(device, srvHandle, m_CBVSRVUAVHandle);
+	gpuDescriptorHeap->AddToHandle(device, srvHandle, m_SRVHandle);
 
 	switch (m_type)
 	{
@@ -136,4 +136,46 @@ void Texture3D::Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D
 	DX::ThrowIfFailed(d3d12Device->CreateCommittedResource(&d3d12HeapProperties, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc, D3D12ResourceStates, &D3D12ClearValue, __uuidof(ID3D12Resource), reinterpret_cast<void**>(texture.GetAddressOf())));
 
 	m_d3d12Texture = texture.Get();
+
+	if (mips > 2)
+	{
+		m_RTVHandles.resize(mips);
+		m_UAVHandles.resize(mips);
+
+		for (int mipLevel = 0; mipLevel < mips; mipLevel++)
+		{
+			D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+			rtvDesc.Format = DxgiFormat;
+			if (depth > 0) {
+				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
+				rtvDesc.Texture3D.MipSlice = mipLevel;
+				rtvDesc.Texture3D.WSize = (depth >> mipLevel);
+			}
+			else {
+				rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+				rtvDesc.Texture2D.MipSlice = mipLevel;
+			}
+
+			D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
+			uavDesc.Format = DxgiFormat;
+			if (depth > 0) {
+				uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
+				uavDesc.Texture3D.MipSlice = mipLevel;
+				uavDesc.Texture3D.WSize = (depth >> mipLevel);
+			}
+			else {
+				uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
+				uavDesc.Texture2D.MipSlice = mipLevel;
+			}
+
+			DescriptorHeapManager* descriptorManager = CGameFramework::GetInstance()->GetDescriptorHeapManager();
+			ID3D12Device* device = CGameFramework::GetInstance()->GetDevice();
+			m_RTVHandles[mipLevel] = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+			device->CreateRenderTargetView(m_d3d12Texture.Get(), &rtvDesc, m_RTVHandles[mipLevel].GetCPUHandle());
+
+			m_UAVHandles[mipLevel] = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+			device->CreateUnorderedAccessView(m_d3d12Texture.Get(), nullptr, &uavDesc, m_UAVHandles[mipLevel].GetCPUHandle());
+
+		}
+	}
 }

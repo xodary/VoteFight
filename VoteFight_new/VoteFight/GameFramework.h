@@ -40,7 +40,6 @@ private:
 	UINT							  m_rtvDescriptorIncrementSize;
 
 	ComPtr<ID3D12Resource>			  m_d3d12DepthStencilBuffer;
-	ComPtr<ID3D12Resource>			  m_d3d12DepthBuffer; // for DepthWrite
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12DsvDescriptorHeap;
 	UINT							  m_dsvDescriptorIncrementSize;
 
@@ -114,8 +113,6 @@ public:
 
 	ID3D12DescriptorHeap* GetRtvDescriptorHeap();
 	ID3D12DescriptorHeap* GetDsvDescriptorHeap();
-	//ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap();
-	//ID3D12DescriptorHeap* GetCbvSrvUavCPUDescriptorHeap();
 
 	DescriptorHeapManager* GetDescriptorHeapManager() { return m_DescriptorHeapManager; }
 	

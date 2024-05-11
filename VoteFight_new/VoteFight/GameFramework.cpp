@@ -12,6 +12,7 @@
 #include "Texture.h"
 #include "GameFramework.h"
 #include "VoxelizationShader.h"
+#include "AnisoMipmap.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -30,7 +31,6 @@ CGameFramework::CGameFramework() :
 	m_d3d12RtvDescriptorHeap(),
 	m_rtvDescriptorIncrementSize(),
 	m_d3d12DepthStencilBuffer(),
-	m_d3d12DepthBuffer(),
 	m_d3d12DsvDescriptorHeap(),
 	m_dsvDescriptorIncrementSize(),
 	m_DescriptorHeapManager(),
@@ -325,18 +325,6 @@ void CGameFramework::CreateRenderTargetViews()
 
 		D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 	}
-
-	 // DepthWrite
-	 CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-	 D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
-	 
-	 d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	 d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	 d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
-	 d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
-	 
-	 m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
-	 D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 }
 
 void CGameFramework::CreateDepthStencilView()
@@ -352,17 +340,6 @@ void CGameFramework::CreateDepthStencilView()
 
 	// ±íÀÌ-½ºÅÙ½Ç ¹öÆÛ ºä¸¦ »ı¼ºÇÑ´Ù.
 	m_d3d12Device->CreateDepthStencilView(m_d3d12DepthStencilBuffer.Get(), nullptr, D3D12DsvCPUDescriptorHandle);
-	D3D12DsvCPUDescriptorHandle.ptr += m_dsvDescriptorIncrementSize;
-
-	// Depth Write
-	D3D12_DEPTH_STENCIL_VIEW_DESC d3d12DepthStencilViewDesc = {};
-	
-	d3d12DepthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	d3d12DepthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	d3d12DepthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
-	
-	m_d3d12DepthBuffer = DX::CreateTextureResource(m_d3d12Device.Get(), DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 1, 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, DXGI_FORMAT_D32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_D32_FLOAT, {1.0f, 0.0f} });
-	m_d3d12Device->CreateDepthStencilView(m_d3d12DepthBuffer.Get(), &d3d12DepthStencilViewDesc, D3D12DsvCPUDescriptorHandle);
 }
 
 void CGameFramework::CreateShaderResourceViews()
@@ -540,7 +517,9 @@ void CGameFramework::Render()
 	CSceneManager::GetInstance()->Render();
 
 	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(0);
-	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
+	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
+	reinterpret_cast<CAnisoMipmap*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(0);
+	reinterpret_cast<CAnisoMipmap*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
 }
 
 void CGameFramework::PostRender()

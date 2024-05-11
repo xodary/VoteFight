@@ -60,6 +60,7 @@ public:
 	const XMUINT3& GetThreadGroup();
 
 	virtual void CreatePipelineState(int stateNum);
+	virtual ID3D12RootSignature* CreateComputeRootSignature(int stateNum);
 	
 	void Dispatch(int stateNum);
 };

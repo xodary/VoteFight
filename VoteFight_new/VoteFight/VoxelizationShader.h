@@ -62,8 +62,8 @@ public:
 	virtual ID3D12RootSignature* CreateRootSignature(int stateNum);
 	virtual DXGI_FORMAT GetRTVFormat(int stateNum);
 	virtual DXGI_FORMAT GetDSVFormat(int stateNum);
-	
-	void UpdateShaderVariables();
+
+	Texture3D* GetVoxelTexture() { return m_VCTVoxelization3DRT; }
 	void Render(int stateNum);
 };
 

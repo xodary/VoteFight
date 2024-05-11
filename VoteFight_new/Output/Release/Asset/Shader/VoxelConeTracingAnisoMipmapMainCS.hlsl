@@ -32,7 +32,7 @@ static const int3 anisoOffsets[8] =
 };
 
 [numthreads(8, 8, 8)]
-void CSMain(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
+void CS_Main(uint3 Gid : SV_GroupID, uint3 GTid : SV_GroupThreadID, uint3 DTid : SV_DispatchThreadID)
 {
     if (DTid.x >= MipDimension || DTid.y >= MipDimension || DTid.z >= MipDimension)
         return;

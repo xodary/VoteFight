@@ -33,11 +33,19 @@ public:
 	virtual void UpdateShaderVariable();
 
 	virtual void ReleaseUploadBuffers();
-	DescriptorHandle			m_CBVSRVUAVHandle;
+
+	DescriptorHandle			m_CBVHandle;
+	DescriptorHandle			m_SRVHandle;
+	DescriptorHandle			m_UAVHandle;
+
+	DescriptorHandle			m_RTVHandle;
+	DescriptorHandle			m_DSVHandle;
+	ComPtr<ID3D12Resource>		m_DepthStencilResource;
 };
 
 class Texture3D : public CTexture {
 public:
-	DescriptorHandle			m_RTVHandle;
+	vector<DescriptorHandle>	m_RTVHandles;
+	vector<DescriptorHandle>	m_UAVHandles;
 	void Create(const UINT64& Width, UINT Height, D3D12_RESOURCE_STATES D3D12ResourceStates, D3D12_RESOURCE_FLAGS D3D12ResourceFlags, DXGI_FORMAT DxgiFormat, const D3D12_CLEAR_VALUE& D3D12ClearValue, UINT16 depth = -1, UINT16 mips = 1);
 };

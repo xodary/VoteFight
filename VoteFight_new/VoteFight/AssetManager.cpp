@@ -13,7 +13,9 @@
 #include "Material.h"
 #include "Animation.h"
 #include "DepthWriteShader.h"
+#include "GameFramework.h"
 #include "VoxelizationShader.h"
+#include "AnisoMipmap.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -170,6 +172,11 @@ void CAssetManager::LoadShaders()
 
 	shader = new CVoxelizationShader();
 	shader->SetName("Voxelization");
+	shader->CreatePipelineStates(2);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CAnisoMipmap();
+	shader->SetName("AnisoMipmap");
 	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 }
@@ -461,6 +468,31 @@ void CAssetManager::Init()
 	LoadMaterials("WhiteHouse.bin");
 	LoadMaterials("Fence_Material.bin");
 	LoadMaterials("Homer_Material.bin");
+
+	// DepthWrite
+	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+	D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
+
+	d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
+	d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
+
+	CGameFramework* framework = CGameFramework::GetInstance();
+	texture->m_RTVHandle = framework->GetDescriptorHeapManager()->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	framework->GetDevice()->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, texture->m_RTVHandle.GetCPUHandle());
+
+	// Depth Write
+	D3D12_DEPTH_STENCIL_VIEW_DESC d3d12DepthStencilViewDesc = {};
+
+	d3d12DepthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	d3d12DepthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	d3d12DepthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+	texture->m_DSVHandle = framework->GetDescriptorHeapManager()->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	texture->m_DepthStencilResource = DX::CreateTextureResource(framework->GetDevice(), DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 1, 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, DXGI_FORMAT_D32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_D32_FLOAT, {1.0f, 0.0f} });
+	framework->GetDevice()->CreateDepthStencilView(texture->m_DepthStencilResource.Get(), &d3d12DepthStencilViewDesc, texture->m_DSVHandle.GetCPUHandle());
+
 }
 
 void CAssetManager::CreateShaderResourceViews()
@@ -479,10 +511,10 @@ void CAssetManager::CreateShaderResourceViews()
 			d3dShaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
 			d3dShaderResourceViewDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 
-			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, texture.second->m_CBVSRVUAVHandle.GetCPUHandle());
+			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, texture.second->m_SRVHandle.GetCPUHandle());
 		}
 		else
-			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, texture.second->m_CBVSRVUAVHandle.GetCPUHandle());
+			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, texture.second->m_SRVHandle.GetCPUHandle());
 	}
 }
 

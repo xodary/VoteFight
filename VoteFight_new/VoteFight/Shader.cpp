@@ -265,13 +265,18 @@ void CComputeShader::CreatePipelineState(int stateNum)
 	D3D12_COMPUTE_PIPELINE_STATE_DESC D3D12ComputePipelineStateDesc = {};
 	ComPtr<ID3DBlob> D3D12ComputeShaderBlob = {};
 
-	D3D12ComputePipelineStateDesc.pRootSignature = CreateRootSignature(stateNum);
+	D3D12ComputePipelineStateDesc.pRootSignature = CreateComputeRootSignature(stateNum);
 	D3D12ComputePipelineStateDesc.CS = CreateComputeShader(D3D12ComputeShaderBlob.Get(), stateNum);
 	D3D12ComputePipelineStateDesc.NodeMask = 0;
 	D3D12ComputePipelineStateDesc.CachedPSO = D3D12CachedPipelineState;
 	D3D12ComputePipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 	DX::ThrowIfFailed(d3d12Device->CreateComputePipelineState(&D3D12ComputePipelineStateDesc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(m_d3d12PipelineStates[stateNum].GetAddressOf())));
+}
+
+ID3D12RootSignature* CComputeShader::CreateComputeRootSignature(int stateNum)
+{
+	return CGameFramework::GetInstance()->GetRootSignature();
 }
 
 void CComputeShader::Dispatch(int stateNum)
