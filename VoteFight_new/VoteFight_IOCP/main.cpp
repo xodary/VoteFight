@@ -170,7 +170,6 @@ void ProcessAccept()
 	}
 	else {
 		shared_ptr<RemoteClient> remoteClient = remoteClientCandidate;
-		remoteClient->m_id = nextClientID++;
 		remoteClients_ptr_v.emplace_back(remoteClient.get());
 
 		// 소켓 IOCP에 추가
@@ -222,6 +221,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_yPos = _Client->getYpos();
 		send_packet.m_zPos = _Client->getZpos();
 		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		cout << " >> Send ) LOGIN_OK_PACKET Client ID : " << _Client->m_id << endl;
 		// cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
 
 		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
@@ -236,6 +236,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_yPos = _Client->getYpos();
 			send_packet.m_zPos = _Client->getZpos();
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> Send ) Add Packet 1 Client ID : " << _Client->m_id<< endl;
 			cout << " >> send ) Send Add packet 1" << endl;
 		}
 
@@ -251,6 +252,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_yPos = _Client->getYpos();
 			send_packet.m_zPos = _Client->getZpos();
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> Send ) Add Packet 2 Client ID : " << _Client->m_id << endl;
 			cout << " >> send ) Send Add packet 2" << endl;
 		}
 		break;
