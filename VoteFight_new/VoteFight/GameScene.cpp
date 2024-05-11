@@ -148,7 +148,7 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 }
 
@@ -157,10 +157,14 @@ void CGameScene::Init()
 void CGameScene::Update()
 {
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	objects[0]->SetTerrainY(this);
-	CTransform* playerPosition = static_cast<CTransform*>(objects[0]->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
-
+	for (CObject* o : objects) {
+		CPlayer* player = reinterpret_cast<CPlayer*>(o);
+		if (player->m_id == CGameFramework::GetInstance()->my_id) {
+			player->SetTerrainY(this);
+			CTransform* playerPosition = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
+		}
+	}
 	CScene::Update();
 }
 

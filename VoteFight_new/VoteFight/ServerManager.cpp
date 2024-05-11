@@ -194,7 +194,9 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		//animator->SetBlending(false);
 		animator->SetWeight("idle", 1.0f);
 		animator->Play("idle", true);
-		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::NPC, object);
+		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
+		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
+		player->Init();
 		break;
 	}
 
