@@ -182,41 +182,47 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		SC_LOGIN_OK_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(_Packet);
 		cout << "SC_LOGIN_OK_PACKET" << endl;
 		CServerManager::m_id = recv_packet->m_id;
-		cout << "ClinetManager ID - " << CServerManager::m_id << endl;
+
 
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
 		dynamic_cast<CPlayer*>(player)->m_id = recv_packet->m_id;
+
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(XMFLOAT3(10, 0, 10));
+		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
+
+		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		//animator->SetBlending(false);
+
+		animator->SetWeight("idle", 1.0f);
+		animator->Play("idle", true);
+		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
+		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
+		player->Init();
+
+		cout << "Clinet ID - " << player->m_id << endl;
+		break;
+	}
+
+	case  PACKET_TYPE::P_SC_ADD_PACKET:
+	{
+		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
+		cout << "SC_ADD_PLAYER" << endl;
+
+		// vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
+		CObject* object = CObject::Load("hugo_idle");
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		dynamic_cast<CPlayer*>(player)->m_id = recv_packet->m_id;
+
+		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
 		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		//animator->SetBlending(false);
 		animator->SetWeight("idle", 1.0f);
 		animator->Play("idle", true);
 		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
-		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
-		player->Init();
-		break;
-	}
-
-	case  PACKET_TYPE::P_SC_ADD_PACKET: 
-	{
-		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
-		cout << "SC_ADD_PLAYER" << endl;
-
-		/*if (CGameScene::m_CGameScene->m_otherPlayers.size() < 3) {
-			CObject* object = CObject::Load("hugo_idle");
-			CPlayer* player = reinterpret_cast<CPlayer*>(object);
-			dynamic_cast<CPlayer*>(player)->m_id = recv_packet->m_id;
-			CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
-			CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-			transform->SetPosition(XMFLOAT3(0, 0, 0));
-
-			CGameScene::m_CGameScene->m_otherPlayers.push_back(player);
-		} else {
-			cout << " Max Player!! " << endl;
-		}*/
 		break;
 	}
 

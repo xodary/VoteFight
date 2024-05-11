@@ -1,1 +1,9 @@
-﻿  VoteFight_IOCP.vcxproj -> C:\directX_work\VoteFight_new\x64\Debug\VoteFight_IOCP.exe
+﻿  CPlayer.cpp
+  PacketQueue.cpp
+  main.cpp
+C:\GITHUB\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(220,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\GITHUB\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(234,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\GITHUB\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(249,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  RemoteClient.cpp
+  코드를 생성하고 있습니다...
+  VoteFight_IOCP.vcxproj -> C:\GITHUB\directX_work\VoteFight_new\x64\Debug\VoteFight_IOCP.exe

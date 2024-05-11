@@ -136,6 +136,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="CPlayer.cpp" />
     <ClCompile Include="DDSTextrueLoader.cpp" />
     <ClCompile Include="func.cpp" />
     <ClCompile Include="ImaysNet\Endpoint.cpp" />
@@ -151,6 +152,7 @@
     <ClCompile Include="udt.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CPlayer.h" />
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
