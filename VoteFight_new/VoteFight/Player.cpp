@@ -13,6 +13,9 @@
 #include "Transform.h"
 #include "PlayerStates.h"
 #include "NPC.h"
+#include "UI.h"
+
+#include "Transform.h"
 
 CPlayer::CPlayer() :
 	m_isAiming(),
@@ -90,6 +93,7 @@ void CPlayer::Init()
 	animator->SetWeight("idle", 1.0f);
 	m_Inventory = new CInventory();
 
+	
 }
 
 void CPlayer::AnotherInit()
@@ -125,24 +129,299 @@ void CPlayer::Update()
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
 {
-	cout << collidedObject->GetInstanceID() << endl;
-	if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::STRUCTURE)
+	switch (collidedObject->GetGroupType())
 	{
-		m_Inventory->addItem(collidedObject->GetName(), 1);
-		collidedObject->SetDeleted(true);
+	case (UINT)GROUP_TYPE::STRUCTURE:
+		isMove = false;
+	case (UINT)GROUP_TYPE::NPC:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "Pick")
+				m_UI[i]->SetActive(true);
+		}
+		break;
 	}
-
+}
+void CPlayer::OnCollision(CObject* collidedObject)
+{
+	if (KEY_TAP(KEY::F))
+	{
+		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::STRUCTURE)
+		{
+			m_Inventory->addItem(collidedObject->GetName(), 1);
+			collidedObject->SetDeleted(true);
+		}
+		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::NPC)
+		{
+			CNPC* targetNPC = (CNPC*)collidedObject;
+			if (!targetNPC->GetQuest()->getCompletionStatus())
+			{
+				SetNumber_of_items_UI("tiket", m_Inventory->getItems("tiket"), m_Inventory->getItems("tiket") + 1);
+				m_Inventory->exchangeItem(targetNPC->GetQuest()->GetItemName(), targetNPC->GetQuest()->GetItemQuantity(), "tiket", 1);
+			}
+		}
+	}
 }
 void CPlayer::OnCollisionExit(CObject* collidedObject)
 {
-	if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::NPC)
+	switch (collidedObject->GetGroupType())
 	{
-		CNPC* targetNPC = (CNPC*)collidedObject;
-		if (!targetNPC->GetQuest()->getCompletionStatus())
+	case (UINT)GROUP_TYPE::STRUCTURE:
+		isMove = true;
+	case (UINT)GROUP_TYPE::NPC:
+		for (size_t i = 0; i < m_UI.size(); i++)
 		{
-			m_Inventory->exchangeItem(targetNPC->GetQuest()->GetItemName(), targetNPC->GetQuest()->GetItemQuantity(), "tiket", 1);
+			if (m_UI[i]->GetName() == "Pick")
+				m_UI[i]->SetActive(false);
 		}
+		break;
 	}
+}
+
+void CPlayer::SetUI(CUI* ui)
+{
+	if (&ui != nullptr)m_UI.push_back(ui);
+	cout << ui->GetName() << endl;
+
+	if (ui->GetName() == "Pick")
+		ui->SetActive(false);
+	else if (ui->GetName() == "1")
+		ui->SetActive(false);
+	else if (ui->GetName() == "2")
+		ui->SetActive(false);
+	else if (ui->GetName() == "3")
+		ui->SetActive(false);
+	else if (ui->GetName() == "4")
+		ui->SetActive(false);
+	else if (ui->GetName() == "5")
+		ui->SetActive(false);
+	else if (ui->GetName() == "6")
+		ui->SetActive(false);
+	else if (ui->GetName() == "7")
+		ui->SetActive(false);
+	else if (ui->GetName() == "8")
+		ui->SetActive(false);
+	else if (ui->GetName() == "9")
+		ui->SetActive(false);
+	else if (ui->GetName() == "firewood")
+		ui->SetActive(false);
+
+
+}
+
+void CPlayer::SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, int NextItemsNum)
+{
+	switch (prevItemsNum)
+	{
+	case 0:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "0")
+			{
+				m_UI[i]->SetActive(false);
+			}
+			cout << m_UI[i]->GetName() << endl;
+		}
+		break;
+	case 1:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "1")
+			{
+				cout << "UI : 1" << endl;
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	case 2:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "2")
+			{
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	case 3:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "3")
+			{
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	case 4:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "4")
+			{
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	case 5:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "5")
+			{
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	case 6:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "6")
+			{
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	case 7:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "7")
+			{
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	case 8:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "8")
+			{
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	case 9:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "9")
+			{
+				m_UI[i]->SetActive(false);
+				break;
+			}
+		}
+		break;
+	}
+	cout << "prevItemsNum : " << prevItemsNum << endl;
+
+	switch (NextItemsNum)
+	{
+	case 0:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "0")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 1:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "1")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 2:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "2")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 3:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "3")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 4:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "4")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 5:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "5")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 6:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "6")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 7:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "7")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 8:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "8")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	case 9:
+		for (size_t i = 0; i < m_UI.size(); i++)
+		{
+			if (m_UI[i]->GetName() == "9")
+			{
+				m_UI[i]->SetActive(true);
+				break;
+			}
+		}
+		break;
+	}
+	cout << "NextItemsNum : " << NextItemsNum << endl;
+
 }
 
 

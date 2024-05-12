@@ -4,6 +4,7 @@
 #include "AssetManager.h"
 #include "Texture.h"
 #include "Material.h"
+#include "Transform.h"
 
 CHeightMapImage::CHeightMapImage(LPCTSTR pFileName, int nWidth, int nLength, XMFLOAT3 xmf3Scale)
 {
@@ -99,16 +100,27 @@ XMFLOAT3 CHeightMapImage::GetHeightMapNormal(int x, int z)
 	return(xmf3Normal);
 }
 
-CTerrain::CTerrain(int nWidth, int nLength )
+CTerrain::CTerrain(int nWidth, int nLength, int Type ) 
 {
 	SetActive(true);
 
 	m_nWidth = nWidth;
 	m_nLength = nLength;
+	m_type = Type;
 	m_xmf3Scale = XMFLOAT3(1.f, 1.f, 1.f);
 
 	// String to LPCTSTR
-	string strPath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\VoteFightHeightMap.raw";
+	string strPath;
+	switch (m_type)
+	{
+	case TERRAIN_GROUND :
+		strPath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\VoteFightHeightMap.raw";
+		break;
+	case TERRAIN_SEA:
+		strPath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\SeaHeightMap.raw";
+		
+		break;
+	}
 	const char* cPath = strPath.c_str();
 	wchar_t* wmsg = new wchar_t[strlen(cPath) + 1]; //memory allocation
 	size_t nConverted = 0;
@@ -120,9 +132,25 @@ CTerrain::CTerrain(int nWidth, int nLength )
 	// m_pHeightMapImage = new CHeightMapImage(_T("C:\\directX_work\\VoteFight_new\\Release\\Asset\\Terrain\\FightVote_terrain.raw"), nWidth, nLength, m_xmf3Scale);
 	MakeHeightMapGridMesh(0, 0, TERRAIN_WIDTH, TERRAIN_HEIGHT, m_xmf3Scale, m_pHeightMapImage);
 
-	string strTerrain = "Terrain";
-	CMaterial* material = CAssetManager::GetInstance()->CreateMaterial(strTerrain);
-	CTexture* texture = CAssetManager::GetInstance()->CreateTexture(strTerrain, "VoteFightTexture", TEXTURE_TYPE::ALBEDO_MAP);
+	string strTerrain = "Terrain1";
+	CMaterial* material = nullptr;
+	CTexture* texture = nullptr;
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	switch (m_type)
+	{
+	case TERRAIN_GROUND:
+		strTerrain = "Terrain1";
+		material = CAssetManager::GetInstance()->CreateMaterial(strTerrain);
+		texture = CAssetManager::GetInstance()->CreateTexture(strTerrain, "VoteFightTexture", TEXTURE_TYPE::ALBEDO_MAP);
+		break;
+	case TERRAIN_SEA:
+		strTerrain = "Terrain2";
+		material = CAssetManager::GetInstance()->CreateMaterial(strTerrain);
+		texture = CAssetManager::GetInstance()->CreateTexture(strTerrain, "SeaTexture", TEXTURE_TYPE::ALBEDO_MAP);
+		transform->SetPosition(XMFLOAT3(-1500, -100, -1500));
+		transform->SetScale(XMFLOAT3(5, 1, 5));
+		break;
+	}
 	CShader* shader = CAssetManager::GetInstance()->GetShader(strTerrain);
 
 	material->SetTexture(texture);
@@ -132,6 +160,8 @@ CTerrain::CTerrain(int nWidth, int nLength )
 
 	material->SetStateNum(0);
 	AddMaterial(material);
+
+	
 }
 
 CTerrain::~CTerrain()
@@ -213,7 +243,7 @@ void CTerrain::MakeHeightMapGridMesh(int xStart, int zStart, int nWidth, int nLe
 	m_d3d12NormalBufferView.BufferLocation = m_d3d12NormalBuffer->GetGPUVirtualAddress();
 	m_d3d12NormalBufferView.StrideInBytes = sizeof(XMFLOAT3);
 	m_d3d12NormalBufferView.SizeInBytes = sizeof(XMFLOAT3) * norVec3s.size();
-	cout << norVec3s.size() << '\n';
+	cout << "»çÀÌÁî" << norVec3s.size() << '\n';
 
 }
 
@@ -228,10 +258,25 @@ float CTerrain::OnGetHeight(int x, int z)
 
 void CTerrain::CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices,  vector<XMFLOAT3>& new_NorVecs)
 {
-	for (size_t i = 0; i < m_nWidth; i++)
-	for (size_t j = 0; j < m_nLength; j++)
-		new_NorVecs.push_back(m_pHeightMapImage->GetHeightMapNormal(i,j));
-				
+	
+	for (int j = 0, z = 0; z < m_nLength - 1; z++)
+	{
+		if ((z % 2) == 0)
+		{
+			for (int x = 0; x < m_nWidth; x++)
+			{
+				new_NorVecs.push_back(m_pHeightMapImage->GetHeightMapNormal(x, z));
+			}
+		}
+		else
+		{
+			for (int x = m_nWidth - 1; x >= 0; x--)
+			{
+				new_NorVecs.push_back(m_pHeightMapImage->GetHeightMapNormal(x, z));
+			}
+		}
+	}
+
 	/*
 	for (size_t i = 0; i < m_indices/3; i++)
 	{

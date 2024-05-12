@@ -14,6 +14,7 @@ private:
 	float    m_maxSpeedXZ;	   // XZ축 최대 속력
 	float    m_maxSpeedY;      // Y축 최대 속력
 
+	bool isMovable = true;
 public:
 	CRigidBody();
 	virtual ~CRigidBody();
@@ -32,9 +33,11 @@ public:
 	float GetSpeedXZ();
 	float GetSpeedY();
 
-	void AddForce(const XMFLOAT3& force);
+	void AddForce(const XMFLOAT3& force, bool isMovable);
 	void AddVelocity(const XMFLOAT3& velocity);
 
+	XMFLOAT3 GetAfterMovePosition();
+	void ReturnPrevLocation(const XMFLOAT3& velocity);
 	virtual void Update();
 
 private:
