@@ -27,6 +27,7 @@ CPlayerIdleState::~CPlayerIdleState()
 
 void CPlayerIdleState::Enter(CObject* object)
 {
+	stateNum = STATE_ENUM::CPlayerIdleState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("idle", true);
 }
@@ -180,6 +181,8 @@ CPlayerLeftTurn::~CPlayerLeftTurn()
 
 void CPlayerLeftTurn::Enter(CObject* object)
 {
+	stateNum = STATE_ENUM::CPlayerLeftTurn;
+
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("turnLeft", false);
 
@@ -249,6 +252,8 @@ CPlayerRightTurn::~CPlayerRightTurn()
 
 void CPlayerRightTurn::Enter(CObject* object)
 {
+	stateNum = STATE_ENUM::CPlayerRightTurn;
+
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("turnLeft", false);
 	
@@ -321,6 +326,7 @@ void CPlayerWalkState::Enter(CObject* object)
 	//PacketQueue::AddSendPacket(&send_packet);
 	// cout << " >> send ) CS_WALK_ENTER_PACEKET" << endl;
 
+	stateNum = STATE_ENUM::CPlayerIdelState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("lisaWalk", true);
 
@@ -424,6 +430,7 @@ CPlayerRunState::~CPlayerRunState()
 
 void CPlayerRunState::Enter(CObject* object)
 {
+	stateNum = STATE_ENUM::CPlayerIdelState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("Run", true);
 
