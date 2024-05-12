@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include "pch.h"
 #include "./ImaysNet/ImaysNet.h"
 #include "RemoteClient.h"
@@ -10,10 +10,10 @@ static unsigned long long	nextClientID{ 0 };		// Next Client ID
 vector<shared_ptr<thread>>	workerThreads;			// Worker Thread Vector
 enum class IO_TYPE;									// I/O Type
 
-// Å¬¶óÀÌ¾ğÆ®µéÀ» °¡¸®Å°´Â Æ÷ÀÎÅÍ¸¦ ÀúÀåÇÏ´Â º¤ÅÍ
+// í´ë¼ì´ì–¸íŠ¸ë“¤ì„ ê°€ë¦¬í‚¤ëŠ” í¬ì¸í„°ë¥¼ ì €ì¥í•˜ëŠ” ë²¡í„°
 vector<RemoteClient*>		remoteClients_ptr_v;
 
-// »èÁ¦ Å¬¶óÀÌ¾ğÆ® ¸ñ·Ï
+// ì‚­ì œ í´ë¼ì´ì–¸íŠ¸ ëª©ë¡
 list<shared_ptr<RemoteClient>>		deleteClinets;
 
 Iocp						iocp(numWorkerTHREAD);	// IOCP Init
@@ -21,14 +21,14 @@ recursive_mutex				mx_accept;
 shared_ptr<Socket>			listenSocket;			
 shared_ptr<RemoteClient>	remoteClientCandidate; 
 
-// Client Á¾·á Ã³¸® ÇÔ¼ö
+// Client ì¢…ë£Œ ì²˜ë¦¬ í•¨ìˆ˜
 void	ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient);
 void	ProcessAccept();
 void	PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet);
 void	WorkerThread();
 void	CloseServer();
 
-// ¼­¹ö ÇÁ·Î±×·¥ ÁøÀÔÁ¡
+// ì„œë²„ í”„ë¡œê·¸ë¨ ì§„ì…ì 
 int main(int argc, char* argv[])
 {
 	// Create listen socket & Binding
@@ -63,11 +63,11 @@ int main(int argc, char* argv[])
 
 void ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient)
 {
-	// ¿¡·¯ È¤Àº ¼ÒÄÏ Á¾·á ½Ã
+	// ì—ëŸ¬ í˜¹ì€ ì†Œì¼“ ì¢…ë£Œ ì‹œ
 	_remoteClient->m_tcpConnection.Close();
 	{
 		lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
-		RemoteClient::m_remoteClients.erase(_remoteClient.get());	// Å¬¶óÀÌ¾ğÆ® Á¦°Å
+		RemoteClient::m_remoteClients.erase(_remoteClient.get());	// í´ë¼ì´ì–¸íŠ¸ ì œê±°
 
 		cout << " >> Client left. There are " << RemoteClient::m_remoteClients.size() << " connections.\n";
 	}
@@ -76,11 +76,11 @@ void WorkerThread()
 {
 	try {
 		while (!stopServer) {
-			// I/O ¿Ï·á ÀÌº¥Æ® ´ë±â
+			// I/O ì™„ë£Œ ì´ë²¤íŠ¸ ëŒ€ê¸°
 			IocpEvents readEvents;
 			iocp.Wait(readEvents, 100);
 
-			// ¹ŞÀº ÀÌº¥Æ® Ã³¸®
+			// ë°›ì€ ì´ë²¤íŠ¸ ì²˜ë¦¬
 			for (int i = 0; i < readEvents.m_eventCount; ++i) {
 				auto& readEvent = readEvents.m_events[i];
 				auto p_readOverlapped = (EXP_OVER*)readEvent.lpOverlapped;
@@ -96,58 +96,58 @@ void WorkerThread()
 					ProcessAccept(); // Client Accept
 				}
 				else { // TCP Socket
-					shared_ptr<RemoteClient> remoteClient;	// Ã³¸®ÇÒ Å¬¶óÀÌ¾ğÆ® °¡Á®¿À±â
+					shared_ptr<RemoteClient> remoteClient;	// ì²˜ë¦¬í•  í´ë¼ì´ì–¸íŠ¸ ê°€ì ¸ì˜¤ê¸°
 					{
 						lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
 						remoteClient = RemoteClient::m_remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
 					}
 
 					//
-					if (remoteClient) { // ¼ö½Å ¿Ï·á »óÅÂ. ¿Ï·áµÈ °Í ²¨³»¼­ ÀÛ¾÷
+					if (remoteClient) { // ìˆ˜ì‹  ì™„ë£Œ ìƒíƒœ. ì™„ë£Œëœ ê²ƒ êº¼ë‚´ì„œ ì‘ì—…
 						remoteClient->m_tcpConnection.m_isReadOverlapped = false;
 						int ec = readEvent.dwNumberOfBytesTransferred;
 
-						if (ec <= 0) { //  0 - TCP ¿¬°á Á¾·á, -1 : Error
+						if (ec <= 0) { //  0 - TCP ì—°ê²° ì¢…ë£Œ, -1 : Error
 							ProcessClientLeave(remoteClient);
 						}
 						else {
-							// ¼ö½Å ¿Ï·á »óÅÂ. ¿Ï·áµÈ °Í ²¨³»¼­ ÀÛ¾÷
+							// ìˆ˜ì‹  ì™„ë£Œ ìƒíƒœ. ì™„ë£Œëœ ê²ƒ êº¼ë‚´ì„œ ì‘ì—…
 							char* recv_buf = remoteClient->m_tcpConnection.m_recvOverlapped.m_buf;
 							int recv_buf_Length = ec;
 
 							// cout << " >> Recv - recv_buf_Length : " << recv_buf_Length << endl;
 
-							{	// ÆĞÅ¶ Ã³¸®
+							{	// íŒ¨í‚· ì²˜ë¦¬
 								int remain_data = recv_buf_Length + remoteClient->m_tcpConnection.m_prev_remain;
 								while (remain_data > 0) {
 									unsigned char packet_size = recv_buf[0];
-									if (packet_size > remain_data) // // ³²Àº µ¥ÀÌÅÍ°¡ ÇöÀç Ã³¸®ÇÒ ÆĞÅ¶ Å©±âº¸´Ù ÀûÀ¸¸é Àß·È°Å³ª µü ¶³¾îÁü.
+									if (packet_size > remain_data) // // ë‚¨ì€ ë°ì´í„°ê°€ í˜„ì¬ ì²˜ë¦¬í•  íŒ¨í‚· í¬ê¸°ë³´ë‹¤ ì ìœ¼ë©´ ì˜ë ¸ê±°ë‚˜ ë”± ë–¨ì–´ì§.
 										break;
 
-									//ÆĞÅ¶ Ã³¸®
+									//íŒ¨í‚· ì²˜ë¦¬
 									PacketProcess(remoteClient, recv_buf);
 
-									//´ÙÀ½ ÆĞÅ¶ ÀÌµ¿, ³²Àº µ¥ÀÌÅÍ °»½Å
+									//ë‹¤ìŒ íŒ¨í‚· ì´ë™, ë‚¨ì€ ë°ì´í„° ê°±ì‹ 
 									recv_buf += packet_size;
 									remain_data -= packet_size;
 
 								}
-								//³²Àº µ¥ÀÌÅÍ ÀúÀå
+								//ë‚¨ì€ ë°ì´í„° ì €ì¥
 								remoteClient->m_tcpConnection.m_prev_remain = remain_data;
 
-								//³²Àº µ¥ÀÌÅÍ°¡ 0ÀÌ ¾Æ´Ñ °ªÀ» °¡Áö¸é recv_bufÀÇ ¸Ç ¾ÕÀ¸·Î º¹»ç
+								//ë‚¨ì€ ë°ì´í„°ê°€ 0ì´ ì•„ë‹Œ ê°’ì„ ê°€ì§€ë©´ recv_bufì˜ ë§¨ ì•ìœ¼ë¡œ ë³µì‚¬
 								if (remain_data > 0) {
 									memcpy(remoteClient->m_tcpConnection.m_recvOverlapped.m_buf, recv_buf, remain_data);
 								}
 							}
 
-							// ¼ö½Å ¹ŞÀ» ÁØºñ
+							// ìˆ˜ì‹  ë°›ì„ ì¤€ë¹„
 							if (remoteClient->m_tcpConnection.ReceiveOverlapped() != 0
 								&& WSAGetLastError() != ERROR_IO_PENDING) {
 								ProcessClientLeave(remoteClient);
 							}
 							else {
-								// I/O¸¦ °É°í ¿Ï·á¸¦ ´ë±â »óÅÂ·Î º¯°æ
+								// I/Oë¥¼ ê±¸ê³  ì™„ë£Œë¥¼ ëŒ€ê¸° ìƒíƒœë¡œ ë³€ê²½
 								remoteClient->m_tcpConnection.m_isReadOverlapped = true;
 							}
 						}
@@ -164,7 +164,7 @@ void ProcessAccept()
 {
 	lock_guard<recursive_mutex> lock_accept(mx_accept);
 	listenSocket->m_isReadOverlapped = false;
-	// AcceptÀº ÀÌ¹Ì ¿Ï·á -> ¸¶¹«¸® ÀÛ¾÷
+	// Acceptì€ ì´ë¯¸ ì™„ë£Œ -> ë§ˆë¬´ë¦¬ ì‘ì—…
 	if (remoteClientCandidate->m_tcpConnection.UpdateAcceptContext(*listenSocket) != 0) {
 		listenSocket->Close();
 	}
@@ -172,16 +172,16 @@ void ProcessAccept()
 		shared_ptr<RemoteClient> remoteClient = remoteClientCandidate;
 		remoteClients_ptr_v.emplace_back(remoteClient.get());
 
-		// ¼ÒÄÏ IOCP¿¡ Ãß°¡
+		// ì†Œì¼“ IOCPì— ì¶”ê°€
 		iocp.Add(remoteClient->m_tcpConnection, remoteClient.get());
 
-		// overlapped ¼ö½Å ¿äÃ»
+		// overlapped ìˆ˜ì‹  ìš”ì²­
 		if (remoteClient->m_tcpConnection.ReceiveOverlapped() != 0
 			&& WSAGetLastError() != ERROR_IO_PENDING) {
 			remoteClient->m_tcpConnection.Close();
 		}
 		else {
-			// I/O¸¦ °É°í ¿Ï·á¸¦ ´ë±â »óÅÂ·Î º¯°æ
+			// I/Oë¥¼ ê±¸ê³  ì™„ë£Œë¥¼ ëŒ€ê¸° ìƒíƒœë¡œ ë³€ê²½
 			remoteClient->m_tcpConnection.m_isReadOverlapped = true;
 			{
 				lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
@@ -191,7 +191,7 @@ void ProcessAccept()
 			}
 		}
 
-		// °è¼ÓÇØ¼­ ¼ÒÄÏ ¹Ş¾Æ¾ß ÇÏ¹Ç·Î Listen ¼ÒÄÏ¾Ö overlapped I/O¸¦ °É¾îµÒ
+		// ê³„ì†í•´ì„œ ì†Œì¼“ ë°›ì•„ì•¼ í•˜ë¯€ë¡œ Listen ì†Œì¼“ì•  overlapped I/Oë¥¼ ê±¸ì–´ë‘ 
 		remoteClientCandidate = make_shared<RemoteClient>(SocketType::Tcp);
 		string errorText;
 		if (!listenSocket->AcceptOverlapped(remoteClientCandidate->m_tcpConnection, errorText)
@@ -199,7 +199,7 @@ void ProcessAccept()
 			listenSocket->Close();
 		}
 		else {
-			// Listen ¼ÒÄÏÀº ¿¬°áÀ» ±â´Ù¸®´Â »óÅÂ
+			// Listen ì†Œì¼“ì€ ì—°ê²°ì„ ê¸°ë‹¤ë¦¬ëŠ” ìƒíƒœ
 			listenSocket->m_isReadOverlapped = true;
 		}
 	}
@@ -226,7 +226,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		cout << " >> Size of RemoteClient: " << RemoteClient::m_remoteClients.size() << endl;
 		// cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
 
-		// Send all player infomation to connected Client (»õ·Î ¿¬°áµÈ Å¬¶óÀÌ¾ğÆ®°¡ ´Ù¸¥ Å¬¶óÀÌ¾ğÆ®µéÀÇ Á¤º¸¸¦ ¾Ë ¼ö ÀÖµµ·Ï ÇÔ)
+		// Send all player infomation to connected Client (ìƒˆë¡œ ì—°ê²°ëœ í´ë¼ì´ì–¸íŠ¸ê°€ ë‹¤ë¥¸ í´ë¼ì´ì–¸íŠ¸ë“¤ì˜ ì •ë³´ë¥¼ ì•Œ ìˆ˜ ìˆë„ë¡ í•¨)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (rc.second->m_id == _Client->m_id)
 				continue;
@@ -239,14 +239,14 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_zPos = rc.second->m_player->getZpos();
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> Send | << SC_ADD_PACKET 01 >>" << endl;
-			cout << " >> Send ) Add Packet 1 - ÇØ´ç ID : " << rc.second->m_id << endl;
-			cout << " >> Send ) Add Packet 1 - ÁÖÃ¼ ID : " << _Client->m_id << endl;
+			cout << " >> Send ) Add Packet 1 - í•´ë‹¹ ID : " << rc.second->m_id << endl;
+			cout << " >> Send ) Add Packet 1 - ì£¼ì²´ ID : " << _Client->m_id << endl;
 			cout << " >> Send ) Pos Value 1 - xPos : " << rc.second->m_player->getXpos() <<
 				", yPos : " << rc.second->m_player->getYpos() <<
 				", zPos : " << rc.second->m_player->getZpos() << endl << endl;
 		}
 
-		// Send connected client infomation to other client (´Ù¸¥ ¸ğµç Å¬¶óÀÌ¾ğÆ®¿¡°Ô Æ¯Á¤ Å¬¶óÀÌ¾ğÆ®ÀÇ Á¤º¸¸¦ º¸³¿)
+		// Send connected client infomation to other client (ë‹¤ë¥¸ ëª¨ë“  í´ë¼ì´ì–¸íŠ¸ì—ê²Œ íŠ¹ì • í´ë¼ì´ì–¸íŠ¸ì˜ ì •ë³´ë¥¼ ë³´ëƒ„)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (rc.second->m_id == _Client->m_id)
 				continue;
@@ -259,8 +259,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_zPos = _Client->m_player->getZpos();
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> Send | << SC_ADD_PACKET 02 >>" << _Client->m_id << endl;
-			cout << " >> Send ) Add Packet 2 - ÇØ´ç ID : " << _Client->m_id << endl;
-			cout << " >> Send ) Add Packet 2 - ÁÖÃ¼ ID : " << rc.second->m_id << endl;
+			cout << " >> Send ) Add Packet 2 - í•´ë‹¹ ID : " << _Client->m_id << endl;
+			cout << " >> Send ) Add Packet 2 - ì£¼ì²´ ID : " << rc.second->m_id << endl;
 			cout << " >> Send ) Pos Value 2 - xPos : " << _Client->m_player->getXpos() <<
 				", yPos : " << _Client->m_player->getYpos() <<
 				", zPos : " << _Client->m_player->getZpos() << endl << endl;
@@ -297,44 +297,18 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		// cout << " >> P_CS_MOVE_V_PACKET" << endl;
 		CS_MOVE_V_PACKET* recv_packet = reinterpret_cast<CS_MOVE_V_PACKET*>(_Packet);
 		// cout << " [01] Recv ID : " << recv_packet->m_id << endl;
-
 		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (_Client->m_id == rc.second->m_id) {
+			if (recv_packet->m_id == rc.second->m_id) {
 				RemoteClient::m_lock.lock();
 				rc.second->m_player->setXpos(recv_packet->m_vec.x);
 				rc.second->m_player->setYpos(recv_packet->m_vec.y);
 				rc.second->m_player->setZpos(recv_packet->m_vec.z);
-				// cout << " [02] _Client->m_id : " << _Client->m_id << endl;
-				// cout << " [03] rc.second->m_id : " << rc.second->m_id << endl;
-				// cout << " [04] Recv Pos : " << recv_packet->m_vec.x << ", "<< recv_packet->m_vec.y <<", " << recv_packet->m_vec.z <<  endl;
 				RemoteClient::m_lock.unlock();
 				continue;
 			}
 
-			SC_MOVE_V_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
-			send_packet.m_id = rc.second->m_id;
-			send_packet.m_vec = recv_packet->m_vec;
-			send_packet.m_rota = recv_packet->m_rota;
-			send_packet.m_state = recv_packet->m_state;
-			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			// cout << " [05] send ID : " << rc.second->m_id << endl;
-			// std::cout << "rc ID - " << rc.second->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
-		}
-
-		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (_Client->m_id == rc.second->m_id) {
-				RemoteClient::m_lock.lock();
-				rc.second->m_player->setXpos(recv_packet->m_vec.x);
-				rc.second->m_player->setYpos(recv_packet->m_vec.y);
-				rc.second->m_player->setZpos(recv_packet->m_vec.z);
-				// cout << " [05] _Client->m_id : " << _Client->m_id << endl;
-				// cout << " [06] rc.second->m_id : " << rc.second->m_id << endl;
-				// cout << " [07] Recv Pos : " << recv_packet->m_vec.x << ", " << recv_packet->m_vec.y << ", " << recv_packet->m_vec.z << endl;
-				RemoteClient::m_lock.unlock();
-				continue;
-			}
+			// 0ë²ˆ í´ë¼ì´ì–¸íŠ¸ -> ë‚˜ ìì‹ ì˜ ì•„ì´ë””ë©´ ë‹¤ì‹œ ì•ˆë³´ë‚´ì¤˜ë„ ã„±ã…Šì•„
+			// ê·¼ë° ë‹¤ë¥¼ ê²½ìš°ì—ëŠ” ì–´
 
 			SC_MOVE_V_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
@@ -344,8 +318,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_rota = recv_packet->m_rota;
 			send_packet.m_state = recv_packet->m_state;
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			// cout << " [08] send ID : " << rc.second->m_id << endl;
-			//std::cout << "client ID - " << _Client->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
 		}
 
 		break;
@@ -359,7 +331,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 void CloseServer()
 {
 	lock_guard<recursive_mutex> lock_accept(mx_accept);
-	// i/o ¿Ï·á Ã¼Å© & ¼ÒÄÏ ´İ±â
+	// i/o ì™„ë£Œ ì²´í¬ & ì†Œì¼“ ë‹«ê¸°
 	listenSocket->Close();
 	{
 		lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
@@ -367,20 +339,20 @@ void CloseServer()
 		for (auto i : RemoteClient::m_remoteClients)
 			i.second->m_tcpConnection.Close();
 
-		// Á¤¸® Áß
+		// ì •ë¦¬ ì¤‘
 		cout << " >> Shutting down the server....\n";
 		while (RemoteClient::m_remoteClients.size() > 0) {
-			// I/O completionÀÌ ¾ø´Â »óÅÂÀÇ RemoteClient¸¦ Á¦°Å
+			// I/O completionì´ ì—†ëŠ” ìƒíƒœì˜ RemoteClientë¥¼ ì œê±°
 			for (auto i = RemoteClient::m_remoteClients.begin(); i != RemoteClient::m_remoteClients.end(); ++i) {
 				if (!i->second->m_tcpConnection.m_isReadOverlapped)
 					RemoteClient::m_remoteClients.erase(i);
 			}
 
-			// I/O completionÀÌ ¹ß»ı ½Ã ´õ ÀÌ»ó Overlapped I/O¸¦ °ÉÁö ¸»°í Á¤¸® ½ÅÈ£ Flag.
+			// I/O completionì´ ë°œìƒ ì‹œ ë” ì´ìƒ Overlapped I/Oë¥¼ ê±¸ì§€ ë§ê³  ì •ë¦¬ ì‹ í˜¸ Flag.
 			IocpEvents readEvents;
 			iocp.Wait(readEvents, 100);
 
-			// ¹ŞÀº ÀÌº¥Æ® °¢°¢À» Ã³¸®ÇÕ´Ï´Ù.
+			// ë°›ì€ ì´ë²¤íŠ¸ ê°ê°ì„ ì²˜ë¦¬í•©ë‹ˆë‹¤.
 			for (int i = 0; i < readEvents.m_eventCount; i++) {
 				auto& readEvent = readEvents.m_events[i];
 				if (readEvent.lpCompletionKey == 0)  {

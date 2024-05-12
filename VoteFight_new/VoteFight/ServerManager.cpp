@@ -23,8 +23,8 @@
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
-//char* CServerManager::SERVERIP;
-char* CServerManager::m_SERVERIP = "127.0.0.1";
+char* CServerManager::m_SERVERIP;
+//char* CServerManager::m_SERVERIP = "127.0.0.1";
 
 // 재귀적 mutex
 recursive_mutex CServerManager::m_mutex;
@@ -98,14 +98,14 @@ void CServerManager::ConnectServer()	// 서버 연결 함수
 {
 	m_tcpSocket = make_shared<Socket>(SocketType::Tcp);
 
-	/*std::cout << std::endl << " [ =========== Login =========== ] " << std::endl << std::endl;
+	std::cout << std::endl << " [ =========== Login =========== ] " << std::endl << std::endl;
 
 	std::cout << std::endl << "Input Connect Server IP (ex 100.xxx.xxx.xxx) : " << std::endl;
 	std::string server_s;
 	std::cin >> server_s;
 	m_SERVERIP = new char[server_s.size() + 1];
 	m_SERVERIP[server_s.size()] = '\0';
-	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());*/
+	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());
 
 	m_tcpSocket->Bind(Endpoint::Any);
 	CServerManager::Connetion();		// 연결
