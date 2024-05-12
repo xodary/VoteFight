@@ -29,7 +29,7 @@ cbuffer VoxelizationDebug : register(b0)
 
 RWTexture3D<float4> voxelTexture : register(u0);
 
-GS_IN VS_Main(VS_IN input)
+GS_IN VSMain(VS_IN input)
 {
     GS_IN output = (GS_IN) 0;
     
@@ -50,7 +50,7 @@ GS_IN VS_Main(VS_IN input)
 }
 
 [maxvertexcount(36)]
-void GS_Main(point GS_IN input[1], inout TriangleStream<PS_IN> OutputStream)
+void GSMain(point GS_IN input[1], inout TriangleStream<PS_IN> OutputStream)
 {
     PS_IN output[36];
     for (int i = 0; i < 36; i++)
@@ -175,7 +175,7 @@ void GS_Main(point GS_IN input[1], inout TriangleStream<PS_IN> OutputStream)
     OutputStream.RestartStrip();
 }
 
-PS_OUT PS_Main(PS_IN input)
+PS_OUT PSMain(PS_IN input)
 {
     PS_OUT output = (PS_OUT) 0;
     
