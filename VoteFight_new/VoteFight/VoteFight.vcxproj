@@ -127,7 +127,6 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\packages\WinPixEventRuntime.1.0.240308001\bin\x64\WinPixEventRuntime.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -139,49 +138,36 @@
       <PreprocessorDefinitions>NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <WholeProgramOptimization>true</WholeProgramOptimization>
-      <Optimization>MaxSpeed</Optimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>..\packages\WinPixEventRuntime.1.0.240308001\bin\x64\WinPixEventRuntime.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Animator.h" />
-    <ClInclude Include="AnisoMipmap.h" />
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Bilboard.h" />
     <ClInclude Include="BilboardShader.h" />
-    <ClInclude Include="Buffer.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="CameraManager.h" />
     <ClInclude Include="Character.h" />
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
-    <ClInclude Include="UpsampleBlur.h" />
-    <ClInclude Include="VCTMainShader.h" />
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
-    <ClInclude Include="DepthBuffer.h" />
     <ClInclude Include="DepthWriteShader.h" />
-    <ClInclude Include="DescriptorHeap.h" />
-    <ClInclude Include="Endpoint.h" />
-    <ClInclude Include="Exception.h" />
     <ClInclude Include="func.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
-    <ClInclude Include="GBufferShader.h" />
-    <ClInclude Include="ImaysNet.h" />
     <ClInclude Include="ImaysNet\Endpoint.h" />
     <ClInclude Include="ImaysNet\Exception.h" />
     <ClInclude Include="ImaysNet\ImaysNet.h" />
@@ -193,36 +179,27 @@
     <ClInclude Include="ImaysNet\SocketInit.h" />
     <ClInclude Include="ImaysNet\targetver.h" />
     <ClInclude Include="InputManager.h" />
-    <ClInclude Include="Iocp.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="NPCStates.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectShader.h" />
-    <ClInclude Include="PacketQueue.h" />
+    <ClInclude Include="OtherPlayerStates.h" />
     <ClInclude Include="pch.h" />
-    <ClInclude Include="PipelineStateObject.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerStates.h" />
-    <ClInclude Include="Poll.h" />
-    <ClInclude Include="RenderTarget.h" />
     <ClInclude Include="RigidBody.h" />
-    <ClInclude Include="RootSignature.h" />
     <ClInclude Include="Scene.h" />
     <ClInclude Include="SceneManager.h" />
-    <ClInclude Include="Semaphore.h" />
     <ClInclude Include="ServerManager.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SkinnedMesh.h" />
     <ClInclude Include="Skybox.h" />
     <ClInclude Include="SkyboxShader.h" />
-    <ClInclude Include="Socket.h" />
-    <ClInclude Include="SocketInit.h" />
     <ClInclude Include="SpriteRenderer.h" />
     <ClInclude Include="State.h" />
     <ClInclude Include="StateMachine.h" />
-    <ClInclude Include="targetver.h" />
     <ClInclude Include="Terrain.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
@@ -236,42 +213,32 @@
     <ClInclude Include="udt.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UIShader.h" />
-    <ClInclude Include="VoxelizationShader.h" />
+    <ClInclude Include="VoxelConeTracing.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="WireFrameShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Animator.cpp" />
-    <ClCompile Include="AnisoMipmap.cpp" />
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Bilboard.cpp" />
     <ClCompile Include="BilboardShader.cpp" />
-    <ClCompile Include="Buffer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="CameraManager.cpp" />
     <ClCompile Include="Character.cpp" />
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
-    <ClCompile Include="UpsampleBlur.cpp" />
-    <ClCompile Include="VCTMainShader.cpp" />
-    <ClCompile Include="DepthBuffer.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="DepthWriteShader.cpp" />
-    <ClCompile Include="DescriptorHeap.cpp" />
-    <ClCompile Include="Endpoint.cpp" />
-    <ClCompile Include="Exception.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="DDSTextureLoader12.cpp" />
     <ClCompile Include="func.cpp" />
     <ClCompile Include="GameScene.cpp" />
-    <ClCompile Include="GBufferShader.cpp" />
     <ClCompile Include="ImaysNet\Endpoint.cpp" />
     <ClCompile Include="ImaysNet\Exception.cpp" />
     <ClCompile Include="ImaysNet\Iocp.cpp" />
@@ -280,7 +247,6 @@
     <ClCompile Include="ImaysNet\Socket.cpp" />
     <ClCompile Include="ImaysNet\SocketInit.cpp" />
     <ClCompile Include="InputManager.cpp" />
-    <ClCompile Include="Iocp.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -288,26 +254,13 @@
     <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectShader.cpp" />
-    <ClCompile Include="PacketQueue.cpp" />
+    <ClCompile Include="OtherPlayerStates.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
-    <ClCompile Include="PipelineStateObject.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerStates.cpp" />
-    <ClCompile Include="Poll.cpp" />
-    <ClCompile Include="RenderTarget.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="RigidBody.cpp" />
-    <ClCompile Include="RootSignature.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Scene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="ServerManager.cpp" />
@@ -315,8 +268,6 @@
     <ClCompile Include="SkinnedMesh.cpp" />
     <ClCompile Include="Skybox.cpp" />
     <ClCompile Include="SkyboxShader.cpp" />
-    <ClCompile Include="Socket.cpp" />
-    <ClCompile Include="SocketInit.cpp" />
     <ClCompile Include="SpriteRenderer.cpp" />
     <ClCompile Include="State.cpp" />
     <ClCompile Include="StateMachine.cpp" />
@@ -339,21 +290,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="VoxelizationShader.cpp" />
     <ClCompile Include="WireFrameShader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\Release\Asset\Shader\Common.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\GBuffer.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\Light.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
     <FxCompile Include="..\Release\Asset\Shader\main.hlsl">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -364,45 +303,8 @@
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">5.1</ShaderModel>
       <ShaderModel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">5.1</ShaderModel>
     </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\UpsampleBlurCS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingAnisoMipmapMainCS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingAnisoMipmapPrepareCS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingCS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingPS.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingVoxelization.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-    <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingVoxelizationDebug.hlsl">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
-    <Import Project="..\packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets" Condition="Exists('..\packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets')" />
   </ImportGroup>
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>이 프로젝트는 이 컴퓨터에 없는 NuGet 패키지를 참조합니다. 해당 패키지를 다운로드하려면 NuGet 패키지 복원을 사용하십시오. 자세한 내용은 http://go.microsoft.com/fwlink/?LinkID=322105를 참조하십시오. 누락된 파일은 {0}입니다.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\WinPixEventRuntime.1.0.240308001\build\WinPixEventRuntime.targets'))" />
-  </Target>
 </Project>

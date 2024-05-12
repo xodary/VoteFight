@@ -10,12 +10,17 @@
 #include "Texture.h"
 #include "UI.h"
 #include "Shader.h"
+#include "State.h"
 #include "StateMachine.h"
 #include "Animator.h"
 #include "Transform.h"
 #include "Camera.h"
  #include"Terrain.h"
  #include"Bilboard.h"
+
+#include "./ImaysNet/ImaysNet.h"
+#include "./ImaysNet/PacketQueue.h"
+
 CGameScene* CGameScene::m_CGameScene;
 
 CGameScene::CGameScene() :
@@ -89,8 +94,8 @@ void CGameScene::Init()
 	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
-	CSkyBox* skybox = new CSkyBox();
-	AddObject(GROUP_TYPE::SKYBOX, skybox);
+	CObject* object = new CSkyBox();
+	AddObject(GROUP_TYPE::SKYBOX, object);
 
 	// 2024 - 04 - 10
 	// 빌보드 추가 - 아직 미완성
@@ -114,7 +119,6 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
 	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(1.0f, 1.0f, 1.0f);	// Player 따라다님.
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
-	
 	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
@@ -148,21 +152,38 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 }
 
 // 2024 04 18일 이시영 수정 
 // Update할떄마다 플레이어 Y 를 터레인 높이 값에 변환시킴
 void CGameScene::Update()
-{
+{	
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	for (CObject* o : objects) {
 		CPlayer* player = reinterpret_cast<CPlayer*>(o);
-		if (player->m_id == CGameFramework::GetInstance()->my_id) {
-			player->SetTerrainY(this);
-			CTransform* playerPosition = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-			m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
+
+		if ((CGameFramework::GetInstance()->my_id) > 0) {
+			if (player->m_id == CGameFramework::GetInstance()->my_id) {
+				CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+				CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+				CState* net_state = net_stateMachine->GetCurrentState();
+
+				CS_MOVE_V_PACKET send_packet;
+				send_packet.m_size = sizeof(CS_MOVE_V_PACKET);
+				send_packet.m_type = PACKET_TYPE::P_CS_MOVE_V_PACKET;
+				send_packet.m_id = player->m_id;
+				send_packet.m_vec = net_transform->GetPosition();
+				send_packet.m_rota = net_transform->GetRotation();
+				send_packet.m_state = net_state->GetStateNum();
+				PacketQueue::AddSendPacket(&send_packet);
+				// cout << " >> send ) CS_MOVE_V_PACKET" << endl;
+
+				player->SetTerrainY(this);
+				CTransform* playerPosition = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+				m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
+			}
 		}
 	}
 	CScene::Update();
@@ -184,7 +205,7 @@ void CGameScene::PreRender()
 
 			if ((light != nullptr) && (light->m_isActive) && (light->m_shadowMapping))
 			{
-				float nearPlaneDist = 3.0;
+				float nearPlaneDist = 0.0;
 				float farPlaneDist = light->m_range;
 
 				switch ((LIGHT_TYPE)light->m_type)
@@ -195,6 +216,7 @@ void CGameScene::PreRender()
 					camera->GeneratePerspectiveProjectionMatrix(90.0f, static_cast<float>(DEPTH_BUFFER_WIDTH) / static_cast<float>(DEPTH_BUFFER_HEIGHT), nearPlaneDist, farPlaneDist);
 					break;
 				case LIGHT_TYPE::DIRECTIONAL:
+					//camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(TERRAIN_WIDTH), static_cast<float>(TERRAIN_HEIGHT), nearPlaneDist, farPlaneDist);
 					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(100), static_cast<float>(100), nearPlaneDist, farPlaneDist);
 					break;
 				}
@@ -215,9 +237,15 @@ void CGameScene::PreRender()
 
 				DX::ResourceTransition(d3d12GraphicsCommandList, depthTexture->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
 
-				d3d12GraphicsCommandList->ClearRenderTargetView(depthTexture->m_RTVHandle.GetCPUHandle(), Colors::White, 0, nullptr);
-				d3d12GraphicsCommandList->ClearDepthStencilView(depthTexture->m_DSVHandle.GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
-				d3d12GraphicsCommandList->OMSetRenderTargets(1, &depthTexture->m_RTVHandle.GetCPUHandle(), TRUE, &depthTexture->m_DSVHandle.GetCPUHandle());
+				CD3DX12_CPU_DESCRIPTOR_HANDLE d3d12RtvCPUDescriptorHandle(CGameFramework::GetInstance()->GetRtvDescriptorHeap()->GetCPUDescriptorHandleForHeapStart());
+				CD3DX12_CPU_DESCRIPTOR_HANDLE d3d12DsvCPUDescriptorHandle(CGameFramework::GetInstance()->GetDsvDescriptorHeap()->GetCPUDescriptorHandleForHeapStart());
+
+				d3d12RtvCPUDescriptorHandle.ptr += 2 * CGameFramework::GetInstance()->GetRtvDescriptorIncrementSize();
+				d3d12DsvCPUDescriptorHandle.ptr += CGameFramework::GetInstance()->GetDsvDescriptorIncrementSize();
+
+				d3d12GraphicsCommandList->ClearRenderTargetView(d3d12RtvCPUDescriptorHandle, Colors::White, 0, nullptr);
+				d3d12GraphicsCommandList->ClearDepthStencilView(d3d12DsvCPUDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
+				d3d12GraphicsCommandList->OMSetRenderTargets(1, &d3d12RtvCPUDescriptorHandle, TRUE, &d3d12DsvCPUDescriptorHandle);
 
 				camera->RSSetViewportsAndScissorRects();
 				camera->UpdateShaderVariables();
@@ -235,7 +263,8 @@ void CGameScene::PreRender()
 						}
 					}
 				}
-				if (m_terrain) m_terrain->PreRender(camera);
+
+				m_terrain->PreRender(camera);
 
 				DX::ResourceTransition(d3d12GraphicsCommandList, depthTexture->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 			}
@@ -248,21 +277,20 @@ void CGameScene::Render()
 	CScene::Render();
 
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
-	
-	if (KEY_HOLD(KEY::SPACE)) {
-		// [Debug] Render DepthTexture
-		const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
-		D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
-		D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
-		CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-		CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
 
-		texture->UpdateShaderVariable();
-		shader->SetPipelineState(2);
-		d3d12GraphicsCommandList->RSSetViewports(1, &d3d12Viewport);
-		d3d12GraphicsCommandList->RSSetScissorRects(1, &d3d12ScissorRect);
-		d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		d3d12GraphicsCommandList->DrawInstanced(6, 1, 0, 0);
-	}
+	// [Debug] Render DepthTexture
+	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
+	D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
+	D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
+	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+	CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
+
+	texture->UpdateShaderVariable();
+	shader->SetPipelineState(2);
+	d3d12GraphicsCommandList->RSSetViewports(1, &d3d12Viewport);
+	d3d12GraphicsCommandList->RSSetScissorRects(1, &d3d12ScissorRect);
+	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+	d3d12GraphicsCommandList->DrawInstanced(6, 1, 0, 0);
+
 }
 

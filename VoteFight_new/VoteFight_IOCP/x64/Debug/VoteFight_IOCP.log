@@ -1,20 +1,7 @@
-﻿  DDSTextrueLoader.cpp
-  Endpoint.cpp
-  Exception.cpp
-  Iocp.cpp
-  PacketQueue.cpp
-  Poll.cpp
-  Socket.cpp
-  SocketInit.cpp
-  RemoteClient.cpp
-  func.cpp
-  main.cpp
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(218,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(233,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(249,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  pch.cpp
-  udt.cpp
-  코드를 생성하고 있습니다...
-  LINK : C:\directX_work\VoteFight_new\x64\Debug\VoteFight_IOCP.exe을(를) 찾을 수 없거나 마지막 증분 링크에 의해 빌드되지 않았습니다. 전체 링크를 수행하고 있습니다.
-CPlayer.obj : warning LNK4099: '' PDB를 'CPlayer.obj' 또는 ''에서 찾을 수 없습니다. 디버그 정보가 없는 것처럼 개체를 링크합니다.
+﻿  main.cpp
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(220,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(236,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(256,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(317,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(342,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   VoteFight_IOCP.vcxproj -> C:\directX_work\VoteFight_new\x64\Debug\VoteFight_IOCP.exe
