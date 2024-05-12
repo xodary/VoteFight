@@ -216,10 +216,11 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
-		player->Init();
+		player->AnotherInit();
 		player->m_id = recv_packet->m_id;
 		cout << "Clinet ID - " << player->m_id << endl;
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
 		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
 		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
@@ -262,7 +263,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		for (auto& p : objects) {
 			CPlayer* player = reinterpret_cast<CPlayer*>(p);
-			if (player->m_id == recv_packet->m_id)
+			if (CGameFramework::GetInstance()->my_id == recv_packet->m_id)
 				continue;
 
 			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));

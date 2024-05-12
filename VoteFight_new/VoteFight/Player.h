@@ -32,6 +32,7 @@ public:
 	bool HasBullet();
 
 	virtual void Init();
+    virtual void AnotherInit();
 
 	virtual void SwapWeapon(WEAPON_TYPE weaponType);
 

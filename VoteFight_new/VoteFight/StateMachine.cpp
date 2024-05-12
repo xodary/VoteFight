@@ -2,6 +2,7 @@
 #include "StateMachine.h"
 
 #include "State.h"
+#include "OtherPlayerStates.h"
 #include "PlayerStates.h"
 
 CStateMachine::CStateMachine() :
@@ -32,7 +33,7 @@ void CStateMachine::SetCurrentState(CState* state)
 void CStateMachine::SetCurrentState(STATE_ENUM n)
 {
 	CState* state = nullptr;
-	switch(n) {
+	switch(n) {   //COtherPlayerIdleState
 	case STATE_ENUM::CPlayerIdleState:
 		state = CPlayerIdleState::GetInstance();
 		break;
@@ -78,19 +79,19 @@ void CStateMachine::ChangeState(STATE_ENUM n)
 	CState* state = nullptr;
 	switch (n) {
 	case STATE_ENUM::CPlayerIdleState:
-		state = CPlayerIdleState::GetInstance();
+		state = COtherPlayerIdleState::GetInstance();
 		break;
 	case STATE_ENUM::CPlayerWalkState:
-		state = CPlayerWalkState::GetInstance();
+		state = COtherPlayerWalkState::GetInstance();
 		break;
 	case STATE_ENUM::CPlayerRunState:
-		state = CPlayerRunState::GetInstance();
+		state = COhterPlayerRunState::GetInstance();
 		break;
 	case STATE_ENUM::CPlayerLeftTurn:
-		state = CPlayerLeftTurn::GetInstance();
+		state = COtherPlayerLeftTurn::GetInstance();
 		break;
 	case STATE_ENUM::CPlayerRightTurn:
-		state = CPlayerRightTurn::GetInstance();
+		state = COtherPlayerRightTurn::GetInstance();
 		break;
 	}
 

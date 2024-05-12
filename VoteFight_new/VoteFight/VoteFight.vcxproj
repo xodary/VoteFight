@@ -185,6 +185,7 @@
     <ClInclude Include="NPCStates.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectShader.h" />
+    <ClInclude Include="OtherPlayerStates.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerStates.h" />
@@ -253,6 +254,7 @@
     <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectShader.cpp" />
+    <ClCompile Include="OtherPlayerStates.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
