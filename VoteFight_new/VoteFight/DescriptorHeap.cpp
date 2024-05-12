@@ -126,7 +126,7 @@ DescriptorHeapManager::DescriptorHeapManager()
 	ID3D12Device* device = CGameFramework::GetInstance()->GetDevice();
 	ZeroMemory(mCPUDescriptorHeaps, sizeof(mCPUDescriptorHeaps));
 
-	static const int MaxNoofSRVDescriptors = 128;
+	static const int MaxNoofSRVDescriptors = 2048;
 
 	mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV, MaxNoofSRVDescriptors);
 	mCPUDescriptorHeaps[D3D12_DESCRIPTOR_HEAP_TYPE_RTV] = new CPUDescriptorHeap(device, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, 128);

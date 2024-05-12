@@ -394,6 +394,7 @@ void CVoxelizationShader::Render(int stateNum)
         commandList->SetGraphicsRootDescriptorTable(3, uavHandle.GetGPUHandle());
 
         object->GetMesh()->Render(0);
+
     }
     break;
     case 1:

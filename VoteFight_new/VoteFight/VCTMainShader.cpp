@@ -29,6 +29,7 @@ CVCTMainShader::CVCTMainShader()
 	m_VCTMainRT->Create(static_cast<UINT64>(framework->GetResolution().x), static_cast<UINT>(framework->GetResolution().y), D3D12_RESOURCE_STATE_COMMON, flags, format, D3D12_CLEAR_VALUE{ format, { 0.0f, 0.0f, 0.0f, 0.0f } }, TEXTURE_TYPE::ALBEDO_MAP);
 	m_VCTMainRT->m_RTVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	device->CreateRenderTargetView(m_VCTMainRT->GetTexture(), &rtvDesc, m_VCTMainRT->m_RTVHandle.GetCPUHandle());
+	device->CreateShaderResourceView(m_VCTMainRT->GetTexture(), nullptr, m_VCTMainRT->m_SRVHandle.GetCPUHandle());
 
 	UINT bytes = (sizeof(CB_VCT_MAIN) + 255) & ~255;
 	m_VCTMainCBResource = DX::CreateBufferResource(device, commandList, nullptr, bytes, D3D12_HEAP_TYPE_UPLOAD, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, nullptr);
@@ -233,7 +234,8 @@ void CVCTMainShader::Render(int stateNum)
 	commandList->SetGraphicsRootDescriptorTable(0, cbvHandle.GetGPUHandle());
 	commandList->SetGraphicsRootDescriptorTable(1, srvHandle.GetGPUHandle());
 
-	commandList->IASetVertexBuffers(0, 1, &framework->GetFullscreenQuadBufferView());
+	commandList->IASetVertexBuffers(0, 1, &framework->mFullscreenQuadVertexBufferView);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	commandList->DrawInstanced(4, 1, 0, 0);
 
 	DX::ResourceTransition(commandList, m_VCTMainRT->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);

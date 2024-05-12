@@ -357,6 +357,9 @@
     <ClInclude Include="VCTMainShader.h">
       <Filter>헤더 파일\06. Asset\Shader\VoxelConeTracing</Filter>
     </ClInclude>
+    <ClInclude Include="UpsampleBlur.h">
+      <Filter>헤더 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -555,6 +558,9 @@
       <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
     </ClCompile>
     <ClCompile Include="VCTMainShader.cpp">
+      <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
+    </ClCompile>
+    <ClCompile Include="UpsampleBlur.cpp">
       <Filter>소스 파일\06. Asset\Shader\VoxelConeTracing</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,8 +1,10 @@
 #pragma once
+#include "DescriptorHeap.h"
 
 class CPostProcessingShader;
 class CUILayer;
 class DescriptorHeapManager;
+class DescriptorHandle;
 
 struct CB_GameFramework
 {
@@ -33,9 +35,7 @@ private:
 
 	ComPtr<IDXGISwapChain3>			  m_dxgiSwapChain;
 	static const UINT				  m_swapChainBufferCount = 2;
-	UINT							  m_swapChainBufferIndex;
 
-	ComPtr<ID3D12Resource>			  m_d3d12RenderTargetBuffers[m_swapChainBufferCount];
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12RtvDescriptorHeap;
 	UINT							  m_rtvDescriptorIncrementSize;
 
@@ -59,7 +59,6 @@ private:
 
 	HANDLE							  m_ReceiveEvent{};
 	HANDLE							  m_RenderingEvent{};
-
 
 private:
 	CGameFramework();
@@ -137,4 +136,9 @@ public:
 
 	D3D12_VERTEX_BUFFER_VIEW            mFullscreenQuadVertexBufferView;
 	D3D12_VERTEX_BUFFER_VIEW& GetFullscreenQuadBufferView() { return mFullscreenQuadVertexBufferView; }
+
+
+	DescriptorHandle				  SRVHandle[2];
+	UINT							  m_swapChainBufferIndex;
+	ComPtr<ID3D12Resource>			  m_d3d12RenderTargetBuffers[m_swapChainBufferCount];
 };

@@ -17,6 +17,7 @@
 #include "VoxelizationShader.h"
 #include "AnisoMipmap.h"
 #include "GBufferShader.h"
+#include "UpsampleBlur.h"
 #include "VCTMainShader.h"
 
 CAssetManager::CAssetManager() :
@@ -189,6 +190,11 @@ void CAssetManager::LoadShaders()
 
 	shader = new CVCTMainShader();
 	shader->SetName("VCTMain");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
+
+	shader = new CUpsampleBlur();
+	shader->SetName("UpsampleBlur");
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 }

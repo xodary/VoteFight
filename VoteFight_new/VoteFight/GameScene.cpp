@@ -78,15 +78,15 @@ void CGameScene::Exit()
 
 void CGameScene::Init()
 {
-	//CreateTerrain();
+	CreateTerrain();
 
 	// 씬 로드
 	Load("GameScene.bin");
-	// Load("BinaryScene.bin");
-	// Load("Woods.bin");
-	// Load("FenceScene.bin");
-	// Load("Homer_link_Scene.bin");
-	// LoadUI("GameSceneUI.bin");
+	Load("BinaryScene.bin");
+	Load("Woods.bin");
+	Load("FenceScene.bin");
+	Load("Homer_link_Scene.bin");
+	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
 	CObject* object = new CSkyBox();
@@ -247,18 +247,20 @@ void CGameScene::Render()
 
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 	
-	// [Debug] Render DepthTexture
-	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
-	D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
-	D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
-	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-	CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
-	
-	texture->UpdateShaderVariable();
-	shader->SetPipelineState(2);
-	d3d12GraphicsCommandList->RSSetViewports(1, &d3d12Viewport);
-	d3d12GraphicsCommandList->RSSetScissorRects(1, &d3d12ScissorRect);
-	d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-	d3d12GraphicsCommandList->DrawInstanced(6, 1, 0, 0);
+	if (KEY_HOLD(KEY::SPACE)) {
+		// [Debug] Render DepthTexture
+		const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
+		D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
+		D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
+		CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+		CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
+
+		texture->UpdateShaderVariable();
+		shader->SetPipelineState(2);
+		d3d12GraphicsCommandList->RSSetViewports(1, &d3d12Viewport);
+		d3d12GraphicsCommandList->RSSetScissorRects(1, &d3d12ScissorRect);
+		d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		d3d12GraphicsCommandList->DrawInstanced(6, 1, 0, 0);
+	}
 }
 

@@ -15,6 +15,7 @@
 #include "AnisoMipmap.h"
 #include "GBufferShader.h"
 #include "VCTMainShader.h"
+#include "UpsampleBlur.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -145,6 +146,9 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
 
+	// 화면 버텍스
+	CreateFullscreenQuadBuffers();
+
 	// RenderTarget, DepthStencil
 	CreateRtvAndDsvDescriptorHeaps();
 	CreateRenderTargetViews();
@@ -170,7 +174,6 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
 
-	CreateFullscreenQuadBuffers();
 }
 
 void CGameFramework::CreateDevice()
@@ -325,6 +328,8 @@ void CGameFramework::CreateRenderTargetViews()
 	{
 		DX::ThrowIfFailed(m_dxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(m_d3d12RenderTargetBuffers[i].GetAddressOf())));
 		m_d3d12Device->CreateRenderTargetView(m_d3d12RenderTargetBuffers[i].Get(), nullptr, D3D12RtvCpuDescriptorHandle);
+		SRVHandle[i] = m_DescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		m_d3d12Device->CreateShaderResourceView(m_d3d12RenderTargetBuffers[i].Get(), nullptr, SRVHandle[i].GetCPUHandle());
 
 		D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 	}
@@ -522,11 +527,12 @@ void CGameFramework::Render()
 	reinterpret_cast<CGBufferShader*>(CAssetManager::GetInstance()->GetShader("GBuffer"))->Render(0);
 
 	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(0);
-	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
+	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
 	reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(0);
 	reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
 
 	reinterpret_cast<CVCTMainShader*>(CAssetManager::GetInstance()->GetShader("VCTMain"))->Render(0);
+	reinterpret_cast<CUpsampleBlur*>(CAssetManager::GetInstance()->GetShader("UpsampleBlur"))->Render(0);
 }
 
 void CGameFramework::PostRender()
