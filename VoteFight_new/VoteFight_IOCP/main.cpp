@@ -213,13 +213,15 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
 		_Client->m_id = nextClientID++;
 
+		_Client->m_player = make_shared<CPlayer>(5.f, 0.f, 5.f);
+
 		SC_LOGIN_OK_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_LOGIN_OK_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_OK_PACKET;
 		send_packet.m_id = _Client->m_id;
-		send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
-		send_packet.m_yPos = _Client->getYpos();
-		send_packet.m_zPos = _Client->getZpos();
+		send_packet.m_xPos = _Client->m_player->getXpos();
+		send_packet.m_yPos = _Client->m_player->getYpos();
+		send_packet.m_zPos = _Client->m_player->getZpos();
 		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		cout << " >> Send ) LOGIN_OK_PACKET Client ID : " << _Client->m_id << endl;
 		// cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
@@ -232,11 +234,11 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
 			send_packet.m_id = rc.second->m_id;
-			send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
-			send_packet.m_yPos = _Client->getYpos();
-			send_packet.m_zPos = _Client->getZpos();
+			send_packet.m_xPos = rc.second->m_player->getXpos();
+			send_packet.m_yPos = rc.second->m_player->getYpos();
+			send_packet.m_zPos = rc.second->m_player->getZpos();
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> Send ) Add Packet 1 Client ID : " << _Client->m_id<< endl;
+			cout << " >> Send ) Add Packet 1 Client ID : " << _Client->m_id << endl;
 			cout << " >> send ) Send Add packet 1" << endl;
 		}
 
@@ -247,10 +249,10 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			SC_ADD_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
-			send_packet.m_id = _Client->m_id;
-			send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
-			send_packet.m_yPos = _Client->getYpos();
-			send_packet.m_zPos = _Client->getZpos();
+			send_packet.m_id = rc.second->m_id;
+			send_packet.m_xPos = rc.second->m_player->getXpos();
+			send_packet.m_yPos = rc.second->m_player->getYpos();
+			send_packet.m_zPos = rc.second->m_player->getZpos();
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> Send ) Add Packet 2 Client ID : " << _Client->m_id << endl;
 			cout << " >> send ) Send Add packet 2" << endl;
@@ -281,6 +283,17 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		break;
 	}
+
+	case PACKET_TYPE::P_CS_MOVE_V_PACKET:
+	{
+		CS_MOVE_V_PACKET* recv_packet = reinterpret_cast<CS_MOVE_V_PACKET*>(_Packet);
+
+		//if (recv_packet->m_id == _Client->m_id)
+		//	continue;
+		//
+		//break;
+	}
+
 	default:
 		break;
 	}

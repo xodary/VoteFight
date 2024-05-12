@@ -17,6 +17,8 @@ enum PACKET_TYPE {
 	P_CS_WALK_ENTER_PACKET,
 	P_CS_MOVE_PACKET,
 
+	P_CS_MOVE_V_PACKET,
+
 	// Server -> Client packet
 	P_SC_LOGIN_OK_PACKET,
 	P_SC_ADD_PACKET,
@@ -52,8 +54,8 @@ struct SC_WALK_ENTER_INFO_PACKET {
 	float				m_vel;
 };
 
-// Packet(Clinet->Server)
 
+// Packet(Clinet->Server)
 struct CS_LOGIN_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
@@ -61,12 +63,21 @@ struct CS_LOGIN_PACKET {
 
 struct CS_WALK_ENTER_PACEKET {
 	unsigned char		m_size;
-	unsigned char		m_type;
+	unsigned char		m_type;	
 };
 
 struct CS_MOVE_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
+};
+
+struct CS_MOVE_V_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
+	XMFLOAT3			m_vec;
+	XMFLOAT3			m_rota;
+	//int					m_state;
 };
 
 #pragma pack (pop)

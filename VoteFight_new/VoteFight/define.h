@@ -76,6 +76,14 @@ enum class GROUP_TYPE
 	COUNT
 };
 
+enum PLAYER_STATE {
+	IDLE = 0,
+	LEFT_TURN,
+	RIGHT_TURN,
+	WALK,
+	RUN
+};
+
 enum class COMPONENT_TYPE
 {
 	STATE_MACHINE,
