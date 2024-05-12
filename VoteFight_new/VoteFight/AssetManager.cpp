@@ -193,10 +193,10 @@ void CAssetManager::LoadShaders()
 	//shader->CreatePipelineStates(1);
 	//m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CUpsampleBlur();
-	shader->SetName("UpsampleBlur");
-	shader->CreatePipelineStates(1);
-	m_shaders.emplace(shader->GetName(), shader);
+	// shader = new CUpsampleBlur();
+	// shader->SetName("UpsampleBlur");
+	// shader->CreatePipelineStates(1);
+	// m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)

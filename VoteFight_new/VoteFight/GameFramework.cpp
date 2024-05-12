@@ -530,7 +530,7 @@ void CGameFramework::Render()
 	//reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
 
 	//reinterpret_cast<CVCTMainShader*>(CAssetManager::GetInstance()->GetShader("VCTMain"))->Render(0);
-	reinterpret_cast<CUpsampleBlur*>(CAssetManager::GetInstance()->GetShader("UpsampleBlur"))->Render(0);
+	// reinterpret_cast<CUpsampleBlur*>(CAssetManager::GetInstance()->GetShader("UpsampleBlur"))->Render(0);
 }
 
 void CGameFramework::PostRender()
