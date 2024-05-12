@@ -33,7 +33,6 @@ void COtherPlayerIdleState::Exit(CObject* object)
 {
 }
 
-BOOL wasd = true;
 
 void COtherPlayerIdleState::Update(CObject* object)
 {
@@ -41,8 +40,6 @@ void COtherPlayerIdleState::Update(CObject* object)
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	// cout << transform->GetRotation().y << endl;
-
-
 
 }
 
@@ -171,13 +168,6 @@ void COtherPlayerWalkState::Enter(CObject* object)
 
 void COtherPlayerWalkState::Exit(CObject* object)
 {
-}
-
-float Lerp(float A, float B, float Alpha)
-{
-	if (abs(A - B) > 180) B -= 360;
-	float result = A * (1 - Alpha) + B * Alpha;
-	return result;
 }
 
 void COtherPlayerWalkState::Update(CObject* object)
