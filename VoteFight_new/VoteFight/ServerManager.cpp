@@ -183,7 +183,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		cout << "SC_LOGIN_OK_PACKET" << endl;
 		CServerManager::m_id = recv_packet->m_id;
 
-
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
 		CGameFramework::GetInstance()->my_id = recv_packet->m_id;
@@ -194,7 +193,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		//animator->SetBlending(false);
 		animator->SetWeight("idle", 1.0f);
 		animator->Play("idle", true);
 
@@ -213,6 +211,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		// vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
 		// reinterpret_cast<CPlayer*>(objects[0])->m_id;
+		if (CGameFramework::GetInstance()->my_id == recv_packet->m_id)
+			return;
 
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
@@ -263,8 +263,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		for (auto& p : objects) {
 			CPlayer* player = reinterpret_cast<CPlayer*>(p);
-			if (CGameFramework::GetInstance()->my_id == recv_packet->m_id)
-				continue;
+			if (CGameFramework::GetInstance()->my_id == recv_packet->m_id) continue;
+			if (player->m_id != recv_packet->m_id) continue;
 
 			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 			CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
