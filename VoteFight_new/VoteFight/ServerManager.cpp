@@ -43,9 +43,9 @@ void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_ove
 	char* recv_buf = reinterpret_cast<EXP_OVER*>(recv_over)->m_buf;
 	int recv_buf_Length = num_bytes;
 
-	cout << " >> Packet Size - " << (int)recv_buf[0] << endl;
-	cout << " >> num_bytes - " << num_bytes << endl;
-	cout << " >> Packet Type - " << (int)recv_buf[1] << endl;
+	// cout << " >> Packet Size - " << (int)recv_buf[0] << endl;
+	// cout << " >> num_bytes - " << num_bytes << endl;
+	// cout << " >> Packet Type - " << (int)recv_buf[1] << endl;
 
 	{ 
 		// 수신된 데이터 처리
@@ -250,6 +250,26 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		rigidBody->SetMaxSpeedXZ(max_sed);
 		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), velocity * DT));*/
+		break;
+	}
+
+	case PACKET_TYPE::P_SC_MOVE_V_PACKET:
+	{
+		SC_MOVE_V_PACKET* recv_packet = reinterpret_cast<SC_MOVE_V_PACKET*>(_Packet);
+		vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
+
+		for (auto& p : objects) {
+			CPlayer* player = reinterpret_cast<CPlayer*>(p);
+			if (player->m_id == recv_packet->m_id)
+				continue;
+
+			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+
+			net_transform->SetPosition(XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z));
+			net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
+			cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+		}
 		break;
 	}
 	default:

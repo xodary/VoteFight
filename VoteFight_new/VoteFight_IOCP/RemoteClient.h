@@ -4,7 +4,7 @@
 class RemoteClient {
 public:
 	static unordered_map < RemoteClient*, shared_ptr<RemoteClient>>	m_remoteClients;
-	static recursive_mutex				m_lock;
+	static recursive_mutex	m_lock;
 
 public:
 	shared_ptr<thread>		m_thread;			// Client thread

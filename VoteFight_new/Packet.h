@@ -23,6 +23,8 @@ enum PACKET_TYPE {
 	P_SC_LOGIN_OK_PACKET,
 	P_SC_ADD_PACKET,
 	P_SC_WALK_ENTER_INFO_PACKET,
+
+	P_SC_MOVE_V_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -52,6 +54,15 @@ struct SC_WALK_ENTER_INFO_PACKET {
 	std::string			m_key;
 	float				m_maxSpeed;
 	float				m_vel;
+};
+
+struct SC_MOVE_V_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
+	XMFLOAT3			m_vec;
+	XMFLOAT3			m_rota;
+	//int				m_state;
 };
 
 

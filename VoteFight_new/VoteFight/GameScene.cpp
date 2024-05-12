@@ -173,7 +173,7 @@ void CGameScene::Update()
 	send_packet.m_rota = net_transform->GetRotation();
 	// send_packet.m_state = net_stateMachine->;
 	PacketQueue::AddSendPacket(&send_packet);
-	cout << " >> send ) CS_MOVE_V_PACKET" << endl;
+	// cout << " >> send ) CS_MOVE_V_PACKET" << endl;
 	
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	for (CObject* o : objects) {

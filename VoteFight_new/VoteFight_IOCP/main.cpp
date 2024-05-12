@@ -86,8 +86,8 @@ void WorkerThread()
 				auto p_readOverlapped = (EXP_OVER*)readEvent.lpOverlapped;
 
 				if (IO_TYPE::IO_SEND == p_readOverlapped->m_ioType) {
-					cout << " >> Send - size : " << (int)p_readOverlapped->m_buf[0] << endl;
-					cout << " >> Send - type : " << (int)p_readOverlapped->m_buf[1] << endl;
+					// cout << " >> Send - size : " << (int)p_readOverlapped->m_buf[0] << endl;
+					// cout << " >> Send - type : " << (int)p_readOverlapped->m_buf[1] << endl;
 					p_readOverlapped->m_isReadOverlapped = false;
 					continue;
 				}
@@ -115,7 +115,7 @@ void WorkerThread()
 							char* recv_buf = remoteClient->m_tcpConnection.m_recvOverlapped.m_buf;
 							int recv_buf_Length = ec;
 
-							cout << " >> Recv - recv_buf_Length : " << recv_buf_Length << endl;
+							// cout << " >> Recv - recv_buf_Length : " << recv_buf_Length << endl;
 
 							{	// 패킷 처리
 								int remain_data = recv_buf_Length + remoteClient->m_tcpConnection.m_prev_remain;
@@ -288,10 +288,47 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_MOVE_V_PACKET* recv_packet = reinterpret_cast<CS_MOVE_V_PACKET*>(_Packet);
 
-		//if (recv_packet->m_id == _Client->m_id)
-		//	continue;
-		//
-		//break;
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (_Client->m_id == rc.second->m_id) {
+				RemoteClient::m_lock.lock();
+				rc.second->m_player->setXpos(recv_packet->m_vec.x);
+				rc.second->m_player->setYpos(recv_packet->m_vec.y);
+				rc.second->m_player->setZpos(recv_packet->m_vec.z);
+				RemoteClient::m_lock.unlock();
+				continue;
+			}
+
+			SC_MOVE_V_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
+			send_packet.m_id = rc.second->m_id;
+			send_packet.m_vec = recv_packet->m_vec;
+			send_packet.m_rota = recv_packet->m_rota;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			// std::cout << "rc ID - " << rc.second->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+		}
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (_Client->m_id == rc.second->m_id) {
+				RemoteClient::m_lock.lock();
+				rc.second->m_player->setXpos(recv_packet->m_vec.x);
+				rc.second->m_player->setYpos(recv_packet->m_vec.y);
+				rc.second->m_player->setZpos(recv_packet->m_vec.z);
+				RemoteClient::m_lock.unlock();
+				continue;
+			}
+
+			SC_MOVE_V_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
+			send_packet.m_id = rc.second->m_id;
+			send_packet.m_vec = recv_packet->m_vec;
+			send_packet.m_rota = recv_packet->m_rota;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			std::cout << "client ID - " << _Client->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+		}
+
+		break;
 	}
 
 	default:
