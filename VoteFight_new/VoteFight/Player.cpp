@@ -315,7 +315,7 @@ void CPlayer::SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, in
 		}
 		break;
 	}
-	cout << "prevItemsNum : " << prevItemsNum << endl;
+	// cout << "prevItemsNum : " << prevItemsNum << endl;
 
 	switch (NextItemsNum)
 	{
@@ -420,7 +420,7 @@ void CPlayer::SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, in
 		}
 		break;
 	}
-	cout << "NextItemsNum : " << NextItemsNum << endl;
+	// cout << "NextItemsNum : " << NextItemsNum << endl;
 
 }
 
@@ -444,7 +444,7 @@ bool CInventory::exchangeItem(const string& itemName, int quantity, const string
 
 	// 아이템이 존재하지 않거나 요청된 수량보다 적을 경우 교환 실패
 	if (it == items.end() || it->second < quantity) {
-		cout << "교환 실패" << endl;
+		// cout << "교환 실패" << endl;
 		displayInventory();
 		return false;
 	}
@@ -453,7 +453,7 @@ bool CInventory::exchangeItem(const string& itemName, int quantity, const string
 
 	addItem(newItemName, newQuantity);
 
-	cout << "교환 성공" << endl;
+	// cout << "교환 성공" << endl;
 	displayInventory();
 	return true;
 }
