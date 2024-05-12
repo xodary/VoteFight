@@ -218,7 +218,7 @@ void CScene::PreRender()
 		{
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
-		//		object->PreRender(camera);
+				object->PreRender(camera);
 			}
 		}
 	}
@@ -256,7 +256,6 @@ void CScene::Render()
 			object->Render(camera);
 		}
 	}
-
 }
 
 void CScene::PostRender()

@@ -11,6 +11,11 @@
 #include "VoxelConeTracing.h"
 #include "Texture.h"
 #include "GameFramework.h"
+#include "VoxelizationShader.h"
+#include "AnisoMipmap.h"
+#include "GBufferShader.h"
+#include "VCTMainShader.h"
+#include "UpsampleBlur.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -29,12 +34,8 @@ CGameFramework::CGameFramework() :
 	m_d3d12RtvDescriptorHeap(),
 	m_rtvDescriptorIncrementSize(),
 	m_d3d12DepthStencilBuffer(),
-	m_d3d12DepthBuffer(),
 	m_d3d12DsvDescriptorHeap(),
 	m_dsvDescriptorIncrementSize(),
-	m_d3d12CbvSrvUavDescriptorHeap(),
-	m_DescriptorHeapManager(),
-	m_d3d12Fence(),
 	m_fenceValues{},
 	m_fenceEvent(),
 	m_d3d12RootSignature(),
@@ -110,16 +111,6 @@ ID3D12DescriptorHeap* CGameFramework::GetDsvDescriptorHeap()
 	return m_d3d12DsvDescriptorHeap.Get();
 }
 
-ID3D12DescriptorHeap* CGameFramework::GetCbvSrvUavDescriptorHeap()
-{
-	return m_d3d12CbvSrvUavDescriptorHeap.Get();
-}
-
-DescriptorHeapManager* CGameFramework::GetDescriptorHeapManager()
-{
-	return m_DescriptorHeapManager.get();
-}
-
 UINT CGameFramework::GetRtvDescriptorIncrementSize()
 {
 	return m_rtvDescriptorIncrementSize;
@@ -135,7 +126,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	CServerManager::ConnectServer();
+	//CServerManager::ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -146,14 +137,15 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	// Close 상태의 커맨드리스트를 Open 상태로 변경시킨다.
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Reset(m_d3d12CommandAllocator.Get(), nullptr));
 
+	m_DescriptorHeapManager = new DescriptorHeapManager();
 	CAssetManager::GetInstance()->Init();
 	CCameraManager::GetInstance()->Init();
 	CSceneManager::GetInstance()->Init();
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
 
-	// VoxelConeTracing Initialization
-	// VCT::GetInstance()->InitVoxelConeTracing();
+	// 화면 버텍스
+	CreateFullscreenQuadBuffers();
 
 	// RenderTarget, DepthStencil
 	CreateRtvAndDsvDescriptorHeaps();
@@ -163,7 +155,6 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	// Constant / Shader Resource / Unoreded Access
 	// 모든 텍스처를 로드했다면, 해당 개수만큼 Descriptor Heap을 할당한다.
 	// * 이 프레임워크에서 CbvSrvUav Descriptor Heap은 텍스처(SRV)만을 저장한다.
-	CreateCbvSrvUavDescriptorHeaps();
 	CreateShaderResourceViews();
 
 	CreateShaderVariables();
@@ -180,6 +171,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	// 커맨드리스트가 모두 실행되었다면, 리소스 생성에 사용했던 모든 업로드 버퍼를 제거한다.
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
+
 }
 
 void CGameFramework::CreateDevice()
@@ -306,7 +298,7 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 	D3D12_DESCRIPTOR_HEAP_DESC D3D12DescriptorHeapDesc = {};
 
 	D3D12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-	D3D12DescriptorHeapDesc.NumDescriptors = m_swapChainBufferCount + 1; // + 2: DepthWrite, PostProcessing
+	D3D12DescriptorHeapDesc.NumDescriptors = m_swapChainBufferCount + 1; // + 1: DepthWrite
 	D3D12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	D3D12DescriptorHeapDesc.NodeMask = 0;
 
@@ -326,18 +318,6 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 	m_dsvDescriptorIncrementSize = m_d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
-void CGameFramework::CreateCbvSrvUavDescriptorHeaps()
-{
-	D3D12_DESCRIPTOR_HEAP_DESC D3D12DescriptorHeapDesc = {};
-
-	D3D12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	D3D12DescriptorHeapDesc.NumDescriptors = CAssetManager::GetInstance()->GetTextureCount();
-	D3D12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	D3D12DescriptorHeapDesc.NodeMask = 0;
-
-	DX::ThrowIfFailed(m_d3d12Device->CreateDescriptorHeap(&D3D12DescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(m_d3d12CbvSrvUavDescriptorHeap.GetAddressOf())));
-}
-
 void CGameFramework::CreateRenderTargetViews()
 {
 	CD3DX12_CPU_DESCRIPTOR_HANDLE D3D12RtvCpuDescriptorHandle(m_d3d12RtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
@@ -346,29 +326,18 @@ void CGameFramework::CreateRenderTargetViews()
 	{
 		DX::ThrowIfFailed(m_dxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(m_d3d12RenderTargetBuffers[i].GetAddressOf())));
 		m_d3d12Device->CreateRenderTargetView(m_d3d12RenderTargetBuffers[i].Get(), nullptr, D3D12RtvCpuDescriptorHandle);
+		SRVHandle[i] = m_DescriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+		m_d3d12Device->CreateShaderResourceView(m_d3d12RenderTargetBuffers[i].Get(), nullptr, SRVHandle[i].GetCPUHandle());
 
 		D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
 	}
-
-	 // DepthWrite
-	 CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-	 D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
-	 
-	 d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
-	 d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-	 d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
-	 d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
-	 
-	 m_d3d12Device->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, D3D12RtvCpuDescriptorHandle);
-	 D3D12RtvCpuDescriptorHandle.ptr += m_rtvDescriptorIncrementSize;
-
 }
 
 void CGameFramework::CreateDepthStencilView()
 {
-	CD3DX12_RESOURCE_DESC D3D12ResourceDesc(D3D12_RESOURCE_DIMENSION_TEXTURE2D, 0, static_cast<UINT>(m_resolution.x), static_cast<UINT>(m_resolution.y), 1, 1, DXGI_FORMAT_D24_UNORM_S8_UINT, (m_msaa4xEnable) ? static_cast<UINT>(4) : static_cast<UINT>(1), (m_msaa4xEnable) ? (m_msaa4xQualityLevels - 1) : 0, D3D12_TEXTURE_LAYOUT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
+	CD3DX12_RESOURCE_DESC D3D12ResourceDesc(D3D12_RESOURCE_DIMENSION_TEXTURE2D, 0, static_cast<UINT>(m_resolution.x), static_cast<UINT>(m_resolution.y), 1, 1, DXGI_FORMAT_D32_FLOAT, (m_msaa4xEnable) ? static_cast<UINT>(4) : static_cast<UINT>(1), (m_msaa4xEnable) ? (m_msaa4xQualityLevels - 1) : 0, D3D12_TEXTURE_LAYOUT_UNKNOWN, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 	CD3DX12_HEAP_PROPERTIES D3D312HeapProperties(D3D12_HEAP_TYPE_DEFAULT, 1, 1);
-	CD3DX12_CLEAR_VALUE D3D12ClearValue(DXGI_FORMAT_D24_UNORM_S8_UINT, 1.0f, 0);
+	CD3DX12_CLEAR_VALUE D3D12ClearValue(DXGI_FORMAT_D32_FLOAT, 1.0f, 0);
 
 	// 깊이-스텐실 버퍼를 생성한다.
 	DX::ThrowIfFailed(m_d3d12Device->CreateCommittedResource(&D3D312HeapProperties, D3D12_HEAP_FLAG_NONE, &D3D12ResourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &D3D12ClearValue, __uuidof(ID3D12Resource), reinterpret_cast<void**>(m_d3d12DepthStencilBuffer.GetAddressOf())));
@@ -377,17 +346,6 @@ void CGameFramework::CreateDepthStencilView()
 
 	// 깊이-스텐실 버퍼 뷰를 생성한다.
 	m_d3d12Device->CreateDepthStencilView(m_d3d12DepthStencilBuffer.Get(), nullptr, D3D12DsvCPUDescriptorHandle);
-	D3D12DsvCPUDescriptorHandle.ptr += m_dsvDescriptorIncrementSize;
-
-	// Depth Write
-	D3D12_DEPTH_STENCIL_VIEW_DESC d3d12DepthStencilViewDesc = {};
-
-	d3d12DepthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
-	d3d12DepthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
-	d3d12DepthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
-
-	m_d3d12DepthBuffer = DX::CreateTexture2DResource(m_d3d12Device.Get(), DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 1, 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, DXGI_FORMAT_D32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_D32_FLOAT, {1.0f, 0.0f} });
-	m_d3d12Device->CreateDepthStencilView(m_d3d12DepthBuffer.Get(), &d3d12DepthStencilViewDesc, D3D12DsvCPUDescriptorHandle);
 }
 
 void CGameFramework::CreateShaderResourceViews()
@@ -454,7 +412,10 @@ void CGameFramework::CreateShaderVariables()
 void CGameFramework::UpdateShaderVariables()
 {
 	m_d3d12GraphicsCommandList->SetGraphicsRootSignature(m_d3d12RootSignature.Get());
-	m_d3d12GraphicsCommandList->SetDescriptorHeaps(1, m_d3d12CbvSrvUavDescriptorHeap.GetAddressOf());
+	GPUDescriptorHeap* gpuDescriptorHeap = m_DescriptorHeapManager->GetGPUHeap(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	gpuDescriptorHeap->Reset();
+	ID3D12DescriptorHeap* ppHeaps = gpuDescriptorHeap->GetHeap();
+	m_d3d12GraphicsCommandList->SetDescriptorHeaps(1, &ppHeaps);
 
 	m_mappedGameFramework->m_totalTime += DT;
 	m_mappedGameFramework->m_elapsedTime = DT;
@@ -561,8 +522,15 @@ void CGameFramework::Render()
 {
 	CSceneManager::GetInstance()->Render();
 
-	// VoxelConeTracing Rendering
-	//VCT::GetInstance()->RenderVoxelConeTracing();
+	//reinterpret_cast<CGBufferShader*>(CAssetManager::GetInstance()->GetShader("GBuffer"))->Render(0);
+
+	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(0);
+	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
+	//reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(0);
+	//reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
+
+	//reinterpret_cast<CVCTMainShader*>(CAssetManager::GetInstance()->GetShader("VCTMain"))->Render(0);
+	// reinterpret_cast<CUpsampleBlur*>(CAssetManager::GetInstance()->GetShader("UpsampleBlur"))->Render(0);
 }
 
 void CGameFramework::PostRender()
@@ -610,8 +578,62 @@ void CGameFramework::AdvanceFrame()
 	CInputManager::GetInstance()->Update();
 	CServerManager::Tick();
 
+	CServerManager::Tick();
+
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
 	MoveToNextFrame();
 }
 
+void CGameFramework::CreateFullscreenQuadBuffers()
+{
+	{
+		struct FullscreenVertex
+		{
+			XMFLOAT4 position;
+			XMFLOAT2 uv;
+		};
+
+		// Define the geometry for a fullscreen triangle.
+		FullscreenVertex quadVertices[] =
+		{
+			{ { -1.0f, -1.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },       // Bottom left.
+			{ { -1.0f, 1.0f, 0.0f, 1.0f },{ 0.0f, 0.0f } },        // Top left.
+			{ { 1.0f, -1.0f, 0.0f, 1.0f },{ 1.0f, 1.0f } },        // Bottom right.
+			{ { 1.0f, 1.0f, 0.0f, 1.0f },{ 0.0f, 1.0f } },         // Top right.
+		};
+
+		const UINT vertexBufferSize = sizeof(quadVertices);
+
+		DX::ThrowIfFailed(m_d3d12Device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT /*D3D12_HEAP_TYPE_UPLOAD*/),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+			/*D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER*/ D3D12_RESOURCE_STATE_COPY_DEST /*D3D12_RESOURCE_STATE_GENERIC_READ*/,
+			nullptr,
+			IID_PPV_ARGS(&mFullscreenQuadVertexBuffer)));
+
+		DX::ThrowIfFailed(m_d3d12Device->CreateCommittedResource(
+			&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD),
+			D3D12_HEAP_FLAG_NONE,
+			&CD3DX12_RESOURCE_DESC::Buffer(vertexBufferSize),
+			D3D12_RESOURCE_STATE_GENERIC_READ,
+			nullptr,
+			IID_PPV_ARGS(&mFullscreenQuadVertexBufferUpload)));
+
+		// Copy data to the intermediate upload heap and then schedule a copy
+		// from the upload heap to the vertex buffer.
+		D3D12_SUBRESOURCE_DATA vertexData = {};
+		vertexData.pData = reinterpret_cast<BYTE*>(quadVertices);
+		vertexData.RowPitch = vertexBufferSize;
+		vertexData.SlicePitch = vertexData.RowPitch;
+
+		UpdateSubresources<1>(m_d3d12GraphicsCommandList.Get(), mFullscreenQuadVertexBuffer.Get(), mFullscreenQuadVertexBufferUpload.Get(), 0, 0, 1, &vertexData);
+		m_d3d12GraphicsCommandList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(mFullscreenQuadVertexBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER));
+
+		// Initialize the vertex buffer view.
+		mFullscreenQuadVertexBufferView.BufferLocation = mFullscreenQuadVertexBuffer->GetGPUVirtualAddress();
+		mFullscreenQuadVertexBufferView.StrideInBytes = sizeof(FullscreenVertex);
+		mFullscreenQuadVertexBufferView.SizeInBytes = sizeof(quadVertices);
+	}
+}

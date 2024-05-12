@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Object.h"
 #include "AssetManager.h"
+#include "InputManager.h"
 #include "Player.h"
 #include "NPC.h"
 #include "Mesh.h"
@@ -454,6 +455,7 @@ void CObject::PreRender(CCamera* camera)
 			m_mesh->Render(i);
 		}
 	}
+
 	for (const auto& child : m_children)
 	{
 		if (child->IsActive() && !child->IsDeleted())
@@ -480,12 +482,15 @@ void CObject::Render(CCamera* camera)
 		}
 	}
 
-	// [Debug] Render BoundingBox
-	CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
-
-	if (collider != nullptr)
+	if (KEY_HOLD(KEY::B)) 
 	{
-		collider->Render(camera);
+		// [Debug] Render BoundingBox
+		CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
+
+		if (collider != nullptr)
+		{
+			collider->Render(camera);
+		}
 	}
 
 	for (const auto& child : m_children)
@@ -495,5 +500,4 @@ void CObject::Render(CCamera* camera)
 			child->Render(camera);
 		}
 	}
-
 }

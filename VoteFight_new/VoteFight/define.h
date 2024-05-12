@@ -9,12 +9,15 @@
 #define EPSILON				    0.01f
 
 #define FRAME_BUFFER_WIDTH		1920
-#define FRAME_BUFFER_HEIGHT		1080 
+#define FRAME_BUFFER_HEIGHT		1080
+#define USE_PIX
 
 #define TERRAIN_WIDTH			257
 #define TERRAIN_HEIGHT			257
 #define DEPTH_BUFFER_WIDTH	    (FRAME_BUFFER_WIDTH * 4)
 #define DEPTH_BUFFER_HEIGHT     (FRAME_BUFFER_HEIGHT * 4)
+#define VCT_SCENE_VOLUME_SIZE	32
+#define VCT_MIPS 3
 
 #define MAX_NPC_COUNT			15
 #define MAX_LIGHTS              3

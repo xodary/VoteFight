@@ -42,7 +42,7 @@ namespace DX
 
 	ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* d3d12GraphicsCommandList, void* Data, const UINT64& bytes, D3D12_HEAP_TYPE d3d12HeapType, D3D12_RESOURCE_STATES d3d12ResourceStates, ID3D12Resource** d3d12UploadBuffer, const UINT64& width, UINT height, UINT16 depthOrArraySize, UINT16 mipLevels, D3D12_RESOURCE_DIMENSION d3d12ResourceDimension, D3D12_RESOURCE_FLAGS d3d12ResourceFlags, DXGI_FORMAT dxgiFormat);
 	ComPtr<ID3D12Resource> CreateBufferResource(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* d3d12GraphicsCommandList, void* Data, const UINT64& bytes, D3D12_HEAP_TYPE d3d12HeapType, D3D12_RESOURCE_STATES d3d12ResourceStates, ID3D12Resource** d3d12UploadBuffer);
-	ComPtr<ID3D12Resource> CreateTexture2DResource(ID3D12Device* d3d12Device, const UINT64& width, UINT height, UINT16 depthOrArraySize, UINT16 mipLevels, D3D12_RESOURCE_STATES d3d12ResourceStates, D3D12_RESOURCE_FLAGS d3d12ResourceFlags, DXGI_FORMAT dxgiFormat, const D3D12_CLEAR_VALUE& clearValue);
+	ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* d3d12Device, const UINT64& width, UINT height, UINT16 depthOrArraySize, UINT16 mipLevels, D3D12_RESOURCE_STATES d3d12ResourceStates, D3D12_RESOURCE_FLAGS d3d12ResourceFlags, DXGI_FORMAT dxgiFormat, const D3D12_CLEAR_VALUE& clearValue);
 	ComPtr<ID3D12Resource> CreateTextureResourceFromDDSFile(ID3D12Device* d3d12Device, ID3D12GraphicsCommandList* d3d12GraphicsCommandList, const string& fileName, D3D12_RESOURCE_STATES d3d12ResourceStates, ID3D12Resource** d3d12UploadBuffer);
 
 	void ResourceTransition(ID3D12GraphicsCommandList* d3d12GraphicsCommandList, ID3D12Resource* resource, D3D12_RESOURCE_STATES beforeState, D3D12_RESOURCE_STATES afterState);

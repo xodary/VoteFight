@@ -1,4 +1,5 @@
 #pragma once
+//#include "../VoteFight/targetver.h"
 #include "../VoteFight/ImaysNet/targetver.h"
 
 #define _CRT_SECURE_NO_WARNINGS
@@ -58,6 +59,7 @@ using namespace std;
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 
+
 #include "D3DX12.h"
 #include "DDSTextureLoader12.h"
 #include <D3D11on12.h>
@@ -79,6 +81,9 @@ using Microsoft::WRL::ComPtr;
 #include "define.h"
 #include "udt.h"
 #include "func.h"
+
+// PIX
+#include "..\packages\WinPixEventRuntime.1.0.240308001\Include\WinPixEventRuntime\pix3.h"
 
 namespace Vector4
 {
@@ -102,4 +107,42 @@ namespace Vector4
 		XMStoreFloat4(&xmf4Result, fScalar * XMLoadFloat4(&xmf4Vector));
 		return(xmf4Result);
 	}
+}
+
+template <typename T>
+inline T DivideByMultiple(T value, size_t alignment)
+{
+	return (T)((value + alignment - 1) / alignment);
+}
+
+#include <filesystem>
+#include <shlobj.h>
+
+static std::wstring GetLatestWinPixGpuCapturerPath_Cpp17()
+{
+    LPWSTR programFilesPath = nullptr;
+    SHGetKnownFolderPath(FOLDERID_ProgramFiles, KF_FLAG_DEFAULT, NULL, &programFilesPath);
+
+    std::filesystem::path pixInstallationPath = programFilesPath;
+    pixInstallationPath /= "Microsoft PIX";
+
+    std::wstring newestVersionFound;
+
+    for (auto const& directory_entry : std::filesystem::directory_iterator(pixInstallationPath))
+    {
+        if (directory_entry.is_directory())
+        {
+            if (newestVersionFound.empty() || newestVersionFound < directory_entry.path().filename().c_str())
+            {
+                newestVersionFound = directory_entry.path().filename().c_str();
+            }
+        }
+    }
+
+    if (newestVersionFound.empty())
+    {
+        // TODO: Error, no PIX installation found
+    }
+
+    return pixInstallationPath / newestVersionFound / L"WinPixGpuCapturer.dll";
 }

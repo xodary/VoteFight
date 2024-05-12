@@ -23,7 +23,7 @@ CBuffer::CBuffer(Description& description, LPCWSTR name, unsigned char* data)
 }
 
 
-void CBuffer::CreateResources(DESC::DescriptorHeapManager* descriptorManager)
+void CBuffer::CreateResources(DescriptorHeapManager* descriptorManager)
 {
 	ID3D12Device* device = CGameFramework::GetInstance()->GetDevice();
 	ID3D12GraphicsCommandList* commandList = CGameFramework::GetInstance()->GetGraphicsCommandList();

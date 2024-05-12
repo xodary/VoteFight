@@ -103,39 +103,6 @@ CRenderTarget::CRenderTarget(int width, int height, DXGI_FORMAT aFormat, D3D12_R
             device->CreateUnorderedAccessView(mRenderTarget.Get(), nullptr, &uavDesc, mDescriptorUAVMipsHandles[mipLevel].GetCPUHandle());
         }
     }
-
-    //D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
-    //rtvDesc.Format = aFormat;
-    //if (depth > 0) {
-    //	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE3D;
-    //	rtvDesc.Texture3D.MipSlice = 0;
-    //	rtvDesc.Texture3D.WSize = depth;
-    //}
-    //else {
-    //	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
-    //	rtvDesc.Texture2D.MipSlice = 0;
-    //}
-
-    //D3D12_UNORDERED_ACCESS_VIEW_DESC uavDesc = {};
-    //uavDesc.Format = aFormat;
-    //if (depth > 0) {
-    //	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE3D;
-    //	uavDesc.Texture3D.MipSlice = 0;
-    //	uavDesc.Texture3D.WSize = depth;
-    //}
-    //else {
-    //	uavDesc.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-    //	uavDesc.Texture2D.MipSlice = 0;
-    //}
-
-    //mDescriptorRTV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-    //device->CreateRenderTargetView(mRenderTarget.Get(), &rtvDesc, mDescriptorRTV.GetCPUHandle());
-
-    //if (flags & D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS)
-    //{
-    //	mDescriptorUAV = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    //	device->CreateUnorderedAccessView(mRenderTarget.Get(), nullptr, &uavDesc, mDescriptorUAV.GetCPUHandle());
-    //}
 }
 
 void CRenderTarget::TransitionTo(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList, D3D12_RESOURCE_STATES stateAfter)

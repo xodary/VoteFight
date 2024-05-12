@@ -13,7 +13,6 @@
 #include "GameFramework.h"
 #include "Camera.h"
 #include <bitset>
-
 #include "./ImaysNet/ImaysNet.h"
 #include "./ImaysNet/PacketQueue.h"
 
@@ -43,87 +42,46 @@ void CPlayerIdleState::Update(CObject* object)
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	// cout << transform->GetRotation().y << endl;
-
-	/*
-	if (KEY_TAP(KEY::W) || KEY_TAP(KEY::S) || KEY_TAP(KEY::A) || KEY_TAP(KEY::D))
-	{
-		if (KEY_TAP(KEY::W))
-			player->b_front = true;
-		if (KEY_TAP(KEY::A))
-			player->b_left = true;
-		if (KEY_TAP(KEY::S))
-			player->b_back = true;
-		if (KEY_TAP(KEY::D))
-			player->b_right = true;
-		return;
-	}
-	*/
-
-	if (KEY_NONE(KEY::W) || KEY_NONE(KEY::S) || KEY_NONE(KEY::A) || KEY_NONE(KEY::D))
-	{
-		if (KEY_NONE(KEY::W))
-			player->b_front = false;
-		if (KEY_NONE(KEY::A))
-			player->b_left = false;
-		if (KEY_NONE(KEY::S))
-			player->b_back = false;
-		if (KEY_NONE(KEY::D))
-			player->b_right = false;
-	}
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::D))
 	{
-		if ((KEY_HOLD(KEY::W) && KEY_HOLD(KEY::S)) || (KEY_HOLD(KEY::A) && KEY_HOLD(KEY::D)))
-			return;
-		if (KEY_HOLD(KEY::W))
-			player->b_front = true;
-		if (KEY_HOLD(KEY::A))
-			player->b_left = true;
-		if (KEY_HOLD(KEY::S))
-			player->b_back = true;
-		if (KEY_HOLD(KEY::D))
-			player->b_right = true;
+		XMFLOAT3 v2(0, 0, 0);
+		if (KEY_HOLD(KEY::W)) {
+			v2.x -= 1.0f;
+			v2.z += 1.0f;
+		}
+		if (KEY_HOLD(KEY::A)) {
+			v2.x -= 1.0f;
+			v2.z -= 1.0f;
+		}
+		if (KEY_HOLD(KEY::S)) {
+			v2.x += 1.0f;
+			v2.z -= 1.0f;
+		}
+		if (KEY_HOLD(KEY::D)) {
+			v2.x += 1.0f;
+			v2.z += 1.0f;
+		}
+		v2 = Vector3::Normalize(v2);
+		XMFLOAT3 v1 = Vector3::TransformCoord(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(transform->GetRotation()));
+		v1 = XMFLOAT3(v1.x, 0.0f, v1.z);
+		float v1R = atan2(v1.z, v1.x);
+		float v2R = atan2(v2.z, v2.x);
+		float nowRotation = XMConvertToDegrees(v1R - v2R);
+		if (nowRotation > 180) nowRotation -= 360;
+		if (nowRotation < -180) nowRotation += 360;
+		player->SetTurnAngle(nowRotation);
+		player->m_goalAngle = transform->GetRotation().y + nowRotation;
+		if (player->m_goalAngle > 180) player->m_goalAngle -= 360;
+		if (player->m_goalAngle < -180) player->m_goalAngle += 360;
 
-		if (KEY_NONE(KEY::W))
-			player->b_front = false;
-		if (KEY_NONE(KEY::A))
-			player->b_left = false;
-		if (KEY_NONE(KEY::S))
-			player->b_back = false;
-		if (KEY_NONE(KEY::D))
-			player->b_right = false;
-
-		float wannaLook(0.f);
-		
-		if (player->b_front && player->b_right)
-			wannaLook = 45.f;
-		else if (player->b_front && player->b_left)
-			wannaLook = 315.f;
-		else if (player->b_back && player->b_right)
-			wannaLook = 135.f;
-		else if (player->b_back && player->b_left)
-			wannaLook = 225.f;
-		 else if (player->b_front)
-			wannaLook = 0.f;
-		else if (player->b_left)
-			wannaLook = 270.f;
-		else if (player->b_back)
-			wannaLook = 180.f;
-		else if (player->b_right)
-			wannaLook = 90.f;
-		else
-			return;
-		wannaLook -= 45.0f;
-		player->SetTurnAngle(wannaLook );
-		float nowRotation = wannaLook - transform->GetRotation().y;
-		cout << nowRotation << endl;
-		if ((0 < nowRotation && nowRotation <= 180) || nowRotation < -180)
-			stateMachine->ChangeState(CPlayerRightTurn::GetInstance());
-		else if (nowRotation > 180 || nowRotation < 0)
-			stateMachine->ChangeState(CPlayerLeftTurn::GetInstance());
-		else
+		if(abs(nowRotation) < 5)
 			stateMachine->ChangeState(CPlayerWalkState::GetInstance());
+		else if (nowRotation > 0)
+			stateMachine->ChangeState(CPlayerRightTurn::GetInstance());
+		else if (nowRotation < 0)
+			stateMachine->ChangeState(CPlayerLeftTurn::GetInstance());
+			
 		wasd = true;
 	}
 	else
@@ -142,6 +100,7 @@ void CPlayerIdleState::Update(CObject* object)
 		float y = centerY - cursor.y;
 
 		float angle = XMConvertToDegrees(atan2(x, y));
+		angle -= 45;
 		player->SetClickAngle(angle);
 		float look = transform->GetRotation().y;
 		if (look > 180) look -= 360;
@@ -188,10 +147,8 @@ void CPlayerLeftTurn::Enter(CObject* object)
 
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	restAngle = transform->GetRotation().y - player->GetTurnAngle();
+	restAngle = abs(player->GetTurnAngle());
 	lookAngle = player->GetClickAngle();
-	if (restAngle > 180) restAngle -= 180;
-	else if (restAngle <= -270) restAngle += 360;
 }
 
 void CPlayerLeftTurn::Exit(CObject* object)
@@ -202,15 +159,15 @@ void CPlayerLeftTurn::Update(CObject* object)
 {
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	restAngle -= 180.f * DT;
+	restAngle -= 220.f * DT;
 	if (restAngle < 0)
 	{
+		transform->SetRotation(XMFLOAT3(0, player->m_goalAngle, 0));
 		CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 		stateMachine->ChangeState(CPlayerIdleState::GetInstance());
-		transform->SetRotation(XMFLOAT3(0, player->GetTurnAngle(), 0));
 	}
 	else {
-		float angle = transform->GetRotation().y - 180.f * DT;
+		float angle = transform->GetRotation().y - 220.f * DT;
 		// cout << angle << endl;
 		transform->SetRotation(XMFLOAT3(0, angle, 0));
 	}
@@ -259,10 +216,8 @@ void CPlayerRightTurn::Enter(CObject* object)
 	
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	restAngle = player->GetTurnAngle() - transform->GetRotation().y;
+	restAngle = abs(player->GetTurnAngle());
 	lookAngle = player->GetClickAngle();
-	if (restAngle > 180) restAngle -= 180;
-	else if (restAngle <= -270) restAngle += 360;
 }
 
 void CPlayerRightTurn::Exit(CObject* object)
@@ -273,16 +228,15 @@ void CPlayerRightTurn::Update(CObject* object)
 {
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	restAngle -= 180.f * DT;
+	restAngle -= 220.f * DT;
 	if (restAngle < 0)
 	{
+		transform->SetRotation(XMFLOAT3(0, player->m_goalAngle, 0));
 		CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 		stateMachine->ChangeState(CPlayerIdleState::GetInstance());
-		transform->SetRotation(XMFLOAT3(0, player->GetTurnAngle(), 0));
 	}
 	else {
-		float angle = transform->GetRotation().y + 180.f * DT;
-		// cout << angle << endl;
+		float angle = transform->GetRotation().y + 220.f * DT;
 		transform->SetRotation(XMFLOAT3(0, angle, 0));
 	}
 
@@ -333,9 +287,8 @@ void CPlayerWalkState::Enter(CObject* object)
 	CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-	rigidBody->SetMaxSpeedXZ(400.0f);
-
-	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 400.0f * DT));
+	rigidBody->SetMaxSpeedXZ(300.0f);
+	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 300.0f * DT));
 }
 
 void CPlayerWalkState::Exit(CObject* object)
@@ -369,45 +322,39 @@ void CPlayerWalkState::Update(CObject* object)
 
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-	float angle = -45;
+	XMFLOAT3 v2(0, 0, 0);
 	if (KEY_HOLD(KEY::W)) {
-		if (KEY_HOLD(KEY::D))
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 45 + angle, DT * 5), 0));
-		else if (KEY_HOLD(KEY::A))
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 315 + angle, DT * 5), 0));
-		else if (KEY_HOLD(KEY::S))
-			stateMachine->ChangeState(CPlayerIdleState::GetInstance());
-		else {
-			if (transform->GetRotation().y >= 180)
-				transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 360 + angle, DT * 5), 0));
-			else
-				transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 0 + angle, DT * 5), 0));
-		}
+		v2.x -= 1.0f;
+		v2.z += 1.0f;
 	}
-	else if (KEY_HOLD(KEY::D)) {
-		if (KEY_HOLD(KEY::S))
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 135 + angle, DT * 5), 0));
-		else if (KEY_HOLD(KEY::A))
-			stateMachine->ChangeState(CPlayerIdleState::GetInstance());
-		else
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 90 + angle, DT * 5), 0));
+	if (KEY_HOLD(KEY::A)) {
+		v2.x -= 1.0f;
+		v2.z -= 1.0f;
 	}
-	else if (KEY_HOLD(KEY::S)) {
-		if (KEY_HOLD(KEY::A))
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 225 + angle, DT * 5), 0));
-		else {
-			transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 180 + angle, DT * 5), 0));
-		}
+	if (KEY_HOLD(KEY::S)) {
+		v2.x += 1.0f;
+		v2.z -= 1.0f;
 	}
-	else if (KEY_HOLD(KEY::A)) {
-		transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, 270 + angle, DT * 5), 0));
+	if (KEY_HOLD(KEY::D)) {
+		v2.x += 1.0f;
+		v2.z += 1.0f;
 	}
-
-
+	if (Vector3::IsZero(v2)) return;
+	v2 = Vector3::Normalize(v2);
+	XMFLOAT3 v1 = Vector3::TransformCoord(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(transform->GetRotation()));
+	v1 = XMFLOAT3(v1.x, 0.0f, v1.z);
+	float v1R = atan2(v1.z, v1.x);
+	float v2R = atan2(v2.z, v2.x);
+	float nowRotation = XMConvertToDegrees(v1R - v2R);
+	if (nowRotation > 180) nowRotation -= 360;
+	if (nowRotation < -180) nowRotation += 360;
+	float m_goalAngle = transform->GetRotation().y + nowRotation;
+	if (player->m_goalAngle > 180) player->m_goalAngle -= 360;
+	if (player->m_goalAngle < -180) player->m_goalAngle += 360;
+	transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, m_goalAngle, DT * 8), 0));
 
 	if (KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::W) || KEY_HOLD(KEY::D))
 	{
-
 		rigidBody->AddForce(Vector3::ScalarProduct(transform->GetForward(), 15000.0f * DT), player->isMove);
 	}
 
@@ -439,8 +386,8 @@ void CPlayerRunState::Enter(CObject* object)
 	CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-	rigidBody->SetMaxSpeedXZ(700.0f);
-	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 700.0f * DT));
+	rigidBody->SetMaxSpeedXZ(400.0f);
+	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 400.0f * DT));
 
 }
 
@@ -467,6 +414,37 @@ void CPlayerRunState::Update(CObject* object)
 	}
 
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+	XMFLOAT3 v2(0, 0, 0);
+	if (KEY_HOLD(KEY::W)) {
+		v2.x -= 1.0f;
+		v2.z += 1.0f;
+	}
+	if (KEY_HOLD(KEY::A)) {
+		v2.x -= 1.0f;
+		v2.z -= 1.0f;
+	}
+	if (KEY_HOLD(KEY::S)) {
+		v2.x += 1.0f;
+		v2.z -= 1.0f;
+	}
+	if (KEY_HOLD(KEY::D)) {
+		v2.x += 1.0f;
+		v2.z += 1.0f;
+	}
+	if (Vector3::IsZero(v2)) return;
+	v2 = Vector3::Normalize(v2);
+	XMFLOAT3 v1 = Vector3::TransformCoord(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(transform->GetRotation()));
+	v1 = XMFLOAT3(v1.x, 0.0f, v1.z);
+	float v1R = atan2(v1.z, v1.x);
+	float v2R = atan2(v2.z, v2.x);
+	float nowRotation = XMConvertToDegrees(v1R - v2R);
+	if (nowRotation > 180) nowRotation -= 360;
+	if (nowRotation < -180) nowRotation += 360;
+	float m_goalAngle = transform->GetRotation().y + nowRotation;
+	if (player->m_goalAngle > 180) player->m_goalAngle -= 360;
+	if (player->m_goalAngle < -180) player->m_goalAngle += 360;
+	transform->SetRotation(XMFLOAT3(0, Lerp(transform->GetRotation().y, m_goalAngle, DT * 8), 0));
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::D))
 	{

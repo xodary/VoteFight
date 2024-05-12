@@ -1,8 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
+    <FxCompile Include="..\Release\Asset\Shader\main.hlsl" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Animator.cpp" />
+    <ClCompile Include="AnisoMipmap.cpp" />
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Bilboard.cpp" />
@@ -14,6 +18,7 @@
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="DepthWriteShader.cpp" />
+    <ClCompile Include="DescriptorHeap.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="DDSTextureLoader12.cpp" />
     <ClCompile Include="func.cpp" />
@@ -35,6 +40,7 @@
     <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectShader.cpp" />
+    <ClCompile Include="OtherPlayerStates.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="Player.cpp" />
     <ClCompile Include="PlayerStates.cpp" />
@@ -57,16 +63,54 @@
     <ClCompile Include="udt.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="UIShader.cpp" />
+    <ClCompile Include="UpsampleBlur.cpp" />
+    <ClCompile Include="VCTMainShader.cpp" />
     <ClCompile Include="VoxelConeTracing.cpp" />
+    <ClCompile Include="VoxelizationShader.cpp" />
     <ClCompile Include="WireFrameShader.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\VoteFight_Server\RemoteClient.h" />
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="Animator.h" />
+    <ClInclude Include="AnisoMipmap.h" />
+    <ClInclude Include="Asset.h" />
+    <ClInclude Include="AssetManager.h" />
+    <ClInclude Include="Bilboard.h" />
+    <ClInclude Include="BilboardShader.h" />
+    <ClInclude Include="Camera.h" />
+    <ClInclude Include="CameraManager.h" />
+    <ClInclude Include="Character.h" />
+    <ClInclude Include="Collider.h" />
+    <ClInclude Include="CollisionManager.h" />
+    <ClInclude Include="Component.h" />
+    <ClInclude Include="D3DX12.h" />
+    <ClInclude Include="DDSTextureLoader12.h" />
+    <ClInclude Include="define.h" />
+    <ClInclude Include="DepthWriteShader.h" />
+    <ClInclude Include="DescriptorHeap.h" />
+    <ClInclude Include="func.h" />
+    <ClInclude Include="GameFramework.h" />
+    <ClInclude Include="GameScene.h" />
+    <ClInclude Include="ImaysNet\Endpoint.h" />
+    <ClInclude Include="ImaysNet\Exception.h" />
+    <ClInclude Include="ImaysNet\ImaysNet.h" />
+    <ClInclude Include="ImaysNet\Iocp.h" />
+    <ClInclude Include="ImaysNet\PacketQueue.h" />
     <ClInclude Include="ImaysNet\Poll.h" />
     <ClInclude Include="ImaysNet\Semaphore.h" />
     <ClInclude Include="ImaysNet\Socket.h" />
     <ClInclude Include="ImaysNet\SocketInit.h" />
     <ClInclude Include="ImaysNet\targetver.h" />
+    <ClInclude Include="InputManager.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="Monster.h" />
+    <ClInclude Include="MonsterStates.h" />
+    <ClInclude Include="NPC.h" />
+    <ClInclude Include="NPCStates.h" />
+    <ClInclude Include="Object.h" />
+    <ClInclude Include="ObjectShader.h" />
+    <ClInclude Include="OtherPlayerStates.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerStates.h" />
@@ -89,125 +133,10 @@
     <ClInclude Include="udt.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UIShader.h" />
+    <ClInclude Include="UpsampleBlur.h" />
+    <ClInclude Include="VCTMainShader.h" />
     <ClInclude Include="VoxelConeTracing.h" />
+    <ClInclude Include="VoxelizationShader.h" />
     <ClInclude Include="WireFrameShader.h" />
-    <ClInclude Include="Animation.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Animator.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="AssetManager.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Bilboard.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="BilboardShader.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Asset.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Camera.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="CameraManager.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Character.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="CollisionManager.h">
-      <Filter>header</Filter>
-    </ClInclude>
-<<<<<<< HEAD
-    <ClInclude Include="Component.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="D3DX12.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader12.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="define.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="DepthWriteShader.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\Endpoint.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\Exception.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="func.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="GameFramework.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="GameScene.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\ImaysNet.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="InputManager.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\Iocp.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Material.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Mesh.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Monster.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="MonsterStates.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="NPC.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="NPCStates.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="Object.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="ObjectShader.h">
-      <Filter>header</Filter>
-    </ClInclude>
-    <ClInclude Include="ImaysNet\PacketQueue.h">
-      <Filter>header</Filter>
-    </ClInclude>
-=======
->>>>>>> origin/Move
-  </ItemGroup>
-  <ItemGroup>
-    <Filter Include="01">
-      <UniqueIdentifier>{13f0cc3d-1bb0-4737-8ca6-59f04a631344}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shader">
-      <UniqueIdentifier>{0e9b8028-aef6-4f6b-a697-cf8b34c48c4e}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="header">
-      <UniqueIdentifier>{944cdec4-0ca2-4d0e-ad5d-aa236cfa71c7}</UniqueIdentifier>
-    </Filter>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\Release\Asset\Shader\main.hlsl">
-      <Filter>Shader</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>

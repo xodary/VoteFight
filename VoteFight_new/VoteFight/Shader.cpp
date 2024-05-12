@@ -26,7 +26,7 @@ D3D12_SHADER_BYTECODE CShader::Compile(const string& fileName, const string& sha
 	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Shader\\" + fileName;
 	ComPtr<ID3DBlob> d3d12ErrorBlob = nullptr;
 
-	DX::ThrowIfFailed(D3DCompileFromFile(Utility::ConvertString(filePath).c_str(), nullptr, nullptr, shaderName.c_str(), shaderVersion.c_str(), compileFlags, 0, &d3d12CodeBlob, d3d12ErrorBlob.GetAddressOf()));
+	DX::ThrowIfFailed(D3DCompileFromFile(Utility::ConvertString(filePath).c_str(), nullptr, D3D_COMPILE_STANDARD_FILE_INCLUDE, shaderName.c_str(), shaderVersion.c_str(), compileFlags, 0, &d3d12CodeBlob, d3d12ErrorBlob.GetAddressOf()));
 
 	if (d3d12CodeBlob != nullptr)
 	{
@@ -61,13 +61,13 @@ D3D12_RASTERIZER_DESC CShader::CreateRasterizerState(int stateNum)
 
 	d3d12RasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
 	d3d12RasterizerDesc.CullMode = D3D12_CULL_MODE_BACK;
-	d3d12RasterizerDesc.FrontCounterClockwise = false;
-	d3d12RasterizerDesc.DepthBias = 0;
-	d3d12RasterizerDesc.DepthBiasClamp = 0.0f;
-	d3d12RasterizerDesc.SlopeScaledDepthBias = 0.0f;
-	d3d12RasterizerDesc.DepthClipEnable = true;
-	d3d12RasterizerDesc.MultisampleEnable = false;
-	d3d12RasterizerDesc.AntialiasedLineEnable = false;
+	d3d12RasterizerDesc.FrontCounterClockwise = FALSE;
+	d3d12RasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+	d3d12RasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+	d3d12RasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+	d3d12RasterizerDesc.DepthClipEnable = TRUE;
+	d3d12RasterizerDesc.MultisampleEnable = FALSE;
+	d3d12RasterizerDesc.AntialiasedLineEnable = FALSE;
 	d3d12RasterizerDesc.ForcedSampleCount = 0;
 	d3d12RasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
 
@@ -123,6 +123,11 @@ D3D12_STREAM_OUTPUT_DESC CShader::CreateStreamOutputState(int stateNum)
 	return d3d12StreamOutputDesc;
 }
 
+ID3D12RootSignature* CShader::CreateRootSignature(int stateNum)
+{
+	return CGameFramework::GetInstance()->GetRootSignature();
+}
+
 D3D12_SHADER_BYTECODE CShader::CreateVertexShader(ID3DBlob* d3d12ShaderBlob, int stateNum)
 {
 	D3D12_SHADER_BYTECODE d3d12ShaderByteCode = {};
@@ -163,14 +168,14 @@ D3D12_PRIMITIVE_TOPOLOGY_TYPE CShader::GetPrimitiveType(int stateNum)
 	return D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 }
 
-DXGI_FORMAT CShader::GetRTVFormat(int renderTargetNum, int stateNum)
+DXGI_FORMAT CShader::GetRTVFormat(int stateNum)
 {
 	return DXGI_FORMAT_R8G8B8A8_UNORM;
 }
 
 DXGI_FORMAT CShader::GetDSVFormat(int stateNum)
 {
-	return DXGI_FORMAT_D24_UNORM_S8_UINT;
+	return DXGI_FORMAT_D32_FLOAT;
 }
 
 void CShader::CreatePipelineState(int stateNum)
@@ -180,7 +185,7 @@ void CShader::CreatePipelineState(int stateNum)
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC d3d12GraphicsPipelineState = {};
 	ComPtr<ID3DBlob> D3D12VertexShaderBlobs[] = { nullptr, nullptr, nullptr, nullptr, nullptr };
 	
-	d3d12GraphicsPipelineState.pRootSignature = d3d12RootSignature;
+	d3d12GraphicsPipelineState.pRootSignature = CreateRootSignature(stateNum);
 	d3d12GraphicsPipelineState.VS = CreateVertexShader(D3D12VertexShaderBlobs[0].Get(), stateNum);
 	d3d12GraphicsPipelineState.HS = CreateHullShader(D3D12VertexShaderBlobs[1].Get(), stateNum);
 	d3d12GraphicsPipelineState.DS = CreateDomainShader(D3D12VertexShaderBlobs[2].Get(), stateNum);
@@ -194,7 +199,7 @@ void CShader::CreatePipelineState(int stateNum)
 	d3d12GraphicsPipelineState.SampleMask = UINT_MAX;
 	d3d12GraphicsPipelineState.PrimitiveTopologyType = GetPrimitiveType(stateNum);
 	d3d12GraphicsPipelineState.NumRenderTargets = 1;
-	d3d12GraphicsPipelineState.RTVFormats[0] = GetRTVFormat(0, stateNum);
+	d3d12GraphicsPipelineState.RTVFormats[0] = GetRTVFormat(stateNum);
 	d3d12GraphicsPipelineState.DSVFormat = GetDSVFormat(stateNum);
 	d3d12GraphicsPipelineState.SampleDesc.Count = 1;
 	d3d12GraphicsPipelineState.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
@@ -260,13 +265,18 @@ void CComputeShader::CreatePipelineState(int stateNum)
 	D3D12_COMPUTE_PIPELINE_STATE_DESC D3D12ComputePipelineStateDesc = {};
 	ComPtr<ID3DBlob> D3D12ComputeShaderBlob = {};
 
-	D3D12ComputePipelineStateDesc.pRootSignature = d3d12RootSignature;
+	D3D12ComputePipelineStateDesc.pRootSignature = CreateComputeRootSignature(stateNum);
 	D3D12ComputePipelineStateDesc.CS = CreateComputeShader(D3D12ComputeShaderBlob.Get(), stateNum);
 	D3D12ComputePipelineStateDesc.NodeMask = 0;
 	D3D12ComputePipelineStateDesc.CachedPSO = D3D12CachedPipelineState;
 	D3D12ComputePipelineStateDesc.Flags = D3D12_PIPELINE_STATE_FLAG_NONE;
 
 	DX::ThrowIfFailed(d3d12Device->CreateComputePipelineState(&D3D12ComputePipelineStateDesc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(m_d3d12PipelineStates[stateNum].GetAddressOf())));
+}
+
+ID3D12RootSignature* CComputeShader::CreateComputeRootSignature(int stateNum)
+{
+	return CGameFramework::GetInstance()->GetRootSignature();
 }
 
 void CComputeShader::Dispatch(int stateNum)

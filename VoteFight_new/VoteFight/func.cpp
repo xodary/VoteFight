@@ -22,11 +22,11 @@ namespace DX
 {
 	void ThrowIfFailed(HRESULT result)
 	{
-		if (FAILED(result))
+		if (FAILED(result) || result == S_FALSE)
 		{
 			char debugMessage[64] = {};
 
-			printf_s(debugMessage, _countof(debugMessage), "[Error] HRESULT of 0x % x\n", result);
+			printf("%s\n", "error");
 			OutputDebugStringA(debugMessage);
 		}
 	}
@@ -130,11 +130,12 @@ namespace DX
 		return CreateTextureResource(d3d12Device, d3d12GraphicsCommandList, data, bytes, d3d12HeapType, d3d12ResourceStates, d3d12UploadBuffer, bytes, 1, 1, 1, D3D12_RESOURCE_DIMENSION_BUFFER, D3D12_RESOURCE_FLAG_NONE, DXGI_FORMAT_UNKNOWN);
 	}
 
-	ComPtr<ID3D12Resource> CreateTexture2DResource(ID3D12Device* d3d12Device, const UINT64& width, UINT height, UINT16 depthOrArraySize, UINT16 mipLevels, D3D12_RESOURCE_STATES d3d12ResourceStates, D3D12_RESOURCE_FLAGS d3d12ResourceFlags, DXGI_FORMAT dxgiFormat, const D3D12_CLEAR_VALUE& clearValue)
+	ComPtr<ID3D12Resource> CreateTextureResource(ID3D12Device* d3d12Device, const UINT64& width, UINT height, UINT16 depthOrArraySize, UINT16 mipLevels, D3D12_RESOURCE_STATES d3d12ResourceStates, D3D12_RESOURCE_FLAGS d3d12ResourceFlags, DXGI_FORMAT dxgiFormat, const D3D12_CLEAR_VALUE& clearValue)
 	{
 		ComPtr<ID3D12Resource> texture = nullptr;
 		CD3DX12_HEAP_PROPERTIES d3d12HeapProperties(D3D12_HEAP_TYPE_DEFAULT);
 		CD3DX12_RESOURCE_DESC d3d12ResourceDesc = { D3D12_RESOURCE_DIMENSION_TEXTURE2D, 0, width, height, depthOrArraySize, mipLevels, dxgiFormat, 1, 0, D3D12_TEXTURE_LAYOUT_UNKNOWN, d3d12ResourceFlags };
+
 
 		DX::ThrowIfFailed(d3d12Device->CreateCommittedResource(&d3d12HeapProperties, D3D12_HEAP_FLAG_NONE, &d3d12ResourceDesc, d3d12ResourceStates, &clearValue, __uuidof(ID3D12Resource), reinterpret_cast<void**>(texture.GetAddressOf())));
 

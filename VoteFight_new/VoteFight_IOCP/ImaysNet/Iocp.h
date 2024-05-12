@@ -27,6 +27,3 @@ public:
 	OVERLAPPED_ENTRY m_events[Iocp::MaxEventCount];
 	int m_eventCount;
 };
-
-
-

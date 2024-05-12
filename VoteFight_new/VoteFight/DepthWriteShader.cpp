@@ -81,7 +81,7 @@ D3D12_SHADER_BYTECODE CDepthWriteShader::CreatePixelShader(ID3DBlob* d3d12Shader
 	return CShader::CreatePixelShader(d3d12ShaderBlob, stateNum);
 }
 
-DXGI_FORMAT CDepthWriteShader::GetRTVFormat(int renderTargetNum, int stateNum)
+DXGI_FORMAT CDepthWriteShader::GetRTVFormat(int stateNum)
 {
 	switch (stateNum)
 	{
@@ -90,7 +90,7 @@ DXGI_FORMAT CDepthWriteShader::GetRTVFormat(int renderTargetNum, int stateNum)
 		return DXGI_FORMAT_R32_FLOAT;
 	}
 
-	return CShader::GetRTVFormat(renderTargetNum, stateNum);
+	return CShader::GetRTVFormat(stateNum);
 }
 
 DXGI_FORMAT CDepthWriteShader::GetDSVFormat(int stateNum)

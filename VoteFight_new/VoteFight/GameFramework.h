@@ -1,8 +1,10 @@
 #pragma once
+#include "DescriptorHeap.h"
 
 class CPostProcessingShader;
 class CUILayer;
 class DescriptorHeapManager;
+class DescriptorHandle;
 
 struct CB_GameFramework
 {
@@ -33,21 +35,18 @@ private:
 
 	ComPtr<IDXGISwapChain3>			  m_dxgiSwapChain;
 	static const UINT				  m_swapChainBufferCount = 2;
-	UINT							  m_swapChainBufferIndex;
 
-	ComPtr<ID3D12Resource>			  m_d3d12RenderTargetBuffers[m_swapChainBufferCount];
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12RtvDescriptorHeap;
 	UINT							  m_rtvDescriptorIncrementSize;
 
 	ComPtr<ID3D12Resource>			  m_d3d12DepthStencilBuffer;
-	ComPtr<ID3D12Resource>			  m_d3d12DepthBuffer; // for DepthWrite
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12DsvDescriptorHeap;
 	UINT							  m_dsvDescriptorIncrementSize;
 
-	ComPtr<ID3D12DescriptorHeap>	  m_d3d12CbvSrvUavDescriptorHeap;
+	//ComPtr<ID3D12DescriptorHeap>	  m_d3d12CbvSrvUavDescriptorHeap;
 
 	// Descriptor Heap Manager
-	std::shared_ptr<DescriptorHeapManager> m_DescriptorHeapManager;
+	DescriptorHeapManager*			  m_DescriptorHeapManager;
 
 	ComPtr<ID3D12Fence>				  m_d3d12Fence;
 	UINT64							  m_fenceValues[m_swapChainBufferCount];
@@ -61,7 +60,6 @@ private:
 	HANDLE							  m_ReceiveEvent{};
 	HANDLE							  m_RenderingEvent{};
 
-
 private:
 	CGameFramework();
 	~CGameFramework();
@@ -70,7 +68,6 @@ private:
 	void CreateCommandQueueAndList();
 	void CreateSwapChain();
 	void CreateRtvAndDsvDescriptorHeaps();
-	void CreateCbvSrvUavDescriptorHeaps();
 	void CreateRenderTargetViews();
 	void CreateDepthStencilView();
 	void CreateShaderResourceViews();
@@ -91,6 +88,7 @@ private:
 	void PostRender();
 
 	void PopulateCommandList();
+
 
 	//shared_ptr<CPostProcessingShader> GetPostProcessingShader() const;
 
@@ -114,9 +112,8 @@ public:
 
 	ID3D12DescriptorHeap* GetRtvDescriptorHeap();
 	ID3D12DescriptorHeap* GetDsvDescriptorHeap();
-	ID3D12DescriptorHeap* GetCbvSrvUavDescriptorHeap();
 
-	DescriptorHeapManager* GetDescriptorHeapManager();
+	DescriptorHeapManager* GetDescriptorHeapManager() { return m_DescriptorHeapManager; }
 	
 	inline CD3DX12_CPU_DESCRIPTOR_HANDLE GetDepthStencilView() const { return CD3DX12_CPU_DESCRIPTOR_HANDLE(m_d3d12DsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart()); }
 
@@ -130,11 +127,17 @@ public:
 	unsigned int my_id;
 
 public:
-	void ResourceBarriersBegin(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers) { barriers.clear(); }
-	void ResourceBarriersEnd(std::vector<CD3DX12_RESOURCE_BARRIER>& barriers, ID3D12GraphicsCommandList* commandList) {
-		size_t num = barriers.size();
-		if (num > 0)
-			commandList->ResourceBarrier(num, barriers.data());
-	}
 
+	void CreateFullscreenQuadBuffers();
+
+	ComPtr<ID3D12Resource>              mFullscreenQuadVertexBuffer;
+	ComPtr<ID3D12Resource>              mFullscreenQuadVertexBufferUpload;
+
+	D3D12_VERTEX_BUFFER_VIEW            mFullscreenQuadVertexBufferView;
+	D3D12_VERTEX_BUFFER_VIEW& GetFullscreenQuadBufferView() { return mFullscreenQuadVertexBufferView; }
+
+
+	DescriptorHandle				  SRVHandle[2];
+	UINT							  m_swapChainBufferIndex;
+	ComPtr<ID3D12Resource>			  m_d3d12RenderTargetBuffers[m_swapChainBufferCount];
 };

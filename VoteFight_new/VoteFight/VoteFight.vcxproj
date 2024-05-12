@@ -151,6 +151,7 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Animator.h" />
+    <ClInclude Include="AnisoMipmap.h" />
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Bilboard.h" />
@@ -165,6 +166,7 @@
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="DepthWriteShader.h" />
+    <ClInclude Include="DescriptorHeap.h" />
     <ClInclude Include="func.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
@@ -187,6 +189,7 @@
     <ClInclude Include="NPCStates.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="ObjectShader.h" />
+    <ClInclude Include="OtherPlayerStates.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="PlayerStates.h" />
@@ -214,17 +217,21 @@
     <ClInclude Include="udt.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UIShader.h" />
+    <ClInclude Include="UpsampleBlur.h" />
+    <ClInclude Include="VCTMainShader.h" />
     <ClInclude Include="VoxelConeTracing.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
+    <ClInclude Include="VoxelizationShader.h" />
     <ClInclude Include="WireFrameShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Animator.cpp" />
+    <ClCompile Include="AnisoMipmap.cpp" />
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Bilboard.cpp" />
@@ -236,6 +243,7 @@
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="DepthWriteShader.cpp" />
+    <ClCompile Include="DescriptorHeap.cpp" />
     <ClCompile Include="GameFramework.cpp" />
     <ClCompile Include="DDSTextureLoader12.cpp" />
     <ClCompile Include="func.cpp" />
@@ -257,6 +265,12 @@
     <ClCompile Include="NPCStates.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="ObjectShader.cpp" />
+    <ClCompile Include="OtherPlayerStates.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="pch.cpp">
       <PrecompiledHeaderFile Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">pch.h</PrecompiledHeaderFile>
     </ClCompile>
@@ -286,12 +300,15 @@
     <ClCompile Include="udt.cpp" />
     <ClCompile Include="UI.cpp" />
     <ClCompile Include="UIShader.cpp" />
+    <ClCompile Include="UpsampleBlur.cpp" />
+    <ClCompile Include="VCTMainShader.cpp" />
     <ClCompile Include="VoxelConeTracing.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="VoxelizationShader.cpp" />
     <ClCompile Include="WireFrameShader.cpp" />
   </ItemGroup>
   <ItemGroup>

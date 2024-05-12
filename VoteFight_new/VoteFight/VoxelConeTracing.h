@@ -7,17 +7,10 @@
 #include "RenderTarget.h"
 #include "DepthBuffer.h"
 
-#define VCT_SCENE_VOLUME_SIZE 256
-#define VCT_MIPS 6
 
 class VCT : public CSingleton<VCT>
 {
 	friend class CSingleton<VCT>;
-
-	enum RenderQueue {
-		GRAPHICS_QUEUE,
-		COMPUTE_QUEUE
-	};
 
 public:
 	VCT() {}
@@ -29,6 +22,10 @@ public:
 
 	std::vector<CD3DX12_RESOURCE_BARRIER> mBarriers;
 	std::vector<std::unique_ptr<CObject>> mRenderableObjects;
+	CRenderTarget* mGbufferRTs[3] = { nullptr };
+	CBuffer* mGIUpsampleAndBlurBuffer;
+
+	D3D12_SAMPLER_DESC mBilinearSamplerClamp = {};
 
 		// Voxel Cone Tracing
 	RootSignature mVCTVoxelizationRS;
@@ -88,7 +85,7 @@ public:
 	float mVCTAoFalloff = 2.0f;
 	float mVCTSamplingFactor = 0.5f;
 	float mVCTVoxelSampleOffset = 0.0f;
-	float mVCTRTRatio = 0.5f; // from MAX_SCREEN_WIDTH/HEIGHT
+	float mVCTRTRatio = 0.5f; // from FRAME_BUFFER_WIDTH/HEIGHT
 	bool mVCTUseMainCompute = true;
 	bool mVCTMainRTUseUpsampleAndBlur = true;
 	float mVCTGIPower = 1.0f;

@@ -14,12 +14,12 @@ private:
 	float	 m_spineAngle;
 	float    m_turnAngle;
 	float	 m_clickAngle;
-
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
 
 
 public:
+    bool isMove = true;
 	CPlayer();
 	virtual ~CPlayer();
 
@@ -36,6 +36,7 @@ public:
 	bool HasBullet();
 
 	virtual void Init();
+    virtual void AnotherInit();
 
 	virtual void SwapWeapon(WEAPON_TYPE weaponType);
 
@@ -46,11 +47,8 @@ public:
 
     unsigned int    m_id{};
 
-	bool b_front = false;
-	bool b_right = false;
-	bool b_back = false;
-	bool b_left = false;
-    bool isMove = true;
+    float    m_goalAngle;
+
 	//void ManagePistol(bool HasPistol);
 	//bool HasPistol() const;
 	//bool IsEquippedPistol() const;

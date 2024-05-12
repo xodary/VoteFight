@@ -9,6 +9,8 @@
 #include "Animator.h"
 #include "Camera.h"
 #include "StateMachine.h"
+#include "OtherPlayerStates.h"
+#include "Transform.h"
 #include "PlayerStates.h"
 #include "NPC.h"
 #include "UI.h"
@@ -94,6 +96,19 @@ void CPlayer::Init()
 	
 }
 
+void CPlayer::AnotherInit()
+{
+	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+
+	stateMachine->SetCurrentState(COtherPlayerIdleState::GetInstance());
+
+	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
+
+	animator->SetWeight("idle", 1.0f);
+	m_Inventory = new CInventory();
+
+}
+
 void CPlayer::SwapWeapon(WEAPON_TYPE weaponType)
 {
 }
@@ -110,7 +125,6 @@ void CPlayer::Update()
 {
 	CObject::Update();
 	
-
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)

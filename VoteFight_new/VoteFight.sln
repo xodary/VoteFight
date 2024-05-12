@@ -13,6 +13,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Global", "Global", "{CAEFBA
 		Protocol.h = Protocol.h
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Global (2)", "Global (2)", "{8880F119-F1B4-4A22-85AB-83273AE869A9}"
+	ProjectSection(SolutionItems) = preProject
+		Packet.h = Packet.h
+		Protocol.h = Protocol.h
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64

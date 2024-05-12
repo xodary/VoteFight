@@ -23,8 +23,8 @@
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
-//char* CServerManager::SERVERIP;
-char* CServerManager::m_SERVERIP = "127.0.0.1";
+char* CServerManager::m_SERVERIP;
+//char* CServerManager::m_SERVERIP = "127.0.0.1";
 
 // 재귀적 mutex
 recursive_mutex CServerManager::m_mutex;
@@ -98,14 +98,14 @@ void CServerManager::ConnectServer()	// 서버 연결 함수
 {
 	m_tcpSocket = make_shared<Socket>(SocketType::Tcp);
 
-	/*std::cout << std::endl << " [ =========== Login =========== ] " << std::endl << std::endl;
+	std::cout << std::endl << " [ =========== Login =========== ] " << std::endl << std::endl;
 
 	std::cout << std::endl << "Input Connect Server IP (ex 100.xxx.xxx.xxx) : " << std::endl;
 	std::string server_s;
 	std::cin >> server_s;
 	m_SERVERIP = new char[server_s.size() + 1];
 	m_SERVERIP[server_s.size()] = '\0';
-	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());*/
+	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());
 
 	m_tcpSocket->Bind(Endpoint::Any);
 	CServerManager::Connetion();		// 연결
@@ -180,9 +180,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case PACKET_TYPE::P_SC_LOGIN_OK_PACKET:
 	{
 		SC_LOGIN_OK_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(_Packet);
-		cout << "SC_LOGIN_OK_PACKET" << endl;
+		// cout << "SC_LOGIN_OK_PACKET" << endl;
 		CServerManager::m_id = recv_packet->m_id;
-
 
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
@@ -190,11 +189,10 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		player->m_id = recv_packet->m_id;
 
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
+		transform->SetPosition(recv_packet->m_vec);
 		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		//animator->SetBlending(false);
 		animator->SetWeight("idle", 1.0f);
 		animator->Play("idle", true);
 
@@ -202,25 +200,28 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 		player->Init();
 
-		cout << "Clinet ID - " << player->m_id << endl;
+		// cout << "Clinet ID - " << player->m_id << endl;
 		break;
 	}
 
 	case  PACKET_TYPE::P_SC_ADD_PACKET:
 	{
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
-		cout << "SC_ADD_PLAYER" << endl;
+		// cout << "SC_ADD_PLAYER" << endl;
 
 		// vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
 		// reinterpret_cast<CPlayer*>(objects[0])->m_id;
+		if (CGameFramework::GetInstance()->my_id == recv_packet->m_id)
+			return;
 
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
-		player->Init();
+		player->AnotherInit();
 		player->m_id = recv_packet->m_id;
-		cout << "Clinet ID - " << player->m_id << endl;
+		// cout << "Clinet ID - " << player->m_id << endl;
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
+
+		transform->SetPosition(XMFLOAT3(recv_packet->m_vec));
 		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
@@ -262,8 +263,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		for (auto& p : objects) {
 			CPlayer* player = reinterpret_cast<CPlayer*>(p);
-			if (player->m_id == recv_packet->m_id)
-				continue;
+			if (CGameFramework::GetInstance()->my_id == recv_packet->m_id) continue;
+			if (player->m_id != recv_packet->m_id) continue;
 
 			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 			CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
@@ -272,7 +273,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
 			net_stateMachine->ChangeState(recv_packet->m_state);
 
-			cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+			// cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
 		}
 		break;
 	}

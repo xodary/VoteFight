@@ -13,8 +13,12 @@
 #include "Material.h"
 #include "Animation.h"
 #include "DepthWriteShader.h"
-#include <thread>
-#include <vector>
+#include "GameFramework.h"
+#include "VoxelizationShader.h"
+#include "AnisoMipmap.h"
+#include "GBufferShader.h"
+#include "UpsampleBlur.h"
+#include "VCTMainShader.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -136,7 +140,7 @@ void CAssetManager::LoadTextures(const string& fileName)
 	// DepthWrite Texture
 	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
 	CTexture* texture = new CTexture();
-
+	
 	texture->SetName("DepthWrite");
 	texture->Create(static_cast<UINT64>(DEPTH_BUFFER_WIDTH), static_cast<UINT>(DEPTH_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } }, TEXTURE_TYPE::SHADOW_MAP);
 	m_textures.emplace(texture->GetName(), texture);
@@ -179,10 +183,35 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
+	//shader = new CGBufferShader();
+	//shader->SetName("GBuffer");
+	//shader->CreatePipelineStates(1);
+	//m_shaders.emplace(shader->GetName(), shader);
+
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
 	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
+
+	//shader = new CVoxelizationShader();
+	//shader->SetName("Voxelization");
+	//shader->CreatePipelineStates(2);
+	//m_shaders.emplace(shader->GetName(), shader);
+
+	//shader = new CAnisoMipmapShader();
+	//shader->SetName("AnisoMipmap");
+	//shader->CreatePipelineStates(2);
+	//m_shaders.emplace(shader->GetName(), shader);
+
+	//shader = new CVCTMainShader();
+	//shader->SetName("VCTMain");
+	//shader->CreatePipelineStates(1);
+	//m_shaders.emplace(shader->GetName(), shader);
+
+	// shader = new CUpsampleBlur();
+	// shader->SetName("UpsampleBlur");
+	// shader->CreatePipelineStates(1);
+	// m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)
@@ -460,23 +489,46 @@ void CAssetManager::Init()
 	m_assetPath = assetPath;
 
 	LoadShaders();
-	SceneLoadMeshes();
-	SceneLoadTextures();
-	SceneLoadMaterials();
+	LoadMaterials("Materials.bin");
+	LoadMaterials("Materialss.bin");
+	LoadMaterials("FireWoodMaterials.bin");
+	LoadMaterials("WhiteHouse.bin");
+	LoadMaterials("Fence_Material.bin");
+	LoadMaterials("Homer_Material.bin");
+
+	// DepthWrite
+	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+	D3D12_RENDER_TARGET_VIEW_DESC d3d12RenderTargetViewDesc = {};
+
+	d3d12RenderTargetViewDesc.Format = DXGI_FORMAT_R32_FLOAT;
+	d3d12RenderTargetViewDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	d3d12RenderTargetViewDesc.Texture2D.MipSlice = 0;
+	d3d12RenderTargetViewDesc.Texture2D.PlaneSlice = 0;
+
+	CGameFramework* framework = CGameFramework::GetInstance();
+	texture->m_RTVHandle = framework->GetDescriptorHeapManager()->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	framework->GetDevice()->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, texture->m_RTVHandle.GetCPUHandle());
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC d3d12DepthStencilViewDesc = {};
+
+	d3d12DepthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;
+	d3d12DepthStencilViewDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	d3d12DepthStencilViewDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+	texture->m_DSVHandle = framework->GetDescriptorHeapManager()->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	texture->m_DepthStencilResource = DX::CreateTextureResource(framework->GetDevice(), DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 1, 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, DXGI_FORMAT_D32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_D32_FLOAT, {1.0f, 0.0f} });
+	framework->GetDevice()->CreateDepthStencilView(texture->m_DepthStencilResource.Get(), &d3d12DepthStencilViewDesc, texture->m_DSVHandle.GetCPUHandle());
+
 }
 
 void CAssetManager::CreateShaderResourceViews()
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
-	D3D12_CPU_DESCRIPTOR_HANDLE d3d12CpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetCPUDescriptorHandleForHeapStart();
-	D3D12_GPU_DESCRIPTOR_HANDLE d3d12GpuDescriptorHandle = CGameFramework::GetInstance()->GetCbvSrvUavDescriptorHeap()->GetGPUDescriptorHandleForHeapStart();
-	UINT descriptorIncrementSize = d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
 	for (const auto& texture : m_textures)
 	{
 		ID3D12Resource* pShaderResource = texture.second->GetTexture();
-		if ((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP)	// Cubemap (Skybox) 
-		{
+		if ((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP) {	// Cubemap (Skybox) 
 			D3D12_SHADER_RESOURCE_VIEW_DESC d3dShaderResourceViewDesc;
 			d3dShaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			d3dShaderResourceViewDesc.Format = pShaderResource->GetDesc().Format;
@@ -485,14 +537,10 @@ void CAssetManager::CreateShaderResourceViews()
 			d3dShaderResourceViewDesc.TextureCube.MostDetailedMip = 0;
 			d3dShaderResourceViewDesc.TextureCube.ResourceMinLODClamp = 0.0f;
 
-			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, d3d12CpuDescriptorHandle);
+			d3d12Device->CreateShaderResourceView(pShaderResource, &d3dShaderResourceViewDesc, texture.second->m_SRVHandle.GetCPUHandle());
 		}
 		else
-			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, d3d12CpuDescriptorHandle);
-		texture.second->SetGpuDescriptorHandle(d3d12GpuDescriptorHandle);
-
-		d3d12CpuDescriptorHandle.ptr += descriptorIncrementSize;
-		d3d12GpuDescriptorHandle.ptr += descriptorIncrementSize;
+			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, texture.second->m_SRVHandle.GetCPUHandle());
 	}
 }
 
