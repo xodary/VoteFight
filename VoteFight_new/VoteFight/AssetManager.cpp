@@ -168,30 +168,30 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CGBufferShader();
-	shader->SetName("GBuffer");
-	shader->CreatePipelineStates(1);
-	m_shaders.emplace(shader->GetName(), shader);
+	//shader = new CGBufferShader();
+	//shader->SetName("GBuffer");
+	//shader->CreatePipelineStates(1);
+	//m_shaders.emplace(shader->GetName(), shader);
 
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
 	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CVoxelizationShader();
-	shader->SetName("Voxelization");
-	shader->CreatePipelineStates(2);
-	m_shaders.emplace(shader->GetName(), shader);
+	//shader = new CVoxelizationShader();
+	//shader->SetName("Voxelization");
+	//shader->CreatePipelineStates(2);
+	//m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CAnisoMipmapShader();
-	shader->SetName("AnisoMipmap");
-	shader->CreatePipelineStates(2);
-	m_shaders.emplace(shader->GetName(), shader);
+	//shader = new CAnisoMipmapShader();
+	//shader->SetName("AnisoMipmap");
+	//shader->CreatePipelineStates(2);
+	//m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CVCTMainShader();
-	shader->SetName("VCTMain");
-	shader->CreatePipelineStates(1);
-	m_shaders.emplace(shader->GetName(), shader);
+	//shader = new CVCTMainShader();
+	//shader->SetName("VCTMain");
+	//shader->CreatePipelineStates(1);
+	//m_shaders.emplace(shader->GetName(), shader);
 
 	shader = new CUpsampleBlur();
 	shader->SetName("UpsampleBlur");

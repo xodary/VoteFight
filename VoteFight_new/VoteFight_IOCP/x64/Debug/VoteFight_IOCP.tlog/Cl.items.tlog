@@ -1,3 +1,4 @@
+C:\directX_work\VoteFight_new\VoteFight_IOCP\CPlayer.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\CPlayer.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\DDSTextrueLoader.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\DDSTextrueLoader.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\func.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\func.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\ImaysNet\Endpoint.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\Endpoint.obj
@@ -9,4 +10,5 @@ C:\directX_work\VoteFight_new\VoteFight_IOCP\ImaysNet\Socket.cpp;C:\directX_work
 C:\directX_work\VoteFight_new\VoteFight_IOCP\ImaysNet\SocketInit.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\SocketInit.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\main.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\pch.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\pch.obj
+C:\directX_work\VoteFight_new\VoteFight_IOCP\RemoteClient.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\RemoteClient.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\udt.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\udt.obj

@@ -126,7 +126,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	CServerManager::ConnectServer();
+	//CServerManager::ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -522,14 +522,14 @@ void CGameFramework::Render()
 {
 	CSceneManager::GetInstance()->Render();
 
-	reinterpret_cast<CGBufferShader*>(CAssetManager::GetInstance()->GetShader("GBuffer"))->Render(0);
+	//reinterpret_cast<CGBufferShader*>(CAssetManager::GetInstance()->GetShader("GBuffer"))->Render(0);
 
-	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(0);
-	reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
-	reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(0);
-	reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
+	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(0);
+	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
+	//reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(0);
+	//reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
 
-	reinterpret_cast<CVCTMainShader*>(CAssetManager::GetInstance()->GetShader("VCTMain"))->Render(0);
+	//reinterpret_cast<CVCTMainShader*>(CAssetManager::GetInstance()->GetShader("VCTMain"))->Render(0);
 	reinterpret_cast<CUpsampleBlur*>(CAssetManager::GetInstance()->GetShader("UpsampleBlur"))->Render(0);
 }
 

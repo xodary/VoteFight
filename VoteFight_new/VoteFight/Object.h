@@ -92,8 +92,8 @@ public:
 
 	virtual void Update();
 
-	void PreRender(CCamera* camera);
-	void Render(CCamera* camera);
+	virtual void PreRender(CCamera* camera);
+	virtual void Render(CCamera* camera);
 
 private:
 	static CObject* LoadFrame(ifstream& in);

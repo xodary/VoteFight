@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Object.h"
 #include "AssetManager.h"
+#include "InputManager.h"
 #include "Player.h"
 #include "NPC.h"
 #include "Mesh.h"
@@ -464,7 +465,8 @@ void CObject::Render(CCamera* camera)
 		}
 	}
 
-	if (KEY_HOLD(KEY::B)) {
+	if (KEY_HOLD(KEY::B)) 
+	{
 		// [Debug] Render BoundingBox
 		CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
 
@@ -473,6 +475,7 @@ void CObject::Render(CCamera* camera)
 			collider->Render(camera);
 		}
 	}
+
 	for (const auto& child : m_children)
 	{
 		if (child->IsActive() && !child->IsDeleted())

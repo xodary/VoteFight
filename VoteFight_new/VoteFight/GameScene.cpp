@@ -89,8 +89,8 @@ void CGameScene::Init()
 	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
-	CObject* object = new CSkyBox();
-	AddObject(GROUP_TYPE::SKYBOX, object);
+	CSkyBox* skybox = new CSkyBox();
+	AddObject(GROUP_TYPE::SKYBOX, skybox);
 
 	// 2024 - 04 - 10
 	// 빌보드 추가 - 아직 미완성
@@ -148,7 +148,7 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 }
 

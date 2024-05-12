@@ -69,7 +69,7 @@ enum class SCENE_TYPE
 enum class GROUP_TYPE
 {
 	STRUCTURE,	// 0 고정
-	PLAYER,	// 1 고정
+	PLAYER,		// 1 고정
 	NPC,		// 2 고정
 	BILBOARD,
 	GROUND_ITEM,
