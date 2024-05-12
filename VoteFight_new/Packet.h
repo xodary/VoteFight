@@ -62,7 +62,7 @@ struct SC_MOVE_V_PACKET {
 	unsigned int		m_id;
 	XMFLOAT3			m_vec;
 	XMFLOAT3			m_rota;
-	//int				m_state;
+	STATE_ENUM			m_state;
 };
 
 
@@ -88,7 +88,7 @@ struct CS_MOVE_V_PACKET {
 	unsigned int		m_id;
 	XMFLOAT3			m_vec;
 	XMFLOAT3			m_rota;
-	//int					m_state;
+	STATE_ENUM			m_state;
 };
 
 #pragma pack (pop)

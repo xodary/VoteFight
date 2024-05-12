@@ -9,7 +9,7 @@ protected:
 	CState();
 	virtual ~CState();
 
-	STATE_ENUM stateNum = STATE_ENUM::CPlayerIdelState;
+	STATE_ENUM stateNum = STATE_ENUM::CPlayerIdleState;
 
 public:
 	virtual void Enter(CObject* object) = 0;

@@ -326,7 +326,7 @@ void CPlayerWalkState::Enter(CObject* object)
 	//PacketQueue::AddSendPacket(&send_packet);
 	// cout << " >> send ) CS_WALK_ENTER_PACEKET" << endl;
 
-	stateNum = STATE_ENUM::CPlayerIdelState;
+	stateNum = STATE_ENUM::CPlayerWalkState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("lisaWalk", true);
 
@@ -430,7 +430,7 @@ CPlayerRunState::~CPlayerRunState()
 
 void CPlayerRunState::Enter(CObject* object)
 {
-	stateNum = STATE_ENUM::CPlayerIdelState;
+	stateNum = STATE_ENUM::CPlayerRunState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("Run", true);
 

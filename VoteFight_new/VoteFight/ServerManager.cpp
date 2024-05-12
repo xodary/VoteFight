@@ -186,6 +186,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		CGameFramework::GetInstance()->my_id = recv_packet->m_id;
 		player->m_id = recv_packet->m_id;
 
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -215,6 +216,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		player->Init();
 		player->m_id = recv_packet->m_id;
 		cout << "Clinet ID - " << player->m_id << endl;
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -268,6 +270,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 			net_transform->SetPosition(XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z));
 			net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
+			net_stateMachine->ChangeState(recv_packet->m_state);
+
 			cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
 		}
 		break;

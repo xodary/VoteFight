@@ -69,13 +69,7 @@ enum class GROUP_TYPE
 	COUNT
 };
 
-enum PLATER_STATE {
-	IDLE = 0,
-	LEFT_TURN,
-	RIGHT_TURN,
-	WALK,
-	RUN
-};
+enum class STATE_ENUM { CPlayerIdleState = 0, CPlayerWalkState, CPlayerRunState, CPlayerLeftTurn, CPlayerRightTurn, };
 
 enum class COMPONENT_TYPE
 {

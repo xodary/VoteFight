@@ -10,6 +10,7 @@
 #include "Texture.h"
 #include "UI.h"
 #include "Shader.h"
+#include "State.h"
 #include "StateMachine.h"
 #include "Animator.h"
 #include "Transform.h"
@@ -158,27 +159,25 @@ void CGameScene::Init()
 // 2024 04 18일 이시영 수정 
 // Update할떄마다 플레이어 Y 를 터레인 높이 값에 변환시킴
 void CGameScene::Update()
-{
-	CObject* player = GetGroupObject(GROUP_TYPE::STRUCTURE)[0];
-	CPlayer* my_player = reinterpret_cast<CPlayer*>(player);
-	CTransform*	net_transform = static_cast<CTransform*>(my_player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	CStateMachine* net_stateMachine = static_cast<CStateMachine*>(my_player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-	net_stateMachine->GetCurrentState();
-
-	CS_MOVE_V_PACKET send_packet;
-	send_packet.m_size = sizeof(CS_MOVE_V_PACKET);
-	send_packet.m_type = PACKET_TYPE::P_CS_MOVE_V_PACKET;
-	send_packet.m_id = my_player->m_id;
-	send_packet.m_vec = net_transform->GetPosition();
-	send_packet.m_rota = net_transform->GetRotation();
-	// send_packet.m_state = net_stateMachine->;
-	PacketQueue::AddSendPacket(&send_packet);
-	// cout << " >> send ) CS_MOVE_V_PACKET" << endl;
-	
+{	
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	for (CObject* o : objects) {
 		CPlayer* player = reinterpret_cast<CPlayer*>(o);
 		if (player->m_id == CGameFramework::GetInstance()->my_id) {
+			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+			CState* net_state = net_stateMachine->GetCurrentState();
+
+			CS_MOVE_V_PACKET send_packet;
+			send_packet.m_size = sizeof(CS_MOVE_V_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_CS_MOVE_V_PACKET;
+			send_packet.m_id = player->m_id;
+			send_packet.m_vec = net_transform->GetPosition();
+			send_packet.m_rota = net_transform->GetRotation();
+			send_packet.m_state = net_state->GetStateNum();
+			PacketQueue::AddSendPacket(&send_packet);
+			// cout << " >> send ) CS_MOVE_V_PACKET" << endl;
+
 			player->SetTerrainY(this);
 			CTransform* playerPosition = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 			m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
