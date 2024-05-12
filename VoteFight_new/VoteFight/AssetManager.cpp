@@ -47,11 +47,6 @@ void CAssetManager::LoadMeshes(const string& fileName)
 {
 	string filePath = m_assetPath + "Mesh\\" + fileName;
 	ifstream in(filePath, ios::binary);
-	if (!in.is_open()) {
-		std::cerr << filePath << " : 파일을 열 수 없습니다." << std::endl;
-		return;
-	}
-
 	string str;
 
 	while (true)
@@ -100,11 +95,6 @@ void CAssetManager::LoadTextures(const string& fileName)
 {
 	string filePath = m_assetPath + "Texture\\" + fileName;
 	ifstream in(filePath, ios::binary);
-	if (!in.is_open()) {
-		std::cerr << filePath << " : 파일을 열 수 없습니다." << std::endl;
-		return;
-	}
-
 	string str;
 
 	while (true)
@@ -169,12 +159,7 @@ void CAssetManager::LoadShaders()
 	m_shaders.emplace(shader->GetName(), shader);
 
 	shader = new CTerrainShader();
-	shader->SetName("Terrain1");
-	shader->CreatePipelineStates(1);
-	m_shaders.emplace(shader->GetName(), shader);
-
-	shader = new CTerrainShader();
-	shader->SetName("Terrain2");
+	shader->SetName("Terrain");
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
@@ -218,11 +203,6 @@ void CAssetManager::LoadMaterials(const string& fileName)
 {
 	string filePath = m_assetPath + "Material\\" + fileName;
 	ifstream in(filePath, ios::binary);
-	if (!in.is_open()) {
-		std::cerr << "파일을 열 수 없습니다." << std::endl;
-		return;
-	}
-
 	string str;
 
 	while (true)
@@ -488,6 +468,17 @@ void CAssetManager::Init()
 	strcat_s(assetPath, 255, "\\Release\\Asset\\");
 	m_assetPath = assetPath;
 
+	LoadMeshes("Meshes.bin");
+	LoadMeshes("Meshess.bin");
+	LoadMeshes("Meshesss.bin");
+	LoadMeshes("FireWoodMesh.bin");
+	LoadMeshes("Fence_Mesh.bin");
+	LoadMeshes("Homer_Meshs.bin");
+	LoadTextures("Textures.bin");
+	LoadTextures("Texturesss.bin");
+	LoadTextures("FireWoodTextures.bin");
+	LoadTextures("Fence_Texture.bin");
+	LoadTextures("Simpsons_texture.bin");
 	LoadShaders();
 	LoadMaterials("Materials.bin");
 	LoadMaterials("Materialss.bin");
@@ -555,42 +546,4 @@ void CAssetManager::ReleaseUploadBuffers()
 	{
 		p.second->ReleaseUploadBuffers();
 	}
-}
-
-void CAssetManager::SceneLoadMeshes()
-{
-	LoadMeshes("Meshes.bin");
-	LoadMeshes("Meshess.bin");
-	LoadMeshes("Meshesss.bin");
-	LoadMeshes("FireWoodMesh.bin");
-	LoadMeshes("Fence_Mesh.bin");
-	LoadMeshes("Homer_Meshs.bin");
-	LoadMeshes("Homer_Solider_Mesh.bin");
-	LoadMeshes("Marge_Police_Mesh.bin");
-	LoadMeshes("Sea_Mesh.bin");
-	LoadMeshes("White_House_Mesh.bin");
-}
-
-void CAssetManager::SceneLoadMaterials()
-{
-	LoadMaterials("Materials.bin");
-	LoadMaterials("Materialss.bin");
-	LoadMaterials("FireWoodMaterials.bin");
-//	LoadMaterials("WhiteHouse.bin");
-	LoadMaterials("Fence_Material.bin");
-	LoadMaterials("Homer_Material.bin");
-	LoadMaterials("rpgpp_lt_building_05_Material.bin");
-	LoadMaterials("Sea_Material.bin");
-	LoadMaterials("White_House_Material.bin");
-}
-
-void CAssetManager::SceneLoadTextures()
-{
-	LoadTextures("Textures.bin");
-	LoadTextures("Texturesss.bin");
-	LoadTextures("FireWoodTextures.bin");
-	LoadTextures("Fence_Texture.bin");
-	LoadTextures("Simpsons_texture.bin");
-	LoadTextures("Sea_Textures.bin");
-	LoadTextures("White_House_Texture.bin");
 }

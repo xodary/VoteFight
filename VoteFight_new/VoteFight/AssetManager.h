@@ -58,8 +58,4 @@ public:
 	void CreateShaderResourceViews();
 
 	void ReleaseUploadBuffers();
-
-	void SceneLoadMeshes();
-	void SceneLoadMaterials();
-	void SceneLoadTextures();
 };

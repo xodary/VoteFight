@@ -1,7 +1,6 @@
 #pragma once
 #include "Object.h"
-#define TERRAIN_GROUND 0
-#define TERRAIN_SEA 1
+
 
 class CHeightMapImage
 {
@@ -34,7 +33,6 @@ private:
 	int							m_nWidth;
 	int							m_nLength;
 	XMFLOAT3					m_xmf3Scale;
-	int							m_type;
 
 	UINT						m_indices;
 protected:
@@ -57,7 +55,7 @@ protected:
 	D3D12_INDEX_BUFFER_VIEW	m_d3d12IndexBufferView;
 
 public:
-	CTerrain(int nWidth = 257.f, int nLength = 257.f, int type = TERRAIN_GROUND);
+	CTerrain(int nWidth = 257.f, int nLength = 257.f);
 	virtual ~CTerrain();
 
 	void MakeHeightMapGridMesh( int xStart, int zStart, int nWidth, int nLength, XMFLOAT3 xmf3Scale, void* pContext);

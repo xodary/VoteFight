@@ -250,39 +250,22 @@ void CObject::SetTerrainY(CScene* curScene)
 	transform->SetPosition(newVec);
 }
 
-void CObject::InTerrainSpace(const CScene& curScene)
+
+void CObject::CheckInTerrainSpace(const CScene& curScene) 
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	XMFLOAT3 curVec = transform->GetPosition();
-	float velocity = 0.001f;
 	if (curVec.x < 0)
-		curVec.x = velocity;
+		curVec.x = 1;
 	else if (curVec.x > curScene.GetTerrain()->GetWidth())
-		curVec.x = curScene.GetTerrain()->GetWidth() - velocity;
+		curVec.x = curScene.GetTerrain()->GetWidth() - 1;
 
 	if (curVec.z < 0)
-		curVec.z = velocity;
+		curVec.z = 1;
 	else if (curVec.z > curScene.GetTerrain()->GetLength())
-		curVec.z = curScene.GetTerrain()->GetLength() - velocity;
+		curVec.z = curScene.GetTerrain()->GetLength() -1;
 
 	transform->SetPosition(curVec);
-}
-
-bool CObject::ChcekInTerrainSpace(const CScene& curScene)
-{
-	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
-	XMFLOAT3 curVec = transform->GetPosition();
-	if (curVec.x <= 0)
-		return false;
-	else if (curVec.x >= curScene.GetTerrain()->GetWidth())
-		return false;
-
-	if (curVec.z <= 0)
-		return false;
-	else if (curVec.z >= curScene.GetTerrain()->GetLength())
-		return false;
-
-	return true;
 }
 
 void CObject::AddMaterial(CMaterial* material)

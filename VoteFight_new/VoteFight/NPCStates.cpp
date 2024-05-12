@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "NPCStates.h"
 #include "TimeManager.h"
+#include "CameraManager.h"
 #include "SceneManager.h"
 #include "Scene.h"
 #include "NPC.h"
@@ -9,6 +10,7 @@
 #include "Animator.h"
 #include "Transform.h"
 #include "GameFramework.h"
+#include "Camera.h"
 #include <bitset>
 
 CNPCIdleState::CNPCIdleState()

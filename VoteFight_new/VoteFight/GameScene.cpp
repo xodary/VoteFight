@@ -75,18 +75,6 @@ void CGameScene::Enter()
 
 	// CCameraManager::GetInstance()->GetMainCamera()->SetTarget(static_cast<CPlayer*>(objects[0]));
 	// CSoundManager::GetInstance()->Play(SOUND_TYPE_INGAME_BGM_1, 0.3f, false);
-	for (int i = 0; i < static_cast<int>(GROUP_TYPE::COUNT); ++i)
-	{
-		for (const auto& object : objects)
-		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
-			{
-				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
-				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI))object->InTerrainSpace(*this);
-
-			}
-		}
-	}
 }
 
 void CGameScene::Exit()
@@ -99,23 +87,15 @@ void CGameScene::Init()
 
 	// 씬 로드
 	Load("GameScene.bin");
-	Load("Fir_Tree_Scene.bin");
-	Load("White_House_Scene.bin");
-	Load("Building_Bakery_Scene.bin");
+	Load("BinaryScene.bin");
 	Load("Woods.bin");
 	Load("FenceScene.bin");
 	Load("Homer_link_Scene.bin");
-	//Load("Homer_Solider_Scene.bin");
-	Load("Marge_Police_Scene.bin");
-	// Load("Sea_Scene.bin");
 	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
 	CObject* object = new CSkyBox();
 	AddObject(GROUP_TYPE::SKYBOX, object);
-
-	//object = new CTerrain(257,257,1);
-	//AddObject(GROUP_TYPE::TERRAIN, object);
 
 	// 2024 - 04 - 10
 	// 빌보드 추가 - 아직 미완성
@@ -137,18 +117,18 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player 따라다님.
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(1.0f, 1.0f, 1.0f);	// Player 따라다님.
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
 	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
-	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// 물체에 조명을 적용시켜줌.
-	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(1.f, 1.f, 1.f, 1.0f);
-	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.13f, 0.13f, 0.13f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// 물체에 조명을 적용시켜줌.
+	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
 	m_mappedGameScene->m_lights[1].m_shadowMapping = false;
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);	
+	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 500.f;
 
@@ -172,14 +152,8 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
-
-	vector<CObject*> UIs = GetGroupObject(GROUP_TYPE::UI);
-	for (int i = 0; i < UIs.size(); ++i)
-	{
-		static_cast<CPlayer*>(objects[0])->SetUI(static_cast<CUI*>(UIs[i]));
-	}
 }
 
 // 2024 04 18일 이시영 수정 
@@ -277,7 +251,7 @@ void CGameScene::PreRender()
 				camera->UpdateShaderVariables();
 				depthTexture->UpdateShaderVariable();
 
-				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::MONSTER); ++i)
+				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::PLAYER); ++i)
 				{
 					const vector<CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
 

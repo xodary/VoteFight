@@ -29,12 +29,7 @@ void CScene::Load(const string& fileName)
 {
 	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
 	ifstream in(filePath, ios::binary);
-	if (!in.is_open()) {
-		std::cerr << filePath << " : 파일을 열 수 없습니다." << std::endl;
-		return;
-	}
-
-		string str, modelFileName;
+	string str, modelFileName;
 	GROUP_TYPE groupType = {};
 
 	while (true)
@@ -84,11 +79,11 @@ void CScene::Load(const string& fileName)
 					object->SetGroupType((UINT)GROUP_TYPE(groupType));
 
 					XMFLOAT3 currPosition = transforms[3 * i];
-					
-					currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
+					if(fileName != "FenceScene.bin")currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
 					cout << fileName << endl;
 					transform->SetPosition(currPosition);
-						transform->SetRotation(transforms[3 * i + 1]);
+					//transform->SetPosition(XMFLOAT3(currPosition.x, GetTerrainHeight(currPosition.x, currPosition.z), currPosition.z));
+					transform->SetRotation(transforms[3 * i + 1]);
 					transform->SetScale(transforms[3 * i + 2]);
 					transform->Update();
 					object->Init();
@@ -119,7 +114,7 @@ void CScene::LoadUI(const string& fileName)
 		if (str == "<UI>")
 		{
 			CUI* ui = CUI::Load(in);
-			ui->SetGroupType((UINT)GROUP_TYPE::UI);
+
 			AddObject(GROUP_TYPE::UI, ui);
 		}
 		else if (str == "</UIs>")
@@ -191,14 +186,7 @@ void CScene::Update()
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
 				object->Update();
-				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
-				if (m_terrain &&
-					( 
-						i == static_cast<int>(GROUP_TYPE::STRUCTURE) ||
-						i == static_cast<int>(GROUP_TYPE::PLAYER) ||
-						i == static_cast<int>(GROUP_TYPE::NPC)
-						))object->InTerrainSpace(*this);
-		
+				if (m_terrain && object->GetInstanceID() != (UINT)GROUP_TYPE::UI)object->CheckInTerrainSpace(*this);
 			}
 		}
 	}

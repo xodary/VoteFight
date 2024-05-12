@@ -355,7 +355,7 @@ void CPlayerWalkState::Update(CObject* object)
 
 	if (KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::W) || KEY_HOLD(KEY::D))
 	{
-		rigidBody->AddForce(Vector3::ScalarProduct(transform->GetForward(), 15000.0f * DT), player->isMove);
+		rigidBody->AddForce(Vector3::ScalarProduct(transform->GetForward(), 5000.0f * DT));
 	}
 
 	if (Math::IsZero(rigidBody->GetSpeedXZ()))
@@ -448,7 +448,7 @@ void CPlayerRunState::Update(CObject* object)
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::D))
 	{
-		rigidBody->AddForce(Vector3::ScalarProduct(XMFLOAT3(transform->GetForward()), 15000.0f * DT), player->isMove);
+		rigidBody->AddForce(Vector3::ScalarProduct(XMFLOAT3(transform->GetForward()), 8000.0f * DT));
 	}
 
 	if (Math::IsZero(rigidBody->GetSpeedXZ()))
