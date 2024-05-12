@@ -180,7 +180,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case PACKET_TYPE::P_SC_LOGIN_OK_PACKET:
 	{
 		SC_LOGIN_OK_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(_Packet);
-		cout << "SC_LOGIN_OK_PACKET" << endl;
+		// cout << "SC_LOGIN_OK_PACKET" << endl;
 		CServerManager::m_id = recv_packet->m_id;
 
 		CObject* object = CObject::Load("hugo_idle");
@@ -200,14 +200,14 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 		player->Init();
 
-		cout << "Clinet ID - " << player->m_id << endl;
+		// cout << "Clinet ID - " << player->m_id << endl;
 		break;
 	}
 
 	case  PACKET_TYPE::P_SC_ADD_PACKET:
 	{
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
-		cout << "SC_ADD_PLAYER" << endl;
+		// cout << "SC_ADD_PLAYER" << endl;
 
 		// vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
 		// reinterpret_cast<CPlayer*>(objects[0])->m_id;
@@ -218,7 +218,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
 		player->AnotherInit();
 		player->m_id = recv_packet->m_id;
-		cout << "Clinet ID - " << player->m_id << endl;
+		// cout << "Clinet ID - " << player->m_id << endl;
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 		transform->SetPosition(XMFLOAT3(recv_packet->m_vec));
@@ -273,7 +273,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
 			net_stateMachine->ChangeState(recv_packet->m_state);
 
-			cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+			// cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
 		}
 		break;
 	}

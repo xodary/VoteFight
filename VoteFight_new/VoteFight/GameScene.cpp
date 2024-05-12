@@ -166,7 +166,6 @@ void CGameScene::Update()
 
 		if ((CGameFramework::GetInstance()->my_id) > 0) {
 			if (player->m_id == CGameFramework::GetInstance()->my_id) {
-				cout << " >> Send )CS_MOVE_V_PACKET " << endl;
 				CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 				CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 				CState* net_state = net_stateMachine->GetCurrentState();

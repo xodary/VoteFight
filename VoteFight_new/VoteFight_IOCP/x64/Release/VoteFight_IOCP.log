@@ -2,10 +2,10 @@
 C:\GITHUB\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(220,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\GITHUB\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(234,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\GITHUB\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(252,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\GITHUB\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(339,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\GITHUB\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(340,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   코드를 생성하고 있습니다.
-  43 of 787 functions ( 5.5%) were compiled, the rest were copied from previous compilation.
-    6 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+  2 of 788 functions ( 0.3%) were compiled, the rest were copied from previous compilation.
+    1 functions were new in current compilation
+    2 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
   VoteFight_IOCP.vcxproj -> C:\GITHUB\directX_work\VoteFight_new\x64\Release\VoteFight_IOCP.exe
