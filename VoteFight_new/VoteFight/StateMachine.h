@@ -16,9 +16,11 @@ public:
 	CState* GetPreviousState();
 
 	void SetCurrentState(CState* state);
+	void SetCurrentState(STATE_ENUM n);
 	CState* GetCurrentState();
 
 	void ChangeState(CState* state);
+	void ChangeState(STATE_ENUM n);
 
 	virtual void Update();
 };

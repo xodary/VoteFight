@@ -86,8 +86,8 @@ void WorkerThread()
 				auto p_readOverlapped = (EXP_OVER*)readEvent.lpOverlapped;
 
 				if (IO_TYPE::IO_SEND == p_readOverlapped->m_ioType) {
-					cout << " >> Send - size : " << (int)p_readOverlapped->m_buf[0] << endl;
-					cout << " >> Send - type : " << (int)p_readOverlapped->m_buf[1] << endl;
+					// cout << " >> Send - size : " << (int)p_readOverlapped->m_buf[0] << endl;
+					// cout << " >> Send - type : " << (int)p_readOverlapped->m_buf[1] << endl;
 					p_readOverlapped->m_isReadOverlapped = false;
 					continue;
 				}
@@ -115,7 +115,7 @@ void WorkerThread()
 							char* recv_buf = remoteClient->m_tcpConnection.m_recvOverlapped.m_buf;
 							int recv_buf_Length = ec;
 
-							cout << " >> Recv - recv_buf_Length : " << recv_buf_Length << endl;
+							// cout << " >> Recv - recv_buf_Length : " << recv_buf_Length << endl;
 
 							{	// 패킷 처리
 								int remain_data = recv_buf_Length + remoteClient->m_tcpConnection.m_prev_remain;
@@ -170,7 +170,6 @@ void ProcessAccept()
 	}
 	else {
 		shared_ptr<RemoteClient> remoteClient = remoteClientCandidate;
-		remoteClient->m_id = nextClientID++;
 		remoteClients_ptr_v.emplace_back(remoteClient.get());
 
 		// 소켓 IOCP에 추가
@@ -214,12 +213,18 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
 		_Client->m_id = nextClientID++;
 
+		_Client->m_player = make_shared<CPlayer>(5.f, 0.f, 5.f);
+
 		SC_LOGIN_OK_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_LOGIN_OK_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_OK_PACKET;
 		send_packet.m_id = _Client->m_id;
+		send_packet.m_xPos = _Client->m_player->getXpos();
+		send_packet.m_yPos = _Client->m_player->getYpos();
+		send_packet.m_zPos = _Client->m_player->getZpos();
 		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-		// cout << "SC_LOGIN_OK_PACKET" << endl;
+		cout << " >> Send ) LOGIN_OK_PACKET Client ID : " << _Client->m_id << endl;
+		// cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
 
 		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
 		for (auto& rc : RemoteClient::m_remoteClients) {
@@ -229,7 +234,11 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
 			send_packet.m_id = rc.second->m_id;
+			send_packet.m_xPos = rc.second->m_player->getXpos();
+			send_packet.m_yPos = rc.second->m_player->getYpos();
+			send_packet.m_zPos = rc.second->m_player->getZpos();
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> Send ) Add Packet 1 Client ID : " << _Client->m_id << endl;
 			cout << " >> send ) Send Add packet 1" << endl;
 		}
 
@@ -240,8 +249,12 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			SC_ADD_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
-			send_packet.m_id = _Client->m_id;
+			send_packet.m_id = rc.second->m_id;
+			send_packet.m_xPos = rc.second->m_player->getXpos();
+			send_packet.m_yPos = rc.second->m_player->getYpos();
+			send_packet.m_zPos = rc.second->m_player->getZpos();
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> Send ) Add Packet 2 Client ID : " << _Client->m_id << endl;
 			cout << " >> send ) Send Add packet 2" << endl;
 		}
 		break;
@@ -270,6 +283,66 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		break;
 	}
+
+	case PACKET_TYPE::P_CS_MOVE_V_PACKET:
+	{
+		cout << " >> P_CS_MOVE_V_PACKET" << endl;
+		CS_MOVE_V_PACKET* recv_packet = reinterpret_cast<CS_MOVE_V_PACKET*>(_Packet);
+		cout << " [01] Recv ID : " << recv_packet->m_id << endl;
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (_Client->m_id == rc.second->m_id) {
+				RemoteClient::m_lock.lock();
+				rc.second->m_player->setXpos(recv_packet->m_vec.x);
+				rc.second->m_player->setYpos(recv_packet->m_vec.y);
+				rc.second->m_player->setZpos(recv_packet->m_vec.z);
+				cout << " [02] _Client->m_id : " << _Client->m_id << endl;
+				cout << " [03] rc.second->m_id : " << rc.second->m_id << endl;
+				cout << " [04] Recv Pos : " << recv_packet->m_vec.x << ", "<< recv_packet->m_vec.y <<", " << recv_packet->m_vec.z <<  endl;
+				RemoteClient::m_lock.unlock();
+				continue;
+			}
+
+			SC_MOVE_V_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
+			send_packet.m_id = rc.second->m_id;
+			send_packet.m_vec = recv_packet->m_vec;
+			send_packet.m_rota = recv_packet->m_rota;
+			send_packet.m_state = recv_packet->m_state;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " [05] send ID : " << rc.second->m_id << endl;
+			// std::cout << "rc ID - " << rc.second->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+		}
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (_Client->m_id == rc.second->m_id) {
+				RemoteClient::m_lock.lock();
+				rc.second->m_player->setXpos(recv_packet->m_vec.x);
+				rc.second->m_player->setYpos(recv_packet->m_vec.y);
+				rc.second->m_player->setZpos(recv_packet->m_vec.z);
+				cout << " [05] _Client->m_id : " << _Client->m_id << endl;
+				cout << " [06] rc.second->m_id : " << rc.second->m_id << endl;
+				cout << " [07] Recv Pos : " << recv_packet->m_vec.x << ", " << recv_packet->m_vec.y << ", " << recv_packet->m_vec.z << endl;
+				RemoteClient::m_lock.unlock();
+				continue;
+			}
+
+			SC_MOVE_V_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
+			send_packet.m_id = rc.second->m_id;
+			send_packet.m_vec = recv_packet->m_vec;
+			send_packet.m_rota = recv_packet->m_rota;
+			send_packet.m_state = recv_packet->m_state;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " [08] send ID : " << rc.second->m_id << endl;
+			//std::cout << "client ID - " << _Client->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+		}
+
+		break;
+	}
+
 	default:
 		break;
 	}

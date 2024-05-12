@@ -43,9 +43,9 @@ void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_ove
 	char* recv_buf = reinterpret_cast<EXP_OVER*>(recv_over)->m_buf;
 	int recv_buf_Length = num_bytes;
 
-	cout << " >> Packet Size - " << (int)recv_buf[0] << endl;
-	cout << " >> num_bytes - " << num_bytes << endl;
-	cout << " >> Packet Type - " << (int)recv_buf[1] << endl;
+	// cout << " >> Packet Size - " << (int)recv_buf[0] << endl;
+	// cout << " >> num_bytes - " << num_bytes << endl;
+	// cout << " >> Packet Type - " << (int)recv_buf[1] << endl;
 
 	{ 
 		// 수신된 데이터 처리
@@ -182,41 +182,53 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		SC_LOGIN_OK_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(_Packet);
 		cout << "SC_LOGIN_OK_PACKET" << endl;
 		CServerManager::m_id = recv_packet->m_id;
-		cout << "ClinetManager ID - " << CServerManager::m_id << endl;
+
 
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
-		dynamic_cast<CPlayer*>(player)->m_id = recv_packet->m_id;
+		CGameFramework::GetInstance()->my_id = recv_packet->m_id;
+		player->m_id = recv_packet->m_id;
+
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(XMFLOAT3(10, 0, 10));
+		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
 		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		//animator->SetBlending(false);
 		animator->SetWeight("idle", 1.0f);
 		animator->Play("idle", true);
+
 		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
 		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 		player->Init();
+
+		cout << "Clinet ID - " << player->m_id << endl;
 		break;
 	}
 
-	case  PACKET_TYPE::P_SC_ADD_PACKET: 
+	case  PACKET_TYPE::P_SC_ADD_PACKET:
 	{
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
 		cout << "SC_ADD_PLAYER" << endl;
 
-		/*if (CGameScene::m_CGameScene->m_otherPlayers.size() < 3) {
-			CObject* object = CObject::Load("hugo_idle");
-			CPlayer* player = reinterpret_cast<CPlayer*>(object);
-			dynamic_cast<CPlayer*>(player)->m_id = recv_packet->m_id;
-			CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
-			CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-			transform->SetPosition(XMFLOAT3(0, 0, 0));
+		// vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
+		// reinterpret_cast<CPlayer*>(objects[0])->m_id;
 
-			CGameScene::m_CGameScene->m_otherPlayers.push_back(player);
-		} else {
-			cout << " Max Player!! " << endl;
-		}*/
+		CObject* object = CObject::Load("hugo_idle");
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		player->Init();
+		player->m_id = recv_packet->m_id;
+		cout << "Clinet ID - " << player->m_id << endl;
+		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
+		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+
+		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		//animator->SetBlending(false);
+		animator->SetWeight("idle", 1.0f);
+		animator->Play("idle", true);
+
+		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
 		break;
 	}
 
@@ -240,6 +252,28 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		rigidBody->SetMaxSpeedXZ(max_sed);
 		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), velocity * DT));*/
+		break;
+	}
+
+	case PACKET_TYPE::P_SC_MOVE_V_PACKET:
+	{
+		SC_MOVE_V_PACKET* recv_packet = reinterpret_cast<SC_MOVE_V_PACKET*>(_Packet);
+		vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
+
+		for (auto& p : objects) {
+			CPlayer* player = reinterpret_cast<CPlayer*>(p);
+			if (player->m_id == recv_packet->m_id)
+				continue;
+
+			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+
+			net_transform->SetPosition(XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z));
+			net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
+			net_stateMachine->ChangeState(recv_packet->m_state);
+
+			cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+		}
 		break;
 	}
 	default:

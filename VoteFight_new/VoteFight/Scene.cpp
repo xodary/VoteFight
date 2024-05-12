@@ -85,12 +85,10 @@ void CScene::Load(const string& fileName)
 
 					XMFLOAT3 currPosition = transforms[3 * i];
 					
-					// if(fileName != "Sea_Scene")currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
 					currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
 					cout << fileName << endl;
 					transform->SetPosition(currPosition);
-					//transform->SetPosition(XMFLOAT3(currPosition.x, GetTerrainHeight(currPosition.x, currPosition.z), currPosition.z));
-					transform->SetRotation(transforms[3 * i + 1]);
+						transform->SetRotation(transforms[3 * i + 1]);
 					transform->SetScale(transforms[3 * i + 2]);
 					transform->Update();
 					object->Init();
@@ -194,7 +192,12 @@ void CScene::Update()
 			{
 				object->Update();
 				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
-				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI ))object->InTerrainSpace(*this);
+				if (m_terrain &&
+					( 
+						i == static_cast<int>(GROUP_TYPE::STRUCTURE) ||
+						i == static_cast<int>(GROUP_TYPE::PLAYER) ||
+						i == static_cast<int>(GROUP_TYPE::NPC)
+						))object->InTerrainSpace(*this);
 		
 			}
 		}

@@ -10,12 +10,16 @@
 #include "Texture.h"
 #include "UI.h"
 #include "Shader.h"
+#include "State.h"
 #include "StateMachine.h"
 #include "Animator.h"
 #include "Transform.h"
 #include "Camera.h"
  #include"Terrain.h"
  #include"Bilboard.h"
+
+#include "./ImaysNet/ImaysNet.h"
+#include "./ImaysNet/PacketQueue.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -96,12 +100,13 @@ void CGameScene::Init()
 	// 씬 로드
 	Load("GameScene.bin");
 	Load("Fir_Tree_Scene.bin");
-	Load("BinaryScene.bin");
+	Load("White_House_Scene.bin");
+	Load("Building_Bakery_Scene.bin");
 	Load("Woods.bin");
 	Load("FenceScene.bin");
 	Load("Homer_link_Scene.bin");
-	// Load("Homer_Solider_Scene.bin");
-	//Load("Marge_Police_Scene.bin");
+	//Load("Homer_Solider_Scene.bin");
+	Load("Marge_Police_Scene.bin");
 	// Load("Sea_Scene.bin");
 	LoadUI("GameSceneUI.bin");
 
@@ -138,8 +143,8 @@ void CGameScene::Init()
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
 	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// 물체에 조명을 적용시켜줌.
-	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);
-	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.1f, 0.1f, 0.1f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(1.f, 1.f, 1.f, 1.0f);
+	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.13f, 0.13f, 0.13f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
 	m_mappedGameScene->m_lights[1].m_shadowMapping = false;
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
@@ -180,11 +185,25 @@ void CGameScene::Init()
 // 2024 04 18일 이시영 수정 
 // Update할떄마다 플레이어 Y 를 터레인 높이 값에 변환시킴
 void CGameScene::Update()
-{
+{	
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	for (CObject* o : objects) {
 		CPlayer* player = reinterpret_cast<CPlayer*>(o);
 		if (player->m_id == CGameFramework::GetInstance()->my_id) {
+			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+			CState* net_state = net_stateMachine->GetCurrentState();
+
+			CS_MOVE_V_PACKET send_packet;
+			send_packet.m_size = sizeof(CS_MOVE_V_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_CS_MOVE_V_PACKET;
+			send_packet.m_id = player->m_id;
+			send_packet.m_vec = net_transform->GetPosition();
+			send_packet.m_rota = net_transform->GetRotation();
+			send_packet.m_state = net_state->GetStateNum();
+			PacketQueue::AddSendPacket(&send_packet);
+			// cout << " >> send ) CS_MOVE_V_PACKET" << endl;
+
 			player->SetTerrainY(this);
 			CTransform* playerPosition = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 			m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);

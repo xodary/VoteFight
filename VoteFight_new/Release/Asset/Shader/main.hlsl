@@ -85,27 +85,30 @@ cbuffer CB_Sprite : register(b4)
 
 float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera, int ObjectType)
 {
- 
-    float3 vToLight = m_lights[nIndex].m_direction;
-    //float3 TIme_vToLight = vToLight;
-    //float RotateSpeed = 0.4f;
-    //TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
-    //TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
+    float RotateSpeed = 0.4f;
+    float4 LightAmbient = m_lights[nIndex].m_xmf4Ambient;
+    LightAmbient = sin(gfTotalTime * RotateSpeed);
     
-    float fDiffuseFactor = dot(vNormal, vToLight) * 0.6 + 0.4;
+    float3 vToLight = m_lights[nIndex].m_direction;
+    float3 TIme_vToLight = vToLight;
+    TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
+    TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
+    
+    
+    float fDiffuseFactor = dot(vNormal, TIme_vToLight) * 0.6 + 0.4;
     
     if (ObjectType == TERRAIN)    fDiffuseFactor = 0.6;
-    fDiffuseFactor = fDiffuseFactor * 5;
-    fDiffuseFactor = ceil(fDiffuseFactor) / 5;
+    fDiffuseFactor = fDiffuseFactor * 4;
+    fDiffuseFactor = ceil(fDiffuseFactor) / 4;
    
     float fSpecularFactor = 0.0f;
     if (fDiffuseFactor > 0.0f)
     {
-        float3 vHalf = normalize(vToCamera + vToLight);
+        float3 vHalf = normalize(vToCamera + TIme_vToLight);
         fSpecularFactor = max(dot(vHalf, vNormal), 0.0f);
     }
     
-    float4 cColor = ((m_lights[nIndex].m_xmf4Ambient) +
+    float4 cColor = ((m_lights[nIndex].m_xmf4Ambient * LightAmbient) +
                 (m_lights[nIndex].m_xmf4Diffuse * fDiffuseFactor) +
                 (m_lights[nIndex].m_xmf4Specular * fSpecularFactor));
     return cColor;
@@ -384,7 +387,10 @@ VS_SKYBOX_CUBEMAP_OUTPUT VS_SkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
 float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 {
     float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
-    return (cColor);
+    float4 nightColor = float4(cColor.a * 0.3f, cColor.g * 0.3f, cColor.b * 0.3f, 1);
+    
+  //  return lerp(cColor, nightColor, sin(gfTotalTime));
+    return cColor;
 }
 
 

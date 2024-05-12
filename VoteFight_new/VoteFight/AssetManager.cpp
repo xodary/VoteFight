@@ -13,6 +13,8 @@
 #include "Material.h"
 #include "Animation.h"
 #include "DepthWriteShader.h"
+#include <thread>
+#include <vector>
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -457,10 +459,9 @@ void CAssetManager::Init()
 	strcat_s(assetPath, 255, "\\Release\\Asset\\");
 	m_assetPath = assetPath;
 
-	
+	LoadShaders();
 	SceneLoadMeshes();
 	SceneLoadTextures();
-	LoadShaders();
 	SceneLoadMaterials();
 }
 
@@ -519,6 +520,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("Homer_Solider_Mesh.bin");
 	LoadMeshes("Marge_Police_Mesh.bin");
 	LoadMeshes("Sea_Mesh.bin");
+	LoadMeshes("White_House_Mesh.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
@@ -531,6 +533,7 @@ void CAssetManager::SceneLoadMaterials()
 	LoadMaterials("Homer_Material.bin");
 	LoadMaterials("rpgpp_lt_building_05_Material.bin");
 	LoadMaterials("Sea_Material.bin");
+	LoadMaterials("White_House_Material.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
@@ -541,4 +544,5 @@ void CAssetManager::SceneLoadTextures()
 	LoadTextures("Fence_Texture.bin");
 	LoadTextures("Simpsons_texture.bin");
 	LoadTextures("Sea_Textures.bin");
+	LoadTextures("White_House_Texture.bin");
 }

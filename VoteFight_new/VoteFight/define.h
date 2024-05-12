@@ -35,6 +35,8 @@
 #define CURSOR					CInputManager::GetInstance()->GetCursor()
 #define OLD_CURSOR				CInputManager::GetInstance()->GetOldCursor()
 
+enum class STATE_ENUM { CPlayerIdleState = 0, CPlayerWalkState, CPlayerRunState, CPlayerLeftTurn, CPlayerRightTurn, };
+
 enum class MSG_TYPE
 {
 	NONE = 0x0000,
