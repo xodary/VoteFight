@@ -10,13 +10,16 @@
 #define _WITH_LOCAL_VIEWER_HIGHLIGHTING
 #define _WITH_THETA_PHI_CONES
 
+#define OBJECT 0
+#define TERRAIN 1
+
 // ---------------- structs---------------------------
 struct LIGHT
 {
-    float4 m_xmf4Ambient;
-    float4 m_xmf4Diffuse;
-    float4 m_xmf4Specular;
-    float4 m_xmf3Position;
+    float4 m_xmf4Ambient;   // 전체적인 밝기를 결정
+    float4 m_xmf4Diffuse;   // 내적해서 빛을 계산 즉 명암을 결정
+    float4 m_xmf4Specular;  // 카메라의 반사빛을 결정
+    float4 m_xmf3Position;  // Driection은 안씀 spot이나 다른곳은 필요
     
     bool m_isActive;
 			   
@@ -80,23 +83,32 @@ cbuffer CB_Sprite : register(b4)
 };
 //----------------------------------- Light Functions ------------------------------
 
-float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera)
+float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera, int ObjectType)
 {
- 
-    float3 vToLight = m_lights[nIndex].m_position;
-    float fDiffuseFactor = dot(vNormal, vToLight) * 0.7 + 0.3;
-    fDiffuseFactor = fDiffuseFactor * 5;
-    fDiffuseFactor = ceil(fDiffuseFactor) / 5;
+    float RotateSpeed = 0.4f;
+    float4 LightAmbient = m_lights[nIndex].m_xmf4Ambient;
+    LightAmbient = sin(gfTotalTime * RotateSpeed);
+    
+    float3 vToLight = m_lights[nIndex].m_direction;
+    float3 TIme_vToLight = vToLight;
+    TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
+    TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
+    
+    
+    float fDiffuseFactor = dot(vNormal, TIme_vToLight) * 0.6 + 0.4;
+    
+    if (ObjectType == TERRAIN)    fDiffuseFactor = 0.6;
+    fDiffuseFactor = fDiffuseFactor * 4;
+    fDiffuseFactor = ceil(fDiffuseFactor) / 4;
    
     float fSpecularFactor = 0.0f;
     if (fDiffuseFactor > 0.0f)
     {
-        float3 vHalf = normalize(vToCamera + vToLight);
+        float3 vHalf = normalize(vToCamera + TIme_vToLight);
         fSpecularFactor = max(dot(vHalf, vNormal), 0.0f);
     }
- 
     
-    float4 cColor = ((m_lights[nIndex].m_xmf4Ambient) +
+    float4 cColor = ((m_lights[nIndex].m_xmf4Ambient * LightAmbient) +
                 (m_lights[nIndex].m_xmf4Diffuse * fDiffuseFactor) +
                 (m_lights[nIndex].m_xmf4Specular * fSpecularFactor));
     return cColor;
@@ -126,8 +138,8 @@ float4 SpotLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
 
         return (((gLights[nIndex].m_cAmbient * gMaterial.m_cAmbient) + (gLights[nIndex].m_cDiffuse * fDiffuseFactor * gMaterial.m_cDiffuse) + (gLights[nIndex].m_cSpecular * fSpecularFactor * gMaterial.m_cSpecular)) * fAttenuationFactor * fSpotFactor);
     }
-    return (float4(0.0f, 0.0f, 0.0f, 0.0f));
     */
+    return (float4(0.0f, 0.0f, 0.0f, 0.0f));
 }
 
 #define FRAME_BUFFER_WIDTH		1920
@@ -159,7 +171,8 @@ float Compute3x3ShadowFactor(float2 uv, float fDepth)
     return (fPercentLit);
 }
 
-float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs)
+
+float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs, int ObjectType)
 {
     float3 vCameraPosition = float3(gvCameraPosition.x, gvCameraPosition.y, gvCameraPosition.z);
     float3 vToCamera = normalize(vCameraPosition - vPosition);
@@ -167,10 +180,10 @@ float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs)
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
     
     float fShadowFactor = 1.0f;
-    fShadowFactor = Compute3x3ShadowFactor(uvs.xy / uvs.ww, uvs.z / uvs.w);
+    fShadowFactor = Compute3x3ShadowFactor(uvs.xy / uvs.ww, uvs.z / uvs.w) ;
 
-    cColor += DirectionalLight(LIGHT_INDEX, vNormal, vToCamera) * fShadowFactor;
-    
+    cColor += lerp(DirectionalLight(LIGHT_INDEX, vNormal, vToCamera, ObjectType), fShadowFactor, 0.7);
+ 
     return (cColor);
 }
 
@@ -305,7 +318,7 @@ float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
 	{
 		normalW = normalize(input.normalW);
     }
-    float4 cIllumination = Lighting(input.positionW, normalW, input.uvs);
+    float4 cIllumination = Lighting(input.positionW, normalW, input.uvs, OBJECT);
   // cColor = (lerp(cColor, cIllumination, 0.5f));
     cColor = cColor * cIllumination;
     cColor = franelOuterLine(input.positionW,normalW, cColor);
@@ -374,7 +387,10 @@ VS_SKYBOX_CUBEMAP_OUTPUT VS_SkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
 float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 {
     float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
-    return (cColor);
+    float4 nightColor = float4(cColor.a * 0.3f, cColor.g * 0.3f, cColor.b * 0.3f, 1);
+    
+  //  return lerp(cColor, nightColor, sin(gfTotalTime));
+    return cColor;
 }
 
 
@@ -516,7 +532,6 @@ VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
     output.uv = input.uv;
     
     output.uvs = mul(pW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
-    
     return (output);
 }
 
@@ -525,12 +540,12 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
     float4 cColor = cBaseTexColor;
     float3 normal = normalize(input.normal);
-    float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs);
-    // cColor = cColor * cIllumination;
+    float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs, TERRAIN);
+    cColor = cColor * cIllumination;
+    
     // cColor = franelOuterLine(input.position, normal, cColor);
-    // return (lerp(cColor, cIllumination, 0.2f));
-    //return cColor;
-    return cColor * cIllumination;
+        return cColor;
+    //return cColor * cIllumination;
 
 }
 

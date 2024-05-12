@@ -126,7 +126,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	//CServerManager::ConnectServer();
+	CServerManager::ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();

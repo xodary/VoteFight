@@ -15,11 +15,13 @@ cbuffer perModelInstanceCB : register(b1)
 struct VS_IN
 {
     float3 position : POSITION;
+    float3 normal : NORMAL;
 };
 
 struct GS_IN
 {
     float4 position : SV_POSITION;
+    float3 normal : TEXCOORD0;
 };
 
 struct PS_IN
@@ -33,7 +35,7 @@ Texture2D<float> shadowBuffer : register(t0);
 
 SamplerComparisonState PcfShadowMapSampler : register(s0);
 
-GS_IN VS_Main(VS_IN input)
+GS_IN VSMain(VS_IN input)
 {
     GS_IN output = (GS_IN) 0;
     
@@ -42,7 +44,7 @@ GS_IN VS_Main(VS_IN input)
 }
 
 [maxvertexcount(3)]
-void GS_Main(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
+void GSMain(triangle GS_IN input[3], inout TriangleStream<PS_IN> OutputStream)
 {
     PS_IN output[3];
     output[0] = (PS_IN) 0;
@@ -83,7 +85,7 @@ float3 VoxelToWorld(float3 pos)
 }
 
 
-void PS_Main(PS_IN input)
+void PSMain(PS_IN input)
 {
     uint width;
     uint height;
@@ -104,6 +106,4 @@ void PS_Main(PS_IN input)
     float shadow = shadowBuffer.SampleCmpLevelZero(PcfShadowMapSampler, shadowcoord.xy, shadowcoord.z);
 
     outputTexture[finalVoxelPos] = colorRes * float4(shadow, shadow, shadow, 1.0f);
-    
-    //return float4(0.0f, 0.0f, 0.0f, 0.0f);
 }

@@ -172,14 +172,9 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 
-	vector<CObject*> UIs = GetGroupObject(GROUP_TYPE::UI);
-	for (int i = 0; i < UIs.size(); ++i)
-	{
-		static_cast<CPlayer*>(objects[0])->SetUI(static_cast<CUI*>(UIs[i]));
-	}
 }
 
 // 2024 04 18일 이시영 수정 
@@ -262,7 +257,6 @@ void CGameScene::PreRender()
 				CTexture* depthTexture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
 
 				DX::ResourceTransition(d3d12GraphicsCommandList, depthTexture->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
-
 
 				d3d12GraphicsCommandList->ClearRenderTargetView(depthTexture->m_RTVHandle.GetCPUHandle(), Colors::White, 0, nullptr);
 				d3d12GraphicsCommandList->ClearDepthStencilView(depthTexture->m_DSVHandle.GetCPUHandle(), D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);

@@ -488,10 +488,10 @@ void CAssetManager::Init()
 	strcat_s(assetPath, 255, "\\Release\\Asset\\");
 	m_assetPath = assetPath;
 
-	LoadShaders();
-	SceneLoadMeshes();
-	SceneLoadMaterials();
 	SceneLoadTextures();
+	SceneLoadMeshes();
+	LoadShaders();
+	SceneLoadMaterials();
 
 	// DepthWrite
 	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");

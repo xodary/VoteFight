@@ -13,6 +13,7 @@
 #include "Scene.h"
 #include "Player.h"
 #include "StateMachine.h"
+#include "UI.h"
 #include "RigidBody.h"
 #include "Animator.h"
 #include "Transform.h"
@@ -199,6 +200,12 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
 		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 		player->Init();
+
+		vector<CObject*> UIs = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::UI);
+		for (int i = 0; i < UIs.size(); ++i)
+		{
+			static_cast<CPlayer*>(player)->SetUI(static_cast<CUI*>(UIs[i]));
+		}
 
 		// cout << "Clinet ID - " << player->m_id << endl;
 		break;

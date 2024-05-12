@@ -71,7 +71,7 @@ struct PS_OUT
     float4 result : SV_Target0;
 };
 
-PS_IN VS_Main(VS_IN input)
+PS_IN VSMain(VS_IN input)
 {
     PS_IN result = (PS_IN)0;
 
@@ -191,7 +191,7 @@ float4 CalculateIndirectDiffuse(float3 worldPos, float3 normal, out float ao, ui
     return IndirectDiffuseStrength * result;
 }
 
-PS_OUT PS_Main(PS_IN input)
+PS_OUT PSMain(PS_IN input)
 {
     PS_OUT output = (PS_OUT) 0;
     float2 inPos = input.position.xy;
