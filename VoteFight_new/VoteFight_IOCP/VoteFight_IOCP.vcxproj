@@ -149,7 +149,9 @@
     <ClCompile Include="ImaysNet\Poll.cpp" />
     <ClCompile Include="ImaysNet\Socket.cpp" />
     <ClCompile Include="ImaysNet\SocketInit.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="main.cpp">
+      <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Disabled</Optimization>
+    </ClCompile>
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="RemoteClient.cpp" />
     <ClCompile Include="udt.cpp" />
