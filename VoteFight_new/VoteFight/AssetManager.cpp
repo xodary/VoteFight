@@ -489,12 +489,9 @@ void CAssetManager::Init()
 	m_assetPath = assetPath;
 
 	LoadShaders();
-	LoadMaterials("Materials.bin");
-	LoadMaterials("Materialss.bin");
-	LoadMaterials("FireWoodMaterials.bin");
-	LoadMaterials("WhiteHouse.bin");
-	LoadMaterials("Fence_Material.bin");
-	LoadMaterials("Homer_Material.bin");
+	SceneLoadMeshes();
+	SceneLoadMaterials();
+	SceneLoadTextures();
 
 	// DepthWrite
 	CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
