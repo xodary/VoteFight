@@ -3,6 +3,7 @@
 
 class CItem;
 class CInventory;
+class CUI;
 
 class CPlayer : public CCharacter
 {
@@ -13,9 +14,12 @@ private:
 	float	 m_spineAngle;
 	float    m_turnAngle;
 	float	 m_clickAngle;
-
     CInventory* m_Inventory;
+    vector<CUI*> m_UI;
+
+
 public:
+    bool isMove = true;
 	CPlayer();
 	virtual ~CPlayer();
 
@@ -59,7 +63,11 @@ public:
 	//void IsCollidedByEventTrigger(const XMFLOAT3& NewPosition);
 
 	virtual void OnCollisionEnter(CObject* collidedObject);
+	virtual void OnCollision(CObject* collidedObject);
 	virtual void OnCollisionExit(CObject* collidedObject);
+
+    void SetUI(CUI* ui);
+    void SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, int NextItemsNum);
 };
 
 class CItem {
@@ -132,5 +140,14 @@ public:
         for (const auto& item : items) {
             cout << "아이템 이름 : " << item.first << ", 개수: " << item.second << endl;
         }
+    }
+
+    int getItems(const string& ItemName) {
+        for (const auto& item : items) {
+            if (item.first == ItemName) {
+                return item.second;
+            }
+        }
+        return 0; // 해당 아이템이 발견되지 않은 경우
     }
 };

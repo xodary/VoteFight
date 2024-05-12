@@ -61,7 +61,8 @@ public:
 	UINT GetGroupType()const { return m_GroupType; };
 
 	void SetTerrainY( CScene* curScene);
-	void CheckInTerrainSpace(const CScene& curScene);
+	void InTerrainSpace(const CScene& curScene);
+	bool ChcekInTerrainSpace(const CScene& curScene);
 
 	void AddMaterial(CMaterial* material);
 	const vector<CMaterial*>& GetMaterials();

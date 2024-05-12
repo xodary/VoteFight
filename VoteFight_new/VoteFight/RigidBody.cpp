@@ -82,9 +82,10 @@ float CRigidBody::GetSpeedY()
     return abs(m_velocity.y);
 }
 
-void CRigidBody::AddForce(const XMFLOAT3& force)
+void CRigidBody::AddForce(const XMFLOAT3& force, bool isMove)
 {
     m_force = Vector3::Add(m_force, force);
+    isMovable = isMove;
 }
 
 void CRigidBody::AddVelocity(const XMFLOAT3& velocity)
@@ -97,10 +98,37 @@ void CRigidBody::MovePosition()
     CTransform* transform = static_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
     const XMFLOAT3& position = transform->GetPosition();
     XMFLOAT3 shift = Vector3::ScalarProduct(m_velocity, DT);
-    XMFLOAT3 newPosition = Vector3::Add(position, shift);
+    XMFLOAT3 newPosition(1, 1, 1);
+
+    if (isMovable)
+    {
+        newPosition = Vector3::Add(position, shift);
+        transform->SetPosition(newPosition);
+    }
+
+        
+}
+
+XMFLOAT3 CRigidBody::GetAfterMovePosition()
+{
+    CTransform* transform = static_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+    const XMFLOAT3& position = transform->GetPosition();
+    XMFLOAT3 shift = Vector3::ScalarProduct(m_velocity, DT);
+    XMFLOAT3 AfterPostion = Vector3::Add(position, shift);
+
+    return AfterPostion;
+}
+
+void CRigidBody::ReturnPrevLocation(const XMFLOAT3& m_velocity)
+{
+    CTransform* transform = static_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+    const XMFLOAT3& position = transform->GetPosition();
+    XMFLOAT3 shift = Vector3::ScalarProduct(m_velocity, DT);
+    XMFLOAT3 newPosition = Vector3::Subtract(position, shift);
 
     transform->SetPosition(newPosition);
 }
+
 
 void CRigidBody::Update()
 {
