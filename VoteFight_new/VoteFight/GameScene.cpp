@@ -102,7 +102,7 @@ void CGameScene::Init()
 	Load("Homer_link_Scene.bin");
 	Load("Homer_Solider_Scene.bin");
 	Load("Marge_Police_Scene.bin");
-	//Load("Sea_Scene.bin");
+	Load("Sea_Scene.bin");
 	LoadUI("GameSceneUI.bin");
 
 	// 스카이박스 추가
@@ -167,7 +167,7 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 
 	vector<CObject*> UIs = GetGroupObject(GROUP_TYPE::UI);

@@ -249,7 +249,6 @@ void CObject::SetTerrainY(CScene* curScene)
 	transform->SetPosition(newVec);
 }
 
-
 void CObject::InTerrainSpace(const CScene& curScene)
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));

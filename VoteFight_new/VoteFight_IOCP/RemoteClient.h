@@ -1,7 +1,6 @@
 #include "ImaysNet/ImaysNet.h"
-#include "CPlayer.h"
 
-class RemoteClient : public CPlayer {
+class RemoteClient{
 public:
 	static unordered_map < RemoteClient*, shared_ptr<RemoteClient>>	m_remoteClients;
 	static recursive_mutex	m_lock;
