@@ -42,10 +42,8 @@ public:
 
     unsigned int    m_id{};
 
-	bool b_front = false;
-	bool b_right = false;
-	bool b_back = false;
-	bool b_left = false;
+    float    m_goalAngle;
+
 	//void ManagePistol(bool HasPistol);
 	//bool HasPistol() const;
 	//bool IsEquippedPistol() const;
