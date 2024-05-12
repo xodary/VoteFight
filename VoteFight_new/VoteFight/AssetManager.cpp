@@ -41,6 +41,11 @@ void CAssetManager::LoadMeshes(const string& fileName)
 {
 	string filePath = m_assetPath + "Mesh\\" + fileName;
 	ifstream in(filePath, ios::binary);
+	if (!in.is_open()) {
+		std::cerr << filePath << " : 파일을 열 수 없습니다." << std::endl;
+		return;
+	}
+
 	string str;
 
 	while (true)
@@ -89,6 +94,11 @@ void CAssetManager::LoadTextures(const string& fileName)
 {
 	string filePath = m_assetPath + "Texture\\" + fileName;
 	ifstream in(filePath, ios::binary);
+	if (!in.is_open()) {
+		std::cerr << filePath << " : 파일을 열 수 없습니다." << std::endl;
+		return;
+	}
+
 	string str;
 
 	while (true)
@@ -177,6 +187,11 @@ void CAssetManager::LoadMaterials(const string& fileName)
 {
 	string filePath = m_assetPath + "Material\\" + fileName;
 	ifstream in(filePath, ios::binary);
+	if (!in.is_open()) {
+		std::cerr << "파일을 열 수 없습니다." << std::endl;
+		return;
+	}
+
 	string str;
 
 	while (true)

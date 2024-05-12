@@ -29,11 +29,11 @@ void CScene::Load(const string& fileName)
 {
 	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
 	ifstream in(filePath, ios::binary);
-	if (!in)
-	{
-		cout << "파일 : " << filePath << "을 찾지 못함" << endl;
+	if (!in.is_open()) {
+		std::cerr << filePath << " : 파일을 열 수 없습니다." << std::endl;
 		return;
 	}
+
 		string str, modelFileName;
 	GROUP_TYPE groupType = {};
 
