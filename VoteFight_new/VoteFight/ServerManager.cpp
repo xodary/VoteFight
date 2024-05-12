@@ -189,7 +189,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		player->m_id = recv_packet->m_id;
 
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
+		transform->SetPosition(recv_packet->m_vec);
 		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
@@ -221,7 +221,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		cout << "Clinet ID - " << player->m_id << endl;
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
+		transform->SetPosition(XMFLOAT3(recv_packet->m_vec));
 		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));

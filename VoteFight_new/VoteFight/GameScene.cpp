@@ -164,7 +164,7 @@ void CGameScene::Update()
 	for (CObject* o : objects) {
 		CPlayer* player = reinterpret_cast<CPlayer*>(o);
 
-		if ((CGameFramework::GetInstance()->my_id) == 0) {
+		if ((CGameFramework::GetInstance()->my_id) > 0) {
 			if (player->m_id == CGameFramework::GetInstance()->my_id) {
 				cout << " >> Send )CS_MOVE_V_PACKET " << endl;
 				CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));

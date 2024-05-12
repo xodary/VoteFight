@@ -1,14 +1,14 @@
+#include "pch.h"
 #include "CPlayer.h"
 
-CPlayer::CPlayer() : m_Xpos{ 0 }, m_Ypos{ 0 }, m_Zpos{ 0 }
+CPlayer::CPlayer()
 {
+	m_Pos = XMFLOAT3(0.f, 0.f, 0.f);
 }
 
-CPlayer::CPlayer(float _xPos, float _yPos, float _zPos)
+CPlayer::CPlayer(XMFLOAT3 _pos)
 {
-	m_Xpos = _xPos;
-	m_Ypos = _yPos;
-	m_Zpos = _zPos;
+	m_Pos = _pos;
 }
 
 CPlayer::~CPlayer()
