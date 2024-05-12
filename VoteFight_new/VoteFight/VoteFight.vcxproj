@@ -121,7 +121,7 @@
       <PreprocessorDefinitions>_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <PrecompiledHeader>Create</PrecompiledHeader>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
     </ClCompile>
     <Link>
@@ -182,6 +182,16 @@
     <ClInclude Include="GameScene.h" />
     <ClInclude Include="GBufferShader.h" />
     <ClInclude Include="ImaysNet.h" />
+    <ClInclude Include="ImaysNet\Endpoint.h" />
+    <ClInclude Include="ImaysNet\Exception.h" />
+    <ClInclude Include="ImaysNet\ImaysNet.h" />
+    <ClInclude Include="ImaysNet\Iocp.h" />
+    <ClInclude Include="ImaysNet\PacketQueue.h" />
+    <ClInclude Include="ImaysNet\Poll.h" />
+    <ClInclude Include="ImaysNet\Semaphore.h" />
+    <ClInclude Include="ImaysNet\Socket.h" />
+    <ClInclude Include="ImaysNet\SocketInit.h" />
+    <ClInclude Include="ImaysNet\targetver.h" />
     <ClInclude Include="InputManager.h" />
     <ClInclude Include="Iocp.h" />
     <ClInclude Include="Material.h" />
@@ -226,12 +236,6 @@
     <ClInclude Include="udt.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UIShader.h" />
-    <ClInclude Include="VoxelConeTracing.h">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClInclude>
     <ClInclude Include="VoxelizationShader.h" />
     <ClInclude Include="WireFrameShader.h" />
   </ItemGroup>
@@ -268,6 +272,13 @@
     <ClCompile Include="func.cpp" />
     <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="GBufferShader.cpp" />
+    <ClCompile Include="ImaysNet\Endpoint.cpp" />
+    <ClCompile Include="ImaysNet\Exception.cpp" />
+    <ClCompile Include="ImaysNet\Iocp.cpp" />
+    <ClCompile Include="ImaysNet\PacketQueue.cpp" />
+    <ClCompile Include="ImaysNet\Poll.cpp" />
+    <ClCompile Include="ImaysNet\Socket.cpp" />
+    <ClCompile Include="ImaysNet\SocketInit.cpp" />
     <ClCompile Include="InputManager.cpp" />
     <ClCompile Include="Iocp.cpp" />
     <ClCompile Include="Main.cpp" />

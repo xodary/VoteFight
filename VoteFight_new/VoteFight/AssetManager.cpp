@@ -500,7 +500,6 @@ void CAssetManager::Init()
 	texture->m_RTVHandle = framework->GetDescriptorHeapManager()->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 	framework->GetDevice()->CreateRenderTargetView(texture->GetTexture(), &d3d12RenderTargetViewDesc, texture->m_RTVHandle.GetCPUHandle());
 
-	// Depth Write
 	D3D12_DEPTH_STENCIL_VIEW_DESC d3d12DepthStencilViewDesc = {};
 
 	d3d12DepthStencilViewDesc.Format = DXGI_FORMAT_D32_FLOAT;

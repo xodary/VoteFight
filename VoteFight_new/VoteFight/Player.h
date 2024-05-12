@@ -40,6 +40,8 @@ public:
 
 	virtual void Update();
 
+    unsigned int    m_id{};
+
 	bool b_front = false;
 	bool b_right = false;
 	bool b_back = false;

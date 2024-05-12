@@ -428,7 +428,6 @@ void CObject::PreRender(CCamera* camera)
 {
 	UpdateShaderVariables();
 
-	
 	// DepthWrite의 경우, 직교 투영변환 행렬을 사용하기 때문에 프러스텀 컬링을 수행할 수 없다.
 	if (m_mesh != nullptr)
 	{
@@ -438,7 +437,7 @@ void CObject::PreRender(CCamera* camera)
 			m_mesh->Render(i);
 		}
 	}
-	
+
 	for (const auto& child : m_children)
 	{
 		if (child->IsActive() && !child->IsDeleted())
@@ -465,14 +464,15 @@ void CObject::Render(CCamera* camera)
 		}
 	}
 
-	// [Debug] Render BoundingBox
-	CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
-	
-	if (collider != nullptr)
-	{
-		collider->Render(camera);
+	if (KEY_HOLD(KEY::B)) {
+		// [Debug] Render BoundingBox
+		CComponent* collider = GetComponent(COMPONENT_TYPE::COLLIDER);
+
+		if (collider != nullptr)
+		{
+			collider->Render(camera);
+		}
 	}
-	
 	for (const auto& child : m_children)
 	{
 		if (child->IsActive() && !child->IsDeleted())

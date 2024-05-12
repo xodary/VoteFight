@@ -13,6 +13,8 @@
 #include "GameFramework.h"
 #include "Camera.h"
 #include <bitset>
+#include "./ImaysNet/ImaysNet.h"
+#include "./ImaysNet/PacketQueue.h"
 
 CPlayerIdleState::CPlayerIdleState()
 {
@@ -313,6 +315,12 @@ CPlayerWalkState::~CPlayerWalkState()
 
 void CPlayerWalkState::Enter(CObject* object)
 {
+	//CS_WALK_ENTER_PACEKET send_packet;
+	//send_packet.m_size = sizeof(CS_WALK_ENTER_PACEKET);
+	//send_packet.m_type = PACKET_TYPE::P_CS_WALK_ENTER_PACKET;
+	//PacketQueue::AddSendPacket(&send_packet);
+	// cout << " >> send ) CS_WALK_ENTER_PACEKET" << endl;
+
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("lisaWalk", true);
 

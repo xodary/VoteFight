@@ -1,37 +1,20 @@
 #pragma once
 #include "pch.h"
 #include "./ImaysNet/ImaysNet.h"
-
-using namespace std;
+#include "RemoteClient.h"
 
 volatile bool				stopServer = false;
 const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 static unsigned long long	nextClientID{ 0 };		// Next Client ID
 
 vector<shared_ptr<thread>>	workerThreads;			// Worker Thread Vector
-recursive_mutex				mx;						// 재귀적 Mutex
-
 enum class IO_TYPE;									// I/O Type
 
-class RemoteClient {
-public:
-	shared_ptr<thread>		m_thread;			// Client thread
-	Socket					m_tcpConnection;	// Acceept Tcp
-	unsigned long long		m_id;				// Client ID
-
-public:
-	RemoteClient() : m_thread(), m_tcpConnection(SocketType::Tcp) {}
-	RemoteClient(SocketType _socketType) : m_tcpConnection(_socketType) {}
-};
-
-// 클라이언트 포인터와 클라이언트의 공유 포인터를 매핑하는 해시 맵
-unordered_map<RemoteClient*, shared_ptr<RemoteClient>>	remoteClients;
-
 // 클라이언트들을 가리키는 포인터를 저장하는 벡터
-vector<RemoteClient*>									remoteClients_ptr_v;
+vector<RemoteClient*>		remoteClients_ptr_v;
 
 // 삭제 클라이언트 목록
-list<shared_ptr<RemoteClient>>							deleteClinets;
+list<shared_ptr<RemoteClient>>		deleteClinets;
 
 Iocp						iocp(numWorkerTHREAD);	// IOCP Init
 recursive_mutex				mx_accept;				
@@ -40,9 +23,9 @@ shared_ptr<RemoteClient>	remoteClientCandidate;
 
 // Client 종료 처리 함수
 void	ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient);
-void	WorkerThread();
 void	ProcessAccept();
 void	PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet);
+void	WorkerThread();
 void	CloseServer();
 
 // 서버 프로그램 진입점
@@ -83,10 +66,10 @@ void ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient)
 	// 에러 혹은 소켓 종료 시
 	_remoteClient->m_tcpConnection.Close();
 	{
-		lock_guard<recursive_mutex> lock_rc(mx);
-		remoteClients.erase(_remoteClient.get());	// 클라이언트 제거
+		lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
+		RemoteClient::m_remoteClients.erase(_remoteClient.get());	// 클라이언트 제거
 
-		cout << " >> Client left. There are " << remoteClients.size() << " connections.\n";
+		cout << " >> Client left. There are " << RemoteClient::m_remoteClients.size() << " connections.\n";
 	}
 }
 void WorkerThread()
@@ -103,19 +86,20 @@ void WorkerThread()
 				auto p_readOverlapped = (EXP_OVER*)readEvent.lpOverlapped;
 
 				if (IO_TYPE::IO_SEND == p_readOverlapped->m_ioType) {
+					cout << " >> Send - size : " << (int)p_readOverlapped->m_buf[0] << endl;
 					cout << " >> Send - type : " << (int)p_readOverlapped->m_buf[1] << endl;
 					p_readOverlapped->m_isReadOverlapped = false;
 					continue;
 				}
 
-				if (readEvent.lpCompletionKey == 0) {    // Listetn socket
+				if (readEvent.lpCompletionKey == (ULONG_PTR)listenSocket.get()) {    // Listetn socket
 					ProcessAccept(); // Client Accept
 				}
 				else { // TCP Socket
 					shared_ptr<RemoteClient> remoteClient;	// 처리할 클라이언트 가져오기
 					{
-						lock_guard<recursive_mutex> lock_rc(mx);
-						remoteClient = remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
+						lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
+						remoteClient = RemoteClient::m_remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
 					}
 
 					//
@@ -186,7 +170,6 @@ void ProcessAccept()
 	}
 	else {
 		shared_ptr<RemoteClient> remoteClient = remoteClientCandidate;
-		remoteClient->m_id = nextClientID++;
 		remoteClients_ptr_v.emplace_back(remoteClient.get());
 
 		// 소켓 IOCP에 추가
@@ -201,10 +184,10 @@ void ProcessAccept()
 			// I/O를 걸고 완료를 대기 상태로 변경
 			remoteClient->m_tcpConnection.m_isReadOverlapped = true;
 			{
-				lock_guard<recursive_mutex> lock_rc(mx);
-				remoteClients.insert({ remoteClient.get(), remoteClient });
+				lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
+				RemoteClient::m_remoteClients.insert({ remoteClient.get(), remoteClient });
 
-				cout << " >> Client joined. There are " << remoteClients.size() << " connections.\n";
+				cout << " >> Client joined. There are " << RemoteClient::m_remoteClients.size() << " connections.\n";
 			}
 		}
 
@@ -224,8 +207,77 @@ void ProcessAccept()
 void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 {
 	switch (_Packet[1]) {
+	case PACKET_TYPE::P_CS_LOGIN_PACKET:
+	{
+		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
+		_Client->m_id = nextClientID++;
+
+		SC_LOGIN_OK_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_LOGIN_OK_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_OK_PACKET;
+		send_packet.m_id = _Client->m_id;
+		send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
+		send_packet.m_yPos = _Client->getYpos();
+		send_packet.m_zPos = _Client->getZpos();
+		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		cout << " >> Send ) LOGIN_OK_PACKET Client ID : " << _Client->m_id << endl;
+		// cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
+
+		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (rc.second->m_id == _Client->m_id)
+				continue;
+			SC_ADD_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_ADD_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+			send_packet.m_id = rc.second->m_id;
+			send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
+			send_packet.m_yPos = _Client->getYpos();
+			send_packet.m_zPos = _Client->getZpos();
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> Send ) Add Packet 1 Client ID : " << _Client->m_id<< endl;
+			cout << " >> send ) Send Add packet 1" << endl;
+		}
+
+		// Send connected client infomation to other client (다른 모든 클라이언트에게 특정 클라이언트의 정보를 보냄)
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (rc.second->m_id == _Client->m_id)
+				continue;
+			SC_ADD_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_ADD_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+			send_packet.m_id = _Client->m_id;
+			send_packet.m_xPos = _Client->getXpos() * (_Client->m_id);
+			send_packet.m_yPos = _Client->getYpos();
+			send_packet.m_zPos = _Client->getZpos();
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> Send ) Add Packet 2 Client ID : " << _Client->m_id << endl;
+			cout << " >> send ) Send Add packet 2" << endl;
+		}
+		break;
+	}
+
+	case PACKET_TYPE::P_CS_WALK_ENTER_PACKET:
+	{
+		// cout << " >> recv ) CS_WALK_ENTER_PACKET" << endl;
+		CS_WALK_ENTER_PACEKET* recv_packet = reinterpret_cast<CS_WALK_ENTER_PACEKET*>(_Packet);
+		{
+			SC_WALK_ENTER_INFO_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_WALK_ENTER_INFO_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET;
+			send_packet.m_key = "lisaWalk";
+			send_packet.m_maxSpeed = 400.f;
+			send_packet.m_vel = 400.f;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			// cout << " >> send ) SC_WALK_ENTER_INFO_PACKET" << endl;
+		}
+		break;
+	}
+
 	case PACKET_TYPE::P_CS_MOVE_PACKET:
 	{
+		CS_MOVE_PACKET* recv_packet = reinterpret_cast<CS_MOVE_PACKET*>(_Packet);
+
 		break;
 	}
 	default:
@@ -238,18 +290,18 @@ void CloseServer()
 	// i/o 완료 체크 & 소켓 닫기
 	listenSocket->Close();
 	{
-		lock_guard<recursive_mutex> lock_rc(mx);
+		lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
 
-		for (auto i : remoteClients)
+		for (auto i : RemoteClient::m_remoteClients)
 			i.second->m_tcpConnection.Close();
 
 		// 정리 중
 		cout << " >> Shutting down the server....\n";
-		while (remoteClients.size() > 0) {
+		while (RemoteClient::m_remoteClients.size() > 0) {
 			// I/O completion이 없는 상태의 RemoteClient를 제거
-			for (auto i = remoteClients.begin(); i != remoteClients.end(); ++i) {
+			for (auto i = RemoteClient::m_remoteClients.begin(); i != RemoteClient::m_remoteClients.end(); ++i) {
 				if (!i->second->m_tcpConnection.m_isReadOverlapped)
-					remoteClients.erase(i);
+					RemoteClient::m_remoteClients.erase(i);
 			}
 
 			// I/O completion이 발생 시 더 이상 Overlapped I/O를 걸지 말고 정리 신호 Flag.
@@ -263,7 +315,7 @@ void CloseServer()
 					listenSocket->m_isReadOverlapped = false;
 				}
 				else {
-					shared_ptr<RemoteClient> remoteClient = remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
+					shared_ptr<RemoteClient> remoteClient = RemoteClient::m_remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
 					if (remoteClient) {
 						remoteClient->m_tcpConnection.m_isReadOverlapped = false;
 					}

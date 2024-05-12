@@ -36,8 +36,6 @@ CGameFramework::CGameFramework() :
 	m_d3d12DepthStencilBuffer(),
 	m_d3d12DsvDescriptorHeap(),
 	m_dsvDescriptorIncrementSize(),
-	m_DescriptorHeapManager(),
-	m_d3d12Fence(),
 	m_fenceValues{},
 	m_fenceEvent(),
 	m_d3d12RootSignature(),
@@ -128,7 +126,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	// CServerManager::ConnectServer();
+	CServerManager::ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -578,6 +576,7 @@ void CGameFramework::AdvanceFrame()
 
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
+	CServerManager::Tick();
 
 	CServerManager::Tick();
 

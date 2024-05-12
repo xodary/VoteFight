@@ -7,7 +7,6 @@
 #include "AssetManager.h"
 #include "CameraManager.h"
 #include "CollisionManager.h"
-#include "Player.h"
 #include "Texture.h"
 #include "UI.h"
 #include "Shader.h"
@@ -17,6 +16,7 @@
 #include "Camera.h"
  #include"Terrain.h"
  #include"Bilboard.h"
+CGameScene* CGameScene::m_CGameScene;
 
 CGameScene::CGameScene() :
 	m_d3d12GameScene(),
@@ -114,16 +114,17 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
 	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(1.0f, 1.0f, 1.0f);	// Player 따라다님.
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
-	m_mappedGameScene->m_lights[0].m_range = 100.f;
+	
+	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
-	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);		// 물체에 조명을 적용시켜줌.
+	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// 물체에 조명을 적용시켜줌.
 	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
 	m_mappedGameScene->m_lights[1].m_shadowMapping = false;
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 0.0f, -1.0f);
+	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 0.0f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 500.f;
 
@@ -147,8 +148,7 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 }
 
@@ -157,11 +157,14 @@ void CGameScene::Init()
 void CGameScene::Update()
 {
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	if (m_terrain) objects[0]->SetTerrainY(this);
-
-	CTransform* playerPosition = static_cast<CTransform*>(objects[0]->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
-
+	for (CObject* o : objects) {
+		CPlayer* player = reinterpret_cast<CPlayer*>(o);
+		if (player->m_id == CGameFramework::GetInstance()->my_id) {
+			player->SetTerrainY(this);
+			CTransform* playerPosition = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
+		}
+	}
 	CScene::Update();
 }
 
@@ -192,8 +195,7 @@ void CGameScene::PreRender()
 					camera->GeneratePerspectiveProjectionMatrix(90.0f, static_cast<float>(DEPTH_BUFFER_WIDTH) / static_cast<float>(DEPTH_BUFFER_HEIGHT), nearPlaneDist, farPlaneDist);
 					break;
 				case LIGHT_TYPE::DIRECTIONAL:
-					//camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(TERRAIN_WIDTH), static_cast<float>(TERRAIN_HEIGHT), nearPlaneDist, farPlaneDist);
-					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(40), static_cast<float>(40), nearPlaneDist, farPlaneDist);
+					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(100), static_cast<float>(100), nearPlaneDist, farPlaneDist);
 					break;
 				}
 
@@ -221,7 +223,7 @@ void CGameScene::PreRender()
 				camera->UpdateShaderVariables();
 				depthTexture->UpdateShaderVariable();
 
-				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::NPC); ++i)
+				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::PLAYER); ++i)
 				{
 					const vector<CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
 

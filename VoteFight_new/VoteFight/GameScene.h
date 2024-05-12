@@ -1,5 +1,6 @@
 #pragma once
 #include "Scene.h"
+#include "Player.h"
 
 struct Fog
 {
@@ -51,6 +52,10 @@ private:
 	float				   m_towerLightAngle;
 
 	//INIT_GAME_DATA		   m_InitGameData{};
+
+public:
+	static CGameScene*		m_CGameScene;
+	vector<CPlayer*>		m_otherPlayers;
 
 private:
 	CGameScene();

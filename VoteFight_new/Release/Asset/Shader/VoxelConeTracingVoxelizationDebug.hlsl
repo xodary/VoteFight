@@ -179,6 +179,9 @@ PS_OUT PS_Main(PS_IN input)
 {
     PS_OUT output = (PS_OUT) 0;
     
+    if (input.color.a < 0.5f)
+        discard;
+    
     output.result = float4(input.color.rgb, 1.0f);
     return output;
 }

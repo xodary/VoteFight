@@ -1,79 +1,100 @@
 #include "pch.h"
 
-#include "ImaysNet.h"
-#include "PacketQueue.h"
+#include "./ImaysNet/ImaysNet.h"
+#include "./ImaysNet/PacketQueue.h"
 
 #include "ServerManager.h"
+#include "SceneManager.h"
+#include "GameScene.h"
+#include "PlayerStates.h"
+#include "TimeManager.h"
+#include "InputManager.h"
+#include "CameraManager.h"
+#include "Scene.h"
+#include "Player.h"
+#include "StateMachine.h"
+#include "RigidBody.h"
+#include "Animator.h"
+#include "Transform.h"
+#include "GameFramework.h"
+#include "Camera.h"
+
+#include "Object.h"
 #pragma comment(lib, "WS2_32.LIB")
 
-// ¼­¹ö IP
+// ï¿½ï¿½ï¿½ï¿½ IP
 //char* CServerManager::SERVERIP;
 char* CServerManager::m_SERVERIP = "127.0.0.1";
 
-// Àç±ÍÀû mutex
+// ï¿½ï¿½ï¿½ï¿½ï¿½ mutex
 recursive_mutex CServerManager::m_mutex;
 
-// ¼ÒÄÏ °´Ã¼
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼
 shared_ptr<Socket> CServerManager::m_tcpSocket;
 
-// Å¬¶óÀÌ¾ðÆ® ID
-int	CServerManager::m_id{ -1 };
+// Å¬ï¿½ï¿½ï¿½Ì¾ï¿½Æ® ID
+int		CServerManager::m_id{ -1 };
+bool	CServerManager::m_isLogin{ false };
 
-// ¼ÒÄÏ ¼ö½Å ÄÝ¹é ÇÔ¼ö
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¹ï¿½ ï¿½Ô¼ï¿½
 void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_over, DWORD recv_flag)
 {
-	// ¼ö½ÅµÈ µ¥ÀÌÅÍ¸¦ °®°í ¿À±â À§ÇÑ ¹öÆÛ¿Í ¼ö½ÅµÈ µ¥ÀÌÅÍ ±æÀÌ
+	// ï¿½ï¿½ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Û¿ï¿½ ï¿½ï¿½ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	char* recv_buf = reinterpret_cast<EXP_OVER*>(recv_over)->m_buf;
 	int recv_buf_Length = num_bytes;
 
+	cout << " >> Packet Size - " << (int)recv_buf[0] << endl;
+	cout << " >> num_bytes - " << num_bytes << endl;
+	cout << " >> Packet Type - " << (int)recv_buf[1] << endl;
+
 	{ 
-		// ¼ö½ÅµÈ µ¥ÀÌÅÍ Ã³¸®
+		// ï¿½ï¿½ï¿½Åµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
 		int remain_data = recv_buf_Length + CServerManager::m_tcpSocket->m_prev_remain;
-		while (remain_data > 0) {    					// ÆÐÅ¶ÀÇ Å©±â¸¦ È®ÀÎÇÏ¿© Ã³¸®
-			unsigned char packet_size = recv_buf[0];	// ÆÐÅ¶ Å©±â ÀúÀå
+		while (remain_data > 0) {    					// ï¿½ï¿½Å¶ï¿½ï¿½ Å©ï¿½â¸¦ È®ï¿½ï¿½ï¿½Ï¿ï¿½ Ã³ï¿½ï¿½
+			unsigned char packet_size = recv_buf[0];	// ï¿½ï¿½Å¶ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		
-			if (packet_size > remain_data)				// ÆÐÅ¶ Å©±â°¡ ³²Àº µ¥ÀÌÅÍº¸´Ù Å©¸é Á¾·á
+			if (packet_size > remain_data)				// ï¿½ï¿½Å¶ Å©ï¿½â°¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Íºï¿½ï¿½ï¿½ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 				break;
-			else if (packet_size == 0) {				// ÆÐÅ¶ Å©±â°¡ 0ÀÌ¾îµµ Á¾·á
+			else if (packet_size == 0) {				// ï¿½ï¿½Å¶ Å©ï¿½â°¡ 0ï¿½Ì¾îµµ ï¿½ï¿½ï¿½ï¿½
 				remain_data = 0;
 				break;
 			}
 
-			CServerManager::PacketProcess(recv_buf);   // ÆÐÅ¶ Ã³¸®
+			CServerManager::PacketProcess(recv_buf);   // ï¿½ï¿½Å¶ Ã³ï¿½ï¿½
 
-			recv_buf += packet_size;					// ´ÙÀ½ ÆÐÅ¶À¸·Î ÀÌµ¿
-			remain_data -= packet_size;					// ³²Àº µ¥ÀÌÅÍ °»½Å
+			recv_buf += packet_size;					// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
+			remain_data -= packet_size;					// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		}
 
-		// ³²Àº µ¥ÀÌÅÍ ÀúÀå
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		CServerManager::m_tcpSocket->m_prev_remain = remain_data;
 
-		// ³²Àº µ¥ÀÌÅÍ°¡ ÀÖÀ¸¸é »õ ¿À¹ö·¦ ±¸Á¶Ã¼¿¡ º¹»ç
+		// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Í°ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 		if (remain_data > 0) {
 			memcpy(CServerManager::m_tcpSocket->m_recvOverlapped.m_buf, recv_buf, remain_data);
 		}
 	}
 
-	// ³²Àº µ¥ÀÌÅÍ ÀÌÈÄÀÇ ¸Þ¸ð¸® ÃÊ±âÈ­
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ¸ï¿½ ï¿½Ê±ï¿½È­
 	memset(CServerManager::m_tcpSocket->m_recvOverlapped.m_buf + CServerManager::m_tcpSocket->m_prev_remain, 0,
 		sizeof(CServerManager::m_tcpSocket->m_recvOverlapped.m_buf) - CServerManager::m_tcpSocket->m_prev_remain);
 	
-	// ¿À¹ö·¦ ±¸Á¶Ã¼ ÃÊ±âÈ­
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½Ê±ï¿½È­
 	memset(&CServerManager::m_tcpSocket->m_recvOverlapped.m_wsa_over, 0, sizeof(CServerManager::m_tcpSocket->m_recvOverlapped.m_wsa_over));
 	
-	// ´ÙÀ½ µ¥ÀÌÅÍ ¼ö½Å
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	CServerManager::Do_Recv();
 }
 
-// ¼Û½Å ÄÝ¹é ÇÔ¼ö
+// ï¿½Û½ï¿½ ï¿½Ý¹ï¿½ ï¿½Ô¼ï¿½
 void CALLBACK send_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED send_over, DWORD recv_flag)
 {
-	// ¼Û½ÅÀÌ ¿Ï·áµÈ ÈÄ È£ÃâµÇ´Â ÄÝ¹é ÇÔ¼ö
-	// ¿À¹ö·¦ ±¸Á¶Ã¼ »èÁ¦ÇÏ¿© ¸Þ¸ð¸® ´©¼ö ¹æÁö
+	// ï¿½Û½ï¿½ï¿½ï¿½ ï¿½Ï·ï¿½ï¿½ ï¿½ï¿½ È£ï¿½ï¿½Ç´ï¿½ ï¿½Ý¹ï¿½ ï¿½Ô¼ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½Þ¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	delete reinterpret_cast<EXP_OVER*>(send_over);
 }
 
-void CServerManager::ConnectServer()	// ¼­¹ö ¿¬°á ÇÔ¼ö
+void CServerManager::ConnectServer()	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 {
 	m_tcpSocket = make_shared<Socket>(SocketType::Tcp);
 
@@ -87,70 +108,149 @@ void CServerManager::ConnectServer()	// ¼­¹ö ¿¬°á ÇÔ¼ö
 	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());*/
 
 	m_tcpSocket->Bind(Endpoint::Any);
-	CServerManager::Connetion();		// ž†°á
-	CServerManager::Do_Recv();			// µ¥ÀÌÅÍ ¼ö½Å ½ÃÀÛ
+
+	CServerManager::Connetion();		// ï¿½ï¿½ï¿½ï¿½
+
+	CS_LOGIN_PACKET send_packet;
+	send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+	send_packet.m_type = PACKET_TYPE::P_CS_LOGIN_PACKET;
+	PacketQueue::AddSendPacket(&send_packet);
+
+	CServerManager::Do_Recv();			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 }
 
-void CServerManager::Tick()				//ÁÖ±âÀûÀÎ ÀÛ¾÷ ½ÇÇà ÇÔ¼ö
+void CServerManager::Tick()				//ï¿½Ö±ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û¾ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 {
 	SleepEx(0, true);					
 
-	// ÆÐÅ¶ Å¥ È®ÀÎ ¹× ¼­¹ö·Î Àü¼Û
+	// ï¿½ï¿½Å¶ Å¥ È®ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	if (PacketQueue::m_SendQueue.empty() || m_tcpSocket->m_fd == INVALID_SOCKET)
 		return;
 
 	while (!PacketQueue::m_SendQueue.empty()) {
-		//  ÆÐÅ¶ Å¥¿¡¼­ ÆÐÅ¶À» °¡Á®¿Í ¼Û½Å
+		//  ï¿½ï¿½Å¶ Å¥ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û½ï¿½
 		char* send_buf = PacketQueue::m_SendQueue.front();
 		int buf_size{};
 		while (1) {
-			// Àü¼ÛÇÒ ÆÐÅ¶ÀÇ Å©±â °è»ê
+			// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶ï¿½ï¿½ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½
 			if (buf_size + send_buf[buf_size] > MAX_BUFSIZE_CLIENT || send_buf[buf_size] == 0)
 				break;
 			buf_size += send_buf[buf_size];
 		}
-		Do_Send(send_buf, buf_size);		// µ¥ÀÌÅÍ ¼Û½Å
-		PacketQueue::PopSendPacket();		// ¼Û½ÅÇÑ ÆÐÅ¶ Á¦°Å
+		Do_Send(send_buf, buf_size);		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û½ï¿½
+		PacketQueue::PopSendPacket();		// ï¿½Û½ï¿½ï¿½ï¿½ ï¿½ï¿½Å¶ ï¿½ï¿½ï¿½ï¿½
 	}
 }
 
-void CServerManager::Connetion()			// Connect ÇÔ¼ö
+void CServerManager::Connetion()			// Connect ï¿½Ô¼ï¿½
 {
 	m_tcpSocket->Connect(Endpoint(m_SERVERIP, SERVER_PORT));
 }
 
-void CServerManager::Do_Recv()				// µ¥ÀÌÅÍ ¼ö½Å ÇÔ¼ö
+void CServerManager::Do_Recv()				// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 {
-	m_tcpSocket->m_readFlags = 0;			// ¼ÒÄÏ¿¡ ´ëÇÑ ÀÐ±â ÇÃ·¡±× ÃÊ±âÈ­
+	m_tcpSocket->m_readFlags = 0;			// ï¿½ï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ð±ï¿½ ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
 	
-	// ¿À¹ö·¦ ±¸Á¶Ã¼ ÃÊ±âÈ­
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½Ê±ï¿½È­
 	ZeroMemory(&m_tcpSocket->m_recvOverlapped.m_wsa_over, sizeof(m_tcpSocket->m_recvOverlapped.m_wsa_over));
 	
-	// ¼ö½Å ¹öÆÛ ¼³Á¤
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	m_tcpSocket->m_recvOverlapped.m_wsa_buf.len = MAX_SOCKBUF - m_tcpSocket->m_prev_remain;
 	m_tcpSocket->m_recvOverlapped.m_wsa_buf.buf = m_tcpSocket->m_recvOverlapped.m_buf + m_tcpSocket->m_prev_remain;
 
-	// ºñµ¿±â ¼ö½Å ½ÃÀÛ
+	// ï¿½ñµ¿±ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	WSARecv(m_tcpSocket->m_fd, &(m_tcpSocket->m_recvOverlapped.m_wsa_buf), 1, 0,
 		&m_tcpSocket->m_readFlags, &(m_tcpSocket->m_recvOverlapped.m_wsa_over), recv_callback);
 }
 
-void CServerManager::Do_Send(const char* _buf, short _buf_size)		// µ¥ÀÌÅÍ ¼Û½Å ÇÔ¼ö
+void CServerManager::Do_Send(const char* _buf, short _buf_size)		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Û½ï¿½ ï¿½Ô¼ï¿½
 {
-	EXP_OVER* send_over = new EXP_OVER(_buf, _buf_size);			// // ¼Û½Å¿ë ¿À¹ö·¦ ±¸Á¶Ã¼ »ý¼º
+	EXP_OVER* send_over = new EXP_OVER(_buf, _buf_size);			// // ï¿½Û½Å¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ ï¿½ï¿½ï¿½ï¿½
 	
-	// ºñµ¿±â ¼Û½Å ½ÃÀÛ
+	// ï¿½ñµ¿±ï¿½ ï¿½Û½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	WSASend(m_tcpSocket->m_fd, &send_over->m_wsa_buf, 1, 0, 0,
 		&send_over->m_wsa_over, send_callback);
 }
 
-void CServerManager::PacketProcess(char* _Packet)	// ÆÐÅ¶ Ã³¸® ÇÔ¼ö
+void CServerManager::PacketProcess(char* _Packet)	// ï¿½ï¿½Å¶ Ã³ï¿½ï¿½ ï¿½Ô¼ï¿½
 {
 	// Packet Types Processing
 	switch (_Packet[1])
 	{
-	case  PACKET_TYPE::P_SC_INIT_PACKET: {
+
+	case PACKET_TYPE::P_SC_LOGIN_OK_PACKET:
+	{
+		SC_LOGIN_OK_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(_Packet);
+		cout << "SC_LOGIN_OK_PACKET" << endl;
+		CServerManager::m_id = recv_packet->m_id;
+
+
+		CObject* object = CObject::Load("hugo_idle");
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		player->m_id = recv_packet->m_id;
+
+		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
+		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+
+		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		//animator->SetBlending(false);
+		animator->SetWeight("idle", 1.0f);
+		animator->Play("idle", true);
+
+		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
+		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
+		player->Init();
+
+		cout << "Clinet ID - " << player->m_id << endl;
+		break;
+	}
+
+	case  PACKET_TYPE::P_SC_ADD_PACKET:
+	{
+		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
+		cout << "SC_ADD_PLAYER" << endl;
+
+		// vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
+		// reinterpret_cast<CPlayer*>(objects[0])->m_id;
+
+		CObject* object = CObject::Load("hugo_idle");
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		player->m_id = recv_packet->m_id;
+		cout << "Clinet ID - " << player->m_id << endl;
+		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(XMFLOAT3(recv_packet->m_xPos, recv_packet->m_yPos, recv_packet->m_zPos));
+		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+
+		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		//animator->SetBlending(false);
+		animator->SetWeight("idle", 1.0f);
+		animator->Play("idle", true);
+
+		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
+		break;
+	}
+
+	case PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET:
+	{
+		SC_WALK_ENTER_INFO_PACKET* recv_packet = reinterpret_cast<SC_WALK_ENTER_INFO_PACKET*>(_Packet);
+		// cout << "SC_WALK_ENTER_INFO_PACKET" << endl;
+
+		/*string ani_key = recv_packet->m_key;
+		float max_sed = recv_packet->m_maxSpeed;
+		float velocity = recv_packet->m_vel;
 		
+		// ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½Í¾ï¿½ ï¿½ï¿½. (ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½Ú·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½?)
+		// CPlayer* player = GameFramework::MainGameFramework->m_pPlayer;
+
+		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		animator->Play(ani_key, true);
+
+		CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
+		CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+		rigidBody->SetMaxSpeedXZ(max_sed);
+		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), velocity * DT));*/
 		break;
 	}
 	default:

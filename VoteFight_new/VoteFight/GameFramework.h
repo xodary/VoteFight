@@ -124,8 +124,7 @@ public:
 
 	void AdvanceFrame();
 
-	// Server
-	//void ConnectServer();
+	unsigned int my_id;
 
 public:
 

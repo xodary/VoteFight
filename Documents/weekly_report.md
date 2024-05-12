@@ -244,3 +244,13 @@
 - 황유림: 디스크립터 힙을 매니저가 관리하도록 수정.
 - 이시영: 애니메이션 NPC 추가, 아이템 충돌 처리, 캐릭터 지형에 터레인에 맞춰 이동, 인벤토리 UI 아이템 획득 기능 추가
 - 엄미영: IOCP 에서의 move 완료 및 LOGIN
+
+# 24/04/17 ~ 24/05/04
+
+### weekly report
+- 05/04 회의 진행 [240504회의록](Meeting_report/report_240504.md)
+
+### weekly plan
+- 황유림: Voxel Cone Tracing Shader생성, 최종 완료하기.
+- 엄미영: Add client & Move 완성.
+- 이시영: 씬 오브젝트 추가, UI 추가 구현.
