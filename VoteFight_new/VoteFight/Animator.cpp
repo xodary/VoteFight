@@ -69,6 +69,7 @@ void CAnimator::Play(const string& key, bool isLoop, bool duplicatable)
 	m_bBlending = true;
 	//memcpy(&m_playingAnimations[key], &m_animations[key], sizeof(CAnimation*));
 	m_playingAnimations[key] = m_animations[key];
+	m_speed[key] = 1.0f;
 	m_upAnimation = key;
 	m_frameIndices[key] = 0;
 }
@@ -258,7 +259,7 @@ void CSkinningAnimator::Update()
 			{
 				m_elapsedTime += DT;
 
-				float duration = 1.0f / selectedAnimation.second->GetFrameRate();
+				float duration = 1.0f / selectedAnimation.second->GetFrameRate() / m_speed[selectedAnimation.first];
 
 				while (m_elapsedTime >= duration)
 				{

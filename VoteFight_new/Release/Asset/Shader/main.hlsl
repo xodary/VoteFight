@@ -160,16 +160,16 @@ SamplerState gssClamp : register(s2);
 float Compute3x3ShadowFactor(float2 uv, float fDepth)
 {
     float fPercentLit = gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv, fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, 0.0f), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, 0.0f), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, -DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, +DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, -DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, +DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, -DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, +DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, 0.0f), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, 0.0f), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, +DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, +DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, +DELTA_Y), fDepth).r;
     
-    return (fPercentLit);
+    return (fPercentLit / 9.0f);
 }
 
 

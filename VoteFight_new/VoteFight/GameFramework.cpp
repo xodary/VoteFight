@@ -126,7 +126,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	CServerManager::ConnectServer();
+	// CServerManager::ConnectServer();
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -576,9 +576,9 @@ void CGameFramework::AdvanceFrame()
 
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
-	CServerManager::Tick();
+	// CServerManager::Tick();
 
-	CServerManager::Tick();
+	// CServerManager::Tick();
 
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));

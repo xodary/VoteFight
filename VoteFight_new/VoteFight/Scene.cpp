@@ -74,6 +74,7 @@ void CScene::Load(const string& fileName)
 			{
 			case GROUP_TYPE::STRUCTURE:
 			case GROUP_TYPE::NPC:
+			case GROUP_TYPE::PLAYER:
 				for (int i = 0; i < instanceCount; ++i)
 				{
 					CObject* object = CObject::Load(modelFileName);
@@ -94,9 +95,6 @@ void CScene::Load(const string& fileName)
 
 					AddObject(groupType, object);
 				}
-				break;
-
-			case GROUP_TYPE::PLAYER:
 				break;
 			}
 		}

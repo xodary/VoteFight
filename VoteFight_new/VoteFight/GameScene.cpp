@@ -172,7 +172,7 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 
 }

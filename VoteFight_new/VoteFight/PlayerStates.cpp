@@ -142,13 +142,16 @@ void CPlayerLeftTurn::Enter(CObject* object)
 {
 	stateNum = STATE_ENUM::CPlayerLeftTurn;
 
-	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->Play("turnLeft", false);
-
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	restAngle = abs(player->GetTurnAngle());
 	lookAngle = player->GetClickAngle();
+	speed = restAngle / 90;
+
+	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+	animator->Play("turnLeft", false);
+	animator->SetSpeed("turnLeft", speed);
+
 }
 
 void CPlayerLeftTurn::Exit(CObject* object)
@@ -159,7 +162,7 @@ void CPlayerLeftTurn::Update(CObject* object)
 {
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	restAngle -= 220.f * DT;
+	restAngle -= (300.f * speed) * DT;
 	if (restAngle < 0)
 	{
 		transform->SetRotation(XMFLOAT3(0, player->m_goalAngle, 0));
@@ -167,7 +170,7 @@ void CPlayerLeftTurn::Update(CObject* object)
 		stateMachine->ChangeState(CPlayerIdleState::GetInstance());
 	}
 	else {
-		float angle = transform->GetRotation().y - 220.f * DT;
+		float angle = transform->GetRotation().y - (300.f * speed) * DT;
 		// cout << angle << endl;
 		transform->SetRotation(XMFLOAT3(0, angle, 0));
 	}
@@ -209,15 +212,15 @@ CPlayerRightTurn::~CPlayerRightTurn()
 
 void CPlayerRightTurn::Enter(CObject* object)
 {
-	stateNum = STATE_ENUM::CPlayerRightTurn;
-
-	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->Play("turnLeft", false);
-	
+	stateNum = STATE_ENUM::CPlayerRightTurn;	
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	restAngle = abs(player->GetTurnAngle());
 	lookAngle = player->GetClickAngle();
+	speed = restAngle / 90;
+	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+	animator->Play("turnRight", false);
+	animator->SetSpeed("turnRight", speed);
 }
 
 void CPlayerRightTurn::Exit(CObject* object)
@@ -228,7 +231,7 @@ void CPlayerRightTurn::Update(CObject* object)
 {
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	restAngle -= 220.f * DT;
+	restAngle -= (300.f * speed) * DT;
 	if (restAngle < 0)
 	{
 		transform->SetRotation(XMFLOAT3(0, player->m_goalAngle, 0));
@@ -236,7 +239,7 @@ void CPlayerRightTurn::Update(CObject* object)
 		stateMachine->ChangeState(CPlayerIdleState::GetInstance());
 	}
 	else {
-		float angle = transform->GetRotation().y + 220.f * DT;
+		float angle = transform->GetRotation().y + (300.f * speed) * DT;
 		transform->SetRotation(XMFLOAT3(0, angle, 0));
 	}
 
@@ -274,12 +277,6 @@ CPlayerWalkState::~CPlayerWalkState()
 
 void CPlayerWalkState::Enter(CObject* object)
 {
-	//CS_WALK_ENTER_PACEKET send_packet;
-	//send_packet.m_size = sizeof(CS_WALK_ENTER_PACEKET);
-	//send_packet.m_type = PACKET_TYPE::P_CS_WALK_ENTER_PACKET;
-	//PacketQueue::AddSendPacket(&send_packet);
-	// cout << " >> send ) CS_WALK_ENTER_PACEKET" << endl;
-
 	stateNum = STATE_ENUM::CPlayerWalkState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->Play("lisaWalk", true);
@@ -287,8 +284,8 @@ void CPlayerWalkState::Enter(CObject* object)
 	CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-	rigidBody->SetMaxSpeedXZ(300.0f);
-	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 300.0f * DT));
+	rigidBody->SetMaxSpeedXZ(150.0f);
+	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 3000.0f * DT));
 }
 
 void CPlayerWalkState::Exit(CObject* object)
@@ -355,7 +352,7 @@ void CPlayerWalkState::Update(CObject* object)
 
 	if (KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::W) || KEY_HOLD(KEY::D))
 	{
-		rigidBody->AddForce(Vector3::ScalarProduct(transform->GetForward(), 15000.0f * DT), player->isMove);
+		rigidBody->AddForce(Vector3::ScalarProduct(transform->GetForward(), 3000.0f * DT), player->isMove);
 	}
 
 	if (Math::IsZero(rigidBody->GetSpeedXZ()))
@@ -386,8 +383,8 @@ void CPlayerRunState::Enter(CObject* object)
 	CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-	rigidBody->SetMaxSpeedXZ(400.0f);
-	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 400.0f * DT));
+	rigidBody->SetMaxSpeedXZ(300.0f);
+	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 4000.0f * DT));
 
 }
 
@@ -401,17 +398,13 @@ void CPlayerRunState::Update(CObject* object)
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 	CRigidBody* rigidBody = static_cast<CRigidBody*>(player->GetComponent(COMPONENT_TYPE::RIGIDBODY));
 
-	if ((KEY_NONE(KEY::W) && KEY_NONE(KEY::S) && KEY_NONE(KEY::A) && KEY_NONE(KEY::D)) && Math::IsZero(rigidBody->GetSpeedXZ()))
-	{
-		stateMachine->ChangeState(CPlayerIdleState::GetInstance());
-		return;
-	}
-
-	if (KEY_NONE(KEY::SHIFT) && (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::D)))
+	if (KEY_AWAY(KEY::SHIFT))
 	{
 		stateMachine->ChangeState(CPlayerWalkState::GetInstance());
+		cout << "Go Walk" << endl;
 		return;
 	}
+	else { cout << "Shift Press" << endl; }
 
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
@@ -448,7 +441,7 @@ void CPlayerRunState::Update(CObject* object)
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::D))
 	{
-		rigidBody->AddForce(Vector3::ScalarProduct(XMFLOAT3(transform->GetForward()), 15000.0f * DT), player->isMove);
+		rigidBody->AddForce(Vector3::ScalarProduct(XMFLOAT3(transform->GetForward()), 4000.0f * DT), player->isMove);
 	}
 
 	if (Math::IsZero(rigidBody->GetSpeedXZ()))
