@@ -3,6 +3,35 @@
 
 class CObject;
 
+struct Fog
+{
+	XMFLOAT4 m_color;
+	float	 m_density;
+};
+
+struct LIGHT
+{
+	XMFLOAT4 m_xmf4Ambient;
+	XMFLOAT4 m_xmf4Diffuse;
+	XMFLOAT4 m_xmf4Specular;
+	XMFLOAT4 m_xmf3Position;
+
+	bool	   m_isActive;
+
+	XMFLOAT3   m_position;
+	XMFLOAT3   m_direction;
+
+	int		   m_type;
+
+	XMFLOAT3   m_attenuation;
+	float 	   m_fallOff;
+	float	   m_range;
+	float 	   m_theta;
+	float	   m_phi;
+
+	bool	   m_shadowMapping;
+	XMFLOAT4X4 m_toTexCoord;
+};
 class CScene abstract
 {
 	friend class CSceneManager;
@@ -42,10 +71,10 @@ public:
 	void CreateTerrain() { m_terrain = new CTerrain(257,257); };
 	float GetTerrainHeight(float x, float z) { 
 		if (m_terrain && x >= 0 && z >= 0)
-			return m_terrain->OnGetHeight(x, z);
+			return m_terrain->OnGetInGameHeight(x, z);
 		else
 		{
-			cout << "터레인 생성 안됨" << endl;
+			cout << "터레인 생성이 안되었거나 또는 범위를 벗어났습니다." << endl;
 			return		0.f;
 		}
 	};

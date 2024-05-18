@@ -363,6 +363,9 @@
     <ClInclude Include="OtherPlayerStates.h">
       <Filter>헤더 파일\08. State</Filter>
     </ClInclude>
+    <ClInclude Include="TitleScene.h">
+      <Filter>헤더 파일\04. Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -568,6 +571,9 @@
     </ClCompile>
     <ClCompile Include="OtherPlayerStates.cpp">
       <Filter>소스 파일\08. State</Filter>
+    </ClCompile>
+    <ClCompile Include="TitleScene.cpp">
+      <Filter>소스 파일\04. Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

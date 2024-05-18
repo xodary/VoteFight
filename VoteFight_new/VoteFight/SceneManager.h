@@ -14,10 +14,10 @@ private:
 	CSceneManager();
 	virtual ~CSceneManager();
 
-	void ChangeScene(SCENE_TYPE sceneType);
-
 public:
 	CScene* GetCurrentScene();
+	void ChangeScene(SCENE_TYPE sceneType);
+
 
 	virtual void Init();
 

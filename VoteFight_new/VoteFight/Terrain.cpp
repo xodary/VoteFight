@@ -256,6 +256,38 @@ float CTerrain::OnGetHeight(int x, int z)
 	return(fHeight);
 }
 
+float CTerrain::OnGetInGameHeight(float x, float z)
+{
+	BYTE* pHeightMapPixels = m_pHeightMapImage->GetHeightMapPixels();
+	XMFLOAT3 xmf3Scale = m_pHeightMapImage->GetScale();
+	int nWidth = m_pHeightMapImage->GetHeightMapWidth();
+
+	// 네 개의 주변 픽셀의 좌표를 계산
+	int arrayX0 = (int)x;
+	int arrayZ0 = (int)z;
+	int arrayX1 = arrayX0 + 1;
+	int arrayZ1 = arrayZ0 + 1;
+
+	// 네 개의 주변 픽셀의 높이를 가져옴
+	float fHeight00 = pHeightMapPixels[arrayX0 + (arrayZ0 * nWidth)] * xmf3Scale.y;
+	float fHeight10 = pHeightMapPixels[arrayX1 + (arrayZ0 * nWidth)] * xmf3Scale.y;
+	float fHeight01 = pHeightMapPixels[arrayX0 + (arrayZ1 * nWidth)] * xmf3Scale.y;
+	float fHeight11 = pHeightMapPixels[arrayX1 + (arrayZ1 * nWidth)] * xmf3Scale.y;
+
+	// x와 z의 소수 부분 계산
+	float tx = x - arrayX0;
+	float tz = z - arrayZ0;
+
+	// x 방향으로 보간
+	float fz0 = fHeight00 * (1.0f - tx) + fHeight10 * tx;
+	float fz1 = fHeight01 * (1.0f - tx) + fHeight11 * tx;
+
+	// z 방향으로 보간
+	float result0 = fz0 * (1.0f - tz) + fz1 * tz;
+
+	return(result0);
+}
+
 void CTerrain::CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices,  vector<XMFLOAT3>& new_NorVecs)
 {
 	

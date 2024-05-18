@@ -63,6 +63,7 @@ enum class MSG_TYPE
 
 enum class SCENE_TYPE
 {
+	TITLE,
 	GAME,
 	
 	COUNT

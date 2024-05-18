@@ -65,6 +65,7 @@ public:
 	float GetWidth() { return m_nWidth;};
 	float GetLength(){ return m_nLength; };
 	float OnGetHeight(int x, int z);
+	float OnGetInGameHeight(float x, float z);
 	void CreateNormalDate(const UINT* pnSubSetIndices, const XMFLOAT3* vertices, vector<XMFLOAT3>& new_NorVecs);
 	
 	virtual void PreRender(CCamera* camera);

@@ -168,6 +168,7 @@
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
     <ClInclude Include="OtherPlayerStates.h" />
+    <ClInclude Include="TitleScene.h" />
     <ClInclude Include="UpsampleBlur.h" />
     <ClInclude Include="VCTMainShader.h" />
     <ClInclude Include="D3DX12.h" />
@@ -249,6 +250,7 @@
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
     <ClCompile Include="OtherPlayerStates.cpp" />
+    <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="UpsampleBlur.cpp" />
     <ClCompile Include="VCTMainShader.cpp" />
     <ClCompile Include="DepthBuffer.cpp">

@@ -2,35 +2,6 @@
 #include "Scene.h"
 #include "Player.h"
 
-struct Fog
-{
-	XMFLOAT4 m_color;
-	float	 m_density;
-};
-
-struct LIGHT
-{
-	XMFLOAT4 m_xmf4Ambient;
-	XMFLOAT4 m_xmf4Diffuse;
-	XMFLOAT4 m_xmf4Specular;
-	XMFLOAT4 m_xmf3Position;
-
-	bool	   m_isActive;
-			   
-	XMFLOAT3   m_position;
-	XMFLOAT3   m_direction;
-			   
-	int		   m_type;
-			   
-	XMFLOAT3   m_attenuation;
-	float 	   m_fallOff;
-	float	   m_range;
-	float 	   m_theta;
-	float	   m_phi;
-			   
-	bool	   m_shadowMapping;
-	XMFLOAT4X4 m_toTexCoord;
-};
 
 struct CB_GameScene
 {
