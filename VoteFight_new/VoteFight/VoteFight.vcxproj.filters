@@ -127,9 +127,6 @@
     <Filter Include="소스 파일\09. Light">
       <UniqueIdentifier>{a675d1a8-f3bc-43f6-bde4-c905ff3134d6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="헤더 파일\09. Light">
-      <UniqueIdentifier>{db3b096f-13d2-4767-93cb-3d49ae03abae}</UniqueIdentifier>
-    </Filter>
     <Filter Include="소스 파일\10. Server">
       <UniqueIdentifier>{d2e97117-8c60-44da-8280-bd08a6f55f0c}</UniqueIdentifier>
     </Filter>
@@ -144,6 +141,9 @@
     </Filter>
     <Filter Include="헤더 파일\06. Asset\Shader\VoxelConeTracing">
       <UniqueIdentifier>{732ca077-ca17-4347-a24e-0e150cc1a72e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일\09. Light">
+      <UniqueIdentifier>{db3b096f-13d2-4767-93cb-3d49ae03abae}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -366,6 +366,15 @@
     <ClInclude Include="TitleScene.h">
       <Filter>헤더 파일\04. Scene</Filter>
     </ClInclude>
+    <ClInclude Include="MonsterStates.h">
+      <Filter>헤더 파일\08. State</Filter>
+    </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>헤더 파일\05. Object\05-01. Character</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h">
+      <Filter>헤더 파일\05. Object</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -574,6 +583,15 @@
     </ClCompile>
     <ClCompile Include="TitleScene.cpp">
       <Filter>소스 파일\04. Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>소스 파일\05. Object\05-01. Character</Filter>
+    </ClCompile>
+    <ClCompile Include="MonsterStates.cpp">
+      <Filter>소스 파일\08. State</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp">
+      <Filter>소스 파일\05. Object</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

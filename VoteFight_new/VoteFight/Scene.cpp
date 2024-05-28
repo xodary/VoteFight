@@ -75,6 +75,7 @@ void CScene::Load(const string& fileName)
 			case GROUP_TYPE::STRUCTURE:
 			case GROUP_TYPE::NPC:
 			case GROUP_TYPE::PLAYER:
+			case GROUP_TYPE::MONSTER:
 				for (int i = 0; i < instanceCount; ++i)
 				{
 					CObject* object = CObject::Load(modelFileName);

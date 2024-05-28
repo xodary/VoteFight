@@ -2,8 +2,11 @@
 #include "Object.h"
 #include "AssetManager.h"
 #include "InputManager.h"
+
 #include "Player.h"
 #include "NPC.h"
+#include "Monster.h"
+
 #include "Mesh.h"
 #include "Shader.h"
 #include "Material.h"
@@ -99,6 +102,7 @@ CObject* CObject::LoadFrame(ifstream& in)
 			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
 			case 2: object = new CNPC(); break;
+			case 3: object = new CMonster(); break;
 			}
 		}
 		else if (str == "<Name>")
@@ -500,4 +504,31 @@ void CObject::Render(CCamera* camera)
 			child->Render(camera);
 		}
 	}
+}
+
+const XMFLOAT3& CObject::GetPostion() 
+{
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+	return transform->GetPosition();
+}
+
+void CObject::SetPostion(const XMFLOAT3& rVector)
+{
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	transform->SetPosition(rVector);
+}
+
+const XMFLOAT3& CObject::GetRotate()
+{
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+	return transform->GetRotation();
+
+}
+
+void CObject::SetRotate(const XMFLOAT3& rRotate)
+{
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	transform->SetPosition(rRotate);
 }

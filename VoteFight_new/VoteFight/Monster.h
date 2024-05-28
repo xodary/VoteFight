@@ -8,6 +8,10 @@ private:
     float	 m_spineAngle;
     float    m_turnAngle;
 
+    bool	 m_isAiming;
+    CObject* AimObejct;
+    float m_fSpeed = 0.02f;
+
 public:
     CMonster();
     virtual ~CMonster();
@@ -18,4 +22,7 @@ public:
 
     virtual void Init();
     virtual void Update();
+    virtual void PlayerDiscovery(CObject* player);
+    virtual void OnCollisionEnter(CObject* collidedObject);
+    virtual void OnCollisionExit(CObject* collidedObject);
 };

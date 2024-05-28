@@ -41,16 +41,43 @@ void CMonster::Init()
 {
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 
-	stateMachine->SetCurrentState(CMonsterIdleState::GetInstance());
+	stateMachine->SetCurrentState(CMonsterWalkState::GetInstance());
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
-	animator->SetWeight("idle", 1.0f);
+	animator->SetWeight("Walk", 1.0f);
 }
 
 void CMonster::Update()
 {
 	CObject::Update();
+	if (AimObejct)
+	{
+		XMFLOAT3 MyPostion = GetPostion();
+		XMFLOAT3 TargetPostion = AimObejct->GetPostion();
+		double dx = TargetPostion.x - MyPostion.x;
+		double dz = TargetPostion.z - MyPostion.z;
+		float angle = atan2(dz, dx); // ¶Ç´Â M_PI
 
+		// Move the object towards the target by the specified distance
+		MyPostion.x += m_fSpeed * cos(angle);
+		MyPostion.z += m_fSpeed * sin(angle);
+
+		SetPostion(MyPostion);
+	}
+}
+
+void CMonster::PlayerDiscovery(CObject* player)
+{
+	AimObejct = player;
+}
+
+void CMonster::OnCollisionEnter(CObject* collidedObject)
+{
+
+}
+
+void CMonster::OnCollisionExit(CObject* collidedObject)
+{
 }
 

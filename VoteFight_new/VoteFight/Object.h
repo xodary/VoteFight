@@ -96,6 +96,12 @@ public:
 	virtual void PreRender(CCamera* camera);
 	virtual void Render(CCamera* camera);
 
+	virtual const XMFLOAT3& GetPostion() ;
+	virtual void SetPostion(const XMFLOAT3& rVector);
+
+	virtual const XMFLOAT3& GetRotate();
+	virtual void SetRotate(const XMFLOAT3& rRotate);
+
 private:
 	static CObject* LoadFrame(ifstream& in);
 };

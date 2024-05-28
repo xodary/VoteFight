@@ -566,6 +566,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("Marge_Police_Mesh.bin");
 	LoadMeshes("Sea_Mesh.bin");
 	LoadMeshes("White_House_Mesh.bin");
+	LoadMeshes("FishMon_Mesh.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
@@ -579,6 +580,7 @@ void CAssetManager::SceneLoadMaterials()
 	LoadMaterials("rpgpp_lt_building_05_Material.bin");
 	LoadMaterials("Sea_Material.bin");
 	LoadMaterials("White_House_Material.bin");
+	LoadMaterials("FIshMon_Material.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
@@ -590,4 +592,5 @@ void CAssetManager::SceneLoadTextures()
 	LoadTextures("Simpsons_texture.bin");
 	LoadTextures("Sea_Textures.bin");
 	LoadTextures("White_House_Texture.bin");
+	LoadTextures("FishMon_Texture.bin");
 }

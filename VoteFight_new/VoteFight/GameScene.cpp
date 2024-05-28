@@ -17,6 +17,7 @@
 #include "Camera.h"
  #include"Terrain.h"
  #include"Bilboard.h"
+#include "Monster.h"
 
 #include "./ImaysNet/ImaysNet.h"
 #include "./ImaysNet/PacketQueue.h"
@@ -72,6 +73,7 @@ void CGameScene::Enter()
 
 	// 카메라의 타겟 설정
 	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	const vector<CObject*>& Monsters = GetGroupObject(GROUP_TYPE::MONSTER);
 
 	// CCameraManager::GetInstance()->GetMainCamera()->SetTarget(static_cast<CPlayer*>(objects[0]));
 	// CSoundManager::GetInstance()->Play(SOUND_TYPE_INGAME_BGM_1, 0.3f, false);
@@ -87,6 +89,14 @@ void CGameScene::Enter()
 			}
 		}
 	}
+
+
+	for (size_t i = 0; i < Monsters.size(); i++)
+	{
+	
+			static_cast<CMonster*>(Monsters[i])->PlayerDiscovery(objects[0]);
+	}
+
 }
 
 void CGameScene::Exit()
@@ -99,14 +109,15 @@ void CGameScene::Init()
 
 	// 씬 로드
 	Load("GameScene.bin");
-	Load("Fir_Tree_Scene.bin");
-	Load("White_House_Scene.bin");
-	Load("Building_Bakery_Scene.bin");
-	Load("Woods.bin");
-	Load("FenceScene.bin");
-	Load("Homer_link_Scene.bin");
-	//Load("Homer_Solider_Scene.bin");
-	Load("Marge_Police_Scene.bin");
+	// Load("Fir_Tree_Scene.bin");
+	// Load("White_House_Scene.bin");
+	// Load("Building_Bakery_Scene.bin");
+	// Load("Woods.bin");
+	// Load("FenceScene.bin");
+	// Load("Homer_link_Scene.bin");
+	// //Load("Homer_Solider_Scene.bin");
+	// Load("Marge_Police_Scene.bin");
+	 Load("FishMon_Scene.bin");
 	// Load("Sea_Scene.bin");
 	LoadUI("GameSceneUI.bin");
 

@@ -37,3 +37,27 @@ void CMonsterIdleState::Update(CObject* object)
 	CTransform* transform = static_cast<CTransform*>(monster->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 }
+CMonsterWalkState::CMonsterWalkState()
+{
+}
+
+CMonsterWalkState::~CMonsterWalkState()
+{
+}
+
+void CMonsterWalkState::Enter(CObject* object)
+{
+	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+	animator->Play("Walk", true);
+}
+
+void CMonsterWalkState::Exit(CObject* object)
+{
+}
+
+void CMonsterWalkState::Update(CObject* object)
+{
+	CMonster* monster = static_cast<CMonster*>(object);
+	CStateMachine* stateMachine = static_cast<CStateMachine*>(monster->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+	CTransform* transform = static_cast<CTransform*>(monster->GetComponent(COMPONENT_TYPE::TRANSFORM));
+}
