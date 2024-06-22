@@ -58,17 +58,25 @@ void CMonster::Update()
 		double dx = TargetPostion.x - MyPostion.x;
 		double dz = TargetPostion.z - MyPostion.z;
 		float angle = atan2(dz, dx); // 또는 M_PI
-
+		cout << angle << endl;
 		// Move the object towards the target by the specified distance
 		MyPostion.x += m_fSpeed * cos(angle);
 		MyPostion.z += m_fSpeed * sin(angle);
 
 		SetPostion(MyPostion);
+
+		XMFLOAT3 direction;
+		direction.x = 0;
+		direction.y = -angle * (180.0 / 3.14) + 90;
+		direction.z = 0;
+
+		SetRotate(direction);
 	}
 }
 
 void CMonster::PlayerDiscovery(CObject* player)
 {
+	// 플레이어 발견 조건
 	AimObejct = player;
 }
 

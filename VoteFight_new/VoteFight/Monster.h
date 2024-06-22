@@ -10,7 +10,7 @@ private:
 
     bool	 m_isAiming;
     CObject* AimObejct;
-    float m_fSpeed = 0.02f;
+    float m_fSpeed = 0.01f;
 
 public:
     CMonster();

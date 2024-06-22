@@ -145,6 +145,9 @@
     <Filter Include="헤더 파일\09. Light">
       <UniqueIdentifier>{db3b096f-13d2-4767-93cb-3d49ae03abae}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\05. Object\05-06. OtherObject">
+      <UniqueIdentifier>{6e9f991c-bcec-40df-a291-817a0d6c64c4}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -591,7 +594,7 @@
       <Filter>소스 파일\08. State</Filter>
     </ClCompile>
     <ClCompile Include="Bullet.cpp">
-      <Filter>소스 파일\05. Object</Filter>
+      <Filter>소스 파일\05. Object\05-06. OtherObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

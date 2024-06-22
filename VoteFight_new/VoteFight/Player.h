@@ -41,7 +41,7 @@ public:
 	virtual void SwapWeapon(WEAPON_TYPE weaponType);
 
 	void Punch();
-	void Shoot();
+	void Shoot(CScene& currScene);
 
 	virtual void Update();
 
@@ -68,6 +68,7 @@ public:
 
     void SetUI(CUI* ui);
     void SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, int NextItemsNum);
+
 };
 
 class CItem {

@@ -6,6 +6,7 @@
 #include "Player.h"
 #include "NPC.h"
 #include "Monster.h"
+#include "Bullet.h"
 
 #include "Mesh.h"
 #include "Shader.h"
@@ -98,16 +99,18 @@ CObject* CObject::LoadFrame(ifstream& in)
 
 			switch (classType)
 			{
-			// Character
+			// Obejct
 			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
 			case 2: object = new CNPC(); break;
 			case 3: object = new CMonster(); break;
+			case 4: object = new CBullet(); break;
 			}
 		}
 		else if (str == "<Name>")
 		{
 			File::ReadStringFromFile(in, object->m_name);
+			cout << "¸ðµ¨ ÀÌ¸§Àº : " << object->m_name << endl;
 		}
 		else if (str == "<IsActive>")
 		{
@@ -530,5 +533,5 @@ const XMFLOAT3& CObject::GetRotate()
 void CObject::SetRotate(const XMFLOAT3& rRotate)
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
-	transform->SetPosition(rRotate);
+	transform->SetRotation(rRotate);
 }

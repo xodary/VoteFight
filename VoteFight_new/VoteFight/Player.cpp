@@ -14,7 +14,7 @@
 #include "PlayerStates.h"
 #include "NPC.h"
 #include "UI.h"
-
+#include "Bullet.h"
 #include "Transform.h"
 
 CPlayer::CPlayer() :
@@ -117,8 +117,11 @@ void CPlayer::Punch()
 {
 }
 
-void CPlayer::Shoot()
+void CPlayer::Shoot(CScene& currScene)
 {
+	CBullet newbullet(GetPostion(), GetRotate());
+	currScene.AddObject(GROUP_TYPE::STRUCTURE, &newbullet);
+	
 }
 
 void CPlayer::Update()
