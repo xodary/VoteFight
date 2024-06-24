@@ -40,7 +40,7 @@ void CSceneManager::Init()
 	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)]->Init();
 
 	// 현재 씬 설정
-	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)];
+	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::GAME)];
 	m_currentScene->Enter();
 }
 

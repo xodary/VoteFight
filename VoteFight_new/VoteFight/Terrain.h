@@ -71,5 +71,8 @@ public:
 	virtual void Render(CCamera* camera);
 
 	XMFLOAT4 Add(const XMFLOAT4&, const XMFLOAT4&);
+
+	float heights[400][400];
+	static vector<vector<float>> Load(const string& fileName);
 };
 

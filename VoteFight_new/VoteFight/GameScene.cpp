@@ -95,6 +95,8 @@ void CGameScene::Exit()
 
 void CGameScene::Init()
 {
+	heights = CTerrain::Load("HeightMap");
+
 	// 씬 로드
 	Load("GameScene.bin");
 	//LoadUI("GameSceneUI.bin");
@@ -103,15 +105,14 @@ void CGameScene::Init()
 	CObject* object = new CSkyBox(1000, 200);
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
-	//object = new CTerrain(257,257,1);
-	//AddObject(GROUP_TYPE::TERRAIN, object);
+	CObject* playerObject = CObject::Load("hugo_idle");
+	CTransform* transform = reinterpret_cast<CTransform*>(playerObject->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	transform->SetPosition(XMFLOAT3(0, 2.37f, 0));
+	AddObject(GROUP_TYPE::PLAYER, playerObject);
+	CPlayer* player = reinterpret_cast<CPlayer*>(playerObject);
+	player->Init();
 
-	// 2024 - 04 - 10
-	// 빌보드 추가 - 아직 미완성
-	//object = new CBilboard();
-	//AddObject(GROUP_TYPE::BILBOARD, object);
-
-	//// 충돌 그룹 설정
+	// 충돌 그룹 설정
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::NPC);
 
@@ -141,8 +142,7 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 500.f;
 
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
-	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[1000]);
+	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(player);
 
 }
 
@@ -150,6 +150,15 @@ void CGameScene::Init()
 // Update할떄마다 플레이어 Y 를 터레인 높이 값에 변환시킴
 void CGameScene::Update()
 {	
+	CObject* object = GetGroupObject(GROUP_TYPE::PLAYER)[0];
+	CTransform* p_tf = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	XMFLOAT3 pos = p_tf->GetPosition();
+	if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400) {
+		float height = heights[(int)pos.x][(int)pos.z];
+		if (height > 0.05f)
+			p_tf->SetPosition(XMFLOAT3(pos.x, heights[(int)pos.x][(int)pos.z], pos.z));
+	}
+
 #ifdef CONNECT_SERVER
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	for (CObject* o : objects) {
@@ -336,11 +345,11 @@ void CGameScene::Render()
 		}
 	}
 
-	for (auto object : m_objects_id) {
-		if (object.second != nullptr)
-			object.second->RenderUI(camera);
-	}
-	RenderChatUI();
+	// for (auto object : m_objects_id) {
+	// 	if (object.second != nullptr)
+	// 		object.second->RenderUI(camera);
+	// }
+	// RenderChatUI();
 
 
 	if (KEY_HOLD(KEY::SPACE))

@@ -87,12 +87,12 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera, int Object
 {
     float RotateSpeed = 0.4f;
     float4 LightAmbient = m_lights[nIndex].m_xmf4Ambient;
-    LightAmbient = sin(gfTotalTime * RotateSpeed);
+    //LightAmbient = sin(gfTotalTime * RotateSpeed);
     
     float3 vToLight = m_lights[nIndex].m_direction;
     float3 TIme_vToLight = vToLight;
-    TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
-    TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
+    //TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
+    //TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
     
     float fDiffuseFactor = dot(vNormal, TIme_vToLight) * 0.6 + 0.4;
     
@@ -382,7 +382,7 @@ struct VS_BILBOARD_OUTPUT
 
 VS_BILBOARD_OUTPUT VS_Bilboard(VS_BILBOARD_INPUT input)
 {
-    VS_BIRBOARD_OUTPUT output;
+    VS_BILBOARD_OUTPUT output;
    
     output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
     output.uv = input.uv;

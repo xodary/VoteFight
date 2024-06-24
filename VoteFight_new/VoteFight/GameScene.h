@@ -56,7 +56,7 @@ private:
 public:
 	static CGameScene*		m_CGameScene;
 	vector<CPlayer*>		m_otherPlayers;
-
+	vector<vector<float>>	heights;
 private:
 	CGameScene();
 
