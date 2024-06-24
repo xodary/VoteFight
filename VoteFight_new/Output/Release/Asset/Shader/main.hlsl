@@ -16,10 +16,10 @@
 // ---------------- structs---------------------------
 struct LIGHT
 {
-    float4 m_xmf4Ambient;   // 전체적인 밝기를 결정
-    float4 m_xmf4Diffuse;   // 내적해서 빛을 계산 즉 명암을 결정
-    float4 m_xmf4Specular;  // 카메라의 반사빛을 결정
-    float4 m_xmf3Position;  // Driection은 안씀 spot이나 다른곳은 필요
+    float4 m_xmf4Ambient; // 전체적인 밝기를 결정
+    float4 m_xmf4Diffuse; // 내적해서 빛을 계산 즉 명암을 결정
+    float4 m_xmf4Specular; // 카메라의 반사빛을 결정
+    float4 m_xmf3Position; // Driection은 안씀 spot이나 다른곳은 필요
     
     bool m_isActive;
 			   
@@ -94,10 +94,10 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera, int Object
     TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
     TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
     
-    
     float fDiffuseFactor = dot(vNormal, TIme_vToLight) * 0.6 + 0.4;
     
-    if (ObjectType == TERRAIN)    fDiffuseFactor = 0.6;
+    if (ObjectType == TERRAIN)
+        fDiffuseFactor = 0.6;
     fDiffuseFactor = fDiffuseFactor * 4;
     fDiffuseFactor = ceil(fDiffuseFactor) / 4;
    
@@ -151,24 +151,31 @@ float4 SpotLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
 #define DELTA_X					(1.0f / _DEPTH_BUFFER_WIDTH)
 #define DELTA_Y					(1.0f / _DEPTH_BUFFER_HEIGHT)
 
-Texture2D<float> gtxtDepthTextures : register(t3);
 SamplerState samplerState : register(s0);
 SamplerComparisonState pcfSamplerState : register(s1);
 SamplerState gssClamp : register(s2);
 
+Texture2D gtxtAlbedoTexture : register(t0);
+Texture2D gtxtNormalTexture : register(t1);
+TextureCube gtxtCubeTexture : register(t2);
+Texture2D<float> gtxtDepthTextures : register(t3);
+Texture2D<float4> albedoBuffer : register(t4);
+Texture2D<float4> normalBuffer : register(t5);
+Texture2D<float4> worldPosBuffer : register(t6);
+
 float Compute3x3ShadowFactor(float2 uv, float fDepth)
 {
     float fPercentLit = gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv, fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, 0.0f), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, 0.0f), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, -DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, +DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, -DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, +DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, -DELTA_Y), fDepth).r;
-    //fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, +DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, 0.0f), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, 0.0f), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(0.0f, +DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(-DELTA_X, +DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, -DELTA_Y), fDepth).r;
+    fPercentLit += gtxtDepthTextures.SampleCmpLevelZero(pcfSamplerState, uv + float2(+DELTA_X, +DELTA_Y), fDepth).r;
     
-    return (fPercentLit);
+    return (fPercentLit / 9.0f);
 }
 
 
@@ -180,7 +187,7 @@ float4 Lighting(float3 vPosition, float3 vNormal, float4 uvs, int ObjectType)
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
     
     float fShadowFactor = 1.0f;
-    fShadowFactor = Compute3x3ShadowFactor(uvs.xy / uvs.ww, uvs.z / uvs.w) ;
+    fShadowFactor = Compute3x3ShadowFactor(uvs.xy / uvs.ww, uvs.z / uvs.w);
 
     cColor += lerp(DirectionalLight(LIGHT_INDEX, vNormal, vToCamera, ObjectType), fShadowFactor, 0.7);
  
@@ -195,7 +202,7 @@ float4 franelOuterLine(float3 vPosition, float3 vNormal, float4 cColor)
     float4 newColor = cColor;
     if (rim > 0.3)
         rim = 1.0;
-    else 
+    else
         rim = -1;
     newColor.rgb = newColor.rgb * rim;
     return newColor;
@@ -223,17 +230,13 @@ cbuffer cbBoneTransformInfo : register(b6)
 #define MATERIAL_NORMAL_MAP			0x02
 #define MATERIAL_SHADOW_MAP			0x04
 
-Texture2D gtxtAlbedoTexture : register(t0);
-Texture2D gtxtNormalTexture : register(t1);
-TextureCube gtxtCubeTexture : register(t2);
-
 struct VS_STANDARD_INPUT
 {
-	float3 position : POSITION;
-	float2 uv : TEXCOORD;
-	float3 normal : NORMAL;
-	float3 tangent : TANGENT;
-	float3 bitangent : BITANGENT;
+    float3 position : POSITION;
+    float2 uv : TEXCOORD;
+    float3 normal : NORMAL;
+    float3 tangent : TANGENT;
+    float3 bitangent : BITANGENT;
 };
 
 struct VS_SKINNED_STANDARD_INPUT
@@ -255,28 +258,24 @@ struct VS_STANDARD_OUTPUT
     float3 normalW : NORMAL;
     float3 tangentW : TANGENT;
     float3 bitangentW : BITANGENT;
-    
-    float4 uvs : TEXCOORD1;
 };
 
-VS_STANDARD_OUTPUT VS_Main(VS_STANDARD_INPUT input)
+VS_STANDARD_OUTPUT VS_GBuffer(VS_STANDARD_INPUT input)
 {
-	VS_STANDARD_OUTPUT output;
+    VS_STANDARD_OUTPUT output;
     
     float4 pW = mul(float4(input.position, 1.0f), gmtxGameObject);
     output.positionW = pW.xyz;
-	output.normalW = mul(input.normal, (float3x3)gmtxGameObject);
-	output.tangentW = mul(input.tangent, (float3x3)gmtxGameObject);
-	output.bitangentW = mul(input.bitangent, (float3x3)gmtxGameObject);
+    output.normalW = mul(input.normal, (float3x3) gmtxGameObject);
+    output.tangentW = mul(input.tangent, (float3x3) gmtxGameObject);
+    output.bitangentW = mul(input.bitangent, (float3x3) gmtxGameObject);
     output.position = mul(mul(pW, gmtxView), gmtxProjection);
-	output.uv = input.uv;
-    
-    output.uvs = mul(pW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
-
-	return(output);
+    output.uv = input.uv;
+   
+    return (output);
 }
 
-VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
+VS_STANDARD_OUTPUT VS_GBuffer_Skinning(VS_SKINNED_STANDARD_INPUT input)
 {
     VS_STANDARD_OUTPUT output;
 
@@ -294,36 +293,78 @@ VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
     output.position = mul(mul(positionW, gmtxView), gmtxProjection);
     output.uv = input.uv;
     
-    output.uvs = mul(positionW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
-
     return (output);
 }
 
-float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
+struct PSOutput
 {
-	float4 cAlbedoColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-	if (gnTexturesMask & MATERIAL_ALBEDO_MAP) cAlbedoColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
-	float4 cNormalColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-	if (gnTexturesMask & MATERIAL_NORMAL_MAP) cNormalColor = gtxtNormalTexture.Sample(samplerState, input.uv);
+    float4 color : SV_Target0;
+    float4 normal : SV_Target1;
+    float4 worldpos : SV_Target2;
+};
 
-	float3 normalW;
-	float4 cColor = cAlbedoColor;
-	if (gnTexturesMask & MATERIAL_NORMAL_MAP)
-	{
-		float3x3 TBN = float3x3(normalize(input.tangentW), normalize(input.bitangentW), normalize(input.normalW));
-		float3 vNormal = normalize(cNormalColor.rgb * 2.0f - 1.0f); //[0, 1] → [-1, 1]
-		normalW = normalize(mul(vNormal, TBN));
-	}
-	else
-	{
-		normalW = normalize(input.normalW);
+PSOutput PS_GBuffer(VS_STANDARD_OUTPUT input) : SV_TARGET
+{
+    PSOutput output = (PSOutput) 0;
+	
+    output.color = gvColor;
+    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
+        output.color = gtxtAlbedoTexture.Sample(samplerState, input.uv);
+    output.normal = float4(input.normalW, 1);
+    
+    if (gnTexturesMask & MATERIAL_NORMAL_MAP)
+    {
+        output.normal = gtxtNormalTexture.Sample(samplerState, input.uv);
+        float3x3 TBN = float3x3(normalize(input.tangentW), normalize(input.bitangentW), normalize(input.normalW));
+        float3 vNormal = normalize(output.normal.rgb * 2.0f - 1.0f);
+        output.normal = float4(normalize(mul(vNormal, TBN)), 1.0f);
     }
-    float4 cIllumination = Lighting(input.positionW, normalW, input.uvs, OBJECT);
-  // cColor = (lerp(cColor, cIllumination, 0.5f));
-    cColor = cColor * cIllumination;
-    cColor = franelOuterLine(input.positionW,normalW, cColor);
-    return cColor;
+    else
+    {
+        output.normal = output.normal;
 
+    }
+    output.worldpos = float4(input.positionW, 1.0f);
+    return output;
+}
+
+// === Light ===
+struct VSInput
+{
+    float4 position : POSITION;
+    float2 uv : TEXCOORD;
+};
+
+struct PSInput
+{
+    float2 uv : TEXCOORD;
+    float4 position : SV_POSITION;
+};
+
+PSInput VS_Main(VSInput input)
+{
+    PSInput result;
+
+    result.position = float4(input.position.xyz, 1);
+    result.uv = input.uv;
+    
+    return result;
+}
+
+float4 PS_Main(PSInput input) : SV_TARGET
+{
+    float2 inPos = input.position.xy;
+    
+    float3 normal = normalize(normalBuffer[inPos].rgb);
+    float4 albedo = albedoBuffer[inPos];
+    float4 worldPos = worldPosBuffer[inPos];
+
+    float3 viewDir = normalize(gvCameraPosition.xyz - worldPos.xyz);
+    
+    float4 cIllumination = Lighting(worldPos.xyz, normal, mul(worldPos, m_lights[SHADOWMAP_LIGHT].m_toTexCoord), OBJECT);
+    albedo *= cIllumination;
+    albedo = franelOuterLine(worldPos.xyz, normal, albedo);
+    return albedo;
 }
 
 // ======== Bilboard =========
@@ -544,7 +585,7 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     cColor = cColor * cIllumination;
     
     // cColor = franelOuterLine(input.position, normal, cColor);
-        return cColor;
+    return cColor;
     //return cColor * cIllumination;
 
 }
@@ -591,53 +632,93 @@ float4 PS_EAGE_Main(VS_EAGE_STANDARD_OUTPUT input) : SV_TARGET
 // ======== VIEW PORT =========
 struct VS_TEXTURED_OUTPUT
 {
-	float4 position : SV_POSITION;
-	float2 uv : TEXCOORD;
+    float4 position : SV_POSITION;
+    float2 uv : TEXCOORD;
 };
 
 VS_TEXTURED_OUTPUT VS_ViewPort(uint nVertexID : SV_VertexID)
 {
-	VS_TEXTURED_OUTPUT output = (VS_TEXTURED_OUTPUT)0;
+    VS_TEXTURED_OUTPUT output = (VS_TEXTURED_OUTPUT) 0;
 
-	if (nVertexID == 0) { output.position = float4(-1.0f, +1.0f, 0.0f, 1.0f); output.uv = float2(0.0f, 0.0f); }
-	if (nVertexID == 1) { output.position = float4(+1.0f, +1.0f, 0.0f, 1.0f); output.uv = float2(1.0f, 0.0f); }
-	if (nVertexID == 2) { output.position = float4(+1.0f, -1.0f, 0.0f, 1.0f); output.uv = float2(1.0f, 1.0f); }
-	if (nVertexID == 3) { output.position = float4(-1.0f, +1.0f, 0.0f, 1.0f); output.uv = float2(0.0f, 0.0f); }
-	if (nVertexID == 4) { output.position = float4(+1.0f, -1.0f, 0.0f, 1.0f); output.uv = float2(1.0f, 1.0f); }
-	if (nVertexID == 5) { output.position = float4(-1.0f, -1.0f, 0.0f, 1.0f); output.uv = float2(0.0f, 1.0f); }
+    if (nVertexID == 0)
+    {
+        output.position = float4(-1.0f, +1.0f, 0.0f, 1.0f);
+        output.uv = float2(0.0f, 0.0f);
+    }
+    if (nVertexID == 1)
+    {
+        output.position = float4(+1.0f, +1.0f, 0.0f, 1.0f);
+        output.uv = float2(1.0f, 0.0f);
+    }
+    if (nVertexID == 2)
+    {
+        output.position = float4(+1.0f, -1.0f, 0.0f, 1.0f);
+        output.uv = float2(1.0f, 1.0f);
+    }
+    if (nVertexID == 3)
+    {
+        output.position = float4(-1.0f, +1.0f, 0.0f, 1.0f);
+        output.uv = float2(0.0f, 0.0f);
+    }
+    if (nVertexID == 4)
+    {
+        output.position = float4(+1.0f, -1.0f, 0.0f, 1.0f);
+        output.uv = float2(1.0f, 1.0f);
+    }
+    if (nVertexID == 5)
+    {
+        output.position = float4(-1.0f, -1.0f, 0.0f, 1.0f);
+        output.uv = float2(0.0f, 1.0f);
+    }
 
-	return(output);
+    return (output);
 }
 
 float4 GetColorFromDepth(float fDepth)
 {
-	float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-	if (fDepth < 0.00625f) cColor = float4(1.0f, 0.0f, 0.0f, 1.0f);
-	else if (fDepth < 0.0125f) cColor = float4(0.0f, 1.0f, 0.0f, 1.0f);
-	else if (fDepth < 0.025f) cColor = float4(0.0f, 0.0f, 1.0f, 1.0f);
-	else if (fDepth < 0.05f) cColor = float4(1.0f, 1.0f, 0.0f, 1.0f);
-	else if (fDepth < 0.075f) cColor = float4(0.0f, 1.0f, 1.0f, 1.0f);
-	else if (fDepth < 0.1f) cColor = float4(1.0f, 0.5f, 0.5f, 1.0f);
-	else if (fDepth < 0.4f) cColor = float4(0.5f, 1.0f, 1.0f, 1.0f);
-	else if (fDepth < 0.6f) cColor = float4(1.0f, 0.0f, 1.0f, 1.0f);
-	else if (fDepth < 0.8f) cColor = float4(0.5f, 0.5f, 1.0f, 1.0f);
-	else if (fDepth < 0.9f) cColor = float4(0.5f, 1.0f, 0.5f, 1.0f);
-	else if (fDepth < 0.95f) cColor = float4(0.5f, 0.0f, 0.5f, 1.0f);
-	else if (fDepth < 0.99f) cColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
-	else if (fDepth < 0.999f) cColor = float4(1.0f, 0.0f, 1.0f, 1.0f);
-	else if (fDepth == 1.0f) cColor = float4(0.5f, 0.5f, 0.5f, 1.0f);
-	else if (fDepth > 1.0f) cColor = float4(0.0f, 0.0f, 0.5f, 1.0f);
-	else cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
+    if (fDepth < 0.00625f)
+        cColor = float4(1.0f, 0.0f, 0.0f, 1.0f);
+    else if (fDepth < 0.0125f)
+        cColor = float4(0.0f, 1.0f, 0.0f, 1.0f);
+    else if (fDepth < 0.025f)
+        cColor = float4(0.0f, 0.0f, 1.0f, 1.0f);
+    else if (fDepth < 0.05f)
+        cColor = float4(1.0f, 1.0f, 0.0f, 1.0f);
+    else if (fDepth < 0.075f)
+        cColor = float4(0.0f, 1.0f, 1.0f, 1.0f);
+    else if (fDepth < 0.1f)
+        cColor = float4(1.0f, 0.5f, 0.5f, 1.0f);
+    else if (fDepth < 0.4f)
+        cColor = float4(0.5f, 1.0f, 1.0f, 1.0f);
+    else if (fDepth < 0.6f)
+        cColor = float4(1.0f, 0.0f, 1.0f, 1.0f);
+    else if (fDepth < 0.8f)
+        cColor = float4(0.5f, 0.5f, 1.0f, 1.0f);
+    else if (fDepth < 0.9f)
+        cColor = float4(0.5f, 1.0f, 0.5f, 1.0f);
+    else if (fDepth < 0.95f)
+        cColor = float4(0.5f, 0.0f, 0.5f, 1.0f);
+    else if (fDepth < 0.99f)
+        cColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+    else if (fDepth < 0.999f)
+        cColor = float4(1.0f, 0.0f, 1.0f, 1.0f);
+    else if (fDepth == 1.0f)
+        cColor = float4(0.5f, 0.5f, 0.5f, 1.0f);
+    else if (fDepth > 1.0f)
+        cColor = float4(0.0f, 0.0f, 0.5f, 1.0f);
+    else
+        cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
 
-	return(cColor);
+    return (cColor);
 }
 
 SamplerState gssBorder : register(s3);
 
 float4 PS_ViewPort(VS_TEXTURED_OUTPUT input) : SV_Target
 {
-	float fDepthFromLight0 = gtxtDepthTextures.SampleLevel(gssBorder, input.uv, 0).r;
+    float fDepthFromLight0 = gtxtDepthTextures.SampleLevel(gssBorder, input.uv, 0).r;
 
-	return((float4)(fDepthFromLight0 * 0.8f));
+    return ((float4) (fDepthFromLight0 * 0.8f));
 }

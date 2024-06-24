@@ -154,7 +154,7 @@ CObject* CObject::LoadFrame(ifstream& in)
 				}
 			}
 		}
-		else if (str == "<Collider>")
+		else if (str == "<BoxCollider>")
 		{
 			XMFLOAT3 center = {};
 			XMFLOAT3 extents = {};
@@ -163,11 +163,28 @@ CObject* CObject::LoadFrame(ifstream& in)
 			in.read(reinterpret_cast<char*>(&extents), sizeof(XMFLOAT3));
 
 			// 메쉬를 가진 프레임은 콜라이더 컴포넌트를 생성한다.
-			object->CreateComponent(COMPONENT_TYPE::COLLIDER);
-			
+			if (object->GetComponent(COMPONENT_TYPE::COLLIDER) == NULL)
+				object->CreateComponent(COMPONENT_TYPE::COLLIDER);
+
 			CCollider* collider = static_cast<CCollider*>(object->GetComponent(COMPONENT_TYPE::COLLIDER));
 
 			collider->SetBoundingBox(center, extents);
+		}
+		else if (str == "<MeshCollider>")
+		{
+			XMFLOAT3 center = {};
+			XMFLOAT3 extents = {};
+
+			in.read(reinterpret_cast<char*>(&center), sizeof(XMFLOAT3));
+			in.read(reinterpret_cast<char*>(&extents), sizeof(XMFLOAT3));
+
+			// 메쉬를 가진 프레임은 콜라이더 컴포넌트를 생성한다.
+			if (object->GetComponent(COMPONENT_TYPE::COLLIDER) == NULL)
+				object->CreateComponent(COMPONENT_TYPE::COLLIDER);
+
+			CCollider* collider = static_cast<CCollider*>(object->GetComponent(COMPONENT_TYPE::COLLIDER));
+
+			collider->SetMeshBoundingBox(center, extents);
 		}
 		else if (str == "<ChildCount>")
 		{
@@ -406,7 +423,14 @@ CObject* CObject::FindFrame(const string& name)
 
 bool CObject::IsVisible(CCamera* camera)
 {
-	return true;
+	CCollider* collider = static_cast<CCollider*>(m_components[static_cast<int>(COMPONENT_TYPE::COLLIDER)]);
+
+	if ((camera != nullptr) && (collider != nullptr) && (collider->m_meshcollider))
+	{
+		return camera->IsInBoundingFrustum(collider->GetMeshBoundingBox());
+	}
+
+	return false;
 }
 
 void CObject::OnCollisionEnter(CObject* collidedObject)

@@ -2,6 +2,7 @@
 #include "SceneManager.h"
 #include "GameFramework.h"
 #include "GameScene.h"
+#include "LoginScene.h"
 
 CSceneManager::CSceneManager() :
 	m_scenes(),
@@ -35,9 +36,11 @@ void CSceneManager::Init()
 	m_scenes.resize(static_cast<int>(SCENE_TYPE::COUNT));
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)] = new CGameScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
+	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)] = new CLoginScene();
+	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)]->Init();
 
 	// ÇöÀç ¾À ¼³Á¤
-	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::GAME)];
+	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)];
 	m_currentScene->Enter();
 }
 

@@ -7,7 +7,7 @@ class CScene abstract
 {
 	friend class CSceneManager;
 
-private:
+public:
 	string			 m_name;
 	vector<CObject*> m_objects[static_cast<int>(GROUP_TYPE::COUNT)];
 

@@ -22,7 +22,7 @@ private:
 	UINT			    m_instanceID;
 	UINT				m_GroupType;
 
-protected:
+public:
 	string              m_name;
 					    
 	bool			    m_isActive;
@@ -36,7 +36,6 @@ protected:
 	CObject*		    m_parent;
 	vector<CObject*>    m_children;
 
-public:
 	CObject();
 	CObject(const CObject& rhs) = delete;
 	virtual ~CObject();

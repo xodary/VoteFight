@@ -19,6 +19,7 @@
 #include "GBufferShader.h"
 #include "UpsampleBlur.h"
 #include "VCTMainShader.h"
+#include "MainShader.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -137,13 +138,59 @@ void CAssetManager::LoadTextures(const string& fileName)
 		}
 	}
 
+	CGameFramework* framework = CGameFramework::GetInstance();
+	ID3D12Device* device = framework->GetDevice();
+	ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
+	DescriptorHeapManager* descriptorHeapManager = framework->GetDescriptorHeapManager();
+
 	// DepthWrite Texture
-	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
+	const XMFLOAT2& resolution = framework->GetResolution();
 	CTexture* texture = new CTexture();
 	
 	texture->SetName("DepthWrite");
 	texture->Create(static_cast<UINT64>(DEPTH_BUFFER_WIDTH), static_cast<UINT>(DEPTH_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } }, TEXTURE_TYPE::SHADOW_MAP);
 	m_textures.emplace(texture->GetName(), texture);
+
+	// GBuffer Texture
+	CTexture* GBufferColor = new CTexture();
+	CTexture* GBufferNormal = new CTexture();
+	CTexture* GBufferWorldPos = new CTexture();
+
+	GBufferColor->SetName("GBufferColor");
+	GBufferNormal->SetName("GBufferNormal");
+	GBufferWorldPos->SetName("GBufferWorldPos");
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.Texture2D.PlaneSlice = 0;
+
+	DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	rtvDesc.Format = format;
+	GBufferColor->Create(static_cast<UINT64>(framework->GetResolution().x), static_cast<UINT>(framework->GetResolution().y), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, format, D3D12_CLEAR_VALUE{ format, { 0.0f, 0.0f, 0.0f, 0.0f } }, TEXTURE_TYPE::G_COLOR);
+	GBufferColor->m_RTVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	device->CreateRenderTargetView(GBufferColor->GetTexture(), &rtvDesc, GBufferColor->m_RTVHandle.GetCPUHandle());
+
+	format = DXGI_FORMAT_R16G16B16A16_SNORM;
+	rtvDesc.Format = format;
+	GBufferNormal->Create(static_cast<UINT64>(framework->GetResolution().x), static_cast<UINT>(framework->GetResolution().y), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, format, D3D12_CLEAR_VALUE{ format, { 0.0f, 0.0f, 0.0f, 0.0f } }, TEXTURE_TYPE::G_NORMAL);
+	GBufferNormal->m_RTVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	device->CreateRenderTargetView(GBufferNormal->GetTexture(), &rtvDesc, GBufferNormal->m_RTVHandle.GetCPUHandle());
+
+	format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	rtvDesc.Format = format;
+	GBufferWorldPos->Create(static_cast<UINT64>(framework->GetResolution().x), static_cast<UINT>(framework->GetResolution().y), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, format, D3D12_CLEAR_VALUE{ format, { 0.0f, 0.0f, 0.0f, 0.0f } }, TEXTURE_TYPE::G_WORLDPOS);
+	GBufferWorldPos->m_RTVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	device->CreateRenderTargetView(GBufferWorldPos->GetTexture(), &rtvDesc, GBufferWorldPos->m_RTVHandle.GetCPUHandle());
+
+	m_textures.emplace(GBufferColor->GetName(), GBufferColor);
+	m_textures.emplace(GBufferNormal->GetName(), GBufferNormal);
+	m_textures.emplace(GBufferWorldPos->GetName(), GBufferWorldPos);
+
+	CTexture* textTexture = new CTexture();
+	textTexture->SetName("text");
+	textTexture->Load("text", TEXTURE_TYPE::ALBEDO_MAP);
+	m_textures.emplace(textTexture->GetName(), textTexture);
 }
 
 void CAssetManager::LoadShaders()
@@ -183,35 +230,16 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	//shader = new CGBufferShader();
-	//shader->SetName("GBuffer");
-	//shader->CreatePipelineStates(1);
-	//m_shaders.emplace(shader->GetName(), shader);
+	shader = new CMainShader();
+	shader->SetName("MainShader");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
 
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
 	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	//shader = new CVoxelizationShader();
-	//shader->SetName("Voxelization");
-	//shader->CreatePipelineStates(2);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	//shader = new CAnisoMipmapShader();
-	//shader->SetName("AnisoMipmap");
-	//shader->CreatePipelineStates(2);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	//shader = new CVCTMainShader();
-	//shader->SetName("VCTMain");
-	//shader->CreatePipelineStates(1);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	// shader = new CUpsampleBlur();
-	// shader->SetName("UpsampleBlur");
-	// shader->CreatePipelineStates(1);
-	// m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)
@@ -557,37 +585,14 @@ void CAssetManager::ReleaseUploadBuffers()
 void CAssetManager::SceneLoadMeshes()
 {
 	LoadMeshes("Meshes.bin");
-	LoadMeshes("Meshess.bin");
-	LoadMeshes("Meshesss.bin");
-	LoadMeshes("FireWoodMesh.bin");
-	LoadMeshes("Fence_Mesh.bin");
-	LoadMeshes("Homer_Meshs.bin");
-	LoadMeshes("Homer_Solider_Mesh.bin");
-	LoadMeshes("Marge_Police_Mesh.bin");
-	LoadMeshes("Sea_Mesh.bin");
-	LoadMeshes("White_House_Mesh.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
 {
 	LoadMaterials("Materials.bin");
-	LoadMaterials("Materialss.bin");
-	LoadMaterials("FireWoodMaterials.bin");
-//	LoadMaterials("WhiteHouse.bin");
-	LoadMaterials("Fence_Material.bin");
-	LoadMaterials("Homer_Material.bin");
-	LoadMaterials("rpgpp_lt_building_05_Material.bin");
-	LoadMaterials("Sea_Material.bin");
-	LoadMaterials("White_House_Material.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
 {
 	LoadTextures("Textures.bin");
-	LoadTextures("Texturesss.bin");
-	LoadTextures("FireWoodTextures.bin");
-	LoadTextures("Fence_Texture.bin");
-	LoadTextures("Simpsons_texture.bin");
-	LoadTextures("Sea_Textures.bin");
-	LoadTextures("White_House_Texture.bin");
 }

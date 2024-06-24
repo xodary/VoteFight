@@ -94,6 +94,19 @@ void CCollider::SetBoundingBox(const XMFLOAT3& center, const XMFLOAT3& extents)
 	}
 }
 
+void CCollider::SetMeshBoundingBox(const XMFLOAT3& center, const XMFLOAT3& extents)
+{
+	m_meshcollider = true;
+
+	m_MeshOrigin.Center = center;
+	m_MeshOrigin.Extents = extents;
+}
+
+const BoundingBox& CCollider::GetMeshBoundingBox()
+{
+	return m_MeshboundingBox;
+}
+
 const BoundingBox& CCollider::GetBoundingBox()
 {
     return m_boundingBox;
@@ -109,6 +122,7 @@ void CCollider::Update()
     CTransform* transform = static_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
     m_origin.Transform(m_boundingBox, XMLoadFloat4x4(&transform->GetWorldMatrix()));
+	m_MeshOrigin.Transform(m_MeshboundingBox, XMLoadFloat4x4(&transform->GetWorldMatrix()));
 }
 
 void CCollider::Render(CCamera* camera)

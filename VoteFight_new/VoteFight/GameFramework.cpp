@@ -16,6 +16,10 @@
 #include "GBufferShader.h"
 #include "VCTMainShader.h"
 #include "UpsampleBlur.h"
+#include "ImGUI/imgui.h"
+#include "ImGUI/imgui_impl_win32.h"
+#include "ImGUI/imgui_impl_dx12.h"
+#include "ImGUI/imgui_internal.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -121,12 +125,54 @@ UINT CGameFramework::GetDsvDescriptorIncrementSize()
 	return m_dsvDescriptorIncrementSize;
 }
 
+std::vector<CTextMesh::FontType> LoadFontData(const char* filename)
+{
+	std::ifstream fin;
+	int i;
+	char temp;
+
+
+	std::vector<CTextMesh::FontType> font(95);
+
+	fin.open(filename);
+	if (fin.fail())
+	{
+		return (std::vector<CTextMesh::FontType>)0;
+	}
+
+	for (i = 0; i < 95; i++)
+	{
+		fin.get(temp);
+		while (temp != ' ')
+		{
+			fin.get(temp);
+		}
+		fin.get(temp);
+		while (temp != ' ')
+		{
+			fin.get(temp);
+		}
+
+		fin >> font[i].left;
+		fin >> font[i].right;
+		fin >> font[i].size;
+	}
+
+	fin.close();
+
+	return font;
+}
+
 void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 {
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	// CServerManager::ConnectServer();
+	m_FontData = LoadFontData("fontdata.txt");
+
+#ifdef CONNECT_SERVER
+	CServerManager::ConnectServer();
+#endif
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -172,6 +218,23 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	ImGui_ImplWin32_Init(m_hWnd);
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	desc.NumDescriptors = 1;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	m_d3d12Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_GUISrvDescHeap));
+
+	ImGui_ImplDX12_Init(m_d3d12Device.Get(), 3,
+		DXGI_FORMAT_R8G8B8A8_UNORM, m_GUISrvDescHeap,
+		m_GUISrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
+		m_GUISrvDescHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
 void CGameFramework::CreateDevice()
@@ -361,6 +424,9 @@ void CGameFramework::CreateRootSignature()
 	d3d12DescriptorRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);	// Normal
 	d3d12DescriptorRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);	// Cube
 	d3d12DescriptorRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3);	// Shadow Map
+	d3d12DescriptorRanges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4);	// GBuffer Color
+	d3d12DescriptorRanges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5);	// GBuffer Normal
+	d3d12DescriptorRanges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 6);	// GBuffer WorldPos
 
 	CD3DX12_ROOT_PARAMETER d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::COUNT)] = {};
 
@@ -375,6 +441,9 @@ void CGameFramework::CreateRootSignature()
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::NORMAL_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[1]); // normalMap : register(t1)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CUBE_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[2]);	// cubeMap : register(t2)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::SHADOW_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[3]); // shadowMap : register(t3)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_COLOR)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[4]);	// GBuffer Color : register(t4)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_NORMAL)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[5]);	// GBuffer Normal : register(t5)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_WORLDPOS)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[6]); // GBuffer WorldPos : register(t6)
 
 	D3D12_ROOT_SIGNATURE_FLAGS d3d12RootSignatureFlags = { D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT }; // IA단계를 허용, 스트림 출력 단계를 허용
 	CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[4] = {};
@@ -576,10 +645,10 @@ void CGameFramework::AdvanceFrame()
 
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
-	// CServerManager::Tick();
-
-	// CServerManager::Tick();
-
+	CServerManager::Tick();
+#ifdef CONNECT_SERVER
+	CServerManager::Tick();
+#endif
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
 	MoveToNextFrame();

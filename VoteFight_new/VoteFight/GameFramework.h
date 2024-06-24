@@ -1,5 +1,6 @@
 #pragma once
 #include "DescriptorHeap.h"
+#include "Mesh.h"
 
 class CPostProcessingShader;
 class CUILayer;
@@ -89,18 +90,6 @@ private:
 
 	void PopulateCommandList();
 
-
-	//shared_ptr<CPostProcessingShader> GetPostProcessingShader() const;
-
-	//shared_ptr<CUILayer> GetUILayer() const;
-
-	//void ConnectServer();
-	//void DisconnectServer();
-
-	//void ProcessPacket();
-
-	//const SOCKET_INFO& GetSocketInfo() const;
-
 public:
 	HWND GetHwnd();
 	const XMFLOAT2& GetResolution();
@@ -140,4 +129,9 @@ public:
 	DescriptorHandle				  SRVHandle[2];
 	UINT							  m_swapChainBufferIndex;
 	ComPtr<ID3D12Resource>			  m_d3d12RenderTargetBuffers[m_swapChainBufferCount];
+
+	ID3D12DescriptorHeap*			  m_GUISrvDescHeap;
+
+	std::vector<CTextMesh::FontType>  m_FontData;
+
 };

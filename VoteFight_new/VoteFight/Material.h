@@ -8,7 +8,7 @@ class CMaterial : public CAsset
 {
 	friend class CAssetManager;
 
-private:
+public:
 	XMFLOAT4		  m_color;
 
 	int				  m_textureMask;
@@ -23,10 +23,7 @@ private:
 	XMFLOAT4						m_xmf4SpecularColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 	XMFLOAT4						m_xmf4AmbientColor = XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f);
 
-private:
 	CMaterial();
-
-public:
 	virtual ~CMaterial();
 
 	void SetColor(const XMFLOAT4& color);

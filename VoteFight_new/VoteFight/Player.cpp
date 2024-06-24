@@ -6,6 +6,8 @@
 #include "CameraManager.h"
 #include "SceneManager.h"
 #include "Scene.h"
+#include "AssetManager.h"
+#include "Material.h"
 #include "Animator.h"
 #include "Camera.h"
 #include "StateMachine.h"
@@ -16,6 +18,7 @@
 #include "UI.h"
 
 #include "Transform.h"
+#include "Mesh.h"
 
 CPlayer::CPlayer() :
 	m_isAiming(),
@@ -93,7 +96,19 @@ void CPlayer::Init()
 	animator->SetWeight("idle", 1.0f);
 	m_Inventory = new CInventory();
 
-	
+	CUI* m_playerTextBar = new CUI();
+	m_playerTextBar->SetName("Namebar");
+	CMaterial* textMaterial = new CMaterial();
+	CTextMesh* mesh = new CTextMesh(CGameFramework::GetInstance()->m_FontData, m_name.c_str(), 0, 0, 0.01f, 0.1f);
+	m_playerTextBar->SetMesh(mesh);
+	textMaterial->SetTexture(CAssetManager::GetInstance()->GetTexture("text"));
+	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
+	textMaterial->m_shaders.push_back(BilboardShader);
+	m_playerTextBar->m_materials.push_back(textMaterial);
+	CTransform* textbarTransform = reinterpret_cast<CTransform*>(m_playerTextBar->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CTransform* myTransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	textbarTransform->SetPosition(XMFLOAT3(myTransform->GetPosition().x, myTransform->GetPosition().y + 1.2f, myTransform->GetPosition().z));
+	SetUI(m_playerTextBar);
 }
 
 void CPlayer::AnotherInit()

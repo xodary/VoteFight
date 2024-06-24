@@ -83,13 +83,10 @@ void CScene::Load(const string& fileName)
 					object->SetActive(isActives[i]);
 					object->SetGroupType((UINT)GROUP_TYPE(groupType));
 
-					XMFLOAT3 currPosition = transforms[3 * i];
-					
-					currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
-					cout << fileName << endl;
-					transform->SetPosition(currPosition);
-						transform->SetRotation(transforms[3 * i + 1]);
+					transform->SetPosition(transforms[3 * i]);
+					transform->SetRotation(transforms[3 * i + 1]);
 					transform->SetScale(transforms[3 * i + 2]);
+
 					transform->Update();
 					object->Init();
 
@@ -211,7 +208,6 @@ void CScene::PreRender()
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
 
-
 	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
 	{
 		for (const auto& object : m_objects[i])
@@ -227,35 +223,6 @@ void CScene::PreRender()
 
 void CScene::Render()
 {
-	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
-
-	camera->RSSetViewportsAndScissorRects();
-	camera->UpdateShaderVariables();
-
-	if (m_terrain) m_terrain->Render(camera);
-
-	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
-	{
-		for (const auto& object : m_objects[i])
-		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
-			{
-				object->Render(camera);
-			}
-		}
-	}
-
-	camera = CCameraManager::GetInstance()->GetUICamera();
-	camera->RSSetViewportsAndScissorRects();
-	camera->UpdateShaderVariables();
-
-	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
-	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
-		{
-			object->Render(camera);
-		}
-	}
 }
 
 void CScene::PostRender()
