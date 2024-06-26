@@ -57,7 +57,7 @@ private:
 	int m_vertexCount = 6;
 
 public:
-	CRectMesh();
+	CRectMesh(float fsizeX=1, float fsizeY=1);
 	~CRectMesh();
 	virtual void Render();
 };

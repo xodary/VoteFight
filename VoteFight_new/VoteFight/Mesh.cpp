@@ -312,18 +312,17 @@ void CMesh::Render(int subSetIndex)
 	}
 }
 
-CRectMesh::CRectMesh()
+CRectMesh::CRectMesh(float fsizeX, float fsizeY)
 {
-	float fsize = 1;
 	vector<XMFLOAT2> uv(6); 
 	m_positions.resize(6);
 
-	m_positions[0] = XMFLOAT3(-fsize, +fsize, 0);
-	m_positions[1] = XMFLOAT3(+fsize, +fsize, 0);
-	m_positions[2] = XMFLOAT3(-fsize, -fsize, 0);
-	m_positions[3] = XMFLOAT3(-fsize, -fsize, 0);
-	m_positions[4] = XMFLOAT3(+fsize, +fsize, 0);
-	m_positions[5] = XMFLOAT3(+fsize, -fsize, 0);
+	m_positions[0] = XMFLOAT3(-fsizeX, +fsizeY, 0);
+	m_positions[1] = XMFLOAT3(+fsizeX, +fsizeY, 0);
+	m_positions[2] = XMFLOAT3(-fsizeX, -fsizeY, 0);
+	m_positions[3] = XMFLOAT3(-fsizeX, -fsizeY, 0);
+	m_positions[4] = XMFLOAT3(+fsizeX, +fsizeY, 0);
+	m_positions[5] = XMFLOAT3(+fsizeX, -fsizeY, 0);
 
 	uv[0] = XMFLOAT2(0, 0);
 	uv[1] = XMFLOAT2(1, 0);

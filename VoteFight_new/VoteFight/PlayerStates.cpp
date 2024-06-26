@@ -28,7 +28,7 @@ void CPlayerIdleState::Enter(CObject* object)
 {
 	stateNum = STATE_ENUM::CPlayerIdleState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->Play("idle", true);
+	animator->Play("Pistol_idle", true);
 }
 
 void CPlayerIdleState::Exit(CObject* object)
@@ -125,6 +125,12 @@ void CPlayerIdleState::Update(CObject* object)
 			stateMachine->ChangeState(CPlayerRightTurn::GetInstance());
 		}
 		player->SetSpineAngle(angle - look);
+	}
+
+	if (KEY_HOLD(KEY::LBUTTON))
+	{
+		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		animator->Play("Pistol_shoot", false);
 	}
 }
 
@@ -279,7 +285,7 @@ void CPlayerWalkState::Enter(CObject* object)
 {
 	stateNum = STATE_ENUM::CPlayerWalkState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->Play("lisaWalk", true);
+	animator->Play("Pistol_run", true);
 
 	CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -378,7 +384,8 @@ void CPlayerRunState::Enter(CObject* object)
 {
 	stateNum = STATE_ENUM::CPlayerRunState;
 	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->Play("Run", true);
+	animator->Play("Pistol_run", true);
+	animator->SetSpeed("Pistol_run", 2.0f);
 
 	CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
 	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));

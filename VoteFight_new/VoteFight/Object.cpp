@@ -111,7 +111,6 @@ CObject* CObject::LoadFrame(ifstream& in)
 		}
 		else if (str == "<Transform>")
 		{
-			// localPosition, localRotation, localScale
 			XMFLOAT3 t[3] = {};
 
 			in.read(reinterpret_cast<char*>(&t[0]), 3 * sizeof(XMFLOAT3));

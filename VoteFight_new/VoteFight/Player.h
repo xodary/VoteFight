@@ -5,6 +5,7 @@ class CItem;
 class CInventory;
 class CUI;
 class CTextUI;
+class CBilboardUI;
 
 class CPlayer : public CCharacter
 {
@@ -18,6 +19,8 @@ private:
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
 
+    CBilboardUI* speech_bubble;
+    CBilboardUI* m_HPBar;
     CTextUI* m_playerTextBar;
 public:
     bool isMove = true;

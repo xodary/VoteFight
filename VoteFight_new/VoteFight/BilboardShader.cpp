@@ -51,5 +51,8 @@ D3D12_SHADER_BYTECODE CBilboardShader::CreateVertexShader(ID3DBlob* d3d12ShaderB
 
 D3D12_SHADER_BYTECODE CBilboardShader::CreatePixelShader(ID3DBlob* d3d12ShaderBlob, int stateNum)
 {
-	return CShader::Compile("main.hlsl", "PS_Bilboard", "ps_5_1", d3d12ShaderBlob);
+	if (stateNum == 0)
+		return CShader::Compile("main.hlsl", "PS_Bilboard", "ps_5_1", d3d12ShaderBlob);
+	else
+		return CShader::Compile("main.hlsl", "PS_BilboardText", "ps_5_1", d3d12ShaderBlob);
 }

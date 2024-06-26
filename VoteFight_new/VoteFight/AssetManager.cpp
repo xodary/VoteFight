@@ -191,6 +191,11 @@ void CAssetManager::LoadTextures(const string& fileName)
 	textTexture->SetName("text");
 	textTexture->Load("text", TEXTURE_TYPE::ALBEDO_MAP);
 	m_textures.emplace(textTexture->GetName(), textTexture);
+
+	CTexture* bubbleTexture = new CTexture();
+	bubbleTexture->SetName("speech_bubble");
+	bubbleTexture->Load("speech_bubble", TEXTURE_TYPE::ALBEDO_MAP);
+	m_textures.emplace(bubbleTexture->GetName(), bubbleTexture);
 }
 
 void CAssetManager::LoadShaders()
@@ -227,7 +232,7 @@ void CAssetManager::LoadShaders()
 
 	shader = new CBilboardShader();
 	shader->SetName("Bilboard");
-	shader->CreatePipelineStates(1);
+	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 
 	shader = new CMainShader();

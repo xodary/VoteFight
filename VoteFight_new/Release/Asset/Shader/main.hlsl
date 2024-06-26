@@ -400,6 +400,19 @@ float4 PS_Bilboard(VS_BILBOARD_OUTPUT input) : SV_TARGET
     if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
     {
         textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
+    }
+
+    return textureColor;
+}
+
+float4 PS_BilboardText(VS_BILBOARD_OUTPUT input) : SV_TARGET
+{
+    float4 textureColor = gvColor;
+	
+    // 이 텍스처 좌표 위치에서 샘플러를 사용하여 텍스처에서 픽셀 색상을 샘플링합니다.
+    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
+    {
+        textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
 
         if (textureColor.r == 0.0f && textureColor.g == 0.0f && textureColor.b == 0.0f)
         {

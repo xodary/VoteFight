@@ -91,21 +91,14 @@ void CPlayer::Init()
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
-	animator->SetWeight("idle", 1.0f);
+	animator->SetWeight("Pistol_run", 1.0f);
 	m_Inventory = new CInventory();
 
+	speech_bubble = new CSpeechBubbleUI(this);
+	m_HPBar = new CHPbarUI(this);
+	
 	m_playerTextBar = new CTextUI(this);
-	m_playerTextBar->m_isActive = true;
 	m_playerTextBar->SetName("Namebar");
-	CMaterial* textMaterial = new CMaterial();
-	CTextMesh* mesh = new CTextMesh(CGameFramework::GetInstance()->m_FontData, m_name.c_str(), 0, 0, 0.1f, 0.3f);
-	m_playerTextBar->SetMesh(mesh);
-	textMaterial->SetTexture(CAssetManager::GetInstance()->GetTexture("text"));
-	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
-	textMaterial->m_shaders.push_back(BilboardShader);
-	m_playerTextBar->m_materials.push_back(textMaterial);
-	CTransform* textbarTransform = reinterpret_cast<CTransform*>(m_playerTextBar->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	CTransform* myTransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 }
 
 void CPlayer::AnotherInit()
@@ -137,11 +130,15 @@ void CPlayer::Update()
 {
 	CObject::Update();
 	if (m_playerTextBar != NULL) m_playerTextBar->Update();
+	if (speech_bubble != NULL) speech_bubble->Update();
+	if (m_HPBar != NULL) m_HPBar->Update();
 }
 
 void CPlayer::RenderBilboard(CCamera* camera)
 {
 	m_playerTextBar->Render(camera);
+	speech_bubble->Render(camera);
+	m_HPBar->Render(camera);
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
