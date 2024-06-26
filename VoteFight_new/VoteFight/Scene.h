@@ -1,5 +1,5 @@
 #pragma once
-#include "Terrain.h"
+#include "TerrainObject.h"
 
 class CObject;
 
@@ -38,8 +38,7 @@ public:
 	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
 	void DeleteGroupObject(GROUP_TYPE groupType);
 
-	CTerrain* m_terrain = nullptr;
-	void CreateTerrain() { m_terrain = new CTerrain(257,257); };
+	CTerrainObject* m_terrain = nullptr;
 	float GetTerrainHeight(float x, float z) { 
 		if (m_terrain && x >= 0 && z >= 0)
 			return m_terrain->OnGetHeight(x, z);
@@ -49,7 +48,7 @@ public:
 			return		0.f;
 		}
 	};
-	CTerrain* GetTerrain() const { return m_terrain; };
+	CTerrainObject* GetTerrain() const { return m_terrain; };
 
 	virtual void Init() = 0;
 

@@ -15,11 +15,11 @@
 #include "Animator.h"
 #include "Transform.h"
 #include "Camera.h"
- #include"Terrain.h"
- #include"Bilboard.h"
+#include "Bilboard.h"
 #include "MainShader.h"
 #include "./ImaysNet/ImaysNet.h"
 #include "./ImaysNet/PacketQueue.h"
+#include "TerrainObject.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -95,7 +95,7 @@ void CGameScene::Exit()
 
 void CGameScene::Init()
 {
-	heights = CTerrain::Load("HeightMap");
+	m_terrain = CTerrainObject::Load("HeightMap3");
 
 	// ¾À ·Îµå
 	Load("GameScene.bin");
@@ -154,9 +154,7 @@ void CGameScene::Update()
 	CTransform* p_tf = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	XMFLOAT3 pos = p_tf->GetPosition();
 	if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400) {
-		float height = heights[(int)pos.x][(int)pos.z];
-		if (height > 0.05f)
-			p_tf->SetPosition(XMFLOAT3(pos.x, heights[(int)pos.x][(int)pos.z], pos.z));
+		p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 	}
 
 #ifdef CONNECT_SERVER

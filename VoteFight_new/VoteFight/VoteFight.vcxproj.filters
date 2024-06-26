@@ -359,9 +359,6 @@
     <ClInclude Include="CollisionManager.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="OtherPlayerStates.h">
-      <Filter>헤더 파일\08. State</Filter>
-    </ClInclude>
     <ClInclude Include="MainShader.h">
       <Filter>헤더 파일\06. Asset\Shader</Filter>
     </ClInclude>
@@ -391,6 +388,9 @@
     </ClInclude>
     <ClInclude Include="ImGUI\imstb_truetype.h">
       <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="TerrainObject.h">
+      <Filter>헤더 파일\05. Object\05-04. Terrain</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -595,9 +595,6 @@
     <ClCompile Include="ImaysNet\Endpoint.cpp">
       <Filter>소스 파일\10. Server\0. ImaysNet</Filter>
     </ClCompile>
-    <ClCompile Include="OtherPlayerStates.cpp">
-      <Filter>소스 파일\08. State</Filter>
-    </ClCompile>
     <ClCompile Include="MainShader.cpp">
       <Filter>소스 파일\06. Asset\Shader</Filter>
     </ClCompile>
@@ -624,6 +621,9 @@
     </ClCompile>
     <ClCompile Include="ImGUI\imgui_widgets.cpp">
       <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="TerrainObject.cpp">
+      <Filter>소스 파일\05. Object\05-04. Terrain</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

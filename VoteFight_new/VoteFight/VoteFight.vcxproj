@@ -82,7 +82,7 @@
     <IntDir>$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutDir>$(SolutionDir)Output\Debug\</OutDir>
+    <OutDir>$(SolutionDir)Output\Release\</OutDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -179,7 +179,7 @@
     <ClInclude Include="ImGUI\imstb_truetype.h" />
     <ClInclude Include="LoginScene.h" />
     <ClInclude Include="MainShader.h" />
-    <ClInclude Include="OtherPlayerStates.h" />
+    <ClInclude Include="TerrainObject.h" />
     <ClInclude Include="UpsampleBlur.h" />
     <ClInclude Include="VCTMainShader.h" />
     <ClInclude Include="D3DX12.h" />
@@ -269,7 +269,7 @@
     <ClCompile Include="ImGUI\imgui_widgets.cpp" />
     <ClCompile Include="LoginScene.cpp" />
     <ClCompile Include="MainShader.cpp" />
-    <ClCompile Include="OtherPlayerStates.cpp" />
+    <ClCompile Include="TerrainObject.cpp" />
     <ClCompile Include="UpsampleBlur.cpp" />
     <ClCompile Include="VCTMainShader.cpp" />
     <ClCompile Include="DepthBuffer.cpp">

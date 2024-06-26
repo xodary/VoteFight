@@ -20,7 +20,6 @@ public:
 	CState* GetCurrentState();
 
 	void ChangeState(CState* state);
-	void ChangeState(STATE_ENUM n);
 
 	virtual void Update();
 };

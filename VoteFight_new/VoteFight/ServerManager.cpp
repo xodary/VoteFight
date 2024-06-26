@@ -278,7 +278,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 			net_transform->SetPosition(XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z));
 			net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
-			net_stateMachine->ChangeState(recv_packet->m_state);
 
 			// cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
 		}

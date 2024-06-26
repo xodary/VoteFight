@@ -346,32 +346,3 @@ XMFLOAT4 CTerrain::Add(const XMFLOAT4& vec0, const XMFLOAT4& vec1)
 	addVector.w = vec0.w + vec1.w;
 	return addVector;
 }
-
-vector<vector<float>> CTerrain::Load(const string& fileName)
-{
-	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Terrain\\" + fileName + ".bin";
-	ifstream in(filePath, ios::binary);
-	string str;
-	vector<vector<float>> heights;
-	int num;
-	in.read(reinterpret_cast<char*>(&num), sizeof(int));
-	heights.resize(400);
-	for (int i = 0; i < 400; ++i)
-		heights[i].resize(400);
-
-	for(int i = 0; i < num; ++i)
-	{
-		int x = 0;
-		int z = 0;
-		in.read(reinterpret_cast<char*>(&x), sizeof(int));
-		in.read(reinterpret_cast<char*>(&z), sizeof(int));
-		float height = 0;
-		in.read(reinterpret_cast<char*>(&height), sizeof(float));
-
-		if(0 <= x && x < 400 && 0 <= z && z < 400)
-			heights[x][z] = height;
-	}
-
-	return heights;
-
-}

@@ -11,7 +11,6 @@
 #include "Animator.h"
 #include "Camera.h"
 #include "StateMachine.h"
-#include "OtherPlayerStates.h"
 #include "Transform.h"
 #include "PlayerStates.h"
 #include "NPC.h"
@@ -115,7 +114,7 @@ void CPlayer::AnotherInit()
 {
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 
-	stateMachine->SetCurrentState(COtherPlayerIdleState::GetInstance());
+	//stateMachine->SetCurrentState(COtherPlayerIdleState::GetInstance());
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
