@@ -87,12 +87,12 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera, int Object
 {
     float RotateSpeed = 0.4f;
     float4 LightAmbient = m_lights[nIndex].m_xmf4Ambient;
-    LightAmbient = sin(gfTotalTime * RotateSpeed);
+    //LightAmbient = sin(gfTotalTime * RotateSpeed);
     
     float3 vToLight = m_lights[nIndex].m_direction;
     float3 TIme_vToLight = vToLight;
-    TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
-    TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
+    //TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
+    //TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
     
     float fDiffuseFactor = dot(vNormal, TIme_vToLight) * 0.6 + 0.4;
     
@@ -371,32 +371,46 @@ float4 PS_Main(PSInput input) : SV_TARGET
 struct VS_BILBOARD_INPUT
 {
     float3 position : POSITION;
+    float2 uv : TEXCOORD;
 };
 
 struct VS_BILBOARD_OUTPUT
 {
     float4 position : SV_POSITION;
-    float3 positionW : POSITION;
+    float2 uv : TEXCOORD;
 };
 
 VS_BILBOARD_OUTPUT VS_Bilboard(VS_BILBOARD_INPUT input)
 {
     VS_BILBOARD_OUTPUT output;
-    
-    output.positionW = mul(float4(input.position, 1.0f), gmtxGameObject);
-    output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
+   
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    output.uv = input.uv;
 
-    return (output);
+    return output;
 }
 
 float4 PS_Bilboard(VS_BILBOARD_OUTPUT input) : SV_TARGET
 {
-    float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.positionW.xy);
-    float4 cColor = cBaseTexColor;
-    
-    return (cColor);
-}
+    float4 textureColor = gvColor;
+	
+    // 이 텍스처 좌표 위치에서 샘플러를 사용하여 텍스처에서 픽셀 색상을 샘플링합니다.
+    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
+    {
+        textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
 
+        if (textureColor.r == 0.0f && textureColor.g == 0.0f && textureColor.b == 0.0f)
+        {
+            discard;
+        }
+        else
+        {
+            textureColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }
+
+    return textureColor;
+}
 
 // ======== Skybox =========
 struct VS_SKYBOX_CUBEMAP_INPUT

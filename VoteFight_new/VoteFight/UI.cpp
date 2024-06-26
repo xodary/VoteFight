@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "UI.h"
-
+#include "CameraManager.h"
 #include "GameFramework.h"
-
+#include "Camera.h"
 #include "AssetManager.h"
 #include "InputManager.h"
 
@@ -284,4 +284,84 @@ void CUI::Render(CCamera* camera)
 			child->Render(camera);
 		}
 	}
+}
+
+CTextUI::CTextUI(CObject* owner)
+{
+	CreateComponent(COMPONENT_TYPE::TRANSFORM);
+	m_owner = owner;
+}
+
+CTextUI::~CTextUI()
+{
+}
+
+CComponent* CTextUI::CreateComponent(COMPONENT_TYPE componentType)
+{
+	// 이미 해당 컴포넌트를 가지고 있었다면, 삭제 후 새로 생성한다.
+	if (m_components[static_cast<int>(componentType)] != nullptr)
+	{
+		delete m_components[static_cast<int>(componentType)];
+		m_components[static_cast<int>(componentType)] = nullptr;
+	}
+
+	switch (componentType)
+	{
+		// UI는 CSkinningAnimator 컴포넌트가 아닌 CUIAnimator 컴포넌트를 사용한다.
+	//case COMPONENT_TYPE::ANIMATOR:
+	//	m_components[static_cast<int>(componentType)] = new CUIAnimator();
+	//	break;
+	case COMPONENT_TYPE::TRANSFORM:
+		// UI는 CTransform 컴포넌트가 아닌 CRectTransform 컴포넌트를 사용한다.
+		m_components[static_cast<int>(componentType)] = new CTransform();
+		break;
+	default:
+		// 그 외의 컴포넌트는 CObject의 함수를 호출한다.
+		return CObject::CreateComponent(componentType);
+	}
+
+	m_components[static_cast<int>(componentType)]->SetOwner(this);
+
+	return m_components[static_cast<int>(componentType)];
+}
+
+void CTextUI::Render(CCamera* camera)
+{
+	UpdateShaderVariables();
+
+	CTextMesh* mesh = static_cast<CTextMesh*>(GetMesh());
+
+	if (mesh != nullptr)
+	{
+		const vector<CMaterial*>& materials = GetMaterials();
+
+		for (int i = 0; i < materials.size(); ++i)
+		{
+			materials[i]->SetPipelineState(RENDER_TYPE::STANDARD);
+			materials[i]->UpdateShaderVariables();
+			mesh->Render();
+		}
+	}
+
+	const vector<CObject*>& children = GetChildren();
+
+	for (const auto& child : children)
+	{
+		if (child->IsActive() && !child->IsDeleted())
+		{
+			child->Render(camera);
+		}
+	}
+}
+
+void CTextUI::Update()
+{
+	CObject::Update();
+	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	
+	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
+	
+	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 4.0f, transform->GetPosition().z));
 }

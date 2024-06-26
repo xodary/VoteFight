@@ -15,7 +15,6 @@
 #include "PlayerStates.h"
 #include "NPC.h"
 #include "UI.h"
-
 #include "Transform.h"
 #include "Mesh.h"
 
@@ -95,10 +94,11 @@ void CPlayer::Init()
 	animator->SetWeight("idle", 1.0f);
 	m_Inventory = new CInventory();
 
-	CUI* m_playerTextBar = new CUI();
+	m_playerTextBar = new CTextUI(this);
+	m_playerTextBar->m_isActive = true;
 	m_playerTextBar->SetName("Namebar");
 	CMaterial* textMaterial = new CMaterial();
-	CTextMesh* mesh = new CTextMesh(CGameFramework::GetInstance()->m_FontData, m_name.c_str(), 0, 0, 0.01f, 0.1f);
+	CTextMesh* mesh = new CTextMesh(CGameFramework::GetInstance()->m_FontData, m_name.c_str(), 0, 0, 0.1f, 0.3f);
 	m_playerTextBar->SetMesh(mesh);
 	textMaterial->SetTexture(CAssetManager::GetInstance()->GetTexture("text"));
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
@@ -106,8 +106,6 @@ void CPlayer::Init()
 	m_playerTextBar->m_materials.push_back(textMaterial);
 	CTransform* textbarTransform = reinterpret_cast<CTransform*>(m_playerTextBar->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* myTransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
-	textbarTransform->SetPosition(XMFLOAT3(myTransform->GetPosition().x, myTransform->GetPosition().y + 1.2f, myTransform->GetPosition().z));
-	SetUI(m_playerTextBar);
 }
 
 void CPlayer::AnotherInit()
@@ -138,7 +136,12 @@ void CPlayer::Shoot()
 void CPlayer::Update()
 {
 	CObject::Update();
-	
+	if (m_playerTextBar != NULL) m_playerTextBar->Update();
+}
+
+void CPlayer::RenderBilboard(CCamera* camera)
+{
+	m_playerTextBar->Render(camera);
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)

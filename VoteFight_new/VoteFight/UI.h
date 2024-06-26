@@ -38,3 +38,16 @@ public:
 private:
 	void CheckCursorOver();
 };
+
+class CTextUI : public CUI
+{
+public:
+	CObject* m_owner;
+
+	CTextUI(CObject* owner);
+	~CTextUI();
+
+	virtual CComponent* CreateComponent(COMPONENT_TYPE componentType);
+	virtual void Render(CCamera* camera);
+	virtual void Update();
+};

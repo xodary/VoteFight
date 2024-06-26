@@ -106,6 +106,10 @@ void CGameScene::Init()
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
 	CObject* playerObject = CObject::Load("hugo_idle");
+	CObject* gun = CObject::Load("Gun");
+	CObject* gunPos = playerObject->FindFrame("GunPos");
+	gunPos->m_children.push_back(gun);
+	gun->m_parent = gunPos;
 	CTransform* transform = reinterpret_cast<CTransform*>(playerObject->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	transform->SetPosition(XMFLOAT3(0, 2.37f, 0));
 	AddObject(GROUP_TYPE::PLAYER, playerObject);
@@ -335,6 +339,9 @@ void CGameScene::Render()
 	commandList->DrawInstanced(4, 1, 0, 0);
 
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
+	camera->RSSetViewportsAndScissorRects();
+	camera->UpdateShaderVariables();
+
 	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
 	{
 		if ((object->IsActive()) && (!object->IsDeleted()))
@@ -342,6 +349,16 @@ void CGameScene::Render()
 			object->Render(camera);
 		}
 	}
+	
+	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::PLAYER)])
+	{
+		if ((object->IsActive()) && (!object->IsDeleted()))
+		{
+			object->RenderBilboard(camera);
+		}
+	}
+
+	
 
 	// for (auto object : m_objects_id) {
 	// 	if (object.second != nullptr)

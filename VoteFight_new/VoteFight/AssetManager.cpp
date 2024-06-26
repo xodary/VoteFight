@@ -585,14 +585,17 @@ void CAssetManager::ReleaseUploadBuffers()
 void CAssetManager::SceneLoadMeshes()
 {
 	LoadMeshes("Meshes.bin");
+	LoadMeshes("WeaponMeshes.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
 {
 	LoadMaterials("Materials.bin");
+	LoadMaterials("WeaponMaterials.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
 {
 	LoadTextures("Textures.bin");
+	LoadTextures("WeaponTextures.bin");
 }

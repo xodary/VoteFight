@@ -385,6 +385,8 @@ VS_BILBOARD_OUTPUT VS_Bilboard(VS_BILBOARD_INPUT input)
     VS_BILBOARD_OUTPUT output;
    
     output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    //output.position = mul(float4(input.position, 1.0f), gmtxGameObject);
+    //output.position = float4(input.position, 1.0f);
     output.uv = input.uv;
 
     return output;

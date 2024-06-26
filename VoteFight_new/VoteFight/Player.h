@@ -4,6 +4,7 @@
 class CItem;
 class CInventory;
 class CUI;
+class CTextUI;
 
 class CPlayer : public CCharacter
 {
@@ -17,7 +18,7 @@ private:
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
 
-
+    CTextUI* m_playerTextBar;
 public:
     bool isMove = true;
 	CPlayer();
@@ -44,6 +45,7 @@ public:
 	void Shoot();
 
 	virtual void Update();
+	virtual void RenderBilboard(CCamera* camera);
 
     unsigned int    m_id{};
 

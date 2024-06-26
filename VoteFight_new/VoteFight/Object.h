@@ -94,6 +94,7 @@ public:
 
 	virtual void PreRender(CCamera* camera);
 	virtual void Render(CCamera* camera);
+	virtual void RenderBilboard(CCamera* camera) {}
 
 private:
 	static CObject* LoadFrame(ifstream& in);

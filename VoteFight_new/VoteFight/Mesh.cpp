@@ -371,6 +371,8 @@ CTextMesh::CTextMesh(const std::vector<FontType>& font, const char* sentence, fl
 	vector<XMFLOAT2> uv(6 * numLetters);
 	m_positions.resize(6 * numLetters);
 
+	float textSize = 0.03;
+
 	for (size_t i = 0, k = 0; i < numLetters; ++i, k += 6)
 	{
 		int letter = ((int)sentence[i] - 32);
@@ -389,7 +391,7 @@ CTextMesh::CTextMesh(const std::vector<FontType>& font, const char* sentence, fl
 			uv[k + 0] = XMFLOAT2(font[letter].left, 0.0f);
 
 			// top right
-			m_positions[k + 1] = XMFLOAT3(drawX + font[letter].size * 0.01 + scaleX, drawY, 0.0f);
+			m_positions[k + 1] = XMFLOAT3(drawX + font[letter].size * textSize + scaleX, drawY, 0.0f);
 			uv[k + 1] = XMFLOAT2(font[letter].right, 0.0f);
 
 			// bottom left
@@ -401,14 +403,14 @@ CTextMesh::CTextMesh(const std::vector<FontType>& font, const char* sentence, fl
 			uv[k + 3] = XMFLOAT2(font[letter].left, 0.8f);
 
 			// top right
-			m_positions[k + 4] = XMFLOAT3(drawX + font[letter].size * 0.01 + scaleX, drawY, 0.0f);
+			m_positions[k + 4] = XMFLOAT3(drawX + font[letter].size * textSize + scaleX, drawY, 0.0f);
 			uv[k + 4] = XMFLOAT2(font[letter].right, 0.0f);
 
 			// bottom right
-			m_positions[k + 5] = DirectX::XMFLOAT3(drawX + font[letter].size * 0.01 + scaleX, drawY - scaleY, 0.0f);
+			m_positions[k + 5] = DirectX::XMFLOAT3(drawX + font[letter].size * textSize + scaleX, drawY - scaleY, 0.0f);
 			uv[k + 5] = XMFLOAT2(font[letter].right, 0.8f);
 
-			drawX += font[letter].size * 0.01 + 0.01 + scaleX;
+			drawX += font[letter].size * textSize + 0.01 + scaleX;
 		}
 	}
 
