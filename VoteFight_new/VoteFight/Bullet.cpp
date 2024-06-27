@@ -4,9 +4,12 @@
 
 void CBullet::UpdatePostion()
 {
+    // y축 회전 각도를 라디안으로 변환
+    float rotationY = XMConvertToRadians(GetRotate().y);
+
     // 회전된 방향 벡터 계산
     XMVECTOR forwardDirection = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f); // 기본적으로 앞 방향을 나타내는 벡터
-    XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&GetRotate()));
+    XMMATRIX rotationMatrix = XMMatrixRotationY(rotationY);
     XMVECTOR rotatedForward = XMVector3TransformCoord(forwardDirection, rotationMatrix);
 
     // 이동 벡터 계산
@@ -18,7 +21,7 @@ void CBullet::UpdatePostion()
     // 새로운 위치 계산
     XMFLOAT3 newPosition;
     newPosition.x = currPosition.x + XMVectorGetX(moveVector);
-    newPosition.y = currPosition.y + XMVectorGetY(moveVector);
+    newPosition.y = currPosition.y; // y축 이동 없음
     newPosition.z = currPosition.z + XMVectorGetZ(moveVector);
 
     // 위치 설정

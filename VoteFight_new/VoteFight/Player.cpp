@@ -127,7 +127,9 @@ void CPlayer::Shoot(CScene& currScene)
 			XMFLOAT3 currPostion(GetPostion());
 			currPostion.y += 1.f;
 			Bullet->SetPostion(currPostion);
+			XMFLOAT3 currRotate(GetRotate());
 			Bullet->SetRotate(GetRotate());
+			cout << "x : " << currRotate.x << ",  y : " << currRotate.y << ", z : " << currRotate.z;
 			Bullet->SetScale(XMFLOAT3(5, 5, 5));
 			currScene.AddObject(GROUP_TYPE::BULLET, Bullet);
 			cout << "¹ß»çµÊ" << endl;
