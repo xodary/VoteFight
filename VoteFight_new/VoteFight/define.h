@@ -75,6 +75,7 @@ enum class GROUP_TYPE
 	PLAYER,				// 1 고정
 	NPC,					// 2 고정
 	MONSTER,			// 3 고정
+	BULLET,			// 4 고정
 	BILBOARD,
 	GROUND_ITEM,
 	SKYBOX,
@@ -187,6 +188,7 @@ enum class ROOT_PARAMETER_TYPE
 	NORMAL_MAP,
 	CUBE_MAP,
 	SHADOW_MAP,
+	CUBE_MAP2,
 
 	COUNT
 };
@@ -197,7 +199,7 @@ enum class TEXTURE_TYPE
 	NORMAL_MAP,
 	CUBE_MAP,
 	SHADOW_MAP,
-
+	CUBE_MAP2,
 	COUNT
 };
 

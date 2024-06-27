@@ -42,6 +42,10 @@ void CPlayerIdleState::Update(CObject* object)
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	if (KEY_TAP(KEY::LBUTTON))
+	{
+		player->Shoot(*CSceneManager::GetInstance()->GetCurrentScene());
+	}
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::D))
 	{

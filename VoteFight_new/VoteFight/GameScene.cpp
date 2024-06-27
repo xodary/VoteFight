@@ -97,6 +97,7 @@ void CGameScene::Enter()
 			static_cast<CMonster*>(Monsters[i])->PlayerDiscovery(objects[0]);
 	}
 
+	object_manager.ShowObjects();
 }
 
 void CGameScene::Exit()
@@ -108,18 +109,7 @@ void CGameScene::Init()
 	CreateTerrain();
 
 	// 씬 로드
-	Load("GameScene.bin");
-	// Load("Fir_Tree_Scene.bin");
-	// Load("White_House_Scene.bin");
-	// Load("Building_Bakery_Scene.bin");
-	// Load("Woods.bin");
-	// Load("FenceScene.bin");
-	// Load("Homer_link_Scene.bin");
-	// //Load("Homer_Solider_Scene.bin");
-	// Load("Marge_Police_Scene.bin");
-	 Load("FishMon_Scene.bin");
-	// Load("Sea_Scene.bin");
-	LoadUI("GameSceneUI.bin");
+	SceneLoad();
 
 	// 스카이박스 추가
 	CObject* object = new CSkyBox();
@@ -139,6 +129,33 @@ void CGameScene::Init()
 
 	CreateShaderVariables();
 
+	InitLight();
+	
+
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
+
+
+}
+
+void CGameScene::SceneLoad()
+{
+	Load("GameScene.bin");
+	Load("Fir_Tree_Scene.bin");
+	// Load("White_House_Scene.bin");
+	// Load("Building_Bakery_Scene.bin");
+	// Load("Woods.bin");
+	// Load("FenceScene.bin");
+	// Load("Homer_link_Scene.bin");
+	// //Load("Homer_Solider_Scene.bin");
+	// Load("Marge_Police_Scene.bin");
+	// Load("FishMon_Scene.bin");
+	// Load("Sea_Scene.bin");
+	LoadUI("GameSceneUI.bin");
+}
+
+void CGameScene::InitLight()
+{
 	// 조명(Light) 생성
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
@@ -159,7 +176,7 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[1].m_isActive = true;
 	m_mappedGameScene->m_lights[1].m_shadowMapping = false;
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);	
+	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 500.f;
 
@@ -183,9 +200,6 @@ void CGameScene::Init()
 	m_mappedGameScene->m_lights[2].m_attenuation = XMFLOAT3(0.5f, 0.01f, 0.0f);
 	m_mappedGameScene->m_lights[2].m_range = 7.0f;
 	*/
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
-
 }
 
 // 2024 04 18일 이시영 수정 

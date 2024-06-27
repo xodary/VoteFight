@@ -69,21 +69,12 @@ public:
 
 	CTerrain* m_terrain = nullptr;
 	void CreateTerrain() { m_terrain = new CTerrain(257,257); };
-	float GetTerrainHeight(float x, float z) { 
-		if (m_terrain && x >= 0 && z >= 0)
-			return m_terrain->OnGetInGameHeight(x, z);
-		else
-		{
-			cout << "터레인 생성이 안되었거나 또는 범위를 벗어났습니다." << endl;
-			return		0.f;
-		}
-	};
+	float GetTerrainHeight(float x, float z);;
 	CTerrain* GetTerrain() const { return m_terrain; };
 
 	virtual void Init() = 0;
 
 	void LoadUI(const string& fileName);
-
 	void ReleaseUploadBuffers();
 
 	virtual void Update();
@@ -91,4 +82,6 @@ public:
 	virtual void PreRender();
 	virtual void Render();
 	virtual void PostRender();
+
+	ObjectManager object_manager;
 };

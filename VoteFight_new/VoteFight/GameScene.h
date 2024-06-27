@@ -43,6 +43,10 @@ public:
 
 	virtual void Init();
 
+	void SceneLoad();
+
+	void InitLight();
+
 	virtual void Update();
 
 	virtual void PreRender();

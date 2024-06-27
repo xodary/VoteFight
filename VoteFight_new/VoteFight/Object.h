@@ -46,7 +46,7 @@ public:
 	UINT GetInstanceID();
 
 	void SetName(const string& name);
-	const string& GetName();
+	const string& GetName() const;
 
 	void SetActive(bool isActive);
 	bool IsActive();
@@ -59,6 +59,10 @@ public:
 
 	void SetGroupType(const UINT GroupType) { m_GroupType = GroupType; };
 	UINT GetGroupType()const { return m_GroupType; };
+
+	CMesh* GetMesh()const { return m_mesh; };
+	vector<CMaterial*> GetMaterial() const { return m_materials; };
+	
 
 	void SetTerrainY( CScene* curScene);
 	void InTerrainSpace(const CScene& curScene);
@@ -102,6 +106,44 @@ public:
 	virtual const XMFLOAT3& GetRotate();
 	virtual void SetRotate(const XMFLOAT3& rRotate);
 
+	virtual const XMFLOAT3& GetScale();
+	virtual void SetScale(const XMFLOAT3& rScale);
+
+	bool operator==(const CObject& other) const {
+		return m_name == other.m_name;
+	}
+
 private:
 	static CObject* LoadFrame(ifstream& in);
+};
+
+// 해시 함수 객체
+struct CObjectPtrHash {
+	std::size_t operator()(const CObject* obj) const {
+		return std::hash<std::string>()(obj->GetName());
+	}
+};
+
+// 비교 함수 객체
+struct CObjectPtrEqual {
+	bool operator()(const CObject* lhs, const CObject* rhs) const {
+		return lhs->GetName() == rhs->GetName();
+	}
+};
+
+class ObjectManager {
+private:
+	unordered_set<CObject*, CObjectPtrHash, CObjectPtrEqual> unique_objects;
+	unordered_map<string, CObject*> name_map;
+
+public:
+	~ObjectManager();
+	void AddObject(CObject* obj);
+	void RemoveObject(CObject* obj);
+	CObject* FindObjectByName(const string& name) const;
+	void ForEachObject(const function<void(CObject*)>& func) const;
+	void ActivateObject(const string& name);
+	void DeactivateObject(const string& name);
+	void Clear();
+	void ShowObjects() const;  // 모든 객체의 이름을 출력하는 함수
 };

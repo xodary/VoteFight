@@ -4,36 +4,36 @@
 
 void CBullet::UpdatePostion()
 {
-    XMFLOAT3 currPostion = GetPostion();
-    XMFLOAT3 addPostion = m_direction;
-    addPostion.x *= m_fSpeed;
-    addPostion.y *= m_fSpeed;
-    addPostion.z *= m_fSpeed;
-    currPostion.x += addPostion.x;
-    currPostion.y += addPostion.y;
-    currPostion.z += addPostion.z;
+    // 회전된 방향 벡터 계산
+    XMVECTOR forwardDirection = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f); // 기본적으로 앞 방향을 나타내는 벡터
+    XMMATRIX rotationMatrix = XMMatrixRotationRollPitchYawFromVector(XMLoadFloat3(&GetRotate()));
+    XMVECTOR rotatedForward = XMVector3TransformCoord(forwardDirection, rotationMatrix);
 
-    SetPostion(currPostion);
+    // 이동 벡터 계산
+    XMVECTOR moveVector = rotatedForward * m_fSpeed * CTimeManager::GetInstance()->GetDeltaTime();
+
+    // 현재 위치 얻기
+    XMFLOAT3 currPosition = GetPostion();
+
+    // 새로운 위치 계산
+    XMFLOAT3 newPosition;
+    newPosition.x = currPosition.x + XMVectorGetX(moveVector);
+    newPosition.y = currPosition.y + XMVectorGetY(moveVector);
+    newPosition.z = currPosition.z + XMVectorGetZ(moveVector);
+
+    // 위치 설정
+    SetPostion(newPosition);
 }
 
 CBullet::CBullet()
 {
-    // 총알 생성 시 필요한 초기화 작업을 수행할 수 있습니다.
-}
-
-CBullet::CBullet(XMFLOAT3 postion, XMFLOAT3 direction)
-{
-    SetMesh();
-    SetPostion(postion);
-    SetRotate(direction);
-    m_direction = direction;
-    m_fLifeTime = 5.0f;
 }
 
 CBullet::~CBullet()
 {
     // 총알 소멸 시 필요한 정리 작업을 수행할 수 있습니다.
 }
+
 
 void CBullet::Shoot()
 {
@@ -43,8 +43,11 @@ void CBullet::Shoot()
 
 void CBullet::Update()
 {
+    CObject::Update();
+    cout << "발사중..." << endl;
     // 타이머 매니저에서 델타 타임을 가져와서 m_fLifeTime을 줄입니다.
     float deltaTime = CTimeManager::GetInstance()->GetDeltaTime();
+    UpdatePostion();
 
     if (m_fLifeTime <= 0.0f)
     {
@@ -52,10 +55,11 @@ void CBullet::Update()
     }
     else
     {
-        UpdatePostion();
-        m_fLifeTime -= deltaTime;
+            m_fLifeTime -= deltaTime;
     }
+}
 
-    // 총알의 위치를 업데이트합니다.
-    UpdatePostion();
+void CBullet::SetDirection(const XMFLOAT3& direction)
+{
+    m_direction = direction;
 }

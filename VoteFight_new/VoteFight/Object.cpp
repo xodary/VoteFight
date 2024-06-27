@@ -19,6 +19,8 @@
 #include "Camera.h"
 #include "SkinnedMesh.h"
 #include "Scene.h"
+#include "Bullet.h"
+
 
 UINT CObject::m_nextInstanceID = 0;
 
@@ -214,7 +216,7 @@ void CObject::SetName(const string& name)
 	m_name = name;
 }
 
-const string& CObject::GetName()
+const string& CObject::GetName() const
 {
 	return m_name;
 }
@@ -525,7 +527,6 @@ void CObject::SetPostion(const XMFLOAT3& rVector)
 const XMFLOAT3& CObject::GetRotate()
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
-
 	return transform->GetRotation();
 
 }
@@ -534,4 +535,75 @@ void CObject::SetRotate(const XMFLOAT3& rRotate)
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	transform->SetRotation(rRotate);
+}
+
+const XMFLOAT3& CObject::GetScale()
+{
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	return transform->GetScale();
+}
+
+void CObject::SetScale(const XMFLOAT3& rScale)
+{
+	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	transform->SetScale(rScale);
+}
+
+
+// ObjectManager의 메서드 정의
+ObjectManager::~ObjectManager() {
+	Clear();
+}
+
+void ObjectManager::AddObject(CObject* obj) {
+	unique_objects.insert(obj);
+	name_map[obj->GetName()] = obj;
+}
+
+void ObjectManager::RemoveObject(CObject* obj) {
+	unique_objects.erase(obj);
+	name_map.erase(obj->GetName());
+	delete obj;
+}
+
+CObject* ObjectManager::FindObjectByName(const string& name) const {
+	auto it = name_map.find(name);
+	if (it != name_map.end()) {
+		return it->second;
+	}
+	return nullptr;
+}
+
+void ObjectManager::ForEachObject(const function<void(CObject*)>& func) const {
+	for (auto obj : unique_objects) {
+		func(obj);
+	}
+}
+
+void ObjectManager::ActivateObject(const string& name) {
+	CObject* obj = FindObjectByName(name);
+	if (obj) {
+		obj->SetActive(true);
+	}
+}
+
+void ObjectManager::DeactivateObject(const string& name) {
+	CObject* obj = FindObjectByName(name);
+	if (obj) {
+		obj->SetActive(false);
+	}
+}
+
+void ObjectManager::Clear() {
+	for (auto obj : unique_objects) {
+		delete obj;
+	}
+	unique_objects.clear();
+	name_map.clear();
+}
+
+void ObjectManager::ShowObjects() const {
+	for (const auto& obj : unique_objects) {
+		cout << obj->GetName() << endl;
+	}
 }

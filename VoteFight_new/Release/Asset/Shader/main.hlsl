@@ -227,6 +227,7 @@ cbuffer cbBoneTransformInfo : register(b6)
 Texture2D gtxtAlbedoTexture : register(t0);
 Texture2D gtxtNormalTexture : register(t1);
 TextureCube gtxtCubeTexture : register(t2);
+TextureCube gtxtCubeTexture2 : register(t4);
 
 struct VS_STANDARD_INPUT
 {
@@ -390,10 +391,11 @@ VS_SKYBOX_CUBEMAP_OUTPUT VS_SkyBox(VS_SKYBOX_CUBEMAP_INPUT input)
 float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
 {
     float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
-    float4 nightColor = float4(cColor.a * 0.3f, cColor.g * 0.3f, cColor.b * 0.3f, 1);
+    float4 cColor2 = gtxtCubeTexture2.Sample(gssClamp, input.positionL);
     
-  //  return lerp(cColor, nightColor, sin(gfTotalTime));
-    return cColor;
+    //return lerp(cColor, cColor2, sin(gfTotalTime));
+    // return cColor;
+     return cColor;
 }
 
 

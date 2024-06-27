@@ -114,6 +114,9 @@ void CTexture::UpdateShaderVariable()
 	case TEXTURE_TYPE::SHADOW_MAP:
 		commandlist->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::SHADOW_MAP), srvHandle.GetGPUHandle());
 		break;
+	case TEXTURE_TYPE::CUBE_MAP2:
+		commandlist->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::CUBE_MAP2), srvHandle.GetGPUHandle());
+		break;
 	}
 }
 

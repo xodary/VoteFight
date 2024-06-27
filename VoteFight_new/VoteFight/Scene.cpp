@@ -8,6 +8,7 @@
 #include "UI.h"
 #include "Transform.h"
 #include "Camera.h"
+#include "Bullet.h"
 
 CScene::CScene() :
 	m_name(),
@@ -95,6 +96,7 @@ void CScene::Load(const string& fileName)
 					object->Init();
 
 					AddObject(groupType, object);
+					object_manager.AddObject(object);
 				}
 				break;
 			}
@@ -130,6 +132,7 @@ void CScene::LoadUI(const string& fileName)
 		}
 	}
 }
+
 
 
 void CScene::CreateShaderVariables()
@@ -172,6 +175,16 @@ void CScene::DeleteGroupObject(GROUP_TYPE groupType)
 	Utility::SafeDelete(m_objects[static_cast<int>(groupType)]);
 }
 
+inline float CScene::GetTerrainHeight(float x, float z) {
+	if (m_terrain && x >= 0 && z >= 0)
+		return m_terrain->OnGetInGameHeight(x, z);
+	else
+	{
+		cout << "터레인 생성이 안되었거나 또는 범위를 벗어났습니다." << endl;
+		return		0.f;
+	}
+}
+
 void CScene::ReleaseUploadBuffers()
 {
 	for (int i = 0; i < static_cast<int>(GROUP_TYPE::COUNT); ++i)
@@ -191,7 +204,7 @@ void CScene::Update()
 		{
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
-				object->Update();
+				 object->Update();
 				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
 				if (m_terrain &&
 					( 

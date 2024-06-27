@@ -11,7 +11,6 @@ class CAnimation;
 class CAssetManager : public CSingleton<CAssetManager>
 {
 	friend class CSingleton<CAssetManager>;
-
 private:
 	string							           m_assetPath;
 

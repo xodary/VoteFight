@@ -361,6 +361,7 @@ void CGameFramework::CreateRootSignature()
 	d3d12DescriptorRanges[1].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 1);	// Normal
 	d3d12DescriptorRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);	// Cube
 	d3d12DescriptorRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3);	// Shadow Map
+	d3d12DescriptorRanges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4);	// Cube2
 
 	CD3DX12_ROOT_PARAMETER d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::COUNT)] = {};
 
@@ -375,6 +376,7 @@ void CGameFramework::CreateRootSignature()
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::NORMAL_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[1]); // normalMap : register(t1)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CUBE_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[2]);	// cubeMap : register(t2)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::SHADOW_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[3]); // shadowMap : register(t3)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CUBE_MAP2)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[4]);	// cubeMap2 : register(t4)
 
 	D3D12_ROOT_SIGNATURE_FLAGS d3d12RootSignatureFlags = { D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT }; // IA단계를 허용, 스트림 출력 단계를 허용
 	CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[4] = {};

@@ -222,7 +222,7 @@ void CAssetManager::LoadMaterials(const string& fileName)
 		std::cerr << "파일을 열 수 없습니다." << std::endl;
 		return;
 	}
-
+	cout << fileName << "  로딩..." << endl;
 	string str;
 
 	while (true)
@@ -516,6 +516,7 @@ void CAssetManager::Init()
 	texture->m_DepthStencilResource = DX::CreateTextureResource(framework->GetDevice(), DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 1, 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, DXGI_FORMAT_D32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_D32_FLOAT, {1.0f, 0.0f} });
 	framework->GetDevice()->CreateDepthStencilView(texture->m_DepthStencilResource.Get(), &d3d12DepthStencilViewDesc, texture->m_DSVHandle.GetCPUHandle());
 
+	
 }
 
 void CAssetManager::CreateShaderResourceViews()
@@ -525,7 +526,8 @@ void CAssetManager::CreateShaderResourceViews()
 	for (const auto& texture : m_textures)
 	{
 		ID3D12Resource* pShaderResource = texture.second->GetTexture();
-		if ((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP) {	// Cubemap (Skybox) 
+		if (((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP) ||	// Cubemap (Skybox) 
+			((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP2)) {	// Cubemap (Skybox) 
 			D3D12_SHADER_RESOURCE_VIEW_DESC d3dShaderResourceViewDesc;
 			d3dShaderResourceViewDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
 			d3dShaderResourceViewDesc.Format = pShaderResource->GetDesc().Format;
@@ -567,6 +569,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("Sea_Mesh.bin");
 	LoadMeshes("White_House_Mesh.bin");
 	LoadMeshes("FishMon_Mesh.bin");
+	LoadMeshes("Bullet_Mesh.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
@@ -581,6 +584,7 @@ void CAssetManager::SceneLoadMaterials()
 	LoadMaterials("Sea_Material.bin");
 	LoadMaterials("White_House_Material.bin");
 	LoadMaterials("FIshMon_Material.bin");
+	LoadMaterials("Bullet_Material.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
@@ -593,4 +597,5 @@ void CAssetManager::SceneLoadTextures()
 	LoadTextures("Sea_Textures.bin");
 	LoadTextures("White_House_Texture.bin");
 	LoadTextures("FishMon_Texture.bin");
+	LoadTextures("Bullet_Texture.bin");
 }

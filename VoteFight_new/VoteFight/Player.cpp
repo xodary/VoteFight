@@ -119,9 +119,20 @@ void CPlayer::Punch()
 
 void CPlayer::Shoot(CScene& currScene)
 {
-	CBullet newbullet(GetPostion(), GetRotate());
-	currScene.AddObject(GROUP_TYPE::STRUCTURE, &newbullet);
-	
+	if (currScene.GetName() == "GameScene")
+	{
+		currScene.object_manager.ShowObjects();
+		CBullet* Bullet = static_cast<CBullet*>(Load("Bullet"));
+		if (Bullet) {
+			XMFLOAT3 currPostion(GetPostion());
+			currPostion.y += 1.f;
+			Bullet->SetPostion(currPostion);
+			Bullet->SetRotate(GetRotate());
+			Bullet->SetScale(XMFLOAT3(5, 5, 5));
+			currScene.AddObject(GROUP_TYPE::BULLET, Bullet);
+			cout << "¹ß»çµÊ" << endl;
+		}
+	}
 }
 
 void CPlayer::Update()
