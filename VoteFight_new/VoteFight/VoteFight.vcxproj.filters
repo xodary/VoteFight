@@ -378,6 +378,9 @@
     <ClInclude Include="Bullet.h">
       <Filter>헤더 파일\05. Object</Filter>
     </ClInclude>
+    <ClInclude Include="SelectScene.h">
+      <Filter>헤더 파일\04. Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -595,6 +598,9 @@
     </ClCompile>
     <ClCompile Include="Bullet.cpp">
       <Filter>소스 파일\05. Object\05-06. OtherObject</Filter>
+    </ClCompile>
+    <ClCompile Include="SelectScene.cpp">
+      <Filter>소스 파일\04. Scene</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -93,11 +93,9 @@ void CGameScene::Enter()
 
 	for (size_t i = 0; i < Monsters.size(); i++)
 	{
-	
 			static_cast<CMonster*>(Monsters[i])->PlayerDiscovery(objects[0]);
 	}
 
-	object_manager.ShowObjects();
 }
 
 void CGameScene::Exit()
@@ -133,6 +131,7 @@ void CGameScene::Init()
 	
 
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 
 
@@ -149,7 +148,8 @@ void CGameScene::SceneLoad()
 	// Load("Homer_link_Scene.bin");
 	// //Load("Homer_Solider_Scene.bin");
 	// Load("Marge_Police_Scene.bin");
-	// Load("FishMon_Scene.bin");
+	Load("FishMon_Scene.bin");
+	Load("Character_Scene.bin");
 	// Load("Sea_Scene.bin");
 	LoadUI("GameSceneUI.bin");
 }

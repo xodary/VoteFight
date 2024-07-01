@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Bullet.h"
 #include "TimeManager.h"
+#include "CollisionManager.h"
 
 void CBullet::UpdatePostion()
 {
@@ -30,6 +31,7 @@ void CBullet::UpdatePostion()
 
 CBullet::CBullet()
 {
+    SetGroupType((UINT)GROUP_TYPE::BULLET);
 }
 
 CBullet::~CBullet()
@@ -41,28 +43,46 @@ CBullet::~CBullet()
 void CBullet::Shoot()
 {
     // 총알 발사 동작을 정의할 수 있습니다.
+    m_bFired = true;
+    cout << (UINT)GetGroupType() << endl;
+    SetGroupType(4);
+    CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::BULLET);
+    CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::BULLET, GROUP_TYPE::MONSTER);
 }
 
 
 void CBullet::Update()
 {
     CObject::Update();
-    cout << "발사중..." << endl;
     // 타이머 매니저에서 델타 타임을 가져와서 m_fLifeTime을 줄입니다.
     float deltaTime = CTimeManager::GetInstance()->GetDeltaTime();
-    UpdatePostion();
 
-    if (m_fLifeTime <= 0.0f)
+    if (m_fLifeTime > 0.0f && m_bFired)
     {
-        this->SetDeleted(true);
+        UpdatePostion();
+        m_fLifeTime -= deltaTime;
     }
     else
     {
-            m_fLifeTime -= deltaTime;
+        this->SetDeleted(true);
     }
 }
 
-void CBullet::SetDirection(const XMFLOAT3& direction)
+void CBullet::OnCollisionEnter(CObject* collidedObject)
 {
-    m_direction = direction;
+    switch (collidedObject->GetGroupType())
+    {
+    case (UINT)GROUP_TYPE::MONSTER:
+        this->SetDeleted(true);
+        break;
+    }
+
+}
+
+void CBullet::OnCollision(CObject* collidedObject)
+{
+}
+
+void CBullet::OnCollisionExit(CObject* collidedObject)
+{
 }

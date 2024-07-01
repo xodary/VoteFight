@@ -81,3 +81,21 @@ public:
 
 	virtual void Update(CObject* object);
 };
+
+class CPlayerFire : public CState, public CSingleton<CPlayerFire>
+{
+	friend class CSingleton<CPlayerFire>;
+	float restAngle;
+	float lookAngle;
+	float speed;
+
+private:
+	CPlayerFire();
+	virtual ~CPlayerFire();
+
+public:
+	virtual void Enter(CObject* object);
+	virtual void Exit(CObject* object);
+
+	virtual void Update(CObject* object);
+};

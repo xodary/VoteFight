@@ -16,6 +16,7 @@ CNPC::CNPC() :
 {
 	SetName("NPC");
 	m_Quest = new CQuest("첫 번째 퀘스트", "첫 번째 퀘스트를 완료하세요!", C_NPC_Item("FireWood_01", 1));
+	SetGroupType((UINT)GROUP_TYPE::NPC);
 }
 
 CNPC::~CNPC()

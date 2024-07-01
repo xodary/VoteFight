@@ -21,7 +21,6 @@
 #include "Scene.h"
 #include "Bullet.h"
 
-
 UINT CObject::m_nextInstanceID = 0;
 
 CObject::CObject() :
@@ -35,7 +34,8 @@ CObject::CObject() :
 	m_parent(),
 	m_children()
 {
-	m_components.resize(static_cast<size_t>(COMPONENT_TYPE::COUNT));
+	m_components.resize(static_cast<size_t>(COMPONENT_TYPE::COUNT)); 
+	SetGroupType((UINT)GROUP_TYPE::STRUCTURE);
 
 	// 모든 객체는 Transform 컴포넌트를 가진다.
 	CreateComponent(COMPONENT_TYPE::TRANSFORM);
@@ -547,63 +547,4 @@ void CObject::SetScale(const XMFLOAT3& rScale)
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	transform->SetScale(rScale);
-}
-
-
-// ObjectManager의 메서드 정의
-ObjectManager::~ObjectManager() {
-	Clear();
-}
-
-void ObjectManager::AddObject(CObject* obj) {
-	unique_objects.insert(obj);
-	name_map[obj->GetName()] = obj;
-}
-
-void ObjectManager::RemoveObject(CObject* obj) {
-	unique_objects.erase(obj);
-	name_map.erase(obj->GetName());
-	delete obj;
-}
-
-CObject* ObjectManager::FindObjectByName(const string& name) const {
-	auto it = name_map.find(name);
-	if (it != name_map.end()) {
-		return it->second;
-	}
-	return nullptr;
-}
-
-void ObjectManager::ForEachObject(const function<void(CObject*)>& func) const {
-	for (auto obj : unique_objects) {
-		func(obj);
-	}
-}
-
-void ObjectManager::ActivateObject(const string& name) {
-	CObject* obj = FindObjectByName(name);
-	if (obj) {
-		obj->SetActive(true);
-	}
-}
-
-void ObjectManager::DeactivateObject(const string& name) {
-	CObject* obj = FindObjectByName(name);
-	if (obj) {
-		obj->SetActive(false);
-	}
-}
-
-void ObjectManager::Clear() {
-	for (auto obj : unique_objects) {
-		delete obj;
-	}
-	unique_objects.clear();
-	name_map.clear();
-}
-
-void ObjectManager::ShowObjects() const {
-	for (const auto& obj : unique_objects) {
-		cout << obj->GetName() << endl;
-	}
 }

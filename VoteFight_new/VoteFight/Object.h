@@ -131,19 +131,3 @@ struct CObjectPtrEqual {
 	}
 };
 
-class ObjectManager {
-private:
-	unordered_set<CObject*, CObjectPtrHash, CObjectPtrEqual> unique_objects;
-	unordered_map<string, CObject*> name_map;
-
-public:
-	~ObjectManager();
-	void AddObject(CObject* obj);
-	void RemoveObject(CObject* obj);
-	CObject* FindObjectByName(const string& name) const;
-	void ForEachObject(const function<void(CObject*)>& func) const;
-	void ActivateObject(const string& name);
-	void DeactivateObject(const string& name);
-	void Clear();
-	void ShowObjects() const;  // 모든 객체의 이름을 출력하는 함수
-};

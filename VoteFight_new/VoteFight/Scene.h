@@ -83,5 +83,4 @@ public:
 	virtual void Render();
 	virtual void PostRender();
 
-	ObjectManager object_manager;
 };

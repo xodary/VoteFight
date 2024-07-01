@@ -96,7 +96,6 @@ void CScene::Load(const string& fileName)
 					object->Init();
 
 					AddObject(groupType, object);
-					object_manager.AddObject(object);
 				}
 				break;
 			}

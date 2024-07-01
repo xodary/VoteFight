@@ -26,6 +26,7 @@ CPlayer::CPlayer() :
 {
 	SetName("Player");
 	m_Inventory = new CInventory();
+	SetGroupType((UINT)GROUP_TYPE::PLAYER);
 }
 
 CPlayer::~CPlayer()
@@ -121,7 +122,6 @@ void CPlayer::Shoot(CScene& currScene)
 {
 	if (currScene.GetName() == "GameScene")
 	{
-		currScene.object_manager.ShowObjects();
 		CBullet* Bullet = static_cast<CBullet*>(Load("Bullet"));
 		if (Bullet) {
 			XMFLOAT3 currPostion(GetPostion());
@@ -129,10 +129,10 @@ void CPlayer::Shoot(CScene& currScene)
 			Bullet->SetPostion(currPostion);
 			XMFLOAT3 currRotate(GetRotate());
 			Bullet->SetRotate(GetRotate());
-			cout << "x : " << currRotate.x << ",  y : " << currRotate.y << ", z : " << currRotate.z;
 			Bullet->SetScale(XMFLOAT3(5, 5, 5));
 			currScene.AddObject(GROUP_TYPE::BULLET, Bullet);
-			cout << "¹ß»çµÊ" << endl;
+			Bullet->Shoot();
+
 		}
 	}
 }
@@ -156,6 +156,11 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 				m_UI[i]->SetActive(true);
 		}
 		break;
+
+	case (UINT)GROUP_TYPE::BULLET:
+		cout << "È÷Æ®!" << endl;
+		break;
+
 	}
 }
 void CPlayer::OnCollision(CObject* collidedObject)
@@ -184,6 +189,7 @@ void CPlayer::OnCollisionExit(CObject* collidedObject)
 	{
 	case (UINT)GROUP_TYPE::STRUCTURE:
 		isMove = true;
+		break;
 	case (UINT)GROUP_TYPE::NPC:
 		for (size_t i = 0; i < m_UI.size(); i++)
 		{

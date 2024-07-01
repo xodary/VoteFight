@@ -570,6 +570,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("White_House_Mesh.bin");
 	LoadMeshes("FishMon_Mesh.bin");
 	LoadMeshes("Bullet_Mesh.bin");
+	LoadMeshes("Character_Meshs.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()

@@ -181,6 +181,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="OtherPlayerStates.h" />
+    <ClInclude Include="SelectScene.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="UpsampleBlur.h" />
     <ClInclude Include="VCTMainShader.h" />
@@ -276,6 +277,7 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="OtherPlayerStates.cpp" />
+    <ClCompile Include="SelectScene.cpp" />
     <ClCompile Include="TitleScene.cpp" />
     <ClCompile Include="UpsampleBlur.cpp" />
     <ClCompile Include="VCTMainShader.cpp" />

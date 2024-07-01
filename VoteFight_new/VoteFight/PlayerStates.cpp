@@ -45,6 +45,8 @@ void CPlayerIdleState::Update(CObject* object)
 	if (KEY_TAP(KEY::LBUTTON))
 	{
 		player->Shoot(*CSceneManager::GetInstance()->GetCurrentScene());
+		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		animator->Play("fire", true);
 	}
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::D))

@@ -15,6 +15,7 @@ CMonster::CMonster() :
 	m_turnAngle()
 {
 	SetName("Monster");
+	SetGroupType((UINT)GROUP_TYPE::MONSTER);
 }
 
 CMonster::~CMonster()
@@ -58,8 +59,7 @@ void CMonster::Update()
 		double dx = TargetPostion.x - MyPostion.x;
 		double dz = TargetPostion.z - MyPostion.z;
 		float angle = atan2(dz, dx); // 또는 M_PI
-		cout << angle << endl;
-		// Move the object towards the target by the specified distance
+
 		MyPostion.x += m_fSpeed * cos(angle);
 		MyPostion.z += m_fSpeed * sin(angle);
 
@@ -82,7 +82,12 @@ void CMonster::PlayerDiscovery(CObject* player)
 
 void CMonster::OnCollisionEnter(CObject* collidedObject)
 {
-
+	switch (collidedObject->GetGroupType())
+	{
+	case (UINT)GROUP_TYPE::BULLET:
+		cout << "몬스터 히트" << endl;
+		break;
+	}
 }
 
 void CMonster::OnCollisionExit(CObject* collidedObject)
