@@ -99,21 +99,17 @@ void CTitleScene::Init()
 	// 조명(Light) 생성
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
-
 }
 
 // 2024 04 18일 이시영 수정 
 // Update할떄마다 플레이어 Y 를 터레인 높이 값에 변환시킴
 void CTitleScene::Update()
 {
-
 	CScene::Update();
 
 	if (KEY_TAP(KEY::SPACE))
 	{
-	 CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
+	 CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::SELECT);
 	}
 }
 
@@ -125,6 +121,5 @@ void CTitleScene::PreRender()
 void CTitleScene::Render()
 {
 	CScene::Render();
-
 }
 

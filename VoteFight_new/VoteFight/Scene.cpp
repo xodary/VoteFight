@@ -87,7 +87,7 @@ void CScene::Load(const string& fileName)
 
 					XMFLOAT3 currPosition = transforms[3 * i];
 					
-					currPosition.y = GetTerrainHeight(currPosition.x, currPosition.z);
+					currPosition.y = GetTerrainHeight(currPosition);
 					cout << fileName << endl;
 					transform->SetPosition(currPosition);
 						transform->SetRotation(transforms[3 * i + 1]);
@@ -174,13 +174,13 @@ void CScene::DeleteGroupObject(GROUP_TYPE groupType)
 	Utility::SafeDelete(m_objects[static_cast<int>(groupType)]);
 }
 
-inline float CScene::GetTerrainHeight(float x, float z) {
-	if (m_terrain && x >= 0 && z >= 0)
-		return m_terrain->OnGetInGameHeight(x, z);
+ float CScene::GetTerrainHeight(const XMFLOAT3& currPostion) {
+	if (m_terrain && currPostion.x >= 0 && currPostion.z >= 0)
+		return m_terrain->OnGetInGameHeight(currPostion.x, currPostion.z);
 	else
 	{
 		cout << "터레인 생성이 안되었거나 또는 범위를 벗어났습니다." << endl;
-		return		0.f;
+		return		currPostion.y;
 	}
 }
 

@@ -18,8 +18,8 @@ private:
 	ComPtr<ID3D12Resource> m_d3d12GameScene;
 	CB_SelectScene* m_mappedGameScene;
 
-	//INIT_GAME_DATA		   m_InitGameData{};
-
+	CObject* m_SelectCharacter;
+	CObject* m_WaitCharacters[3];
 public:
 	static CSelectScene* m_CSelectScene;
 
@@ -39,6 +39,7 @@ public:
 	virtual void Init();
 
 	void InitLight();
+	void SelectCharacter(UINT i);
 
 	virtual void Update();
 

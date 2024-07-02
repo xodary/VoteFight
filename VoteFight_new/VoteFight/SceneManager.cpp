@@ -19,6 +19,8 @@ CSceneManager::~CSceneManager()
 void CSceneManager::ChangeScene(SCENE_TYPE sceneType)
 {
 	m_currentScene->Exit();
+
+	m_scenes[static_cast<int>(SCENE_TYPE(sceneType))]->Init();
 	m_currentScene = m_scenes[static_cast<int>(sceneType)];
 	m_currentScene->Enter();
 }
@@ -38,14 +40,13 @@ void CSceneManager::Init()
 	m_scenes[static_cast<int>(SCENE_TYPE::TITLE)] = new CTitleScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)] = new CSelectScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)] = new CGameScene();
-
 	// æ¿ √ ±‚»≠
-	m_scenes[static_cast<int>(SCENE_TYPE::TITLE)]->Init();
-	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)]->Init();
-	m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
+	// m_scenes[static_cast<int>(SCENE_TYPE::TITLE)]->Init();
+	// m_scenes[static_cast<int>(SCENE_TYPE::SELECT)]->Init();
+	 m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
 
 	// «ˆ¿Á æ¿ º≥¡§
-	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::SELECT)];
+	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::GAME)];
 	m_currentScene->Enter();
 }
 
@@ -79,3 +80,4 @@ void CSceneManager::PostRender()
 {
 	m_currentScene->PostRender();
 }
+

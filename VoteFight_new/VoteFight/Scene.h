@@ -69,7 +69,7 @@ public:
 
 	CTerrain* m_terrain = nullptr;
 	void CreateTerrain() { m_terrain = new CTerrain(257,257); };
-	float GetTerrainHeight(float x, float z);;
+	float GetTerrainHeight(const XMFLOAT3& currPostion);
 	CTerrain* GetTerrain() const { return m_terrain; };
 
 	virtual void Init() = 0;

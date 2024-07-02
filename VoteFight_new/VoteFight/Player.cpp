@@ -125,7 +125,7 @@ void CPlayer::Shoot(CScene& currScene)
 		CBullet* Bullet = static_cast<CBullet*>(Load("Bullet"));
 		if (Bullet) {
 			XMFLOAT3 currPostion(GetPostion());
-			currPostion.y += 1.f;
+			currPostion.y += 2.f;
 			Bullet->SetPostion(currPostion);
 			XMFLOAT3 currRotate(GetRotate());
 			Bullet->SetRotate(GetRotate());

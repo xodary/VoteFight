@@ -21,5 +21,9 @@ public:
 
 	virtual void Init();
 
+
+	void SetSelectSceneMainCamera();
+	void SetGameSceneMainCamera();
+
 	void Update();
 };

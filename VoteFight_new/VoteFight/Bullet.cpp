@@ -45,7 +45,6 @@ void CBullet::Shoot()
     // 총알 발사 동작을 정의할 수 있습니다.
     m_bFired = true;
     cout << (UINT)GetGroupType() << endl;
-    SetGroupType(4);
     CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::BULLET);
     CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::BULLET, GROUP_TYPE::MONSTER);
 }

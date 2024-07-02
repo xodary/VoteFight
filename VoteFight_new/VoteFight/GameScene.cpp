@@ -85,7 +85,6 @@ void CGameScene::Enter()
 			{
 				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
 				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI))object->InTerrainSpace(*this);
-
 			}
 		}
 	}
@@ -130,11 +129,9 @@ void CGameScene::Init()
 	InitLight();
 	
 
+	CCameraManager::GetInstance()->SetGameSceneMainCamera();
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
-
-
 }
 
 void CGameScene::SceneLoad()
@@ -207,6 +204,9 @@ void CGameScene::InitLight()
 void CGameScene::Update()
 {	
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+
+	
+
 	for (CObject* o : objects) {
 		CPlayer* player = reinterpret_cast<CPlayer*>(o);
 
@@ -317,21 +317,5 @@ void CGameScene::Render()
 
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 
-	if (KEY_HOLD(KEY::SPACE)) 
-	{
-		// [Debug] Render DepthTexture
-		const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
-		D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
-		D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
-		CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-		CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
-
-		texture->UpdateShaderVariable();
-		shader->SetPipelineState(2);
-		d3d12GraphicsCommandList->RSSetViewports(1, &d3d12Viewport);
-		d3d12GraphicsCommandList->RSSetScissorRects(1, &d3d12ScissorRect);
-		d3d12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		d3d12GraphicsCommandList->DrawInstanced(6, 1, 0, 0);
-	}
 }
 

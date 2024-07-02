@@ -16,6 +16,7 @@ CMonster::CMonster() :
 {
 	SetName("Monster");
 	SetGroupType((UINT)GROUP_TYPE::MONSTER);
+	
 }
 
 CMonster::~CMonster()
@@ -85,6 +86,7 @@ void CMonster::OnCollisionEnter(CObject* collidedObject)
 	switch (collidedObject->GetGroupType())
 	{
 	case (UINT)GROUP_TYPE::BULLET:
+		SetHealth(GetHealth()-10);
 		cout << "몬스터 히트" << endl;
 		break;
 	}

@@ -88,16 +88,29 @@ void CSelectScene::Init()
 	Load("GameScene.bin");
 	Load("Character_Scene.bin");
 
-	CObject* object = new CSkyBox();
-	AddObject(GROUP_TYPE::SKYBOX, object);
-
 	CreateShaderVariables();
 
 	InitLight();
 
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
+	CCameraManager::GetInstance()->SetSelectSceneMainCamera();
 
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		objects[i]->SetDeleted(true);
+	}
+
+	 objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	m_SelectCharacter = objects[0];
+	m_SelectCharacter->SetRotate(XMFLOAT3(0, 180, 0));
+
+	for (size_t i = 0; i < objects.size(); i++)
+	{
+		m_WaitCharacters[i] = objects[i];
+		m_WaitCharacters[i]->SetPostion(XMFLOAT3(4 + i * 4, 1, 0.3));
+		m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
+		cout << m_WaitCharacters[i]->GetName() << endl;
+	}
 
 }
 
@@ -128,13 +141,47 @@ void CSelectScene::InitLight()
 	m_mappedGameScene->m_lights[1].m_range = 500.f;
 }
 
+void CSelectScene::SelectCharacter(UINT number)
+{
+	XMFLOAT3 tempPostion = m_SelectCharacter->GetPostion();
+	
+	for (size_t i = 0; i < 3; i++)
+	{
+		if (number != i)
+		{
+			m_WaitCharacters[i]->SetPostion(XMFLOAT3(4 + i * 2, 1, 0.3));
+		}
+		else
+		{
+			m_WaitCharacters[i]->SetPostion(XMFLOAT3(0, 1, 0.3));
+		}
+	}
+}
+
 // 2024 04 18일 이시영 수정 
 // Update할떄마다 플레이어 Y 를 터레인 높이 값에 변환시킴
 void CSelectScene::Update()
 {
-
 	CScene::Update();
 
+	if (KEY_TAP(KEY::NUM1))
+	{
+		SelectCharacter(0);
+	}
+	if (KEY_TAP(KEY::NUM2))
+	{
+		SelectCharacter(1);
+	}
+
+	if (KEY_TAP(KEY::NUM3))
+	{
+		SelectCharacter(2);
+	}
+
+	if (KEY_TAP(KEY::SPACE))
+	{
+		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
+	}
 }
 
 void CSelectScene::PreRender()
@@ -143,7 +190,6 @@ void CSelectScene::PreRender()
 
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
-
 
 	for (const auto& camera : cameras)
 	{
@@ -164,7 +210,6 @@ void CSelectScene::PreRender()
 					camera->GeneratePerspectiveProjectionMatrix(90.0f, static_cast<float>(DEPTH_BUFFER_WIDTH) / static_cast<float>(DEPTH_BUFFER_HEIGHT), nearPlaneDist, farPlaneDist);
 					break;
 				case LIGHT_TYPE::DIRECTIONAL:
-					//camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(TERRAIN_WIDTH), static_cast<float>(TERRAIN_HEIGHT), nearPlaneDist, farPlaneDist);
 					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(100), static_cast<float>(100), nearPlaneDist, farPlaneDist);
 					break;
 				}

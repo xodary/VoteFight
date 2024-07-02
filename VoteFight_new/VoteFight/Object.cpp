@@ -255,7 +255,7 @@ void CObject::SetTerrainY(CScene* curScene)
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	XMFLOAT3 newVec = transform->GetPosition();
-	newVec.y = curScene->GetTerrainHeight(newVec.x, newVec.z);
+	newVec.y = curScene->GetTerrainHeight(newVec);
 	transform->SetPosition(newVec);
 }
 
