@@ -15,6 +15,7 @@
 #include "Camera.h"
 #include "SkinnedMesh.h"
 #include "Scene.h"
+#include "Weapon.h"
 
 UINT CObject::m_nextInstanceID = 0;
 
@@ -99,6 +100,8 @@ CObject* CObject::LoadFrame(ifstream& in)
 			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
 			case 2: object = new CNPC(); break;
+			case 3: object = new CGun(); break;
+			case 4: object = new CSword(); break;
 			}
 		}
 		else if (str == "<Name>")

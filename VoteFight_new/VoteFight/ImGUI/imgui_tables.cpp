@@ -1000,7 +1000,18 @@ void ImGui::TableUpdateLayout(ImGuiTable* table)
 
     // Determine if table is hovered which will be used to flag columns as hovered.
     // - In principle we'd like to use the equivalent of IsItemHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem),
-    //   but because our item is partially submitted at this point we use ItemHoverable() and a workaround (temporarily
+    //   but because our 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    // 
+    //  is partially submitted at this point we use ItemHoverable() and a workaround (temporarily
     //   clear ActiveId, which is equivalent to the change provided by _AllowWhenBLockedByActiveItem).
     // - This allows columns to be marked as hovered when e.g. clicking a button inside the column, or using drag and drop.
     ImGuiTableInstanceData* table_instance = TableGetInstanceData(table, table->InstanceCurrent);

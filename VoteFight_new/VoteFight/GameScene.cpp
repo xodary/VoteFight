@@ -20,6 +20,7 @@
 #include "./ImaysNet/ImaysNet.h"
 #include "./ImaysNet/PacketQueue.h"
 #include "TerrainObject.h"
+#include "DropItem.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -106,12 +107,16 @@ void CGameScene::Init()
 	AddObject(GROUP_TYPE::SKYBOX, object);
 
 	CObject* playerObject = CObject::Load("hugo_idle");
-	CObject* gun = CObject::Load("Gun");
-	CObject* gunPos = playerObject->FindFrame("GunPos");
-	gunPos->m_children.push_back(gun);
-	gun->m_parent = gunPos;
+
+	{
+		CObject* gun = CObject::Load("Gun");
+		CTransform* transform = reinterpret_cast<CTransform*>(gun->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(XMFLOAT3(20, 3.0f, 20));
+		AddObject(GROUP_TYPE::ITEM, gun);
+	}
+
 	CTransform* transform = reinterpret_cast<CTransform*>(playerObject->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	transform->SetPosition(XMFLOAT3(0, 2.37f, 0));
+	transform->SetPosition(XMFLOAT3(20, 2.37f, 20));
 	AddObject(GROUP_TYPE::PLAYER, playerObject);
 	CPlayer* player = reinterpret_cast<CPlayer*>(playerObject);
 	player->Init();
@@ -155,10 +160,28 @@ void CGameScene::Init()
 void CGameScene::Update()
 {	
 	CObject* object = GetGroupObject(GROUP_TYPE::PLAYER)[0];
+
+	if (KEY_TAP(KEY::NUM1))
+		reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::PISTOL);
+	if (KEY_TAP(KEY::NUM2))
+		reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::AXE);
+	if (KEY_TAP(KEY::NUM3))
+		reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::PUNCH);
+
 	CTransform* p_tf = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	XMFLOAT3 pos = p_tf->GetPosition();
-	if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400) {
+	if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400) 
 		p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
+
+	vector<CObject*> items = GetGroupObject(GROUP_TYPE::ITEM);
+	for (auto& item : items) {
+		CTransform* i_tf = static_cast<CTransform*>(item->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		i_tf->Rotate(XMFLOAT3(0, DT * 100.f, 0));
+		XMFLOAT3 p = i_tf->GetPosition();
+		if (0 <= (int)p.x && (int)p.x < 400 && 0 <= (int)p.z && (int)p.z < 400) {
+			float h = cos(CGameFramework::GetInstance()->m_mappedGameFramework->m_totalTime) * 0.3f;
+			i_tf->SetPosition(XMFLOAT3(p.x, GetTerrainHeight(p.x, p.z) + 1.2f + h, p.z));
+		}
 	}
 
 #ifdef CONNECT_SERVER

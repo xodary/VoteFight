@@ -2,7 +2,6 @@
 
 class CMesh;
 class CMaterial;
-
 class CComponent;
 class CStateMachine;
 class CRigidBody;
@@ -10,9 +9,7 @@ class CAnimator;
 class CTransform;
 class CSpriteRenderer;
 class CCollider;
-
 class CCamera;
-
 class CScene;
 
 class CObject

@@ -7,6 +7,7 @@
 #include "SceneManager.h"
 #include "Scene.h"
 #include "AssetManager.h"
+#include "Weapon.h"
 #include "Material.h"
 #include "Animator.h"
 #include "Camera.h"
@@ -18,12 +19,7 @@
 #include "Transform.h"
 #include "Mesh.h"
 
-CPlayer::CPlayer() :
-	m_isAiming(),
-	m_bulletCount(),
-	m_spineName("mixamorig:Spine"),
-	m_spineAngle(),
-	m_turnAngle()
+CPlayer::CPlayer() : m_spineName("mixamorig:Spine")
 {
 	SetName("Player");
 	m_Inventory = new CInventory();
@@ -31,56 +27,6 @@ CPlayer::CPlayer() :
 
 CPlayer::~CPlayer()
 {
-}
-
-void CPlayer::SetClickAngle(float clickAngle)
-{
-	m_clickAngle = clickAngle;
-}
-
-float CPlayer::GetClickAngle()
-{
-	return m_clickAngle;
-}
-
-void CPlayer::SetTurnAngle(float look)
-{
-	m_turnAngle = look;
-}
-
-float CPlayer::GetTurnAngle()
-{
-	return m_turnAngle;
-}
-
-string CPlayer::GetSpineName()
-{
-	return m_spineName;
-}
-
-float CPlayer::GetSpineAngle()
-{
-	return m_spineAngle;
-}
-
-void CPlayer::SetSpineAngle(float angle)
-{
-	m_spineAngle = angle;
-}
-
-void CPlayer::SetAiming(bool isAiming)
-{
-	m_isAiming = isAiming;
-}
-
-bool CPlayer::IsAiming()
-{
-	return m_isAiming;
-}
-
-bool CPlayer::HasBullet()
-{
-	return m_bulletCount > 0;
 }
 
 void CPlayer::Init()
@@ -91,14 +37,12 @@ void CPlayer::Init()
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
-	animator->SetWeight("Pistol_run", 1.0f);
+	animator->SetWeight("Idle", 1.0f);
 	m_Inventory = new CInventory();
 
-	speech_bubble = new CSpeechBubbleUI(this);
-	m_HPBar = new CHPbarUI(this);
-	
-	m_playerTextBar = new CTextUI(this);
-	m_playerTextBar->SetName("Namebar");
+	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
+	m_bilboardUI.push_back(new CHPbarUI(this));
+	m_bilboardUI.push_back(new CTextUI(this));
 }
 
 void CPlayer::AnotherInit()
@@ -114,8 +58,38 @@ void CPlayer::AnotherInit()
 
 }
 
+void CPlayer::Attack()
+{
+	//m_Weapon->Attack(this);
+}
+
 void CPlayer::SwapWeapon(WEAPON_TYPE weaponType)
 {
+	m_Weapon = weaponType;
+	CObject* GunPos = FindFrame("GunPos");
+	CObject* AxePos = FindFrame("AxePos");
+	if (GunPos->m_children.size() > 0) delete GunPos->m_children[0]; GunPos->m_children.clear();
+	if (AxePos->m_children.size() > 0) delete AxePos->m_children[0]; AxePos->m_children.clear();
+
+	switch (weaponType) {
+	case WEAPON_TYPE::PISTOL:
+	{
+		CGun* weapon = reinterpret_cast<CGun*>(CObject::Load("Gun"));
+		CObject* pos = FindFrame("GunPos");
+		pos->m_children.push_back(weapon);
+		weapon->m_parent = pos;
+	}
+	break;
+	case WEAPON_TYPE::AXE:
+	{
+		CGun* weapon = reinterpret_cast<CGun*>(CObject::Load("axe"));
+		CObject* pos = FindFrame("AxePos");
+		pos->m_children.push_back(weapon);
+		weapon->m_parent = pos;
+	}
+	break;
+	}
+
 }
 
 void CPlayer::Punch()
@@ -129,16 +103,12 @@ void CPlayer::Shoot()
 void CPlayer::Update()
 {
 	CObject::Update();
-	if (m_playerTextBar != NULL) m_playerTextBar->Update();
-	if (speech_bubble != NULL) speech_bubble->Update();
-	if (m_HPBar != NULL) m_HPBar->Update();
+	for (auto& ui : m_bilboardUI) ui->Update();
 }
 
 void CPlayer::RenderBilboard(CCamera* camera)
 {
-	m_playerTextBar->Render(camera);
-	speech_bubble->Render(camera);
-	m_HPBar->Render(camera);
+	for (auto& ui : m_bilboardUI) ui->Render(camera);
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)

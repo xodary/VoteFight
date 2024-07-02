@@ -39,15 +39,6 @@ void CStateMachine::SetCurrentState(STATE_ENUM n)
 	case STATE_ENUM::CPlayerWalkState:
 		state = CPlayerWalkState::GetInstance();
 		break;
-	case STATE_ENUM::CPlayerRunState:
-		state = CPlayerRunState::GetInstance();
-		break;
-	case STATE_ENUM::CPlayerLeftTurn:
-		state = CPlayerLeftTurn::GetInstance();
-		break;
-	case STATE_ENUM::CPlayerRightTurn:
-		state = CPlayerRightTurn::GetInstance();
-		break;
 	}
 	m_currentState = state;
 

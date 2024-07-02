@@ -144,6 +144,9 @@
     <Filter Include="ImGUI">
       <UniqueIdentifier>{8adef276-0cd7-4111-9d46-8f87eb0696fd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="소스 파일\05. Object\05-06. Weapon">
+      <UniqueIdentifier>{59303aa4-5441-442a-8ce2-124ec641dfa7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -392,6 +395,12 @@
     <ClInclude Include="TerrainObject.h">
       <Filter>헤더 파일\05. Object\05-04. Terrain</Filter>
     </ClInclude>
+    <ClInclude Include="Weapon.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="DropItem.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -624,6 +633,12 @@
     </ClCompile>
     <ClCompile Include="TerrainObject.cpp">
       <Filter>소스 파일\05. Object\05-04. Terrain</Filter>
+    </ClCompile>
+    <ClCompile Include="Weapon.cpp">
+      <Filter>소스 파일\05. Object\05-06. Weapon</Filter>
+    </ClCompile>
+    <ClCompile Include="DropItem.cpp">
+      <Filter>소스 파일</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

@@ -79,6 +79,7 @@ enum class GROUP_TYPE
 	GROUND_ITEM,
 	SKYBOX,
 	TERRAIN,
+	ITEM,
 
 	UI,
 	Test,
@@ -110,6 +111,7 @@ enum class WEAPON_TYPE
 {
 	PUNCH,
 	PISTOL,
+	AXE,
 
 	COUNT
 };
