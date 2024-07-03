@@ -16,9 +16,9 @@
 // ---------------- structs---------------------------
 struct LIGHT
 {
-    float4 m_xmf4Ambient; // ��ü���� ��⸦ ����
-    float4 m_xmf4Diffuse; // �����ؼ� ���� ��� �� ������ ����
-    float4 m_xmf4Specular; // ī�޶��� �ݻ���� ����
+    float4 m_xmf4Ambient; // ��ü���� ���?����
+    float4 m_xmf4Diffuse; // �����ؼ� ���� ���?�� ������ ����
+    float4 m_xmf4Specular; // ī�޶��� �ݻ����?����
     float4 m_xmf3Position; // Driection�� �Ⱦ� spot�̳� �ٸ����� �ʿ�
     
     bool m_isActive;
@@ -159,9 +159,10 @@ Texture2D gtxtAlbedoTexture : register(t0);
 Texture2D gtxtNormalTexture : register(t1);
 TextureCube gtxtCubeTexture : register(t2);
 Texture2D<float> gtxtDepthTextures : register(t3);
-Texture2D<float4> albedoBuffer : register(t4);
-Texture2D<float4> normalBuffer : register(t5);
-Texture2D<float4> worldPosBuffer : register(t6);
+TextureCube gtxtCubeTexture2 : register(t4);
+Texture2D<float4> albedoBuffer : register(t5);
+Texture2D<float4> normalBuffer : register(t6);
+Texture2D<float4> worldPosBuffer : register(t7);
 
 float Compute3x3ShadowFactor(float2 uv, float fDepth)
 {
@@ -229,11 +230,6 @@ cbuffer cbBoneTransformInfo : register(b6)
 #define MATERIAL_ALBEDO_MAP			0x01
 #define MATERIAL_NORMAL_MAP			0x02
 #define MATERIAL_SHADOW_MAP			0x04
-
-Texture2D gtxtAlbedoTexture : register(t0);
-Texture2D gtxtNormalTexture : register(t1);
-TextureCube gtxtCubeTexture : register(t2);
-TextureCube gtxtCubeTexture2 : register(t4);
 
 struct VS_STANDARD_INPUT
 {
@@ -401,7 +397,7 @@ float4 PS_Bilboard(VS_BILBOARD_OUTPUT input) : SV_TARGET
 {
     float4 textureColor = gvColor;
 	
-    // �� �ؽ�ó ��ǥ ��ġ���� ���÷��� ����Ͽ� �ؽ�ó���� �ȼ� ������ ���ø��մϴ�.
+    // �� �ؽ�ó ��ǥ ��ġ���� ���÷��� ����Ͽ�?�ؽ�ó���� �ȼ� ������ ���ø��մϴ�.
     if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
     {
         textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
@@ -414,7 +410,7 @@ float4 PS_BilboardText(VS_BILBOARD_OUTPUT input) : SV_TARGET
 {
     float4 textureColor = gvColor;
 	
-    // �� �ؽ�ó ��ǥ ��ġ���� ���÷��� ����Ͽ� �ؽ�ó���� �ȼ� ������ ���ø��մϴ�.
+    // �� �ؽ�ó ��ǥ ��ġ���� ���÷��� ����Ͽ�?�ؽ�ó���� �ȼ� ������ ���ø��մϴ�.
     if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
     {
         textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
@@ -512,7 +508,7 @@ float4 PS_UI(VS_UI_OUTPUT input) : SV_TARGET
 {
     float4 textureColor;
 	
-    // �� �ؽ�ó ��ǥ ��ġ���� ���÷��� ����Ͽ� �ؽ�ó���� �ȼ� ������ ���ø��մϴ�.
+    // �� �ؽ�ó ��ǥ ��ġ���� ���÷��� ����Ͽ�?�ؽ�ó���� �ȼ� ������ ���ø��մϴ�.
     textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
 
     return textureColor;

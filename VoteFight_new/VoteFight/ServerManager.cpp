@@ -191,7 +191,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 		transform->SetPosition(recv_packet->m_vec);
-		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+		//object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->SetWeight("idle", 1.0f);
@@ -229,7 +229,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 		transform->SetPosition(XMFLOAT3(recv_packet->m_vec));
-		object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+		//object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		//animator->SetBlending(false);

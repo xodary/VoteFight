@@ -38,13 +38,13 @@ CObject::CObject() :
 	m_components.resize(static_cast<size_t>(COMPONENT_TYPE::COUNT)); 
 	SetGroupType((UINT)GROUP_TYPE::STRUCTURE);
 
-	// ��� ��ü�� Transform ������Ʈ�� ������.
+	// ���?��ü�� Transform ������Ʈ�� ������.
 	CreateComponent(COMPONENT_TYPE::TRANSFORM);
 }
 
 CObject::~CObject()
 {
-	// AssetManager�� ���� ���͸����� �����ϰ� �ְ�, ��� ������Ʈ�� �ش� ���͸����� ������ �ν��Ͻ��� ������ ������, �� Ŭ�������� �Ҹ�����־�� �Ѵ�.
+	// AssetManager�� ���� ���͸����� �����ϰ� �ְ�, ���?������Ʈ�� �ش� ���͸����� ������ �ν��Ͻ��� ������ ������, �� Ŭ�������� �Ҹ�����־�� �Ѵ�.
 	Utility::SafeDelete(m_materials);
 	Utility::SafeDelete(m_components);
 	Utility::SafeDelete(m_children);
@@ -270,14 +270,6 @@ CMesh* CObject::GetMesh()
 	return m_mesh;
 }
 
-void CObject::SetTerrainY(CScene* curScene)
-{
-	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
-	XMFLOAT3 newVec = transform->GetPosition();
-	newVec.y = curScene->GetTerrainHeight(newVec);
-	transform->SetPosition(newVec);
-}
-
 void CObject::InTerrainSpace(const CScene& curScene)
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -481,7 +473,7 @@ void CObject::PreRender(CCamera* camera)
 {
 	UpdateShaderVariables();
 
-	// DepthWrite�� ���, ���� ������ȯ ����� ����ϱ� ������ �������� �ø��� ������ �� ����.
+	// DepthWrite�� ���? ���� ������ȯ �����?����ϱ�?������ �������� �ø��� ������ �� ����.
 	if (m_mesh != nullptr)
 	{
 		for (int i = 0; i < m_materials.size(); ++i)

@@ -499,15 +499,15 @@ int CAssetManager::GetAnimationCount(const string& key)
 
 void CAssetManager::Init()
 {
-	// ������Ʈ ������ ����� �ǿ��� ���� ���丮�� �����ϸ� Visual Studio���� ���� ��, �ش� ��θ� �۾� �����丮�� �����Ѵ�.
-	// ������, Debug�� ����� ������ ���� �����ϴ� ��쿡��, �ش� ���� ������ ��ΰ� �۾� ���丮�� �����ǹǷ�, ���� �۾� ���丮����
-	// ���� ������ �� �� ���� ��, Release\\Asset\\���� �̵��Ͽ� ���ҽ��� ������ �� �ֵ��� �����.
-	// ��, � ���� �����ϴ��� �۾� ���丮�� ��ġ�ϵ��� ����� �ش�.
+	// ������Ʈ ������ �����?�ǿ��� ���� ���丮�� �����ϸ� Visual Studio���� ���� ��, �ش� ��θ�?�۾� �����丮�� �����Ѵ�.
+	// ������, Debug�� �����?������ ���� �����ϴ� ��쿡��? �ش� ���� ������ ��ΰ�?�۾� ���丮�� �����ǹǷ�, ���� �۾� ���丮����
+	// ���� ������ �� �� ���� ��, Release\\Asset\\���� �̵��Ͽ� ���ҽ��� ������ �� �ֵ��� �����?
+	// ��, � ���� �����ϴ��� �۾� ���丮�� ��ġ�ϵ��� �����?�ش�.
 	char assetPath[255] = {};
 
 	GetCurrentDirectoryA(255, assetPath);
 
-	// ���� ���� ��θ� ���Ѵ�.
+	// ���� ���� ��θ�?���Ѵ�.
 	for (int i = static_cast<int>(strlen(assetPath) - 1); i >= 0; --i)
 	{
 		if (assetPath[i] == '\\')
@@ -593,18 +593,18 @@ void CAssetManager::SceneLoadMeshes()
 {
 	LoadMeshes("Meshes.bin");
 	
-	LoadMeshes("Meshess.bin");
-	LoadMeshes("Meshesss.bin");
-	LoadMeshes("FireWoodMesh.bin");
-	LoadMeshes("Fence_Mesh.bin");
-	LoadMeshes("Homer_Meshs.bin");
-	LoadMeshes("Homer_Solider_Mesh.bin");
-	LoadMeshes("Marge_Police_Mesh.bin");
-	LoadMeshes("Sea_Mesh.bin");
-	LoadMeshes("White_House_Mesh.bin");
-	LoadMeshes("FishMon_Mesh.bin");
-	LoadMeshes("Bullet_Mesh.bin");
-	LoadMeshes("Character_Meshs.bin");
+	//LoadMeshes("Meshess.bin");
+	//LoadMeshes("Meshesss.bin");
+	//LoadMeshes("FireWoodMesh.bin");
+	//LoadMeshes("Fence_Mesh.bin");
+	//LoadMeshes("Homer_Meshs.bin");
+	//LoadMeshes("Homer_Solider_Mesh.bin");
+	//LoadMeshes("Marge_Police_Mesh.bin");
+	//LoadMeshes("Sea_Mesh.bin");
+	//LoadMeshes("White_House_Mesh.bin");
+	//LoadMeshes("FishMon_Mesh.bin");
+	//LoadMeshes("Bullet_Mesh.bin");
+	//LoadMeshes("Character_Meshs.bin");
 	
 	LoadMeshes("WeaponMeshes.bin");
 }
@@ -613,16 +613,16 @@ void CAssetManager::SceneLoadMaterials()
 {
 	LoadMaterials("Materials.bin");
 	
-	LoadMaterials("Materialss.bin");
-	LoadMaterials("FireWoodMaterials.bin");
-//	LoadMaterials("WhiteHouse.bin");
-	LoadMaterials("Fence_Material.bin");
-	LoadMaterials("Homer_Material.bin");
-	LoadMaterials("rpgpp_lt_building_05_Material.bin");
-	LoadMaterials("Sea_Material.bin");
-	LoadMaterials("White_House_Material.bin");
-	LoadMaterials("FIshMon_Material.bin");
-	LoadMaterials("Bullet_Material.bin");
+	// LoadMaterials("Materialss.bin");
+	// LoadMaterials("FireWoodMaterials.bin");
+	// LoadMaterials("WhiteHouse.bin");
+	// LoadMaterials("Fence_Material.bin");
+	// LoadMaterials("Homer_Material.bin");
+	// LoadMaterials("rpgpp_lt_building_05_Material.bin");
+	// LoadMaterials("Sea_Material.bin");
+	// LoadMaterials("White_House_Material.bin");
+	// LoadMaterials("FIshMon_Material.bin");
+	// LoadMaterials("Bullet_Material.bin");
 	
 	LoadMaterials("WeaponMaterials.bin");
 }
@@ -631,14 +631,14 @@ void CAssetManager::SceneLoadTextures()
 {
 	LoadTextures("Textures.bin");
 	
-	LoadTextures("Texturesss.bin");
-	LoadTextures("FireWoodTextures.bin");
-	LoadTextures("Fence_Texture.bin");
-	LoadTextures("Simpsons_texture.bin");
-	LoadTextures("Sea_Textures.bin");
-	LoadTextures("White_House_Texture.bin");
-	LoadTextures("FishMon_Texture.bin");
-	LoadTextures("Bullet_Texture.bin");
+	// LoadTextures("Texturesss.bin");
+	// LoadTextures("FireWoodTextures.bin");
+	// LoadTextures("Fence_Texture.bin");
+	// LoadTextures("Simpsons_texture.bin");
+	// LoadTextures("Sea_Textures.bin");
+	// LoadTextures("White_House_Texture.bin");
+	// LoadTextures("FishMon_Texture.bin");
+	// LoadTextures("Bullet_Texture.bin");
 	
 	LoadTextures("WeaponTextures.bin");
 }

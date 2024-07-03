@@ -180,7 +180,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CreateRootSignature();
 	CreateShaderVariables();
 
-	// Close ������ Ŀ�ǵ帮��Ʈ�� Open ���·� �����Ų��.
+	// Close ������ Ŀ�ǵ帮��Ʈ�� Open ���·� �����Ų��?
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Reset(m_d3d12CommandAllocator.Get(), nullptr));
 
 	m_DescriptorHeapManager = new DescriptorHeapManager();
@@ -199,22 +199,22 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CreateDepthStencilView();
 
 	// Constant / Shader Resource / Unoreded Access
-	// ��� �ؽ�ó�� �ε��ߴٸ�, �ش� ������ŭ Descriptor Heap�� �Ҵ��Ѵ�.
+	// ���?�ؽ�ó�� �ε��ߴٸ�, �ش� ������ŭ Descriptor Heap�� �Ҵ��Ѵ�.
 	// * �� �����ӿ�ũ���� CbvSrvUav Descriptor Heap�� �ؽ�ó(SRV)���� �����Ѵ�.
 	CreateShaderResourceViews();
 
 	CreateShaderVariables();
 
-	// Ŀ�ǵ帮��Ʈ�� Close ���·� �����.
+	// Ŀ�ǵ帮��Ʈ�� Close ���·� �����?
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Close());
 
-	// Ŀ�ǵ帮��Ʈ�� �����ϰ�, GPU�� ������ ����Ͽ� �ʱ� ������ ����ģ��.
+	// Ŀ�ǵ帮��Ʈ�� �����ϰ�, GPU�� ������ ����Ͽ�?�ʱ� ������ ����ģ��.
 	ID3D12CommandList* d3d12CommandLists[] = { m_d3d12GraphicsCommandList.Get() };
 
 	m_d3d12CommandQueue->ExecuteCommandLists(_countof(d3d12CommandLists), d3d12CommandLists);
 	WaitForGpuComplete();
 
-	// Ŀ�ǵ帮��Ʈ�� ��� ����Ǿ��ٸ�, ���ҽ� ������ ����ߴ� ��� ���ε� ���۸� �����Ѵ�.
+	// Ŀ�ǵ帮��Ʈ�� ���?����Ǿ��ٸ�? ���ҽ� ������ ����ߴ�?���?���ε� ���۸� �����Ѵ�.
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
 
@@ -282,14 +282,14 @@ void CGameFramework::CreateDevice()
 		}
 	}
 
-	// ��� �ϵ���� ����� ���Ͽ� Ư�� ���� 12.0�� �����ϴ� �ϵ���� ����̽��� �����Ѵ�.
+	// ���?�ϵ����?�����?���Ͽ� Ư�� ���� 12.0�� �����ϴ� �ϵ����?����̽���?�����Ѵ�.
 	if (DXGIAdapter == nullptr)
 	{
 		DX::ThrowIfFailed(m_dxgiIFactory->EnumWarpAdapter(_uuidof(IDXGIAdapter1), reinterpret_cast<void**>(DXGIAdapter.GetAddressOf())));
 		DX::ThrowIfFailed(D3D12CreateDevice(DXGIAdapter.Get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), reinterpret_cast<void**>(m_d3d12Device.GetAddressOf())));
 	}
 
-	// Ư�� ���� 12.0�� �����ϴ� �ϵ���� ����̽��� ������ �� ������ WARP ����̽��� �����Ѵ�.
+	// Ư�� ���� 12.0�� �����ϴ� �ϵ����?����̽���?������ �� ������ WARP ����̽���?�����Ѵ�.
 	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS D3D12MsaaQualityLevels = {};
 
 	D3D12MsaaQualityLevels.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
@@ -299,7 +299,7 @@ void CGameFramework::CreateDevice()
 	D3D12MsaaQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
 	D3D12MsaaQualityLevels.NumQualityLevels = 0;
 
-	// ����̽��� �����ϴ� ���� ������ ǰ�� ������ Ȯ���Ѵ�.
+	// ����̽���?�����ϴ� ���� ������ ǰ�� ������ Ȯ���Ѵ�.
 	DX::ThrowIfFailed(m_d3d12Device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &D3D12MsaaQualityLevels, sizeof(D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS)));
 
 	// ���� ������ ǰ�� ������ 1���� ũ�� ���� ���ø��� Ȱ��ȭ�Ѵ�.
@@ -310,7 +310,7 @@ void CGameFramework::CreateDevice()
 	DX::ThrowIfFailed(m_d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<void**>(m_d3d12Fence.GetAddressOf())));
 
 	// �潺�� ����ȭ�� ���� �̺�Ʈ ��ü�� �����Ѵ�.(�̺�Ʈ ��ü�� �ʱⰪ�� FALSE�̴�.)
-	// �̺�Ʈ�� ����Ǹ�(Signal) �̺�Ʈ�� ���� �ڵ������� FALSE�� �ǵ��� �����Ѵ�.
+	// �̺�Ʈ�� ����Ǹ�?Signal) �̺�Ʈ�� ���� �ڵ������� FALSE�� �ǵ��� �����Ѵ�.
 	m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 }
 
@@ -325,7 +325,7 @@ void CGameFramework::CreateCommandQueueAndList()
 	DX::ThrowIfFailed(m_d3d12Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), reinterpret_cast<void**>(m_d3d12CommandAllocator.GetAddressOf())));
 	DX::ThrowIfFailed(m_d3d12Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_d3d12CommandAllocator.Get(), nullptr, __uuidof(ID3D12GraphicsCommandList), reinterpret_cast<void**>(m_d3d12GraphicsCommandList.GetAddressOf())));
 
-	// ���� ����Ʈ�� �����Ǹ� ����(Open) �����̹Ƿ� ����(Closed) ���·� �����.
+	// ���� ����Ʈ�� �����Ǹ� ����(Open) �����̹Ƿ� ����(Closed) ���·� �����?
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Close());
 }
 
@@ -349,7 +349,7 @@ void CGameFramework::CreateSwapChain()
 
 	DX::ThrowIfFailed(m_dxgiIFactory->CreateSwapChain(m_d3d12CommandQueue.Get(), &DXGISwapChainDesc, reinterpret_cast<IDXGISwapChain**>(m_dxgiSwapChain.GetAddressOf())));
 
-	// ����ü���� ���� �ĸ���� �ε����� �����Ѵ�.
+	// ����ü���� ���� �ĸ����?�ε����� �����Ѵ�.
 	m_swapChainBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
 	// "Alt+Enter" Ű�� ������ ��Ȱ��ȭ�Ѵ�.
@@ -425,9 +425,9 @@ void CGameFramework::CreateRootSignature()
 	d3d12DescriptorRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);	// Cube
 	d3d12DescriptorRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3);	// Shadow Map
 	d3d12DescriptorRanges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4);	// Cube2
-	d3d12DescriptorRanges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5);	// GBuffer Color
-	d3d12DescriptorRanges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 6);	// GBuffer Normal
-	d3d12DescriptorRanges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 7);	// GBuffer WorldPos
+	d3d12DescriptorRanges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5);	// GBuffer Color
+	d3d12DescriptorRanges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 6);	// GBuffer Normal
+	d3d12DescriptorRanges[7].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 7);	// GBuffer WorldPos
 
 	CD3DX12_ROOT_PARAMETER d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::COUNT)] = {};
 
@@ -443,11 +443,11 @@ void CGameFramework::CreateRootSignature()
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CUBE_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[2]);	// cubeMap : register(t2)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::SHADOW_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[3]); // shadowMap : register(t3)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CUBE_MAP2)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[4]);	// cubeMap2 : register(t4)
-	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_COLOR)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[5]);	// GBuffer Color : register(t4)
-	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_NORMAL)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[6]);	// GBuffer Normal : register(t5)
-	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_WORLDPOS)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[7]); // GBuffer WorldPos : register(t6)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_COLOR)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[5]);	// GBuffer Color : register(t5)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_NORMAL)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[6]);	// GBuffer Normal : register(t6)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_WORLDPOS)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[7]); // GBuffer WorldPos : register(t7)
 
-	D3D12_ROOT_SIGNATURE_FLAGS d3d12RootSignatureFlags = { D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT }; // IA�ܰ踦 ���, ��Ʈ�� ��� �ܰ踦 ���
+	D3D12_ROOT_SIGNATURE_FLAGS d3d12RootSignatureFlags = { D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT }; // IA�ܰ踦 ���? ��Ʈ�� ���?�ܰ踦 ���?
 	CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[4] = {};
 
 	d3d12SamplerDesc[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 1, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);                            // samplerState : register(s0)
@@ -553,7 +553,7 @@ void CGameFramework::WaitForGpuComplete()
 	// GPU�� �潺�� ���� �����ϴ� ������ ���� ť�� �߰��Ѵ�.
 	DX::ThrowIfFailed(m_d3d12CommandQueue->Signal(m_d3d12Fence.Get(), FenceValue));
 
-	// �潺�� ���� ���� ������ ������ ������ �潺�� ���� ���� ������ ���� �� ������ ��ٸ���.
+	// �潺�� ���� ���� ������ ������ ������ �潺�� ���� ���� ������ ���� �� ������ ��ٸ���?
 	if (m_d3d12Fence->GetCompletedValue() < FenceValue)
 	{
 		DX::ThrowIfFailed(m_d3d12Fence->SetEventOnCompletion(FenceValue, m_fenceEvent));
@@ -563,7 +563,7 @@ void CGameFramework::WaitForGpuComplete()
 
 void CGameFramework::MoveToNextFrame()
 {
-	// ������Ʈ�� �ϸ� ���� ���� Ÿ��(�ĸ����)�� ������ ������۷� �Ű����� ���� Ÿ�� �ε����� �ٲ� ���̴�.
+	// ������Ʈ�� �ϸ� ���� ���� Ÿ��(�ĸ����?�� ������ ������۷�?�Ű����� ���� Ÿ�� �ε����� �ٲ� ���̴�.
 	m_swapChainBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
 	WaitForGpuComplete();
@@ -647,10 +647,11 @@ void CGameFramework::AdvanceFrame()
 
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
-	CServerManager::Tick();
+
 #ifdef CONNECT_SERVER
 	CServerManager::Tick();
 #endif
+
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
 	MoveToNextFrame();

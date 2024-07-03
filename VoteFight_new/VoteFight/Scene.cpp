@@ -171,16 +171,6 @@ void CScene::DeleteGroupObject(GROUP_TYPE groupType)
 	Utility::SafeDelete(m_objects[static_cast<int>(groupType)]);
 }
 
- float CScene::GetTerrainHeight(const XMFLOAT3& currPostion) {
-	if (m_terrain && currPostion.x >= 0 && currPostion.z >= 0)
-		return m_terrain->OnGetInGameHeight(currPostion.x, currPostion.z);
-	else
-	{
-		cout << "�ͷ��� ������ �ȵǾ��ų� �Ǵ� ������ ������ϴ�." << endl;
-		return		currPostion.y;
-	}
-}
-
 void CScene::ReleaseUploadBuffers()
 {
 	for (int i = 0; i < static_cast<int>(GROUP_TYPE::COUNT); ++i)

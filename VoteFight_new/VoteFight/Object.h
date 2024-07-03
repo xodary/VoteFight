@@ -59,8 +59,6 @@ public:
 	CMesh* GetMesh()const { return m_mesh; };
 	vector<CMaterial*> GetMaterial() const { return m_materials; };
 	
-
-	void SetTerrainY( CScene* curScene);
 	void InTerrainSpace(const CScene& curScene);
 	bool ChcekInTerrainSpace(const CScene& curScene);
 
