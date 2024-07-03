@@ -44,12 +44,6 @@ void CPlayerIdleState::Update(CObject* object)
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	if (KEY_TAP(KEY::LBUTTON))
-	{
-		player->Shoot(*CSceneManager::GetInstance()->GetCurrentScene());
-		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->Play("fire", true);
-	}
 
 	if (KEY_HOLD(KEY::W) || KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::D))
 	{
@@ -60,7 +54,7 @@ void CPlayerIdleState::Update(CObject* object)
 		}
 	}
 
-	if (KEY_HOLD(KEY::LBUTTON))
+	if (KEY_TAP(KEY::LBUTTON))
 	{
 		//player->Attack();
 		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));

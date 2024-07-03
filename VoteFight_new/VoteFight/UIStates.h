@@ -1,13 +1,28 @@
 #pragma once
 #include "State.h"
 
-class CMissionUIShowState : public CState, public CSingleton<CMissionUIShowState>
+class CMainUIState : public CState, public CSingleton<CMainUIState>
 {
-	friend class CSingleton<CMissionUIShowState>;
+	friend class CSingleton<CMainUIState>;
 
 private:
-	CMissionUIShowState();
-	virtual ~CMissionUIShowState();
+	CMainUIState();
+	virtual ~CMainUIState();
+
+public:
+	virtual void Enter(CObject* object);
+	virtual void Exit(CObject* object);
+
+	virtual void Update(CObject* object);
+};
+
+class CInventoryUIState : public CState, public CSingleton<CInventoryUIState>
+{
+	friend class CSingleton<CInventoryUIState>;
+
+private:
+	CInventoryUIState();
+	virtual ~CInventoryUIState();
 
 public:
 	virtual void Enter(CObject* object);

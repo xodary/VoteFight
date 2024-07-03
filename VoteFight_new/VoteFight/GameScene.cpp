@@ -162,21 +162,20 @@ void CGameScene::SceneLoad()
 
 void CGameScene::InitLight()
 {
-	// ï¿½ï¿½ï¿½ï¿½(Light) ï¿½ï¿½ï¿½ï¿½
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
-	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å°ï¿½ï¿½ ï¿½Ê´Â´ï¿½.
+	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å°ï¿½ï¿?ï¿½Ê´Â´ï¿½.
 	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player ï¿½ï¿½ï¿½ï¿½Ù´ï¿½.
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player ï¿½ï¿½ï¿½ï¿½Ù´ï¿?
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
 	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
-	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
+	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
 	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(1.f, 1.f, 1.f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.13f, 0.13f, 0.13f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
@@ -417,7 +416,7 @@ void CGameScene::Render()
 		}
 	}
 
-	
+	RenderImGui();
 
 	// for (auto object : m_objects_id) {
 	// 	if (object.second != nullptr)
@@ -444,3 +443,165 @@ void CGameScene::Render()
 	}
 }
 
+void CGameScene::RenderImGui()
+{
+	CGameFramework* framework = CGameFramework::GetInstance();
+	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
+
+	// ÀÎº¥Åä¸® Ç×¸ñ ±¸Á¶Ã¼
+	struct InventoryItem {
+		const char* name;
+	};
+
+	InventoryItem inventory_items[3] = { "Sword", "Shield", "Potion" };
+	int rows = 3;
+	static bool selected[3] = { false };
+	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // ¿Ü°û¼± »ö»ó (»¡°­)
+
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	ImVec2 windowSize(framework->GetResolution().x * 1 / 3, framework->GetResolution().x * 1 / 3 / 3);
+	ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y));
+
+	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+	ImGui::Begin("Full Screen Window", nullptr, window_flags);
+
+	// ¾ÆÀÌÅÛ Å©±â °è»ê
+	const float itemSize = windowSize.y * 5 / 6;
+
+	ImGui::SetCursorPosX(itemSize / 5);
+	for (int i = 0; i < rows; ++i)
+	{
+		ImGui::PushID(i);
+
+		// ¿Ü°û¼± »ö»ó ¼³Á¤
+		ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+		if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+
+		ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i)), ImVec2(itemSize, itemSize));
+		{
+			ImGui::Text("%s", inventory_items[i].name);
+			ImGui::EndChildFrame();
+		}
+		ImGui::SameLine();
+
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor();
+		ImGui::PopID();
+	}
+
+	ImGui::End();
+
+	ImGui::Render();
+
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
+}
+
+
+//void CGameScene::RenderImGui()
+//{
+//	CGameFramework* framework = CGameFramework::GetInstance();
+//	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
+//
+//	// ÀÎº¥Åä¸® Ç×¸ñ ±¸Á¶Ã¼
+//	struct InventoryItem {
+//		const char* name;
+//		ComPtr<ID3D12Resource> texture;
+//		D3D12_GPU_DESCRIPTOR_HANDLE srvHandle;
+//	};
+//
+//	InventoryItem inventory_items[3][6] = {
+//	{ {"Sword"}, {"Shield"}, {"Potion"}, {"Helmet"}, {"Boots"}, {"Ring"} },
+//	{ {"Axe"}, {"Bow"}, {"Arrow"}, {"Dagger"}, {"Staff"}, {"Scroll"} },
+//	{ {"Bread"}, {"Cheese"}, {"Meat"}, {"Fruit"}, {"Vegetable"}, {"Water"} }
+//	};
+//	int rows = 3;
+//	int cols = 6;
+//	static bool selected[3][6] = { false };
+//	static bool hovered[3][6] = { false };
+//	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // ¿Ü°û¼± »ö»ó (»¡°­)
+//
+//	ImGui_ImplDX12_NewFrame();
+//	ImGui_ImplWin32_NewFrame();
+//	ImGui::NewFrame();
+//
+//	ImVec2 windowSize(framework->GetResolution().x * 3 / 4, framework->GetResolution().y * 3 / 4);
+//	ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y) / 2);
+//
+//	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+//
+//	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+//	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+//	ImGui::Begin("Full Screen Window", nullptr, window_flags);
+//
+//	// ¾ÆÀÌÅÛ Å©±â °è»ê
+//	const float itemSize = windowSize.x / 8;
+//	const float spacing = itemSize / 6;
+//	const float totalSpacingWidth = (cols - 1) * spacing;
+//	const float totalSpacingHeight = (rows - 1) * spacing;
+//	const float inventoryWidth = cols * itemSize + totalSpacingWidth;
+//	const float inventoryHeight = rows * itemSize + totalSpacingHeight;
+//
+//	float startX = (windowSize.x - inventoryWidth) / 2.0f;
+//	float startY = (windowSize.y - inventoryHeight) / 2.0f;
+//
+//	ImGui::SetCursorPosY(startY);
+//
+//	for (int i = 0; i < rows; ++i)
+//	{
+//		ImGui::SetCursorPosX(startX);
+//
+//		for (int j = 0; j < cols; ++j)
+//		{
+//			ImGui::PushID(i * cols + j);
+//
+//			if (j > 0) // Ã¹ ¹øÂ° ¾ÆÀÌÅÛÀÌ ¾Æ´Ñ °æ¿ì¿¡¸¸ °£°Ý Ãß°¡
+//				ImGui::SameLine(0.0f, spacing);
+//
+//			// ¿Ü°û¼± »ö»ó ¼³Á¤
+//			ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+//			if (hovered[i][j]) borderColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+//			if (selected[i][j]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+//
+//			ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+//			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+//
+//			ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i* cols + j)), ImVec2(itemSize, itemSize));
+//			{
+//				if (ImGui::IsWindowHovered()) {
+//					if (ImGui::GetIO().MouseClicked[0]) 
+//						selected[i][j] = !selected[i][j];
+//					else 
+//						hovered[i][j] = true;
+//				}
+//				else
+//					hovered[i][j] = false;
+//
+//				ImGui::Text("%s", inventory_items[i][j].name);
+//				ImGui::EndChildFrame();
+//			}
+//
+//			ImGui::PopStyleVar();
+//			ImGui::PopStyleColor();
+//			ImGui::PopID();
+//
+//			//if (j < cols - 1) ImGui::SameLine();
+//			if (i < cols - 1)
+//				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + spacing);
+//		}
+//	}
+//
+//	ImGui::End();
+//
+//	ImGui::Render();
+//
+//	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
+//}
