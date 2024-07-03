@@ -67,9 +67,9 @@ CSkyBox::CSkyBox(float fWidth, float fHeight, float fDepth)
 
 	string strSkybox = "Skybox";
 	CMaterial* material = CAssetManager::GetInstance()->CreateMaterial(strSkybox);
-	CTexture* texture = CAssetManager::GetInstance()->CreateTexture(strSkybox, "SkyBox_2", TEXTURE_TYPE::CUBE_MAP);
+	CTexture* texture = CAssetManager::GetInstance()->CreateTexture("Skybox1", "SkyBox_1", TEXTURE_TYPE::CUBE_MAP);
 	material->SetTexture(texture); 
-	CTexture* texture1 = CAssetManager::GetInstance()->CreateTexture(strSkybox, "SkyBox_1", TEXTURE_TYPE::CUBE_MAP2);
+	CTexture* texture1 = CAssetManager::GetInstance()->CreateTexture("Skybox2", "SkyBox_2", TEXTURE_TYPE::CUBE_MAP2);
 	material->SetTexture(texture1);
 	CShader* shader = CAssetManager::GetInstance()->GetShader(strSkybox);
 	

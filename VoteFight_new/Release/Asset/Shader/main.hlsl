@@ -362,6 +362,21 @@ float4 PS_Bilboard(VS_BILBOARD_OUTPUT input) : SV_TARGET
 
 
 // ======== Skybox =========
+float gamma = 2.2;
+
+// 감마 보정을 위한 함수
+float4 ApplyGamma(float4 color, float gamma)
+{
+    return pow(color, float4(gamma, gamma, gamma, 1.0));
+}
+
+// 감마 보정 제거를 위한 함수
+float4 RemoveGamma(float4 color, float gamma)
+{
+    return pow(color, float4(1.0 / gamma, 1.0 / gamma, 1.0 / gamma, 1.0));
+}
+
+
 struct VS_SKYBOX_CUBEMAP_INPUT
 {
     float3 position : POSITION;
@@ -393,9 +408,20 @@ float4 PS_SkyBox(VS_SKYBOX_CUBEMAP_OUTPUT input) : SV_TARGET
     float4 cColor = gtxtCubeTexture.Sample(gssClamp, input.positionL);
     float4 cColor2 = gtxtCubeTexture2.Sample(gssClamp, input.positionL);
     
-    //return lerp(cColor, cColor2, sin(gfTotalTime));
-    // return cColor;
-     return cColor;
+  // 감마 보정 제거
+    float4 cColorGammaRemoved = RemoveGamma(cColor, gamma);
+    float4 cColor2GammaRemoved = RemoveGamma(cColor2, gamma);
+    
+    // 시간 기반 보간 값 계산
+    float blendFactor = 0.5 + sin(gfTotalTime) * 0.5;
+    
+    // 감마 보정된 색상을 선형 보간
+    float4 blendedGammaRemoved = lerp(cColorGammaRemoved, cColor2GammaRemoved, blendFactor);
+    
+    // 감마 보정 적용
+    float4 blendedColor = ApplyGamma(blendedGammaRemoved, gamma);
+    
+    return blendedColor;
 }
 
 
