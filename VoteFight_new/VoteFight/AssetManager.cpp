@@ -19,6 +19,7 @@
 #include "GBufferShader.h"
 #include "UpsampleBlur.h"
 #include "VCTMainShader.h"
+#include "MainShader.h"
 
 CAssetManager::CAssetManager() :
 	m_assetPath(),
@@ -48,7 +49,7 @@ void CAssetManager::LoadMeshes(const string& fileName)
 	string filePath = m_assetPath + "Mesh\\" + fileName;
 	ifstream in(filePath, ios::binary);
 	if (!in.is_open()) {
-		std::cerr << filePath << " : ÆÄÀÏÀ» ¿­ ¼ö ¾ø½À´Ï´Ù." << std::endl;
+		std::cerr << filePath << " : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½." << std::endl;
 		return;
 	}
 
@@ -67,7 +68,7 @@ void CAssetManager::LoadMeshes(const string& fileName)
 			if (meshCount > 0)
 			{
 				m_meshes.reserve(meshCount);
-				cout << fileName << " ·Îµå ½ÃÀÛ...\n";
+				cout << fileName << " ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½...\n";
 			}
 		}
 		else if (str == "<Mesh>")
@@ -90,7 +91,7 @@ void CAssetManager::LoadMeshes(const string& fileName)
 		}
 		else if (str == "</Meshes>")
 		{
-			cout << fileName << " ·Îµå ¿Ï·á...(¸Þ½¬ °³¼ö: " << m_meshes.size() << ")\n\n";
+			cout << fileName << " ï¿½Îµï¿½ ï¿½Ï·ï¿½...(ï¿½Þ½ï¿½ ï¿½ï¿½ï¿½ï¿½: " << m_meshes.size() << ")\n\n";
 			break;
 		}
 	}
@@ -101,7 +102,7 @@ void CAssetManager::LoadTextures(const string& fileName)
 	string filePath = m_assetPath + "Texture\\" + fileName;
 	ifstream in(filePath, ios::binary);
 	if (!in.is_open()) {
-		std::cerr << filePath << " : ÆÄÀÏÀ» ¿­ ¼ö ¾ø½À´Ï´Ù." << std::endl;
+		std::cerr << filePath << " : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½." << std::endl;
 		return;
 	}
 
@@ -120,7 +121,7 @@ void CAssetManager::LoadTextures(const string& fileName)
 			if (textureCount > 0)
 			{
 				m_textures.reserve(textureCount);
-				cout << fileName << " ·Îµå ½ÃÀÛ...\n";
+				cout << fileName << " ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½...\n";
 			}
 		}
 		else if (str == "<Texture>")
@@ -132,18 +133,69 @@ void CAssetManager::LoadTextures(const string& fileName)
 		}
 		else if (str == "</Textures>")
 		{
-			cout << fileName << " ·Îµå ¿Ï·á...(ÅØ½ºÃ³ °³¼ö: " << m_textures.size() << ")\n\n";
+			cout << fileName << " ï¿½Îµï¿½ ï¿½Ï·ï¿½...(ï¿½Ø½ï¿½Ã³ ï¿½ï¿½ï¿½ï¿½: " << m_textures.size() << ")\n\n";
 			break;
 		}
 	}
 
+	CGameFramework* framework = CGameFramework::GetInstance();
+	ID3D12Device* device = framework->GetDevice();
+	ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
+	DescriptorHeapManager* descriptorHeapManager = framework->GetDescriptorHeapManager();
+
 	// DepthWrite Texture
-	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
+	const XMFLOAT2& resolution = framework->GetResolution();
 	CTexture* texture = new CTexture();
 	
 	texture->SetName("DepthWrite");
 	texture->Create(static_cast<UINT64>(DEPTH_BUFFER_WIDTH), static_cast<UINT>(DEPTH_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } }, TEXTURE_TYPE::SHADOW_MAP);
 	m_textures.emplace(texture->GetName(), texture);
+
+	// GBuffer Texture
+	CTexture* GBufferColor = new CTexture();
+	CTexture* GBufferNormal = new CTexture();
+	CTexture* GBufferWorldPos = new CTexture();
+
+	GBufferColor->SetName("GBufferColor");
+	GBufferNormal->SetName("GBufferNormal");
+	GBufferWorldPos->SetName("GBufferWorldPos");
+
+	D3D12_RENDER_TARGET_VIEW_DESC rtvDesc = {};
+	rtvDesc.ViewDimension = D3D12_RTV_DIMENSION_TEXTURE2D;
+	rtvDesc.Texture2D.MipSlice = 0;
+	rtvDesc.Texture2D.PlaneSlice = 0;
+
+	DXGI_FORMAT format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	rtvDesc.Format = format;
+	GBufferColor->Create(static_cast<UINT64>(framework->GetResolution().x), static_cast<UINT>(framework->GetResolution().y), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, format, D3D12_CLEAR_VALUE{ format, { 0.0f, 0.0f, 0.0f, 0.0f } }, TEXTURE_TYPE::G_COLOR);
+	GBufferColor->m_RTVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	device->CreateRenderTargetView(GBufferColor->GetTexture(), &rtvDesc, GBufferColor->m_RTVHandle.GetCPUHandle());
+
+	format = DXGI_FORMAT_R16G16B16A16_SNORM;
+	rtvDesc.Format = format;
+	GBufferNormal->Create(static_cast<UINT64>(framework->GetResolution().x), static_cast<UINT>(framework->GetResolution().y), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, format, D3D12_CLEAR_VALUE{ format, { 0.0f, 0.0f, 0.0f, 0.0f } }, TEXTURE_TYPE::G_NORMAL);
+	GBufferNormal->m_RTVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	device->CreateRenderTargetView(GBufferNormal->GetTexture(), &rtvDesc, GBufferNormal->m_RTVHandle.GetCPUHandle());
+
+	format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+	rtvDesc.Format = format;
+	GBufferWorldPos->Create(static_cast<UINT64>(framework->GetResolution().x), static_cast<UINT>(framework->GetResolution().y), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET | D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS, format, D3D12_CLEAR_VALUE{ format, { 0.0f, 0.0f, 0.0f, 0.0f } }, TEXTURE_TYPE::G_WORLDPOS);
+	GBufferWorldPos->m_RTVHandle = descriptorHeapManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	device->CreateRenderTargetView(GBufferWorldPos->GetTexture(), &rtvDesc, GBufferWorldPos->m_RTVHandle.GetCPUHandle());
+
+	m_textures.emplace(GBufferColor->GetName(), GBufferColor);
+	m_textures.emplace(GBufferNormal->GetName(), GBufferNormal);
+	m_textures.emplace(GBufferWorldPos->GetName(), GBufferWorldPos);
+
+	CTexture* textTexture = new CTexture();
+	textTexture->SetName("text");
+	textTexture->Load("text", TEXTURE_TYPE::ALBEDO_MAP);
+	m_textures.emplace(textTexture->GetName(), textTexture);
+
+	CTexture* bubbleTexture = new CTexture();
+	bubbleTexture->SetName("speech_bubble");
+	bubbleTexture->Load("speech_bubble", TEXTURE_TYPE::ALBEDO_MAP);
+	m_textures.emplace(bubbleTexture->GetName(), bubbleTexture);
 }
 
 void CAssetManager::LoadShaders()
@@ -180,38 +232,19 @@ void CAssetManager::LoadShaders()
 
 	shader = new CBilboardShader();
 	shader->SetName("Bilboard");
-	shader->CreatePipelineStates(1);
+	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	//shader = new CGBufferShader();
-	//shader->SetName("GBuffer");
-	//shader->CreatePipelineStates(1);
-	//m_shaders.emplace(shader->GetName(), shader);
+	shader = new CMainShader();
+	shader->SetName("MainShader");
+	shader->CreatePipelineStates(1);
+	m_shaders.emplace(shader->GetName(), shader);
 
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
 	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	//shader = new CVoxelizationShader();
-	//shader->SetName("Voxelization");
-	//shader->CreatePipelineStates(2);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	//shader = new CAnisoMipmapShader();
-	//shader->SetName("AnisoMipmap");
-	//shader->CreatePipelineStates(2);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	//shader = new CVCTMainShader();
-	//shader->SetName("VCTMain");
-	//shader->CreatePipelineStates(1);
-	//m_shaders.emplace(shader->GetName(), shader);
-
-	// shader = new CUpsampleBlur();
-	// shader->SetName("UpsampleBlur");
-	// shader->CreatePipelineStates(1);
-	// m_shaders.emplace(shader->GetName(), shader);
 }
 
 void CAssetManager::LoadMaterials(const string& fileName)
@@ -219,10 +252,10 @@ void CAssetManager::LoadMaterials(const string& fileName)
 	string filePath = m_assetPath + "Material\\" + fileName;
 	ifstream in(filePath, ios::binary);
 	if (!in.is_open()) {
-		std::cerr << "ÆÄÀÏÀ» ¿­ ¼ö ¾ø½À´Ï´Ù." << std::endl;
+		std::cerr << "ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½." << std::endl;
 		return;
 	}
-	cout << fileName << "  ·Îµù..." << endl;
+	cout << fileName << "  ï¿½Îµï¿½..." << endl;
 	string str;
 
 	while (true)
@@ -238,7 +271,7 @@ void CAssetManager::LoadMaterials(const string& fileName)
 			if (materialCount > 0)
 			{
 				m_materials.reserve(materialCount);
-				cout << fileName << " ·Îµå ½ÃÀÛ...\n";
+				cout << fileName << " ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½...\n";
 			}
 		}
 		else if (str == "<Material>")
@@ -250,7 +283,7 @@ void CAssetManager::LoadMaterials(const string& fileName)
 		}
 		else if (str == "</Materials>")
 		{
-			cout << fileName << " ·Îµå ¿Ï·á...(¸ÓÅÍ¸®¾ó °³¼ö: " << m_materials.size() << ")\n\n";
+			cout << fileName << " ï¿½Îµï¿½ ï¿½Ï·ï¿½...(ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½: " << m_materials.size() << ")\n\n";
 			break;
 		}
 	}
@@ -276,7 +309,7 @@ void CAssetManager::LoadSkinningAnimations(const string& fileName)
 
 				in.read(reinterpret_cast<char*>(&animationCount), sizeof(int));
 				m_animations[modelName].reserve(animationCount);
-				cout << fileName << " ¾Ö´Ï¸ÞÀÌ¼Ç ·Îµå ½ÃÀÛ...\n";
+				cout << fileName << " ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½...\n";
 			}
 			else if (str == "<Animation>")
 			{
@@ -287,7 +320,7 @@ void CAssetManager::LoadSkinningAnimations(const string& fileName)
 			}
 			else if (str == "</Animations>")
 			{
-				cout << fileName << " ¾Ö´Ï¸ÞÀÌ¼Ç ·Îµå ¿Ï·á...\n";
+				cout << fileName << " ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½Îµï¿½ ï¿½Ï·ï¿½...\n";
 				break;
 			}
 		}
@@ -308,7 +341,7 @@ void CAssetManager::LoadUIAnimations(ifstream& in, const string& key)
 
 			in.read(reinterpret_cast<char*>(&animationCount), sizeof(int));
 			m_animations[key].reserve(animationCount);
-			cout << key << " ¾Ö´Ï¸ÞÀÌ¼Ç ·Îµå ½ÃÀÛ...\n";
+			cout << key << " ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½...\n";
 		}
 		else if (str == "<Animation>")
 		{
@@ -319,7 +352,7 @@ void CAssetManager::LoadUIAnimations(ifstream& in, const string& key)
 		}
 		else if (str == "</Animations>")
 		{
-			cout << key << " ¾Ö´Ï¸ÞÀÌ¼Ç ·Îµå ¿Ï·á...\n";
+			cout << key << " ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ ï¿½Îµï¿½ ï¿½Ï·ï¿½...\n";
 			break;
 		}
 	}
@@ -421,7 +454,7 @@ CMaterial* CAssetManager::CreateMaterialInstance(string& key)
 {
 	CMaterial* material = GetMaterial(key);
 
-	// ÇØ´ç key¸¦ °¡Áø ¸ÓÅÍ¸®¾óÀÌ Á¸ÀçÇÏ¸é, º¹»ç »ý¼ºÀÚ·Î ÀÎ½ºÅÏ½º¸¦ »ý¼ºÇÑ ÈÄ¿¡ ¹ÝÈ¯ÇÑ´Ù.
+	// ï¿½Ø´ï¿½ keyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú·ï¿½ ï¿½Î½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¿ï¿½ ï¿½ï¿½È¯ï¿½Ñ´ï¿½.
 	if (material != nullptr)
 	{
 		material = new CMaterial(*material);
@@ -466,15 +499,15 @@ int CAssetManager::GetAnimationCount(const string& key)
 
 void CAssetManager::Init()
 {
-	// ÇÁ·ÎÁ§Æ® ¼³Á¤ÀÇ µð¹ö±ë ÅÇ¿¡¼­ ÇöÀç µð·ºÅä¸®¸¦ ¼³Á¤ÇÏ¸é Visual Studio¿¡¼­ ½ÇÇà ½Ã, ÇØ´ç °æ·Î¸¦ ÀÛ¾÷ µðÅØÅä¸®·Î ¼³Á¤ÇÑ´Ù.
-	// ÇÏÁö¸¸, Debug·Î ºôµåµÈ ÆÄÀÏÀ» Á÷Á¢ ½ÇÇàÇÏ´Â °æ¿ì¿¡´Â, ÇØ´ç ½ÇÇà ÆÄÀÏÀÇ °æ·Î°¡ ÀÛ¾÷ µð·ºÅä¸®·Î ¼³Á¤µÇ¹Ç·Î, ÇöÀç ÀÛ¾÷ µð·ºÅä¸®¿¡¼­
-	// »óÀ§ Æú´õ·Î ÇÑ ¹ø ³ª°£ ÈÄ, Release\\Asset\\À¸·Î ÀÌµ¿ÇÏ¿© ¸®¼Ò½º¿¡ Á¢±ÙÇÒ ¼ö ÀÖµµ·Ï ¸¸µç´Ù.
-	// Áï, ¾î¶² ¸ðµå·Î ½ÇÇàÇÏ´õ¶óµµ ÀÛ¾÷ µð·ºÅä¸®¸¦ ÀÏÄ¡ÇÏµµ·Ï ¸¸µé¾î ÁØ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿?ï¿½Ç¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ä¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¸ï¿½ Visual Studioï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, ï¿½Ø´ï¿½ ï¿½ï¿½Î¸ï¿?ï¿½Û¾ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ä¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, Debugï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿? ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î°ï¿?ï¿½Û¾ï¿½ ï¿½ï¿½ï¿½ä¸®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¹Ç·ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½Û¾ï¿½ ï¿½ï¿½ï¿½ä¸®ï¿½ï¿½ï¿½ï¿½
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½, Release\\Asset\\ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ï¿½Ï¿ï¿½ ï¿½ï¿½ï¿½Ò½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Öµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿?
+	// ï¿½ï¿½, ï¿½î¶² ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ï¿½ï¿½ ï¿½Û¾ï¿½ ï¿½ï¿½ï¿½ä¸®ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½Ïµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿?ï¿½Ø´ï¿½.
 	char assetPath[255] = {};
 
 	GetCurrentDirectoryA(255, assetPath);
 
-	// »óÀ§ Æú´õ °æ·Î¸¦ ±¸ÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Î¸ï¿?ï¿½ï¿½ï¿½Ñ´ï¿½.
 	for (int i = static_cast<int>(strlen(assetPath) - 1); i >= 0; --i)
 	{
 		if (assetPath[i] == '\\')
@@ -559,44 +592,53 @@ void CAssetManager::ReleaseUploadBuffers()
 void CAssetManager::SceneLoadMeshes()
 {
 	LoadMeshes("Meshes.bin");
-	LoadMeshes("Meshess.bin");
-	LoadMeshes("Meshesss.bin");
-	LoadMeshes("FireWoodMesh.bin");
-	LoadMeshes("Fence_Mesh.bin");
-	LoadMeshes("Homer_Meshs.bin");
-	LoadMeshes("Homer_Solider_Mesh.bin");
-	LoadMeshes("Marge_Police_Mesh.bin");
-	LoadMeshes("Sea_Mesh.bin");
-	LoadMeshes("White_House_Mesh.bin");
-	LoadMeshes("FishMon_Mesh.bin");
-	LoadMeshes("Bullet_Mesh.bin");
-	LoadMeshes("Character_Meshs.bin");
+	
+	//LoadMeshes("Meshess.bin");
+	//LoadMeshes("Meshesss.bin");
+	//LoadMeshes("FireWoodMesh.bin");
+	//LoadMeshes("Fence_Mesh.bin");
+	//LoadMeshes("Homer_Meshs.bin");
+	//LoadMeshes("Homer_Solider_Mesh.bin");
+	//LoadMeshes("Marge_Police_Mesh.bin");
+	//LoadMeshes("Sea_Mesh.bin");
+	//LoadMeshes("White_House_Mesh.bin");
+	//LoadMeshes("FishMon_Mesh.bin");
+	//LoadMeshes("Bullet_Mesh.bin");
+	//LoadMeshes("Character_Meshs.bin");
+	
+	LoadMeshes("WeaponMeshes.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
 {
 	LoadMaterials("Materials.bin");
-	LoadMaterials("Materialss.bin");
-	LoadMaterials("FireWoodMaterials.bin");
-//	LoadMaterials("WhiteHouse.bin");
-	LoadMaterials("Fence_Material.bin");
-	LoadMaterials("Homer_Material.bin");
-	LoadMaterials("rpgpp_lt_building_05_Material.bin");
-	LoadMaterials("Sea_Material.bin");
-	LoadMaterials("White_House_Material.bin");
-	LoadMaterials("FIshMon_Material.bin");
-	LoadMaterials("Bullet_Material.bin");
+	
+	// LoadMaterials("Materialss.bin");
+	// LoadMaterials("FireWoodMaterials.bin");
+	// LoadMaterials("WhiteHouse.bin");
+	// LoadMaterials("Fence_Material.bin");
+	// LoadMaterials("Homer_Material.bin");
+	// LoadMaterials("rpgpp_lt_building_05_Material.bin");
+	// LoadMaterials("Sea_Material.bin");
+	// LoadMaterials("White_House_Material.bin");
+	// LoadMaterials("FIshMon_Material.bin");
+	// LoadMaterials("Bullet_Material.bin");
+	
+	LoadMaterials("WeaponMaterials.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
 {
 	LoadTextures("Textures.bin");
-	LoadTextures("Texturesss.bin");
-	LoadTextures("FireWoodTextures.bin");
-	LoadTextures("Fence_Texture.bin");
-	LoadTextures("Simpsons_texture.bin");
-	LoadTextures("Sea_Textures.bin");
-	LoadTextures("White_House_Texture.bin");
-	LoadTextures("FishMon_Texture.bin");
-	LoadTextures("Bullet_Texture.bin");
+	
+	// LoadTextures("Texturesss.bin");
+	// LoadTextures("FireWoodTextures.bin");
+	// LoadTextures("Fence_Texture.bin");
+	// LoadTextures("Simpsons_texture.bin");
+	// LoadTextures("Sea_Textures.bin");
+	// LoadTextures("White_House_Texture.bin");
+	// LoadTextures("FishMon_Texture.bin");
+	// LoadTextures("Bullet_Texture.bin");
+	
+	LoadTextures("WeaponTextures.bin");
 }

@@ -6,23 +6,21 @@
 #include "CameraManager.h"
 #include "SceneManager.h"
 #include "Scene.h"
+#include "AssetManager.h"
+#include "Weapon.h"
+#include "Material.h"
 #include "Animator.h"
 #include "Camera.h"
 #include "StateMachine.h"
-#include "OtherPlayerStates.h"
 #include "Transform.h"
 #include "PlayerStates.h"
 #include "NPC.h"
 #include "UI.h"
 #include "Bullet.h"
 #include "Transform.h"
+#include "Mesh.h"
 
-CPlayer::CPlayer() :
-	m_isAiming(),
-	m_bulletCount(),
-	m_spineName("mixamorig:Spine"),
-	m_spineAngle(),
-	m_turnAngle()
+CPlayer::CPlayer() : m_spineName("mixamorig:Spine")
 {
 	SetName("Player");
 	m_Inventory = new CInventory();
@@ -33,56 +31,6 @@ CPlayer::~CPlayer()
 {
 }
 
-void CPlayer::SetClickAngle(float clickAngle)
-{
-	m_clickAngle = clickAngle;
-}
-
-float CPlayer::GetClickAngle()
-{
-	return m_clickAngle;
-}
-
-void CPlayer::SetTurnAngle(float look)
-{
-	m_turnAngle = look;
-}
-
-float CPlayer::GetTurnAngle()
-{
-	return m_turnAngle;
-}
-
-string CPlayer::GetSpineName()
-{
-	return m_spineName;
-}
-
-float CPlayer::GetSpineAngle()
-{
-	return m_spineAngle;
-}
-
-void CPlayer::SetSpineAngle(float angle)
-{
-	m_spineAngle = angle;
-}
-
-void CPlayer::SetAiming(bool isAiming)
-{
-	m_isAiming = isAiming;
-}
-
-bool CPlayer::IsAiming()
-{
-	return m_isAiming;
-}
-
-bool CPlayer::HasBullet()
-{
-	return m_bulletCount > 0;
-}
-
 void CPlayer::Init()
 {
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
@@ -91,17 +39,19 @@ void CPlayer::Init()
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
-	animator->SetWeight("idle", 1.0f);
+	animator->SetWeight("Idle", 1.0f);
 	m_Inventory = new CInventory();
 
-	
+	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
+	m_bilboardUI.push_back(new CHPbarUI(this));
+	m_bilboardUI.push_back(new CTextUI(this));
 }
 
 void CPlayer::AnotherInit()
 {
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 
-	stateMachine->SetCurrentState(COtherPlayerIdleState::GetInstance());
+	//stateMachine->SetCurrentState(COtherPlayerIdleState::GetInstance());
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
@@ -110,8 +60,38 @@ void CPlayer::AnotherInit()
 
 }
 
+void CPlayer::Attack()
+{
+	//m_Weapon->Attack(this);
+}
+
 void CPlayer::SwapWeapon(WEAPON_TYPE weaponType)
 {
+	m_Weapon = weaponType;
+	CObject* GunPos = FindFrame("GunPos");
+	CObject* AxePos = FindFrame("AxePos");
+	if (GunPos->m_children.size() > 0) delete GunPos->m_children[0]; GunPos->m_children.clear();
+	if (AxePos->m_children.size() > 0) delete AxePos->m_children[0]; AxePos->m_children.clear();
+
+	switch (weaponType) {
+	case WEAPON_TYPE::PISTOL:
+	{
+		CGun* weapon = reinterpret_cast<CGun*>(CObject::Load("Gun"));
+		CObject* pos = FindFrame("GunPos");
+		pos->m_children.push_back(weapon);
+		weapon->m_parent = pos;
+	}
+	break;
+	case WEAPON_TYPE::AXE:
+	{
+		CGun* weapon = reinterpret_cast<CGun*>(CObject::Load("axe"));
+		CObject* pos = FindFrame("AxePos");
+		pos->m_children.push_back(weapon);
+		weapon->m_parent = pos;
+	}
+	break;
+	}
+
 }
 
 void CPlayer::Punch()
@@ -140,7 +120,12 @@ void CPlayer::Shoot(CScene& currScene)
 void CPlayer::Update()
 {
 	CObject::Update();
-	
+	for (auto& ui : m_bilboardUI) ui->Update();
+}
+
+void CPlayer::RenderBilboard(CCamera* camera)
+{
+	for (auto& ui : m_bilboardUI) ui->Render(camera);
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
@@ -158,7 +143,7 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 		break;
 
 	case (UINT)GROUP_TYPE::BULLET:
-		cout << "È÷Æ®!" << endl;
+		cout << "ï¿½ï¿½Æ®!" << endl;
 		break;
 
 	}
@@ -448,7 +433,7 @@ void CPlayer::SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, in
 
 
 //
-/// ¾ÆÀÌÅÛ ¹× ÀÎº¥Åä¸® 
+/// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Îºï¿½ï¿½ä¸® 
 
 CInventory::CInventory()
 {
@@ -459,14 +444,14 @@ CInventory::~CInventory()
 }
 bool CInventory::exchangeItem(const string& itemName, int quantity, const string& newItemName, int newQuantity)
 {
-	// ¾ÆÀÌÅÛ °Ë»ö
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ë»ï¿½
 	auto it = find_if(items.begin(), items.end(), [&](const pair<string, int>& item) {
 		return item.first == itemName;
 		});
 
-	// ¾ÆÀÌÅÛÀÌ Á¸ÀçÇÏÁö ¾Ê°Å³ª ¿äÃ»µÈ ¼ö·®º¸´Ù ÀûÀ» °æ¿ì ±³È¯ ½ÇÆÐ
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê°Å³ï¿½ ï¿½ï¿½Ã»ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½
 	if (it == items.end() || it->second < quantity) {
-		// cout << "±³È¯ ½ÇÆÐ" << endl;
+		// cout << "ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½" << endl;
 		displayInventory();
 		return false;
 	}
@@ -475,7 +460,7 @@ bool CInventory::exchangeItem(const string& itemName, int quantity, const string
 
 	addItem(newItemName, newQuantity);
 
-	// cout << "±³È¯ ¼º°ø" << endl;
+	// cout << "ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½" << endl;
 	displayInventory();
 	return true;
 }

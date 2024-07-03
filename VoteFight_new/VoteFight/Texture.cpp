@@ -117,6 +117,15 @@ void CTexture::UpdateShaderVariable()
 	case TEXTURE_TYPE::CUBE_MAP2:
 		commandlist->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::CUBE_MAP2), srvHandle.GetGPUHandle());
 		break;
+	case TEXTURE_TYPE::G_COLOR:
+		commandlist->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::G_COLOR), srvHandle.GetGPUHandle());
+		break;
+	case TEXTURE_TYPE::G_NORMAL:
+		commandlist->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::G_NORMAL), srvHandle.GetGPUHandle());
+		break;
+	case TEXTURE_TYPE::G_WORLDPOS:
+		commandlist->SetGraphicsRootDescriptorTable(static_cast<UINT>(ROOT_PARAMETER_TYPE::G_WORLDPOS), srvHandle.GetGPUHandle());
+		break;
 	}
 }
 

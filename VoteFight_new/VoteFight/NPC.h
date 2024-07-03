@@ -3,6 +3,8 @@
 
 class CQuest;
 class C_NPC_Item;
+class CBilboardUI;
+
 class CNPC : public CCharacter
 {
 private:
@@ -11,6 +13,8 @@ private:
 	float    m_turnAngle;
 
    CQuest* m_Quest;
+
+   CBilboardUI* speech_bubble;
 public:
 	CNPC();
 	virtual ~CNPC();

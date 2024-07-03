@@ -12,8 +12,8 @@
 #define FRAME_BUFFER_HEIGHT		1080
 #define USE_PIX
 
-#define TERRAIN_WIDTH			257
-#define TERRAIN_HEIGHT			257
+#define TERRAIN_WIDTH			400
+#define TERRAIN_HEIGHT			400
 #define DEPTH_BUFFER_WIDTH	    (FRAME_BUFFER_WIDTH * 4)
 #define DEPTH_BUFFER_HEIGHT     (FRAME_BUFFER_HEIGHT * 4)
 #define VCT_SCENE_VOLUME_SIZE	32
@@ -65,22 +65,24 @@ enum class SCENE_TYPE
 {
 	TITLE,
 	SELECT,
+	LOGIN,
 	GAME,
-	
+
 	COUNT
 };
 
 enum class GROUP_TYPE
 {
-	STRUCTURE,		// 0 ╟Ма╓
-	PLAYER,				// 1 ╟Ма╓
-	NPC,					// 2 ╟Ма╓
-	MONSTER,			// 3 ╟Ма╓
-	BULLET,			// 4 ╟Ма╓
+	STRUCTURE,		// 0 О©╫О©╫О©╫О©╫
+	PLAYER,				// 1 О©╫О©╫О©╫О©╫
+	NPC,					// 2 О©╫О©╫О©╫О©╫
+	MONSTER,			// 3 О©╫О©╫О©╫О©╫
+	BULLET,			// 4 О©╫О©╫О©╫О©╫
 	BILBOARD,
 	GROUND_ITEM,
 	SKYBOX,
 	TERRAIN,
+	ITEM,
 
 	UI,
 	Test,
@@ -112,6 +114,7 @@ enum class WEAPON_TYPE
 {
 	PUNCH,
 	PISTOL,
+	AXE,
 
 	COUNT
 };
@@ -190,6 +193,9 @@ enum class ROOT_PARAMETER_TYPE
 	CUBE_MAP,
 	SHADOW_MAP,
 	CUBE_MAP2,
+	G_COLOR,
+	G_NORMAL,
+	G_WORLDPOS,
 
 	COUNT
 };
@@ -201,6 +207,10 @@ enum class TEXTURE_TYPE
 	CUBE_MAP,
 	SHADOW_MAP,
 	CUBE_MAP2,
+	G_COLOR,
+	G_NORMAL,
+	G_WORLDPOS,
+
 	COUNT
 };
 
@@ -209,6 +219,9 @@ enum class POST_PROCESSING_TYPE
 	NONE,
 	FADE_IN,
 	FADE_OUT,
+	G_COLOR,
+	G_NORMAL,
+	G_WORLDPOS,
 
 	COUNT
 };

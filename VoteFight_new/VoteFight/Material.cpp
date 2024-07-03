@@ -96,14 +96,10 @@ void CMaterial::Load(ifstream& in)
 		{
 			File::ReadStringFromFile(in, m_name);
 		}
-		//else if (str == "<Color>")
-		//{
-		//	in.read(reinterpret_cast<char*>(&m_color), sizeof(XMFLOAT4));
-		//}
-		//else if (str == "<TextureScale>")
-		//{
-		//	in.read(reinterpret_cast<char*>(&m_textureScale), sizeof(XMFLOAT2));
-		//}
+		else if (str == "<Color>")
+		{
+			in.read(reinterpret_cast<char*>(&m_color), sizeof(XMFLOAT4));
+		}
 		else if (str == "<AlbedoMap>" || str == "<NormalMap>")
 		{
 			File::ReadStringFromFile(in, str);
@@ -151,7 +147,6 @@ void CMaterial::UpdateShaderVariables()
 
 	d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::OBJECT), 4, &m_color, 16);
 	d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::OBJECT), 1, &m_textureMask, 20);
-	d3d12GraphicsCommandList->SetGraphicsRoot32BitConstants(static_cast<UINT>(ROOT_PARAMETER_TYPE::OBJECT), 2, &m_textureScale, 21);
 
 	for (const auto& texture : m_textures)
 	{

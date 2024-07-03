@@ -64,6 +64,5 @@ float CTerrainObject::OnGetHeight(float fx, float fz)
 	float fBottomHeight = fBottomLeft * (1 - fxPercent) + fBottomRight * fxPercent;
 	float fHeight = fBottomHeight * (1 - fzPercent) + fTopHeight * fzPercent;
 
-	printf("%lf, %lf, %lf\n", fx, fz, fHeight);
 	return(fHeight);
 }

@@ -2,7 +2,6 @@
 
 class CMesh;
 class CMaterial;
-
 class CComponent;
 class CStateMachine;
 class CRigidBody;
@@ -10,9 +9,7 @@ class CAnimator;
 class CTransform;
 class CSpriteRenderer;
 class CCollider;
-
 class CCamera;
-
 class CScene;
 
 class CObject
@@ -22,7 +19,7 @@ private:
 	UINT			    m_instanceID;
 	UINT				m_GroupType;
 
-protected:
+public:
 	string              m_name;
 					    
 	bool			    m_isActive;
@@ -36,7 +33,6 @@ protected:
 	CObject*		    m_parent;
 	vector<CObject*>    m_children;
 
-public:
 	CObject();
 	CObject(const CObject& rhs) = delete;
 	virtual ~CObject();
@@ -63,8 +59,6 @@ public:
 	CMesh* GetMesh()const { return m_mesh; };
 	vector<CMaterial*> GetMaterial() const { return m_materials; };
 	
-
-	void SetTerrainY( CScene* curScene);
 	void InTerrainSpace(const CScene& curScene);
 	bool ChcekInTerrainSpace(const CScene& curScene);
 
@@ -99,6 +93,7 @@ public:
 
 	virtual void PreRender(CCamera* camera);
 	virtual void Render(CCamera* camera);
+	virtual void RenderBilboard(CCamera* camera) {}
 
 	virtual const XMFLOAT3& GetPostion() ;
 	virtual void SetPostion(const XMFLOAT3& rVector);

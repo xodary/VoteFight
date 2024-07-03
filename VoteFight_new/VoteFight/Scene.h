@@ -1,5 +1,5 @@
 #pragma once
-#include "Terrain.h"
+#include "TerrainObject.h"
 
 class CObject;
 
@@ -36,13 +36,13 @@ class CScene abstract
 {
 	friend class CSceneManager;
 
-private:
+public:
 	string			 m_name;
 	vector<CObject*> m_objects[static_cast<int>(GROUP_TYPE::COUNT)];
 
 protected:
-	// ÀÌ °´Ã¼ÀÇ »ý¼ºÀº ¿À·ÎÁö CSceneManager¿¡ ÀÇÇØ¼­¸¸ ÀÏ¾î³­´Ù.
-	// ´Ü, ÀÌ °´Ã¼¸¦ »ó¼Ó ¹ÞÀº ÀÚ½Ä Å¬·¡½ºÀÇ »ý¼ºÀÚ¿¡¼­ ÀÌ Å¬·¡½ºÀÇ »ý¼ºÀÚ¸¦ È£ÃâÇØ¾ßÇÏ¹Ç·Î Á¢±Ù ÁöÁ¤ÀÚ¸¦ protected·Î ¼³Á¤ÇÏ¿´´Ù.
+	// ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ CSceneManagerï¿½ï¿½ ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½ï¿½ ï¿½Ï¾î³­ï¿½ï¿½.
+	// ï¿½ï¿½, ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ú½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¿ï¿½ï¿½ï¿½ ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ È£ï¿½ï¿½ï¿½Ø¾ï¿½ï¿½Ï¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ protectedï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½.
 	CScene();
 
 	void Load(const string& fileName);
@@ -56,7 +56,7 @@ private:
 	virtual void ReleaseShaderVariables();
 
 public:
-	// ¼Ò¸êÀÚÀÇ °æ¿ì¿¡´Â SafeDelete ¿ÜºÎ ÇÔ¼ö¸¦ ÀÌ¿ëÇÏ±â ¶§¹®¿¡ Á¢±Ù ÁöÁ¤ÀÚ¸¦ publicÀ¸·Î ¼³Á¤ÇÏ¿´´Ù.
+	// ï¿½Ò¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ì¿¡ï¿½ï¿½ SafeDelete ï¿½Üºï¿½ ï¿½Ô¼ï¿½ï¿½ï¿½ ï¿½Ì¿ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ú¸ï¿½ publicï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½.
 	virtual ~CScene();
 
 	void SetName(const string& name);
@@ -67,10 +67,17 @@ public:
 	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
 	void DeleteGroupObject(GROUP_TYPE groupType);
 
-	CTerrain* m_terrain = nullptr;
-	void CreateTerrain() { m_terrain = new CTerrain(257,257); };
-	float GetTerrainHeight(const XMFLOAT3& currPostion);
-	CTerrain* GetTerrain() const { return m_terrain; };
+	CTerrainObject* m_terrain = nullptr;
+	float GetTerrainHeight(float x, float z) { 
+		if (m_terrain && x >= 0 && z >= 0)
+			return m_terrain->OnGetHeight(x, z);
+		else
+		{
+			cout << "ï¿½Í·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Èµï¿½" << endl;
+			return		0.f;
+		}
+	};
+	CTerrainObject* GetTerrain() const { return m_terrain; };
 
 	virtual void Init() = 0;
 

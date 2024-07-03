@@ -182,7 +182,7 @@ void ProcessAccept()
 		}
 		else {
 			// I/O를 걸고 완료를 대기 상태로 변경
-			remoteClient->m_tcpConnection.m_isReadOverlapped = true;
+			remoteClient->m_tcpConnection.m_isReadOverlapped = true; 
 			{
 				lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
 				RemoteClient::m_remoteClients.insert({ remoteClient.get(), remoteClient });

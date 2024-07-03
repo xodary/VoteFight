@@ -8,6 +8,7 @@
 #include "StateMachine.h"
 #include "Transform.h"
 #include "NPCStates.h"
+#include "UI.h"
 
 CNPC::CNPC() :
 	m_spineName("mixamorig:Spine"),
@@ -48,6 +49,8 @@ void CNPC::Init()
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
 	animator->SetWeight("idle", 1.0f);
+
+	speech_bubble = new CSpeechBubbleUI(this);
 }
 
 void CNPC::Update()

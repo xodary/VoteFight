@@ -38,3 +38,39 @@ public:
 private:
 	void CheckCursorOver();
 };
+
+class CBilboardUI : public CUI
+{
+public:
+	CObject* m_owner;
+
+	CBilboardUI();
+	~CBilboardUI();
+
+	virtual CComponent* CreateComponent(COMPONENT_TYPE componentType);
+};
+
+class CHPbarUI : public CBilboardUI
+{
+public:
+	CHPbarUI(CObject* owner);
+	virtual void Update();
+};
+
+class CSpeechBubbleUI : public CBilboardUI
+{
+public:
+	CSpeechBubbleUI(CObject* owner);
+	virtual void Update();
+};
+
+class CTextUI : public CBilboardUI
+{
+public:
+
+	CTextUI(CObject* owner);
+	~CTextUI();
+
+	virtual void Render(CCamera* camera);
+	virtual void Update();
+};

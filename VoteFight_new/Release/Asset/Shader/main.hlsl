@@ -16,10 +16,10 @@
 // ---------------- structs---------------------------
 struct LIGHT
 {
-    float4 m_xmf4Ambient; // ÀüÃ¼ÀûÀÎ ¹à±â¸¦ °áÁ¤
-    float4 m_xmf4Diffuse; // ³»ÀûÇØ¼­ ºûÀ» °è»ê Áï ¸í¾ÏÀ» °áÁ¤
-    float4 m_xmf4Specular; // Ä«¸Þ¶óÀÇ ¹Ý»çºûÀ» °áÁ¤
-    float4 m_xmf3Position; // DriectionÀº ¾È¾¸ spotÀÌ³ª ´Ù¸¥°÷Àº ÇÊ¿ä
+    float4 m_xmf4Ambient; // ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½â¸?ï¿½ï¿½ï¿½ï¿½
+    float4 m_xmf4Diffuse; // ï¿½ï¿½ï¿½ï¿½ï¿½Ø¼ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿?ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
+    float4 m_xmf4Specular; // Ä«ï¿½Þ¶ï¿½ï¿½ï¿½ ï¿½Ý»ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½
+    float4 m_xmf3Position; // Driectionï¿½ï¿½ ï¿½È¾ï¿½ spotï¿½Ì³ï¿½ ï¿½Ù¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¿ï¿½
     
     bool m_isActive;
 			   
@@ -87,13 +87,12 @@ float4 DirectionalLight(int nIndex, float3 vNormal, float3 vToCamera, int Object
 {
     float RotateSpeed = 0.4f;
     float4 LightAmbient = m_lights[nIndex].m_xmf4Ambient;
-    LightAmbient = sin(gfTotalTime * RotateSpeed);
+    //LightAmbient = sin(gfTotalTime * RotateSpeed);
     
     float3 vToLight = m_lights[nIndex].m_direction;
     float3 TIme_vToLight = vToLight;
-    TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
-    TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
-    
+    //TIme_vToLight.y = vToLight.y * cos(gfTotalTime * RotateSpeed) + vToLight.z * sin(gfTotalTime * RotateSpeed);
+    //TIme_vToLight.z = vToLight.y * -sin(gfTotalTime * RotateSpeed) + vToLight.z * cos(gfTotalTime * RotateSpeed);
     
     float fDiffuseFactor = dot(vNormal, TIme_vToLight) * 0.6 + 0.4;
     
@@ -152,10 +151,18 @@ float4 SpotLight(int nIndex, float3 vPosition, float3 vNormal, float3 vToCamera)
 #define DELTA_X					(1.0f / _DEPTH_BUFFER_WIDTH)
 #define DELTA_Y					(1.0f / _DEPTH_BUFFER_HEIGHT)
 
-Texture2D<float> gtxtDepthTextures : register(t3);
 SamplerState samplerState : register(s0);
 SamplerComparisonState pcfSamplerState : register(s1);
 SamplerState gssClamp : register(s2);
+
+Texture2D gtxtAlbedoTexture : register(t0);
+Texture2D gtxtNormalTexture : register(t1);
+TextureCube gtxtCubeTexture : register(t2);
+Texture2D<float> gtxtDepthTextures : register(t3);
+TextureCube gtxtCubeTexture2 : register(t4);
+Texture2D<float4> albedoBuffer : register(t5);
+Texture2D<float4> normalBuffer : register(t6);
+Texture2D<float4> worldPosBuffer : register(t7);
 
 float Compute3x3ShadowFactor(float2 uv, float fDepth)
 {
@@ -224,11 +231,6 @@ cbuffer cbBoneTransformInfo : register(b6)
 #define MATERIAL_NORMAL_MAP			0x02
 #define MATERIAL_SHADOW_MAP			0x04
 
-Texture2D gtxtAlbedoTexture : register(t0);
-Texture2D gtxtNormalTexture : register(t1);
-TextureCube gtxtCubeTexture : register(t2);
-TextureCube gtxtCubeTexture2 : register(t4);
-
 struct VS_STANDARD_INPUT
 {
     float3 position : POSITION;
@@ -257,11 +259,9 @@ struct VS_STANDARD_OUTPUT
     float3 normalW : NORMAL;
     float3 tangentW : TANGENT;
     float3 bitangentW : BITANGENT;
-    
-    float4 uvs : TEXCOORD1;
 };
 
-VS_STANDARD_OUTPUT VS_Main(VS_STANDARD_INPUT input)
+VS_STANDARD_OUTPUT VS_GBuffer(VS_STANDARD_INPUT input)
 {
     VS_STANDARD_OUTPUT output;
     
@@ -272,13 +272,11 @@ VS_STANDARD_OUTPUT VS_Main(VS_STANDARD_INPUT input)
     output.bitangentW = mul(input.bitangent, (float3x3) gmtxGameObject);
     output.position = mul(mul(pW, gmtxView), gmtxProjection);
     output.uv = input.uv;
-    
-    output.uvs = mul(pW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
-
+   
     return (output);
 }
 
-VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
+VS_STANDARD_OUTPUT VS_GBuffer_Skinning(VS_SKINNED_STANDARD_INPUT input)
 {
     VS_STANDARD_OUTPUT output;
 
@@ -296,70 +294,139 @@ VS_STANDARD_OUTPUT VS_Main_Skinning(VS_SKINNED_STANDARD_INPUT input)
     output.position = mul(mul(positionW, gmtxView), gmtxProjection);
     output.uv = input.uv;
     
-    output.uvs = mul(positionW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
-
     return (output);
 }
 
-float4 PS_Main(VS_STANDARD_OUTPUT input) : SV_TARGET
+struct PSOutput
 {
-    float4 cAlbedoColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
-        cAlbedoColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
-    float4 cNormalColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-    if (gnTexturesMask & MATERIAL_NORMAL_MAP)
-        cNormalColor = gtxtNormalTexture.Sample(samplerState, input.uv);
+    float4 color : SV_Target0;
+    float4 normal : SV_Target1;
+    float4 worldpos : SV_Target2;
+};
 
-    float3 normalW;
-    float4 cColor = cAlbedoColor;
+PSOutput PS_GBuffer(VS_STANDARD_OUTPUT input) : SV_TARGET
+{
+    PSOutput output = (PSOutput) 0;
+	
+    output.color = gvColor;
+    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
+        output.color = gtxtAlbedoTexture.Sample(samplerState, input.uv);
+    output.normal = float4(input.normalW, 1);
+    
     if (gnTexturesMask & MATERIAL_NORMAL_MAP)
     {
+        output.normal = gtxtNormalTexture.Sample(samplerState, input.uv);
         float3x3 TBN = float3x3(normalize(input.tangentW), normalize(input.bitangentW), normalize(input.normalW));
-        float3 vNormal = normalize(cNormalColor.rgb * 2.0f - 1.0f); //[0, 1] ¡æ [-1, 1]
-        normalW = normalize(mul(vNormal, TBN));
+        float3 vNormal = normalize(output.normal.rgb * 2.0f - 1.0f);
+        output.normal = float4(normalize(mul(vNormal, TBN)), 1.0f);
     }
     else
     {
-        normalW = normalize(input.normalW);
-    }
-    float4 cIllumination = Lighting(input.positionW, normalW, input.uvs, OBJECT);
-  // cColor = (lerp(cColor, cIllumination, 0.5f));
-    cColor = cColor * cIllumination;
-    cColor = franelOuterLine(input.positionW, normalW, cColor);
-    return cColor;
+        output.normal = output.normal;
 
+    }
+    output.worldpos = float4(input.positionW, 1.0f);
+    return output;
+}
+
+// === Light ===
+struct VSInput
+{
+    float4 position : POSITION;
+    float2 uv : TEXCOORD;
+};
+
+struct PSInput
+{
+    float2 uv : TEXCOORD;
+    float4 position : SV_POSITION;
+};
+
+PSInput VS_Main(VSInput input)
+{
+    PSInput result;
+
+    result.position = float4(input.position.xyz, 1);
+    result.uv = input.uv;
+    
+    return result;
+}
+
+float4 PS_Main(PSInput input) : SV_TARGET
+{
+    float2 inPos = input.position.xy;
+    
+    float3 normal = normalize(normalBuffer[inPos].rgb);
+    float4 albedo = albedoBuffer[inPos];
+    float4 worldPos = worldPosBuffer[inPos];
+
+    float3 viewDir = normalize(gvCameraPosition.xyz - worldPos.xyz);
+    
+    float4 cIllumination = Lighting(worldPos.xyz, normal, mul(worldPos, m_lights[SHADOWMAP_LIGHT].m_toTexCoord), OBJECT);
+    albedo *= cIllumination;
+    albedo = franelOuterLine(worldPos.xyz, normal, albedo);
+    return albedo;
 }
 
 // ======== Bilboard =========
 struct VS_BILBOARD_INPUT
 {
     float3 position : POSITION;
+    float2 uv : TEXCOORD;
 };
 
 struct VS_BILBOARD_OUTPUT
 {
     float4 position : SV_POSITION;
-    float3 positionW : POSITION;
+    float2 uv : TEXCOORD;
 };
 
 VS_BILBOARD_OUTPUT VS_Bilboard(VS_BILBOARD_INPUT input)
 {
     VS_BILBOARD_OUTPUT output;
-    
-    output.positionW = mul(float4(input.position, 1.0f), gmtxGameObject);
-    output.position = mul(mul(float4(output.positionW, 1.0f), gmtxView), gmtxProjection);
+   
+    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
+    //output.position = mul(float4(input.position, 1.0f), gmtxGameObject);
+    //output.position = float4(input.position, 1.0f);
+    output.uv = input.uv;
 
-    return (output);
+    return output;
 }
 
 float4 PS_Bilboard(VS_BILBOARD_OUTPUT input) : SV_TARGET
 {
-    float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.positionW.xy);
-    float4 cColor = cBaseTexColor;
-    
-    return (cColor);
+    float4 textureColor = gvColor;
+	
+    // ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½Ç¥ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¿ï¿?ï¿½Ø½ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½Õ´Ï´ï¿½.
+    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
+    {
+        textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
+    }
+
+    return textureColor;
 }
 
+float4 PS_BilboardText(VS_BILBOARD_OUTPUT input) : SV_TARGET
+{
+    float4 textureColor = gvColor;
+	
+    // ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½Ç¥ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¿ï¿?ï¿½Ø½ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½Õ´Ï´ï¿½.
+    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
+    {
+        textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
+
+        if (textureColor.r == 0.0f && textureColor.g == 0.0f && textureColor.b == 0.0f)
+        {
+            discard;
+        }
+        else
+        {
+            textureColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+    }
+
+    return textureColor;
+}
 
 // ======== Skybox =========
 float gamma = 2.2;
@@ -467,7 +534,7 @@ float4 PS_UI(VS_UI_OUTPUT input) : SV_TARGET
 {
     float4 textureColor;
 	
-    // ÀÌ ÅØ½ºÃ³ ÁÂÇ¥ À§Ä¡¿¡¼­ »ùÇÃ·¯¸¦ »ç¿ëÇÏ¿© ÅØ½ºÃ³¿¡¼­ ÇÈ¼¿ »ö»óÀ» »ùÇÃ¸µÇÕ´Ï´Ù.
+    // ï¿½ï¿½ ï¿½Ø½ï¿½Ã³ ï¿½ï¿½Ç¥ ï¿½ï¿½Ä¡ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¿ï¿?ï¿½Ø½ï¿½Ã³ï¿½ï¿½ï¿½ï¿½ ï¿½È¼ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½Õ´Ï´ï¿½.
     textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
 
     return textureColor;

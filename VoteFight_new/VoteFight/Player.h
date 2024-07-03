@@ -4,63 +4,38 @@
 class CItem;
 class CInventory;
 class CUI;
+class CTextUI;
+class CBilboardUI;
+class CWeapon;
 
 class CPlayer : public CCharacter
 {
 private:
-	bool	 m_isAiming;
-	int	     m_bulletCount;
 	string	 m_spineName;
-	float	 m_spineAngle;
-	float    m_turnAngle;
-	float	 m_clickAngle;
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
-
+    vector<CBilboardUI*> m_bilboardUI;
 
 public:
     bool isMove = true;
 	CPlayer();
 	virtual ~CPlayer();
 
-	void SetClickAngle(float clickAngle);
-	float GetClickAngle();
-	void SetTurnAngle(float look);
-	float GetTurnAngle();
-	string GetSpineName();
-	float GetSpineAngle();
-	void SetSpineAngle(float angle);
-	void SetAiming(bool isAiming);
-	bool IsAiming();
-
-	bool HasBullet();
-
 	virtual void Init();
     virtual void AnotherInit();
 
+    void Attack();
 	virtual void SwapWeapon(WEAPON_TYPE weaponType);
 
 	void Punch();
 	void Shoot(CScene& currScene);
 
 	virtual void Update();
+	virtual void RenderBilboard(CCamera* camera);
 
     unsigned int    m_id{};
 
-    float    m_goalAngle;
-
-	//void ManagePistol(bool HasPistol);
-	//bool HasPistol() const;
-	//bool IsEquippedPistol() const;
-
-	//void ManageKey(bool HasKey);
-	//bool HasKey() const;
-
-	//bool SwapWeapon(WEAPON_TYPE WeaponType);
-
-	//void Rotate(float Pitch, float Yaw, float Roll, float ElapsedTime, float NearestHitDistance);
-
-	//void IsCollidedByEventTrigger(const XMFLOAT3& NewPosition);
+    WEAPON_TYPE m_Weapon;
 
 	virtual void OnCollisionEnter(CObject* collidedObject);
 	virtual void OnCollision(CObject* collidedObject);

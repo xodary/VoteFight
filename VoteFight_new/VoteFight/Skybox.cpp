@@ -5,7 +5,7 @@
 #include "Texture.h"
 #include "Material.h"
 
-CSkyBox::CSkyBox(float fWidth, float fHeight, float fDepth)
+CSkyBox::CSkyBox(float fWidth, float center)
 {
 	SetActive(true);
 
@@ -13,7 +13,7 @@ CSkyBox::CSkyBox(float fWidth, float fHeight, float fDepth)
 
 	XMFLOAT3* m_pxmf3Positions = new XMFLOAT3[m_maxVertexCount];
 
-	float fx = fWidth * 0.5f, fy = fHeight * 0.5f, fz = fDepth * 0.5f;
+	float fx = center + fWidth * 0.5f;
 	// Front Quad (quads point inward)
 	m_pxmf3Positions[0] = XMFLOAT3(-fx, +fx, +fx);
 	m_pxmf3Positions[1] = XMFLOAT3(+fx, +fx, +fx);

@@ -44,8 +44,6 @@ private:
 
 	ID3D12DescriptorHeap*					   DsvDescriptorHeap;
 	ID3D12RootSignature*					   m_rootSignature[2];
-
-	// DescriptorHeapManager*					   m_DescriptorHeapManager;
 public:
 	virtual ~CVoxelizationShader();
 

@@ -83,7 +83,6 @@ void CSelectScene::Exit()
 
 void CSelectScene::Init()
 {
-	CreateTerrain();
 	// ¾À ·Îµå
 	Load("GameScene.bin");
 	Load("Character_Scene.bin");

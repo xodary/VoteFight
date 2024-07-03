@@ -16,6 +16,10 @@
 #include "GBufferShader.h"
 #include "VCTMainShader.h"
 #include "UpsampleBlur.h"
+#include "ImGUI/imgui.h"
+#include "ImGUI/imgui_impl_win32.h"
+#include "ImGUI/imgui_impl_dx12.h"
+#include "ImGUI/imgui_internal.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -121,12 +125,54 @@ UINT CGameFramework::GetDsvDescriptorIncrementSize()
 	return m_dsvDescriptorIncrementSize;
 }
 
+std::vector<CTextMesh::FontType> LoadFontData(const char* filename)
+{
+	std::ifstream fin;
+	int i;
+	char temp;
+
+
+	std::vector<CTextMesh::FontType> font(95);
+
+	fin.open(filename);
+	if (fin.fail())
+	{
+		return (std::vector<CTextMesh::FontType>)0;
+	}
+
+	for (i = 0; i < 95; i++)
+	{
+		fin.get(temp);
+		while (temp != ' ')
+		{
+			fin.get(temp);
+		}
+		fin.get(temp);
+		while (temp != ' ')
+		{
+			fin.get(temp);
+		}
+
+		fin >> font[i].left;
+		fin >> font[i].right;
+		fin >> font[i].size;
+	}
+
+	fin.close();
+
+	return font;
+}
+
 void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 {
 	m_hWnd = hWnd;
 	m_resolution = resolution;
 
-	// CServerManager::ConnectServer();
+	m_FontData = LoadFontData("fontdata.txt");
+
+#ifdef CONNECT_SERVER
+	CServerManager::ConnectServer();
+#endif
 
 	CreateDevice();
 	CreateCommandQueueAndList();
@@ -134,7 +180,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CreateRootSignature();
 	CreateShaderVariables();
 
-	// Close »óÅÂÀÇ Ä¿¸Çµå¸®½ºÆ®¸¦ Open »óÅÂ·Î º¯°æ½ÃÅ²´Ù.
+	// Close ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä¿ï¿½Çµå¸®ï¿½ï¿½Æ®ï¿½ï¿½ Open ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å²ï¿½ï¿?
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Reset(m_d3d12CommandAllocator.Get(), nullptr));
 
 	m_DescriptorHeapManager = new DescriptorHeapManager();
@@ -144,7 +190,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
 
-	// È­¸é ¹öÅØ½º
+	// È­ï¿½ï¿½ ï¿½ï¿½ï¿½Ø½ï¿½
 	CreateFullscreenQuadBuffers();
 
 	// RenderTarget, DepthStencil
@@ -153,25 +199,42 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CreateDepthStencilView();
 
 	// Constant / Shader Resource / Unoreded Access
-	// ¸ðµç ÅØ½ºÃ³¸¦ ·ÎµåÇß´Ù¸é, ÇØ´ç °³¼ö¸¸Å­ Descriptor HeapÀ» ÇÒ´çÇÑ´Ù.
-	// * ÀÌ ÇÁ·¹ÀÓ¿öÅ©¿¡¼­ CbvSrvUav Descriptor HeapÀº ÅØ½ºÃ³(SRV)¸¸À» ÀúÀåÇÑ´Ù.
+	// ï¿½ï¿½ï¿?ï¿½Ø½ï¿½Ã³ï¿½ï¿½ ï¿½Îµï¿½ï¿½ß´Ù¸ï¿½, ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Å­ Descriptor Heapï¿½ï¿½ ï¿½Ò´ï¿½ï¿½Ñ´ï¿½.
+	// * ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ó¿ï¿½Å©ï¿½ï¿½ï¿½ï¿½ CbvSrvUav Descriptor Heapï¿½ï¿½ ï¿½Ø½ï¿½Ã³(SRV)ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	CreateShaderResourceViews();
 
 	CreateShaderVariables();
 
-	// Ä¿¸Çµå¸®½ºÆ®¸¦ Close »óÅÂ·Î ¸¸µç´Ù.
+	// Ä¿ï¿½Çµå¸®ï¿½ï¿½Æ®ï¿½ï¿½ Close ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿?
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Close());
 
-	// Ä¿¸Çµå¸®½ºÆ®¸¦ ½ÇÇàÇÏ°í, GPUÀÇ ½ÇÇàÀ» ´ë±âÇÏ¿© ÃÊ±â »ý¼ºÀ» ³¡¸¶Ä£´Ù.
+	// Ä¿ï¿½Çµå¸®ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½, GPUï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï¿ï¿?ï¿½Ê±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ä£ï¿½ï¿½.
 	ID3D12CommandList* d3d12CommandLists[] = { m_d3d12GraphicsCommandList.Get() };
 
 	m_d3d12CommandQueue->ExecuteCommandLists(_countof(d3d12CommandLists), d3d12CommandLists);
 	WaitForGpuComplete();
 
-	// Ä¿¸Çµå¸®½ºÆ®°¡ ¸ðµÎ ½ÇÇàµÇ¾ú´Ù¸é, ¸®¼Ò½º »ý¼º¿¡ »ç¿ëÇß´ø ¸ðµç ¾÷·Îµå ¹öÆÛ¸¦ Á¦°ÅÇÑ´Ù.
+	// Ä¿ï¿½Çµå¸®ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½Ç¾ï¿½ï¿½Ù¸ï¿? ï¿½ï¿½ï¿½Ò½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ß´ï¿?ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½Îµï¿½ ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
 
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+
+	ImGui_ImplWin32_Init(m_hWnd);
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	desc.NumDescriptors = 1;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	m_d3d12Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_GUISrvDescHeap));
+
+	ImGui_ImplDX12_Init(m_d3d12Device.Get(), 3,
+		DXGI_FORMAT_R8G8B8A8_UNORM, m_GUISrvDescHeap,
+		m_GUISrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
+		m_GUISrvDescHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
 void CGameFramework::CreateDevice()
@@ -219,35 +282,35 @@ void CGameFramework::CreateDevice()
 		}
 	}
 
-	// ¸ðµç ÇÏµå¿þ¾î ¾î´ðÅÍ ´ëÇÏ¿© Æ¯¼º ·¹º§ 12.0À» Áö¿øÇÏ´Â ÇÏµå¿þ¾î µð¹ÙÀÌ½º¸¦ »ý¼ºÇÑ´Ù.
+	// ï¿½ï¿½ï¿?ï¿½Ïµï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½Ï¿ï¿½ Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 12.0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ïµï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	if (DXGIAdapter == nullptr)
 	{
 		DX::ThrowIfFailed(m_dxgiIFactory->EnumWarpAdapter(_uuidof(IDXGIAdapter1), reinterpret_cast<void**>(DXGIAdapter.GetAddressOf())));
 		DX::ThrowIfFailed(D3D12CreateDevice(DXGIAdapter.Get(), D3D_FEATURE_LEVEL_12_0, _uuidof(ID3D12Device), reinterpret_cast<void**>(m_d3d12Device.GetAddressOf())));
 	}
 
-	// Æ¯¼º ·¹º§ 12.0À» Áö¿øÇÏ´Â ÇÏµå¿þ¾î µð¹ÙÀÌ½º¸¦ »ý¼ºÇÒ ¼ö ¾øÀ¸¸é WARP µð¹ÙÀÌ½º¸¦ »ý¼ºÇÑ´Ù.
+	// Æ¯ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ 12.0ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½Ïµï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ WARP ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS D3D12MsaaQualityLevels = {};
 
 	D3D12MsaaQualityLevels.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	D3D12MsaaQualityLevels.SampleCount = 4;
 
-	// Msaa4x ´ÙÁß »ùÇÃ¸µ
+	// Msaa4x ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½
 	D3D12MsaaQualityLevels.Flags = D3D12_MULTISAMPLE_QUALITY_LEVELS_FLAG_NONE;
 	D3D12MsaaQualityLevels.NumQualityLevels = 0;
 
-	// µð¹ÙÀÌ½º°¡ Áö¿øÇÏ´Â ´ÙÁß »ùÇÃÀÇ Ç°Áú ¼öÁØÀ» È®ÀÎÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½Ì½ï¿½ï¿½ï¿?ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ñ´ï¿½.
 	DX::ThrowIfFailed(m_d3d12Device->CheckFeatureSupport(D3D12_FEATURE_MULTISAMPLE_QUALITY_LEVELS, &D3D12MsaaQualityLevels, sizeof(D3D12_FEATURE_DATA_MULTISAMPLE_QUALITY_LEVELS)));
 
-	// ´ÙÁß »ùÇÃÀÇ Ç°Áú ¼öÁØÀÌ 1º¸´Ù Å©¸é ´ÙÁß »ùÇÃ¸µÀ» È°¼ºÈ­ÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1ï¿½ï¿½ï¿½ï¿½ Å©ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ È°ï¿½ï¿½È­ï¿½Ñ´ï¿½.
 	m_msaa4xQualityLevels = D3D12MsaaQualityLevels.NumQualityLevels;
 	m_msaa4xEnable = (m_msaa4xQualityLevels > 1) ? true : false;
 
-	// Ææ½º¸¦ »ý¼ºÇÏ°í Ææ½º °ªÀ» 0À¸·Î ¼³Á¤ÇÑ´Ù.
+	// ï¿½æ½ºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½æ½º ï¿½ï¿½ï¿½ï¿½ 0ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	DX::ThrowIfFailed(m_d3d12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<void**>(m_d3d12Fence.GetAddressOf())));
 
-	// Ææ½º¿Í µ¿±âÈ­¸¦ À§ÇÑ ÀÌº¥Æ® °´Ã¼¸¦ »ý¼ºÇÑ´Ù.(ÀÌº¥Æ® °´Ã¼ÀÇ ÃÊ±â°ªÀº FALSEÀÌ´Ù.)
-	// ÀÌº¥Æ®°¡ ½ÇÇàµÇ¸é(Signal) ÀÌº¥Æ®ÀÇ °ªÀ» ÀÚµ¿ÀûÀ¸·Î FALSE°¡ µÇµµ·Ï »ý¼ºÇÑ´Ù.
+	// ï¿½æ½ºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ìºï¿½Æ® ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.(ï¿½Ìºï¿½Æ® ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½Ê±â°ªï¿½ï¿½ FALSEï¿½Ì´ï¿½.)
+	// ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ç¸ï¿?Signal) ï¿½Ìºï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ FALSEï¿½ï¿½ ï¿½Çµï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	m_fenceEvent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 }
 
@@ -262,7 +325,7 @@ void CGameFramework::CreateCommandQueueAndList()
 	DX::ThrowIfFailed(m_d3d12Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), reinterpret_cast<void**>(m_d3d12CommandAllocator.GetAddressOf())));
 	DX::ThrowIfFailed(m_d3d12Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_d3d12CommandAllocator.Get(), nullptr, __uuidof(ID3D12GraphicsCommandList), reinterpret_cast<void**>(m_d3d12GraphicsCommandList.GetAddressOf())));
 
-	// ¸í·É ¸®½ºÆ®´Â »ý¼ºµÇ¸é ¿­¸°(Open) »óÅÂÀÌ¹Ç·Î ´ÝÈù(Closed) »óÅÂ·Î ¸¸µç´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç¸ï¿½ ï¿½ï¿½ï¿½ï¿½(Open) ï¿½ï¿½ï¿½ï¿½ï¿½Ì¹Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½(Closed) ï¿½ï¿½ï¿½Â·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿?
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Close());
 }
 
@@ -286,10 +349,10 @@ void CGameFramework::CreateSwapChain()
 
 	DX::ThrowIfFailed(m_dxgiIFactory->CreateSwapChain(m_d3d12CommandQueue.Get(), &DXGISwapChainDesc, reinterpret_cast<IDXGISwapChain**>(m_dxgiSwapChain.GetAddressOf())));
 
-	// ½º¿ÒÃ¼ÀÎÀÇ ÇöÀç ÈÄ¸é¹öÆÛ ÀÎµ¦½º¸¦ ÀúÀåÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ä¸ï¿½ï¿½ï¿½ï¿?ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	m_swapChainBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
-	// "Alt+Enter" Å°ÀÇ µ¿ÀÛÀ» ºñÈ°¼ºÈ­ÇÑ´Ù.
+	// "Alt+Enter" Å°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È°ï¿½ï¿½È­ï¿½Ñ´ï¿½.
 	DX::ThrowIfFailed(m_dxgiIFactory->MakeWindowAssociation(m_hWnd, DXGI_MWA_NO_ALT_ENTER));
 }
 
@@ -302,19 +365,19 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 	D3D12DescriptorHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 	D3D12DescriptorHeapDesc.NodeMask = 0;
 
-	// ·»´õ Å¸°Ù ¼­¼úÀÚ Èü(¼­¼úÀÚÀÇ °³¼ö´Â ½º¿ÒÃ¼ÀÎ ¹öÆÛÀÇ °³¼ö)À» »ý¼ºÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	DX::ThrowIfFailed(m_d3d12Device->CreateDescriptorHeap(&D3D12DescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(m_d3d12RtvDescriptorHeap.GetAddressOf())));
 
-	// ·»´õ Å¸°Ù ¼­¼úÀÚ ÈüÀÇ ¿ø¼ÒÀÇ Å©±â¸¦ ÀúÀåÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	m_rtvDescriptorIncrementSize = m_d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
-	// ±íÀÌ-½ºÅÙ½Ç ¼­¼úÀÚ Èü(¼­¼úÀÚÀÇ °³¼ö´Â 1)À» »ý¼ºÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½(ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ 1)ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	D3D12DescriptorHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_DSV;
 	D3D12DescriptorHeapDesc.NumDescriptors = 2;
 
 	DX::ThrowIfFailed(m_d3d12Device->CreateDescriptorHeap(&D3D12DescriptorHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(m_d3d12DsvDescriptorHeap.GetAddressOf())));
 
-	// ±íÀÌ-½ºÅÙ½Ç ¼­¼úÀÚ ÈüÀÇ ¿ø¼ÒÀÇ Å©±â¸¦ ÀúÀåÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Å©ï¿½â¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	m_dsvDescriptorIncrementSize = m_d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 }
 
@@ -339,12 +402,12 @@ void CGameFramework::CreateDepthStencilView()
 	CD3DX12_HEAP_PROPERTIES D3D312HeapProperties(D3D12_HEAP_TYPE_DEFAULT, 1, 1);
 	CD3DX12_CLEAR_VALUE D3D12ClearValue(DXGI_FORMAT_D32_FLOAT, 1.0f, 0);
 
-	// ±íÀÌ-½ºÅÙ½Ç ¹öÆÛ¸¦ »ý¼ºÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½Û¸ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	DX::ThrowIfFailed(m_d3d12Device->CreateCommittedResource(&D3D312HeapProperties, D3D12_HEAP_FLAG_NONE, &D3D12ResourceDesc, D3D12_RESOURCE_STATE_DEPTH_WRITE, &D3D12ClearValue, __uuidof(ID3D12Resource), reinterpret_cast<void**>(m_d3d12DepthStencilBuffer.GetAddressOf())));
 
 	CD3DX12_CPU_DESCRIPTOR_HANDLE D3D12DsvCPUDescriptorHandle(m_d3d12DsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
 
-	// ±íÀÌ-½ºÅÙ½Ç ¹öÆÛ ºä¸¦ »ý¼ºÇÑ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½-ï¿½ï¿½ï¿½Ù½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ä¸¦ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	m_d3d12Device->CreateDepthStencilView(m_d3d12DepthStencilBuffer.Get(), nullptr, D3D12DsvCPUDescriptorHandle);
 }
 
@@ -362,6 +425,9 @@ void CGameFramework::CreateRootSignature()
 	d3d12DescriptorRanges[2].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 2);	// Cube
 	d3d12DescriptorRanges[3].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 3);	// Shadow Map
 	d3d12DescriptorRanges[4].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 4);	// Cube2
+	d3d12DescriptorRanges[5].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 5);	// GBuffer Color
+	d3d12DescriptorRanges[6].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 6);	// GBuffer Normal
+	d3d12DescriptorRanges[7].Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 7);	// GBuffer WorldPos
 
 	CD3DX12_ROOT_PARAMETER d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::COUNT)] = {};
 
@@ -377,8 +443,11 @@ void CGameFramework::CreateRootSignature()
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CUBE_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[2]);	// cubeMap : register(t2)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::SHADOW_MAP)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[3]); // shadowMap : register(t3)
 	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::CUBE_MAP2)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[4]);	// cubeMap2 : register(t4)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_COLOR)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[5]);	// GBuffer Color : register(t5)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_NORMAL)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[6]);	// GBuffer Normal : register(t6)
+	d3d12RootParameters[static_cast<int>(ROOT_PARAMETER_TYPE::G_WORLDPOS)].InitAsDescriptorTable(1, &d3d12DescriptorRanges[7]); // GBuffer WorldPos : register(t7)
 
-	D3D12_ROOT_SIGNATURE_FLAGS d3d12RootSignatureFlags = { D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT }; // IA´Ü°è¸¦ Çã¿ë, ½ºÆ®¸² Ãâ·Â ´Ü°è¸¦ Çã¿ë
+	D3D12_ROOT_SIGNATURE_FLAGS d3d12RootSignatureFlags = { D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT }; // IAï¿½Ü°è¸¦ ï¿½ï¿½ï¿? ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿?ï¿½Ü°è¸¦ ï¿½ï¿½ï¿?
 	CD3DX12_STATIC_SAMPLER_DESC d3d12SamplerDesc[4] = {};
 
 	d3d12SamplerDesc[0].Init(0, D3D12_FILTER_MIN_MAG_MIP_LINEAR, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, D3D12_TEXTURE_ADDRESS_MODE_WRAP, 0.0f, 1, D3D12_COMPARISON_FUNC_ALWAYS, D3D12_STATIC_BORDER_COLOR_OPAQUE_WHITE, 0.0f, D3D12_FLOAT32_MAX, D3D12_SHADER_VISIBILITY_PIXEL);                            // samplerState : register(s0)
@@ -481,10 +550,10 @@ void CGameFramework::WaitForGpuComplete()
 {
 	const UINT64 FenceValue = ++m_fenceValues[m_swapChainBufferIndex];
 
-	// GPU°¡ Ææ½ºÀÇ °ªÀ» ¼³Á¤ÇÏ´Â ¸í·ÉÀ» ¸í·É Å¥¿¡ Ãß°¡ÇÑ´Ù.
+	// GPUï¿½ï¿½ ï¿½æ½ºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¥ï¿½ï¿½ ï¿½ß°ï¿½ï¿½Ñ´ï¿½.
 	DX::ThrowIfFailed(m_d3d12CommandQueue->Signal(m_d3d12Fence.Get(), FenceValue));
 
-	// Ææ½ºÀÇ ÇöÀç °ªÀÌ ¼³Á¤ÇÑ °ªº¸´Ù ÀÛÀ¸¸é Ææ½ºÀÇ ÇöÀç °ªÀÌ ¼³Á¤ÇÑ °ªÀÌ µÉ ¶§±îÁö ±â´Ù¸°´Ù.
+	// ï¿½æ½ºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½æ½ºï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ù¸ï¿½ï¿½ï¿?
 	if (m_d3d12Fence->GetCompletedValue() < FenceValue)
 	{
 		DX::ThrowIfFailed(m_d3d12Fence->SetEventOnCompletion(FenceValue, m_fenceEvent));
@@ -494,7 +563,7 @@ void CGameFramework::WaitForGpuComplete()
 
 void CGameFramework::MoveToNextFrame()
 {
-	// ÇÁ¸®Á¨Æ®¸¦ ÇÏ¸é ÇöÀç ·»´õ Å¸°Ù(ÈÄ¸é¹öÆÛ)ÀÇ ³»¿ëÀÌ Àü¸é¹öÆÛ·Î ¿Å°ÜÁö°í ·»´õ Å¸°Ù ÀÎµ¦½º°¡ ¹Ù²ð °ÍÀÌ´Ù.
+	// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ï¸ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½(ï¿½Ä¸ï¿½ï¿½ï¿½ï¿?ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Û·ï¿?ï¿½Å°ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½Îµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ï¿½ ï¿½ï¿½ï¿½Ì´ï¿½.
 	m_swapChainBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
 	WaitForGpuComplete();
@@ -578,9 +647,10 @@ void CGameFramework::AdvanceFrame()
 
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
-	// CServerManager::Tick();
 
-	// CServerManager::Tick();
+#ifdef CONNECT_SERVER
+	CServerManager::Tick();
+#endif
 
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));
