@@ -4,6 +4,7 @@
 #include "GameScene.h"
 #include "TitleScene.h"
 #include "SelectScene.h"
+#include "LoginScene.h"
 
 CSceneManager::CSceneManager() :
 	m_scenes(),
@@ -35,17 +36,16 @@ void CSceneManager::Init()
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 
-	// ¾À »ý¼º
+	// ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	m_scenes.resize(static_cast<int>(SCENE_TYPE::COUNT));
 	m_scenes[static_cast<int>(SCENE_TYPE::TITLE)] = new CTitleScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)] = new CSelectScene();
+	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)] = new CLoginScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)] = new CGameScene();
-	// ¾À ÃÊ±âÈ­
-	 m_scenes[static_cast<int>(SCENE_TYPE::TITLE)]->Init();
-	// m_scenes[static_cast<int>(SCENE_TYPE::SELECT)]->Init();
-	// m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
 
-	// ÇöÀç ¾À ¼³Á¤
+	m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
+
+	// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::TITLE)];
 	m_currentScene->Enter();
 }

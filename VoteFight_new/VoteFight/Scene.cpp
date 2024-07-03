@@ -31,7 +31,7 @@ void CScene::Load(const string& fileName)
 	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
 	ifstream in(filePath, ios::binary);
 	if (!in.is_open()) {
-		std::cerr << filePath << " : ÆÄÀÏÀ» ¿­ ¼ö ¾ø½À´Ï´Ù." << std::endl;
+		std::cerr << filePath << " : ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï´ï¿½." << std::endl;
 		return;
 	}
 
@@ -85,13 +85,10 @@ void CScene::Load(const string& fileName)
 					object->SetActive(isActives[i]);
 					object->SetGroupType((UINT)GROUP_TYPE(groupType));
 
-					XMFLOAT3 currPosition = transforms[3 * i];
-					
-					currPosition.y = GetTerrainHeight(currPosition);
-					cout << fileName << endl;
-					transform->SetPosition(currPosition);
-						transform->SetRotation(transforms[3 * i + 1]);
+					transform->SetPosition(transforms[3 * i]);
+					transform->SetRotation(transforms[3 * i + 1]);
 					transform->SetScale(transforms[3 * i + 2]);
+
 					transform->Update();
 					object->Init();
 
@@ -179,7 +176,7 @@ void CScene::DeleteGroupObject(GROUP_TYPE groupType)
 		return m_terrain->OnGetInGameHeight(currPostion.x, currPostion.z);
 	else
 	{
-		cout << "ÅÍ·¹ÀÎ »ý¼ºÀÌ ¾ÈµÇ¾ú°Å³ª ¶Ç´Â ¹üÀ§¸¦ ¹þ¾î³µ½À´Ï´Ù." << endl;
+		cout << "ï¿½Í·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ÈµÇ¾ï¿½ï¿½Å³ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½î³µï¿½ï¿½ï¿½Ï´ï¿½." << endl;
 		return		currPostion.y;
 	}
 }
@@ -224,7 +221,6 @@ void CScene::PreRender()
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
 
-
 	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
 	{
 		for (const auto& object : m_objects[i])
@@ -240,35 +236,6 @@ void CScene::PreRender()
 
 void CScene::Render()
 {
-	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
-
-	camera->RSSetViewportsAndScissorRects();
-	camera->UpdateShaderVariables();
-
-	if (m_terrain) m_terrain->Render(camera);
-
-	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
-	{
-		for (const auto& object : m_objects[i])
-		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
-			{
-				object->Render(camera);
-			}
-		}
-	}
-
-	camera = CCameraManager::GetInstance()->GetUICamera();
-	camera->RSSetViewportsAndScissorRects();
-	camera->UpdateShaderVariables();
-
-	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
-	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
-		{
-			object->Render(camera);
-		}
-	}
 }
 
 void CScene::PostRender()

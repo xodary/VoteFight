@@ -57,7 +57,20 @@ private:
 	int m_vertexCount = 6;
 
 public:
-	CRectMesh();
+	CRectMesh(float fsizeX=1, float fsizeY=1);
 	~CRectMesh();
 	virtual void Render();
+};
+
+class CTextMesh : public CRectMesh
+{
+public:
+	struct FontType {
+		float left;
+		float right;
+		float size;
+	};
+
+	CTextMesh(const std::vector<FontType>& font, const char* sentence, float drawX, float drawY, float scaleX, float scaleY);
+	~CTextMesh();
 };

@@ -20,6 +20,7 @@
 #include "SkinnedMesh.h"
 #include "Scene.h"
 #include "Bullet.h"
+#include "Weapon.h"
 
 UINT CObject::m_nextInstanceID = 0;
 
@@ -37,13 +38,13 @@ CObject::CObject() :
 	m_components.resize(static_cast<size_t>(COMPONENT_TYPE::COUNT)); 
 	SetGroupType((UINT)GROUP_TYPE::STRUCTURE);
 
-	// ¸ðµç °´Ã¼´Â Transform ÄÄÆ÷³ÍÆ®¸¦ °¡Áø´Ù.
+	// ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ Transform ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½.
 	CreateComponent(COMPONENT_TYPE::TRANSFORM);
 }
 
 CObject::~CObject()
 {
-	// AssetManager´Â ¿øº» ¸ÓÅÍ¸®¾óÀ» ÀúÀåÇÏ°í ÀÖ°í, ¸ðµç ¿ÀºêÁ§Æ®´Â ÇØ´ç ¸ÓÅÍ¸®¾óÀ» º¹»çÇÑ ÀÎ½ºÅÏ½º¸¦ °¡Áö±â ¶§¹®¿¡, ÀÌ Å¬·¡½º¿¡¼­ ¼Ò¸ê½ÃÄÑÁÖ¾î¾ß ÇÑ´Ù.
+	// AssetManagerï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½Ö°ï¿½, ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½, ï¿½ï¿½ Å¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ò¸ï¿½ï¿½ï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ ï¿½Ñ´ï¿½.
 	Utility::SafeDelete(m_materials);
 	Utility::SafeDelete(m_components);
 	Utility::SafeDelete(m_children);
@@ -62,12 +63,12 @@ CObject* CObject::Load(const string& fileName)
 
 		if (str == "<Frames>")
 		{
-			cout << fileName << " ¸ðµ¨ ·Îµå ½ÃÀÛ...\n";
+			cout << fileName << " ï¿½ï¿½ ï¿½Îµï¿½ ï¿½ï¿½ï¿½ï¿½...\n";
 			object = CObject::LoadFrame(in);
 		}
 		else if (str == "</Frames>")
 		{
-			cout << fileName << " ¸ðµ¨ ·Îµå ¿Ï·á...\n";
+			cout << fileName << " ï¿½ï¿½ ï¿½Îµï¿½ ï¿½Ï·ï¿½...\n";
 			break;
 		}
 	}
@@ -107,12 +108,14 @@ CObject* CObject::LoadFrame(ifstream& in)
 			case 2: object = new CNPC(); break;
 			case 3: object = new CMonster(); break;
 			case 4: object = new CBullet(); break;
+			case 5: object = new CGun(); break;
+			case 6: object = new CSword(); break;
 			}
 		}
 		else if (str == "<Name>")
 		{
 			File::ReadStringFromFile(in, object->m_name);
-			cout << "¸ðµ¨ ÀÌ¸§Àº : " << object->m_name << endl;
+			cout << "ï¿½ï¿½ ï¿½Ì¸ï¿½ï¿½ï¿½ : " << object->m_name << endl;
 		}
 		else if (str == "<IsActive>")
 		{
@@ -120,7 +123,6 @@ CObject* CObject::LoadFrame(ifstream& in)
 		}
 		else if (str == "<Transform>")
 		{
-			// localPosition, localRotation, localScale
 			XMFLOAT3 t[3] = {};
 
 			in.read(reinterpret_cast<char*>(&t[0]), 3 * sizeof(XMFLOAT3));
@@ -156,14 +158,14 @@ CObject* CObject::LoadFrame(ifstream& in)
 				{
 					File::ReadStringFromFile(in, str);
 					
-					// ¸ÓÅÍ¸®¾ó ÀÎ½ºÅÏ½º¸¦ »ý¼ºÇÏ°í Ãß°¡ÇÑ´Ù.
+					// ï¿½ï¿½ï¿½Í¸ï¿½ï¿½ï¿½ ï¿½Î½ï¿½ï¿½Ï½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ï°ï¿½ ï¿½ß°ï¿½ï¿½Ñ´ï¿½.
 					CMaterial* material = CAssetManager::GetInstance()->CreateMaterialInstance(str);
 
 					object->AddMaterial(material);
 				}
 			}
 		}
-		else if (str == "<Collider>")
+		else if (str == "<BoxCollider>")
 		{
 			XMFLOAT3 center = {};
 			XMFLOAT3 extents = {};
@@ -171,12 +173,29 @@ CObject* CObject::LoadFrame(ifstream& in)
 			in.read(reinterpret_cast<char*>(&center), sizeof(XMFLOAT3));
 			in.read(reinterpret_cast<char*>(&extents), sizeof(XMFLOAT3));
 
-			// ¸Þ½¬¸¦ °¡Áø ÇÁ·¹ÀÓÀº ÄÝ¶óÀÌ´õ ÄÄÆ÷³ÍÆ®¸¦ »ý¼ºÇÑ´Ù.
-			object->CreateComponent(COMPONENT_TYPE::COLLIDER);
-			
+			// ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¶ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
+			if (object->GetComponent(COMPONENT_TYPE::COLLIDER) == NULL)
+				object->CreateComponent(COMPONENT_TYPE::COLLIDER);
+
 			CCollider* collider = static_cast<CCollider*>(object->GetComponent(COMPONENT_TYPE::COLLIDER));
 
 			collider->SetBoundingBox(center, extents);
+		}
+		else if (str == "<MeshCollider>")
+		{
+			XMFLOAT3 center = {};
+			XMFLOAT3 extents = {};
+
+			in.read(reinterpret_cast<char*>(&center), sizeof(XMFLOAT3));
+			in.read(reinterpret_cast<char*>(&extents), sizeof(XMFLOAT3));
+
+			// ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ý¶ï¿½ï¿½Ì´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
+			if (object->GetComponent(COMPONENT_TYPE::COLLIDER) == NULL)
+				object->CreateComponent(COMPONENT_TYPE::COLLIDER);
+
+			CCollider* collider = static_cast<CCollider*>(object->GetComponent(COMPONENT_TYPE::COLLIDER));
+
+			collider->SetMeshBoundingBox(center, extents);
 		}
 		else if (str == "<ChildCount>")
 		{
@@ -266,13 +285,13 @@ void CObject::InTerrainSpace(const CScene& curScene)
 	float velocity = 0.001f;
 	if (curVec.x < 0)
 		curVec.x = velocity;
-	else if (curVec.x > curScene.GetTerrain()->GetWidth())
-		curVec.x = curScene.GetTerrain()->GetWidth() - velocity;
+	else if (curVec.x > curScene.GetTerrain()->m_nWidth)
+		curVec.x = curScene.GetTerrain()->m_nWidth - velocity;
 
 	if (curVec.z < 0)
 		curVec.z = velocity;
-	else if (curVec.z > curScene.GetTerrain()->GetLength())
-		curVec.z = curScene.GetTerrain()->GetLength() - velocity;
+	else if (curVec.z > curScene.GetTerrain()->m_nLength)
+		curVec.z = curScene.GetTerrain()->m_nLength - velocity;
 
 	transform->SetPosition(curVec);
 }
@@ -283,12 +302,12 @@ bool CObject::ChcekInTerrainSpace(const CScene& curScene)
 	XMFLOAT3 curVec = transform->GetPosition();
 	if (curVec.x <= 0)
 		return false;
-	else if (curVec.x >= curScene.GetTerrain()->GetWidth())
+	else if (curVec.x >= curScene.GetTerrain()->m_nWidth)
 		return false;
 
 	if (curVec.z <= 0)
 		return false;
-	else if (curVec.z >= curScene.GetTerrain()->GetLength())
+	else if (curVec.z >= curScene.GetTerrain()->m_nLength)
 		return false;
 
 	return true;
@@ -309,7 +328,7 @@ const vector<CMaterial*>& CObject::GetMaterials()
 
 CComponent* CObject::CreateComponent(COMPONENT_TYPE componentType)
 {
-	// ÀÌ¹Ì ÇØ´ç ÄÄÆ÷³ÍÆ®¸¦ °¡Áö°í ÀÖ¾ú´Ù¸é, »èÁ¦ ÈÄ »õ·Î »ý¼ºÇÑ´Ù.
+	// ï¿½Ì¹ï¿½ ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ö¾ï¿½ï¿½Ù¸ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ñ´ï¿½.
 	if (m_components[static_cast<int>(componentType)] != nullptr)
 	{
 		delete m_components[static_cast<int>(componentType)];
@@ -415,7 +434,14 @@ CObject* CObject::FindFrame(const string& name)
 
 bool CObject::IsVisible(CCamera* camera)
 {
-	return true;
+	CCollider* collider = static_cast<CCollider*>(m_components[static_cast<int>(COMPONENT_TYPE::COLLIDER)]);
+
+	if ((camera != nullptr) && (collider != nullptr) && (collider->m_meshcollider))
+	{
+		return camera->IsInBoundingFrustum(collider->GetMeshBoundingBox());
+	}
+
+	return false;
 }
 
 void CObject::OnCollisionEnter(CObject* collidedObject)
@@ -455,7 +481,7 @@ void CObject::PreRender(CCamera* camera)
 {
 	UpdateShaderVariables();
 
-	// DepthWriteÀÇ °æ¿ì, Á÷±³ Åõ¿µº¯È¯ Çà·ÄÀ» »ç¿ëÇÏ±â ¶§¹®¿¡ ÇÁ·¯½ºÅÒ ÄÃ¸µÀ» ¼öÇàÇÒ ¼ö ¾ø´Ù.
+	// DepthWriteï¿½ï¿½ ï¿½ï¿½ï¿½, ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¯ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Ï±ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã¸ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½.
 	if (m_mesh != nullptr)
 	{
 		for (int i = 0; i < m_materials.size(); ++i)

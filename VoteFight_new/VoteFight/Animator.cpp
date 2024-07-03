@@ -300,10 +300,10 @@ void CSkinningAnimator::Update()
 						XMFLOAT3 Rotation = boneRotations[i][j][m_frameIndices[selectedAnimation.first]];
 						
 						// 상체 회전 (spine 기준)
-						if (m_boneFrameCaches[i][j]->GetName() == static_cast<CPlayer*>(m_owner)->GetSpineName())
-						{
-							Rotation.y += static_cast<CPlayer*>(m_owner)->GetSpineAngle();
-						}
+						// if (m_boneFrameCaches[i][j]->GetName() == static_cast<CPlayer*>(m_owner)->GetSpineName())
+						// {
+						// 	Rotation.y += static_cast<CPlayer*>(m_owner)->GetSpineAngle();
+						// }
 
 						if (Rotation.x - transform->GetLocalRotation().x > 180) Rotation.x -= 360;
 						if (Rotation.y - transform->GetLocalRotation().y > 180) Rotation.y -= 360;

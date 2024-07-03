@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "UI.h"
-
+#include "CameraManager.h"
 #include "GameFramework.h"
-
+#include "Camera.h"
 #include "AssetManager.h"
 #include "InputManager.h"
 
@@ -285,3 +285,156 @@ void CUI::Render(CCamera* camera)
 		}
 	}
 }
+
+CBilboardUI::CBilboardUI()
+{
+}
+
+CBilboardUI::~CBilboardUI()
+{
+}
+
+CComponent* CBilboardUI::CreateComponent(COMPONENT_TYPE componentType)
+{
+	// 이미 해당 컴포넌트를 가지고 있었다면, 삭제 후 새로 생성한다.
+	if (m_components[static_cast<int>(componentType)] != nullptr)
+	{
+		delete m_components[static_cast<int>(componentType)];
+		m_components[static_cast<int>(componentType)] = nullptr;
+	}
+
+	switch (componentType)
+	{
+		// UI는 CSkinningAnimator 컴포넌트가 아닌 CUIAnimator 컴포넌트를 사용한다.
+	//case COMPONENT_TYPE::ANIMATOR:
+	//	m_components[static_cast<int>(componentType)] = new CUIAnimator();
+	//	break;
+	case COMPONENT_TYPE::TRANSFORM:
+		// UI는 CTransform 컴포넌트가 아닌 CRectTransform 컴포넌트를 사용한다.
+		m_components[static_cast<int>(componentType)] = new CTransform();
+		break;
+	default:
+		// 그 외의 컴포넌트는 CObject의 함수를 호출한다.
+		return CObject::CreateComponent(componentType);
+	}
+
+	m_components[static_cast<int>(componentType)]->SetOwner(this);
+
+	return m_components[static_cast<int>(componentType)];
+}
+
+CSpeechBubbleUI::CSpeechBubbleUI(CObject* owner)
+{
+	CreateComponent(COMPONENT_TYPE::TRANSFORM);
+	m_owner = owner;
+	m_isActive = true;
+	CMaterial* material = new CMaterial();
+	material->SetStateNum(0);
+	CRectMesh* mesh = new CRectMesh(2, 1);
+	SetMesh(mesh);
+	material->SetTexture(CAssetManager::GetInstance()->GetTexture("speech_bubble"));
+	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
+	material->m_shaders.push_back(BilboardShader);
+	m_materials.push_back(material);
+}
+
+void CSpeechBubbleUI::Update()
+{
+	CObject::Update();
+	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
+
+	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 6.0f, transform->GetPosition().z));
+}
+
+CHPbarUI::CHPbarUI(CObject* owner)
+{
+	CreateComponent(COMPONENT_TYPE::TRANSFORM);
+	m_owner = owner;
+	m_isActive = true;
+	CMaterial* material = new CMaterial();
+	material->SetStateNum(0);
+	material->SetColor(XMFLOAT4(1, 0, 0, 1));
+	CRectMesh* mesh = new CRectMesh(1.5, 0.1);
+	SetMesh(mesh);
+	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
+	material->m_shaders.push_back(BilboardShader);
+	m_materials.push_back(material);
+}
+
+void CHPbarUI::Update()
+{
+	CObject::Update();
+	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
+
+	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 3.5f, transform->GetPosition().z));
+}
+
+CTextUI::CTextUI(CObject* owner)
+{
+	CreateComponent(COMPONENT_TYPE::TRANSFORM);
+	m_owner = owner;
+	m_isActive = true;
+	SetName("Namebar");
+	CMaterial* textMaterial = new CMaterial();
+	textMaterial->SetStateNum(1);
+	CTextMesh* mesh = new CTextMesh(CGameFramework::GetInstance()->m_FontData, owner->m_name.c_str(), 0, 0, 0.1f, 0.3f);
+	SetMesh(mesh);
+	textMaterial->SetTexture(CAssetManager::GetInstance()->GetTexture("text"));
+	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
+	textMaterial->m_shaders.push_back(BilboardShader);
+	m_materials.push_back(textMaterial);
+}
+
+CTextUI::~CTextUI()
+{
+}
+
+void CTextUI::Render(CCamera* camera)
+{
+	UpdateShaderVariables();
+
+	CTextMesh* mesh = static_cast<CTextMesh*>(GetMesh());
+
+	if (mesh != nullptr)
+	{
+		const vector<CMaterial*>& materials = GetMaterials();
+
+		for (int i = 0; i < materials.size(); ++i)
+		{
+			materials[i]->SetPipelineState(RENDER_TYPE::STANDARD);
+			materials[i]->UpdateShaderVariables();
+			mesh->Render();
+		}
+	}
+
+	const vector<CObject*>& children = GetChildren();
+
+	for (const auto& child : children)
+	{
+		if (child->IsActive() && !child->IsDeleted())
+		{
+			child->Render(camera);
+		}
+	}
+}
+
+void CTextUI::Update()
+{
+	CObject::Update();
+	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	
+	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
+	
+	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 4.2f, transform->GetPosition().z));
+}
+
