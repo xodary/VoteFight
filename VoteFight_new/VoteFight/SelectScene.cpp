@@ -180,6 +180,7 @@ void CSelectScene::Update()
 
 	if (KEY_TAP(KEY::SPACE))
 	{
+		// 서버에 send (m_SelectCharacter)의 이름이나 번호를 전달해서 GameScene의 플레이어 설정
 		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
 	}
 }

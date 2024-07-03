@@ -41,12 +41,12 @@ void CSceneManager::Init()
 	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)] = new CSelectScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)] = new CGameScene();
 	// æ¿ √ ±‚»≠
-	// m_scenes[static_cast<int>(SCENE_TYPE::TITLE)]->Init();
+	 m_scenes[static_cast<int>(SCENE_TYPE::TITLE)]->Init();
 	// m_scenes[static_cast<int>(SCENE_TYPE::SELECT)]->Init();
-	 m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
+	// m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
 
 	// «ˆ¿Á æ¿ º≥¡§
-	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::GAME)];
+	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::TITLE)];
 	m_currentScene->Enter();
 }
 
