@@ -177,7 +177,7 @@ void CGameScene::InitLight()
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
 	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player ï¿½ï¿½ï¿½ï¿½Ù´ï¿?
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
-	m_mappedGameScene->m_lights[0].m_range = 500.f;
+	m_mappedGameScene->m_lights[0].m_range = 100.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
 	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
@@ -188,7 +188,7 @@ void CGameScene::InitLight()
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
 	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
-	m_mappedGameScene->m_lights[1].m_range = 500.f;
+	m_mappedGameScene->m_lights[1].m_range = 100.f;
 
 	//CCameraManager::GetInstance()->GetMainCamera()->SetTarget(player);
 
@@ -280,7 +280,7 @@ void CGameScene::PreRender()
 					break;
 				case LIGHT_TYPE::DIRECTIONAL:
 					//camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(TERRAIN_WIDTH), static_cast<float>(TERRAIN_HEIGHT), nearPlaneDist, farPlaneDist);
-					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(400), static_cast<float>(400), nearPlaneDist, farPlaneDist);
+					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(100), static_cast<float>(100), nearPlaneDist, farPlaneDist);
 					break;
 				}
 
@@ -308,16 +308,11 @@ void CGameScene::PreRender()
 				camera->UpdateShaderVariables();
 				depthTexture->UpdateShaderVariable();
 
-				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::MONSTER); ++i)
+				for (auto& object : GetViewList(1))
 				{
-					const vector<CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
-
-					for (const auto& object : objects)
+					if ((object->IsActive()) && (!object->IsDeleted()))
 					{
-						if ((object->IsActive()) && (!object->IsDeleted()))
-						{
-							object->PreRender(camera);
-						}
+						object->PreRender(camera);
 					}
 				}
 
@@ -364,14 +359,11 @@ void CGameScene::PreRender()
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
 
-	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
+	for (auto& object : GetViewList(0))
 	{
-		for (const auto& object : m_objects[i])
+		if ((object->IsActive()) && (!object->IsDeleted()))
 		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
-			{
-				object->Render(camera);
-			}
+			object->Render(camera);
 		}
 	}
 

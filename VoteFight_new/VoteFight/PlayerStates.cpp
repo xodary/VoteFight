@@ -121,12 +121,14 @@ void CPlayerWalkState::Update(CObject* object)
 		rigidBody->SetMaxSpeedXZ(300.0f);
 		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 4000.0f * DT));
 		animator->SetSpeed("Pistol_run", 2.0f);
+		animator->SetSpeed("Run", 2.0f);
 	}
 	else if (KEY_AWAY(KEY::SHIFT))
 	{
 		rigidBody->SetMaxSpeedXZ(150.0f);
 		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 3000.0f * DT));
 		animator->SetSpeed("Pistol_run", 1.0f);
+		animator->SetSpeed("Run", 1.0f);
 	}
 
 	XMFLOAT3 v(0, 0, 0);
