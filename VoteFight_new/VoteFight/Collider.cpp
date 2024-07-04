@@ -15,6 +15,7 @@
 CCollider::CCollider() :
     m_origin(),
     m_boundingBox(),
+	m_boxcollider(false),
     m_d3d12PositionBuffer(),
     m_d3d12PositionBufferView()
 {
@@ -26,6 +27,8 @@ CCollider::~CCollider()
 
 void CCollider::SetBoundingBox(const XMFLOAT3& center, const XMFLOAT3& extents)
 {
+	m_boxcollider = true;
+
 	m_origin.Center = center;
 	m_origin.Extents = extents;
 

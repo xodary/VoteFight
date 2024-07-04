@@ -16,6 +16,8 @@ private:
     vector<CUI*> m_UI;
 
 public:
+    string myItems[3][6];
+
     bool isMove = true;
 	CPlayer();
 	virtual ~CPlayer();
@@ -42,6 +44,7 @@ public:
     void SetUI(CUI* ui);
     void SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, int NextItemsNum);
 
+    void GetItem(string item);
 };
 
 class CItem {

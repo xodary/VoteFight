@@ -83,17 +83,12 @@ void CScene::Load(const string& fileName)
 					CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 					object->SetActive(isActives[i]);
-					object->SetGroupType((UINT)GROUP_TYPE(groupType));
 
 					transform->SetPosition(transforms[3 * i]);
 					transform->SetRotation(transforms[3 * i + 1]);
 					transform->SetScale(transforms[3 * i + 2]);
 
-					int xNewCell = clamp((int)(transforms[3 * i].x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
-					int zNewCell = clamp((int)(transforms[3 * i].z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
-
-					ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].insert(object);
-
+					transform->Update();
 					transform->Update();
 					object->Init();
 
@@ -160,10 +155,17 @@ const string& CScene::GetName()
 
 void CScene::AddObject(const GROUP_TYPE& groupType, CObject* object)
 {
+	object->SetGroupType((UINT)GROUP_TYPE(groupType));
 	if (object != nullptr)
 	{
 		m_objects[static_cast<int>(groupType)].push_back(object);
 	}
+
+	CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	XMFLOAT3 pos = transform->GetPosition();
+	int xNewCell = clamp((int)(pos.x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
+	int zNewCell = clamp((int)(pos.z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
+	ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].insert(object);
 }
 
 const vector<CObject*>& CScene::GetGroupObject(GROUP_TYPE groupType)
@@ -174,6 +176,19 @@ const vector<CObject*>& CScene::GetGroupObject(GROUP_TYPE groupType)
 void CScene::DeleteGroupObject(GROUP_TYPE groupType)
 {
 	Utility::SafeDelete(m_objects[static_cast<int>(groupType)]);
+}
+
+void CScene::DeleteObject(GROUP_TYPE groupType, CObject* object)
+{
+	auto it = std::find(m_objects[static_cast<int>(groupType)].begin(), m_objects[static_cast<int>(groupType)].end(), object);
+	if (it != m_objects[static_cast<int>(groupType)].end()) {
+		m_objects[static_cast<int>(groupType)].erase(it);
+	}
+	CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	XMFLOAT3 pos = transform->GetPosition();
+	int xNewCell = clamp((int)(pos.x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
+	int zNewCell = clamp((int)(pos.z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
+	ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].erase(object);
 }
 
 void CScene::ReleaseUploadBuffers()
@@ -264,7 +279,6 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 	int xNewCell = clamp((int)(trasnform->GetPosition().x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
 	int zNewCell = clamp((int)(trasnform->GetPosition().z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
 
-	//if (oldXCell == xNewCell && oldZCell == zNewCell) return my_vl;
 	switch (stateNum)
 	{
 	case 0:

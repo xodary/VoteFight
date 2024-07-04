@@ -66,6 +66,7 @@ public:
 
 	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
 	void DeleteGroupObject(GROUP_TYPE groupType);
+	void DeleteObject(GROUP_TYPE groupType, CObject* object);
 
 	CTerrainObject* m_terrain = nullptr;
 	float GetTerrainHeight(float x, float z) { 

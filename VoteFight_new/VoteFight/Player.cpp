@@ -42,7 +42,6 @@ void CPlayer::Init()
 	animator->SetWeight("Idle", 1.0f);
 	m_Inventory = new CInventory();
 
-	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
 	m_bilboardUI.push_back(new CHPbarUI(this));
 	m_bilboardUI.push_back(new CTextUI(this));
 }
@@ -126,8 +125,6 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 {
 	switch (collidedObject->GetGroupType())
 	{
-	case (UINT)GROUP_TYPE::STRUCTURE:
-		isMove = false;
 	case (UINT)GROUP_TYPE::NPC:
 		for (size_t i = 0; i < m_UI.size(); i++)
 		{
@@ -139,11 +136,20 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 	case (UINT)GROUP_TYPE::BULLET:
 		cout << "��Ʈ!" << endl;
 		break;
-
+	case (UINT)GROUP_TYPE::GROUND_ITEM:
+		GetItem(collidedObject->GetName());
+		CSceneManager::GetInstance()->GetCurrentScene()->DeleteObject(GROUP_TYPE::GROUND_ITEM, collidedObject);
+		break;
 	}
 }
 void CPlayer::OnCollision(CObject* collidedObject)
 {
+	if (collidedObject->GetName() == "PP_Tree_02") {
+		if (KEY_TAP(KEY::LBUTTON) && m_Weapon == WEAPON_TYPE::AXE) {
+			GetItem("Wood");
+		}
+	}
+
 	if (KEY_TAP(KEY::F))
 	{
 		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::STRUCTURE)
@@ -425,9 +431,17 @@ void CPlayer::SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, in
 
 }
 
-
-//
-/// ������ �� �κ��丮 
+void CPlayer::GetItem(string item)
+{
+	for (int i = 0; i < 3; ++i) {
+		for (int j = 0; j < 6; ++j) {
+			if (myItems[i][j].empty()) {
+				myItems[i][j] = item;
+				return;
+			}
+		}
+	}
+}
 
 CInventory::CInventory()
 {
