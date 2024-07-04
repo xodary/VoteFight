@@ -106,7 +106,7 @@ void CGameScene::Exit()
 
 void CGameScene::Init()
 {
-	m_terrain = CTerrainObject::Load("HeightMap3");
+	m_terrain = CTerrainObject::Load("HeightMap");
 
 	//SceneLoad();
 	Load("GameScene.bin");
