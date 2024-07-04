@@ -190,7 +190,6 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
 
-	// ȭ�� ���ؽ�
 	CreateFullscreenQuadBuffers();
 
 	// RenderTarget, DepthStencil
@@ -198,32 +197,26 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CreateRenderTargetViews();
 	CreateDepthStencilView();
 
-	// Constant / Shader Resource / Unoreded Access
-	// ���?�ؽ�ó�� �ε��ߴٸ�, �ش� ������ŭ Descriptor Heap�� �Ҵ��Ѵ�.
-	// * �� �����ӿ�ũ���� CbvSrvUav Descriptor Heap�� �ؽ�ó(SRV)���� �����Ѵ�.
 	CreateShaderResourceViews();
 
 	CreateShaderVariables();
 
-	// Ŀ�ǵ帮��Ʈ�� Close ���·� �����?
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Close());
 
-	// Ŀ�ǵ帮��Ʈ�� �����ϰ�, GPU�� ������ ����Ͽ�?�ʱ� ������ ����ģ��.
 	ID3D12CommandList* d3d12CommandLists[] = { m_d3d12GraphicsCommandList.Get() };
 
 	m_d3d12CommandQueue->ExecuteCommandLists(_countof(d3d12CommandLists), d3d12CommandLists);
 	WaitForGpuComplete();
 
-	// Ŀ�ǵ帮��Ʈ�� ���?����Ǿ��ٸ�? ���ҽ� ������ ����ߴ�?���?���ε� ���۸� �����Ѵ�.
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
-
 	ImGui_ImplWin32_Init(m_hWnd);
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+	ImGui::StyleColorsLight();
 
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -533,7 +526,7 @@ void CGameFramework::ChangeSwapChainState()
 	DXGI_SWAP_CHAIN_DESC DXGISwapChainDesc = {};
 
 	DX::ThrowIfFailed(m_dxgiSwapChain->GetDesc(&DXGISwapChainDesc));
-	DX::ThrowIfFailed(m_dxgiSwapChain->ResizeBuffers(m_swapChainBufferCount, static_cast<UINT>(m_resolution.x), static_cast<UINT>(m_resolution.y), DXGISwapChainDesc.BufferDesc.Format, DXGISwapChainDesc.Flags));
+	DX::ThrowIfFailed(m_dxgiSwapChain->ResizeBuffers(m_swapChainBufferCount, static_cast<UINT>(0), static_cast<UINT>(0), DXGISwapChainDesc.BufferDesc.Format, DXGISwapChainDesc.Flags));
 
 	m_swapChainBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
@@ -611,6 +604,7 @@ void CGameFramework::PostRender()
 void CGameFramework::PopulateCommandList()
 {
 	ResetCommandAllocatorAndList();
+
 	UpdateShaderVariables();
 
 	CSceneManager::GetInstance()->Update();

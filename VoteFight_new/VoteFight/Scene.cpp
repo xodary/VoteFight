@@ -31,7 +31,7 @@ void CScene::Load(const string& fileName)
 	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
 	ifstream in(filePath, ios::binary);
 	if (!in.is_open()) {
-		std::cerr << filePath << " : ������ �� �� �����ϴ�." << std::endl;
+		std::cerr << filePath << " : Can't Find tihs File." << std::endl;
 		return;
 	}
 
@@ -229,5 +229,9 @@ void CScene::Render()
 }
 
 void CScene::PostRender()
+{
+}
+
+void CScene::RenderImGui()
 {
 }

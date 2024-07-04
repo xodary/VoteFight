@@ -63,12 +63,10 @@ CObject* CObject::Load(const string& fileName)
 
 		if (str == "<Frames>")
 		{
-			cout << fileName << " �� �ε� ����...\n";
 			object = CObject::LoadFrame(in);
 		}
 		else if (str == "</Frames>")
 		{
-			cout << fileName << " �� �ε� �Ϸ�...\n";
 			break;
 		}
 	}
@@ -115,7 +113,6 @@ CObject* CObject::LoadFrame(ifstream& in)
 		else if (str == "<Name>")
 		{
 			File::ReadStringFromFile(in, object->m_name);
-			cout << "�� �̸��� : " << object->m_name << endl;
 		}
 		else if (str == "<IsActive>")
 		{

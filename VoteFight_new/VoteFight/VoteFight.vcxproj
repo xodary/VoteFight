@@ -196,6 +196,7 @@
     <ClInclude Include="LoginScene.h" />
     <ClInclude Include="MainShader.h" />
     <ClInclude Include="TerrainObject.h" />
+    <ClInclude Include="UIStates.h" />
     <ClInclude Include="UpsampleBlur.h" />
     <ClInclude Include="VCTMainShader.h" />
     <ClInclude Include="D3DX12.h" />
@@ -303,6 +304,7 @@
     <ClCompile Include="LoginScene.cpp" />
     <ClCompile Include="MainShader.cpp" />
     <ClCompile Include="TerrainObject.cpp" />
+    <ClCompile Include="UIStates.cpp" />
     <ClCompile Include="UpsampleBlur.cpp" />
     <ClCompile Include="VCTMainShader.cpp" />
     <ClCompile Include="DepthBuffer.cpp">

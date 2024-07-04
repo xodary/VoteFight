@@ -65,14 +65,14 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     WNDCLASSEXW wcex = {};
 
     wcex.cbSize = sizeof(WNDCLASSEXW);
-    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.style = CS_CLASSDC;
     wcex.lpfnWndProc = WndProc;
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = hInstance;
     wcex.hIcon = nullptr;
-    wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.hCursor = nullptr;
+    wcex.hbrBackground = nullptr;
     wcex.lpszMenuName = nullptr;
     wcex.lpszClassName = L"WndClass";
     wcex.hIconSm = nullptr;
@@ -84,21 +84,19 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     hInst = hInstance;
 
-    RECT rect = { 0, 0, 1920, 1080 };
-
-    AdjustWindowRect(&rect, WS_OVERLAPPEDWINDOW, FALSE);
-
-    XMFLOAT2 resolution = { (float)(rect.right - rect.left), (float)(rect.bottom - rect.top) };
-    HWND hWnd = CreateWindowW(L"WndClass", L"FIGHT VOTE", WS_OVERLAPPEDWINDOW, 0, 0, (int)resolution.x, (int)resolution.y, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(L"WndClass", L"FIGHT VOTE", WS_OVERLAPPEDWINDOW, 100, 100, 1280, 800, nullptr, nullptr, hInstance, nullptr);
 
     if (hWnd == nullptr)
     {
         return FALSE;
     }
 
-    ShowWindow(hWnd, nCmdShow);
+    ShowWindow(hWnd, SW_SHOWDEFAULT);
     UpdateWindow(hWnd);
 
+    RECT rect;
+    ::GetClientRect(hWnd, &rect);
+    XMFLOAT2 resolution = { (float)(rect.right - rect.left), (float)(rect.bottom - rect.top) };
     CGameFramework::GetInstance()->Init(hWnd, resolution);
 
     return TRUE;

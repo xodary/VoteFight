@@ -1,126 +1,45 @@
 #include "pch.h"
 #include "UIStates.h"
-
+#include "SceneManager.h"
 #include "InputManager.h"
-
+#include "Scene.h"
 #include "UI.h"
 
 #include "StateMachine.h"
 #include "Animator.h"
 
-CMissionUIShowState::CMissionUIShowState()
+CInventoryUIState::CInventoryUIState()
 {
 }
 
-CMissionUIShowState::~CMissionUIShowState()
+CInventoryUIState::~CInventoryUIState()
 {
 }
 
-void CMissionUIShowState::Enter(CObject* object)
+void CInventoryUIState::Enter(CObject* object)
 {
-	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+	vector<CObject*> uis = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::UI);
+	for (auto& ui : uis) {
+		delete ui;
+	}
+	uis.clear();
 
-	animator->Play("Show", false, true);
+
 }
 
-void CMissionUIShowState::Exit(CObject* object)
+void CInventoryUIState::Exit(CObject* object)
 {
 }
 
-void CMissionUIShowState::Update(CObject* object)
+void CInventoryUIState::Update(CObject* object)
 {
 	if (KEY_TAP(KEY::TAB))
 	{
+
+
+
 		CStateMachine* stateMachine = static_cast<CStateMachine*>(object->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 
-		stateMachine->ChangeState(CMissionUIHideState::GetInstance());
-	}
-}
-
-//=========================================================================================================================
-
-CMissionUIHideState::CMissionUIHideState()
-{
-}
-
-CMissionUIHideState::~CMissionUIHideState()
-{
-}
-
-void CMissionUIHideState::Enter(CObject* object)
-{
-	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-
-	animator->Play("Hide", false, true);
-}
-
-void CMissionUIHideState::Exit(CObject* object)
-{
-}
-
-void CMissionUIHideState::Update(CObject* object)
-{
-	if (KEY_TAP(KEY::TAB))
-	{
-		CStateMachine* stateMachine = static_cast<CStateMachine*>(object->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-
-		stateMachine->ChangeState(CMissionUIShowState::GetInstance());
-	}
-}
-
-//=========================================================================================================================
-
-CKeyUIActivateState::CKeyUIActivateState()
-{
-}
-
-CKeyUIActivateState::~CKeyUIActivateState()
-{
-}
-
-void CKeyUIActivateState::Enter(CObject* object)
-{
-	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-
-	animator->Play("Activate", false, true);
-}
-
-void CKeyUIActivateState::Exit(CObject* object)
-{
-}
-
-void CKeyUIActivateState::Update(CObject* object)
-{
-}
-
-//=========================================================================================================================
-
-CHitUIFadeState::CHitUIFadeState()
-{
-}
-
-CHitUIFadeState::~CHitUIFadeState()
-{
-}
-
-void CHitUIFadeState::Enter(CObject* object)
-{
-	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-
-	object->SetActive(true);
-	animator->Play("Fade", false, true);
-}
-
-void CHitUIFadeState::Exit(CObject* object)
-{
-}
-
-void CHitUIFadeState::Update(CObject* object)
-{
-	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-
-	if (animator->IsFinished())
-	{
-		object->SetActive(false);
+		stateMachine->ChangeState(CInventoryUIState::GetInstance());
 	}
 }

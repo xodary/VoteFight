@@ -86,6 +86,10 @@ using Microsoft::WRL::ComPtr;
 // PIX
 #include "..\packages\WinPixEventRuntime.1.0.240308001\Include\WinPixEventRuntime\pix3.h"
 
+// ImGUI
+#include "ImGUI/imgui_impl_dx12.h"
+#include "ImGUI/imgui_impl_win32.h"
+
 namespace Vector4
 {
 	inline XMFLOAT4 Add(XMFLOAT4& xmf4Vector1, XMFLOAT4& xmf4Vector2)

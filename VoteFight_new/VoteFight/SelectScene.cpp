@@ -17,6 +17,7 @@
 #include "Scene.h"
 #include "SceneManager.h"
 #include "Skybox.h"
+#include "MainShader.h"
 
 CSelectScene* CSelectScene::m_CSelectScene;
 
@@ -62,19 +63,11 @@ void CSelectScene::Enter()
 {
 	// 카메라의 타겟 설정
 	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
-
-	for (int i = 0; i < static_cast<int>(GROUP_TYPE::COUNT); ++i)
-	{
-		for (const auto& object : objects)
-		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
-			{
-				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
-				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI))object->InTerrainSpace(*this);
-
-			}
-		}
-	}
+	CObject* focus = new CObject();
+	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	targetTransform->SetPosition(XMFLOAT3(4, 2, 0.3));
+	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(focus);
+	CCameraManager::GetInstance()->GetMainCamera()->SetOffset(XMFLOAT3(0, 0, -18));
 }
 
 void CSelectScene::Exit()
@@ -84,8 +77,8 @@ void CSelectScene::Exit()
 void CSelectScene::Init()
 {
 	// 씬 로드
-	Load("GameScene.bin");
-	Load("Character_Scene.bin");
+	Load("SelectScene.bin");
+	//Load("Character_Scene.bin");
 
 	CreateShaderVariables();
 
@@ -99,14 +92,14 @@ void CSelectScene::Init()
 		objects[i]->SetDeleted(true);
 	}
 
-	 objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	m_SelectCharacter = objects[0];
 	m_SelectCharacter->SetRotate(XMFLOAT3(0, 180, 0));
 
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		m_WaitCharacters[i] = objects[i];
-		m_WaitCharacters[i]->SetPostion(XMFLOAT3(4 + i * 4, 1, 0.3));
+		m_WaitCharacters[i]->SetPostion(XMFLOAT3(4 + i * 2, 1, 0.3));
 		m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
 		cout << m_WaitCharacters[i]->GetName() << endl;
 	}
@@ -157,8 +150,6 @@ void CSelectScene::SelectCharacter(UINT number)
 	}
 }
 
-// 2024 04 18일 이시영 수정 
-// Update할떄마다 플레이어 Y 를 터레인 높이 값에 변환시킴
 void CSelectScene::Update()
 {
 	CScene::Update();
@@ -251,17 +242,214 @@ void CSelectScene::PreRender()
 					}
 				}
 
-				m_terrain->PreRender(camera);
+				if(m_terrain) m_terrain->PreRender(camera);
 
 				DX::ResourceTransition(d3d12GraphicsCommandList, depthTexture->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 			}
 		}
 	}
+
+	CGameFramework* framework = CGameFramework::GetInstance();
+	ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
+
+	CD3DX12_VIEWPORT viewport = CD3DX12_VIEWPORT(0.0f, 0.0f, framework->GetResolution().x, framework->GetResolution().y);
+	CD3DX12_RECT rect = CD3DX12_RECT(0.0f, 0.0f, framework->GetResolution().x, framework->GetResolution().y);
+
+	commandList->RSSetViewports(1, &viewport);
+	commandList->RSSetScissorRects(1, &rect);
+
+	CTexture* GBufferColor = CAssetManager::GetInstance()->GetTexture("GBufferColor");
+	CTexture* GBufferNormal = CAssetManager::GetInstance()->GetTexture("GBufferNormal");
+	CTexture* GBufferWorldPos = CAssetManager::GetInstance()->GetTexture("GBufferWorldPos");
+	DX::ResourceTransition(commandList, GBufferColor->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	DX::ResourceTransition(commandList, GBufferNormal->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	DX::ResourceTransition(commandList, GBufferWorldPos->GetTexture(), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_STATE_RENDER_TARGET);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandles[] =
+	{
+		GBufferColor->m_RTVHandle.GetCPUHandle(),
+		GBufferNormal->m_RTVHandle.GetCPUHandle(),
+		GBufferWorldPos->m_RTVHandle.GetCPUHandle()
+	};
+
+	commandList->OMSetRenderTargets(_countof(rtvHandles), rtvHandles, FALSE, &framework->GetDepthStencilView());
+	commandList->ClearRenderTargetView(rtvHandles[0], Colors::SkyBlue, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandles[1], Colors::SkyBlue, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandles[2], Colors::SkyBlue, 0, nullptr);
+
+	GBufferColor->UpdateShaderVariable();
+	GBufferNormal->UpdateShaderVariable();
+	GBufferWorldPos->UpdateShaderVariable();
+
+	UpdateShaderVariables();
+
+	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
+
+	camera->RSSetViewportsAndScissorRects();
+	camera->UpdateShaderVariables();
+
+	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
+	{
+		for (const auto& object : m_objects[i])
+		{
+			if ((object->IsActive()) && (!object->IsDeleted()))
+			{
+				object->Render(camera);
+			}
+		}
+	}
+
+	DX::ResourceTransition(commandList, GBufferColor->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
+	DX::ResourceTransition(commandList, GBufferNormal->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
+	DX::ResourceTransition(commandList, GBufferWorldPos->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 }
 
 void CSelectScene::Render()
 {
-	CScene::Render();
+	CGameFramework* framework = CGameFramework::GetInstance();
+	ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
+
+	CMainShader* shader = reinterpret_cast<CMainShader*>(CAssetManager::GetInstance()->GetShader("MainShader"));
+
+	shader->SetPipelineState(0);
+
+	CD3DX12_VIEWPORT vctResViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, framework->GetResolution().x, framework->GetResolution().y);
+	CD3DX12_RECT vctRect = CD3DX12_RECT(0.0f, 0.0f, framework->GetResolution().x, framework->GetResolution().y);
+	commandList->RSSetViewports(1, &vctResViewport);
+	commandList->RSSetScissorRects(1, &vctRect);
+
+	commandList->IASetVertexBuffers(0, 1, &framework->mFullscreenQuadVertexBufferView);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
+
+	commandList->DrawInstanced(4, 1, 0, 0);
+
+	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
+	camera->RSSetViewportsAndScissorRects();
+	camera->UpdateShaderVariables();
+
+	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
+	{
+		if ((object->IsActive()) && (!object->IsDeleted()))
+		{
+			object->Render(camera);
+		}
+	}
+
+	RenderImGui();
+
+	if (KEY_HOLD(KEY::SPACE))
+	{
+		// [Debug] Render DepthTexture
+		const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
+		D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
+		D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
+		CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
+		CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
+
+		texture->UpdateShaderVariable();
+		shader->SetPipelineState(2);
+		commandList->RSSetViewports(1, &d3d12Viewport);
+		commandList->RSSetScissorRects(1, &d3d12ScissorRect);
+		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+		commandList->DrawInstanced(6, 1, 0, 0);
+	}
+}
+
+void CSelectScene::RenderImGui()
+{
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	CGameFramework* framework = CGameFramework::GetInstance();
+	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
+
+	ImVec2 windowSize(framework->GetResolution().x * 1 / 6, framework->GetResolution().y * 1 / 3);
+	ImVec2 windowPos(framework->GetResolution().x * 1 / 6, framework->GetResolution().y * 1 / 3.3);
+
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
+	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+
+	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+	ImGui::Begin("Selected",nullptr, window_flags);
+	ImGui::Text("Selected");
+	ImGui::SameLine();
+	ImGui::End();
+
+	ImGui::PopStyleVar();
+	ImGui::PopStyleColor();
+	ImGui::PopStyleColor();
+
+	string names[3] = { "Sonic", "Mario", "Hugo" };
+	static bool selected[3] = { false };
+	static bool hovered[3] = { false };
+
+	windowSize.x = windowSize.x / 1.3f;
+	for (int i = 0; i < 3; ++i)
+	{
+		windowPos.x = framework->GetResolution().x * 1 / 2.3 + windowSize.x * i;
+		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+		ImVec4 borderColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		if (hovered[i]) borderColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+		if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
+		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+
+		ImGui::Begin(names[i].c_str(), nullptr, window_flags);
+
+		if (ImGui::IsWindowHovered()) {
+			if (ImGui::GetIO().MouseClicked[0]) {
+				for (int j = 0; j < 3; ++j) {
+					if (i == j)
+						selected[j] = true;
+					else
+						selected[j] = false;
+				}
+				SelectCharacter(i);
+			}
+			else
+				hovered[i] = true;
+		}
+		else
+			hovered[i] = false;
+
+
+		ImGui::Text(names[i].c_str());
+		ImGui::SameLine();
+		ImGui::End();
+
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+	}
+
+	windowPos.x = framework->GetResolution().x * 3 / 4;
+	windowPos.y = framework->GetResolution().y * 3 / 4;
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
+	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
+
+	ImGui::Begin("Button", nullptr, window_flags);
+	{
+		ImGui::SetWindowFontScale(2.5f);
+		if (ImGui::Button("GameStart", ImVec2(framework->GetResolution().x / 5, framework->GetResolution().y / 7))) {
+			CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
+		}
+		ImGui::End();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+	}
+	ImGui::Render();
+
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 
 }
 

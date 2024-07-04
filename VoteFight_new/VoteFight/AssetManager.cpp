@@ -592,53 +592,20 @@ void CAssetManager::ReleaseUploadBuffers()
 void CAssetManager::SceneLoadMeshes()
 {
 	LoadMeshes("Meshes.bin");
-	
-	//LoadMeshes("Meshess.bin");
-	//LoadMeshes("Meshesss.bin");
-	//LoadMeshes("FireWoodMesh.bin");
-	//LoadMeshes("Fence_Mesh.bin");
-	//LoadMeshes("Homer_Meshs.bin");
-	//LoadMeshes("Homer_Solider_Mesh.bin");
-	//LoadMeshes("Marge_Police_Mesh.bin");
-	//LoadMeshes("Sea_Mesh.bin");
-	//LoadMeshes("White_House_Mesh.bin");
-	//LoadMeshes("FishMon_Mesh.bin");
-	//LoadMeshes("Bullet_Mesh.bin");
-	//LoadMeshes("Character_Meshs.bin");
-	
 	LoadMeshes("WeaponMeshes.bin");
+	LoadMeshes("PlayerMeshes.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
 {
 	LoadMaterials("Materials.bin");
-	
-	// LoadMaterials("Materialss.bin");
-	// LoadMaterials("FireWoodMaterials.bin");
-	// LoadMaterials("WhiteHouse.bin");
-	// LoadMaterials("Fence_Material.bin");
-	// LoadMaterials("Homer_Material.bin");
-	// LoadMaterials("rpgpp_lt_building_05_Material.bin");
-	// LoadMaterials("Sea_Material.bin");
-	// LoadMaterials("White_House_Material.bin");
-	// LoadMaterials("FIshMon_Material.bin");
-	// LoadMaterials("Bullet_Material.bin");
-	
 	LoadMaterials("WeaponMaterials.bin");
+	LoadMaterials("PlayerMaterials.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
 {
 	LoadTextures("Textures.bin");
-	
-	// LoadTextures("Texturesss.bin");
-	// LoadTextures("FireWoodTextures.bin");
-	// LoadTextures("Fence_Texture.bin");
-	// LoadTextures("Simpsons_texture.bin");
-	// LoadTextures("Sea_Textures.bin");
-	// LoadTextures("White_House_Texture.bin");
-	// LoadTextures("FishMon_Texture.bin");
-	// LoadTextures("Bullet_Texture.bin");
-	
 	LoadTextures("WeaponTextures.bin");
+	LoadTextures("PlayerTextures.bin");
 }

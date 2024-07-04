@@ -38,15 +38,17 @@ void CSceneManager::Init()
 
 	// �� ����
 	m_scenes.resize(static_cast<int>(SCENE_TYPE::COUNT));
-	m_scenes[static_cast<int>(SCENE_TYPE::TITLE)] = new CTitleScene();
+	//m_scenes[static_cast<int>(SCENE_TYPE::TITLE)] = new CTitleScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)] = new CSelectScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)] = new CLoginScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)] = new CGameScene();
 
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
+	//m_scenes[static_cast<int>(SCENE_TYPE::TITLE)]->Init();
+	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)]->Init();
+	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)]->Init();
 
-	// ���� �� ����
-	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::GAME)];
+	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::SELECT)];
 	m_currentScene->Enter();
 }
 

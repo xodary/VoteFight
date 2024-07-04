@@ -45,4 +45,6 @@ public:
 
 	virtual void PreRender();
 	virtual void Render();
+
+	virtual void RenderImGui();
 };
