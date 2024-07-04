@@ -14,9 +14,10 @@ private:
 	string	 m_spineName;
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
-    vector<CBilboardUI*> m_bilboardUI;
 
 public:
+    string myItems[3][6];
+
     bool isMove = true;
 	CPlayer();
 	virtual ~CPlayer();
@@ -31,7 +32,6 @@ public:
 	void Shoot(CScene& currScene);
 
 	virtual void Update();
-	virtual void RenderBilboard(CCamera* camera);
 
     unsigned int    m_id{};
 
@@ -44,6 +44,7 @@ public:
     void SetUI(CUI* ui);
     void SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, int NextItemsNum);
 
+    void GetItem(string item);
 };
 
 class CItem {

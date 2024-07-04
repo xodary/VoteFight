@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Character.h"
 #include "TimeManager.h"
+#include "UI.h"
 #include "RigidBody.h"
 #include "Transform.h"
 
@@ -43,4 +44,15 @@ bool CCharacter::IsEquippedWeapon()
 
 void CCharacter::SwapWeapon(WEAPON_TYPE weaponType)
 {
+}
+
+void CCharacter::RenderBilboard(CCamera* camera)
+{
+    for (auto& ui : m_bilboardUI) ui->Render(camera);
+}
+
+void CCharacter::Update()
+{
+    CObject::Update();
+    for (auto& ui : m_bilboardUI) ui->Update();
 }

@@ -23,6 +23,7 @@
 #include "./ImaysNet/PacketQueue.h"
 #include "TerrainObject.h"
 #include "DropItem.h"
+#include "NPC.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -73,7 +74,6 @@ void CGameScene::Enter()
 {
 	// ShowCursor(false);
 
-	// Ä«ï¿½Þ¶ï¿½ï¿½ï¿½ Å¸ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	const vector<CObject*>& Monsters = GetGroupObject(GROUP_TYPE::MONSTER);
 
@@ -97,6 +97,7 @@ void CGameScene::Enter()
 			static_cast<CMonster*>(Monsters[i])->PlayerDiscovery(objects[0]);
 	}
 
+	InitLight();
 }
 
 void CGameScene::Exit()
@@ -105,11 +106,11 @@ void CGameScene::Exit()
 
 void CGameScene::Init()
 {
-	m_terrain = CTerrainObject::Load("HeightMap3");
+	m_terrain = CTerrainObject::Load("HeightMap");
 
 	//SceneLoad();
 	Load("GameScene.bin");
-	
+
 
 	CObject* object = new CSkyBox(1000, 200);
 	AddObject(GROUP_TYPE::SKYBOX, object);
@@ -119,8 +120,8 @@ void CGameScene::Init()
 	{
 		CObject* gun = CObject::Load("Gun");
 		CTransform* transform = reinterpret_cast<CTransform*>(gun->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(XMFLOAT3(20, 3.0f, 20));
-		AddObject(GROUP_TYPE::ITEM, gun);
+		transform->SetPosition(XMFLOAT3(10, 3.0f, 10));
+		AddObject(GROUP_TYPE::GROUND_ITEM, gun);
 	}
 
 	CTransform* transform = reinterpret_cast<CTransform*>(playerObject->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -129,14 +130,19 @@ void CGameScene::Init()
 	CPlayer* player = reinterpret_cast<CPlayer*>(playerObject);
 	player->Init();
 
-	// ï¿½æµ¹ ï¿½×·ï¿½ ï¿½ï¿½ï¿½ï¿½
+	object = CObject::Load("Marge_Police");
+	transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	transform->SetPosition(XMFLOAT3(30, 2.37f, 30));
+	AddObject(GROUP_TYPE::NPC, object);
+	CNPC* npc = reinterpret_cast<CNPC*>(object);
+	npc->Init();
+
+	// Collision Check
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::NPC);
+	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::GROUND_ITEM);
 
 	CreateShaderVariables();
-
-	InitLight();
-	
 
 	CCameraManager::GetInstance()->SetGameSceneMainCamera();
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
@@ -172,7 +178,7 @@ void CGameScene::InitLight()
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
 	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player ï¿½ï¿½ï¿½ï¿½Ù´ï¿?
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
-	m_mappedGameScene->m_lights[0].m_range = 500.f;
+	m_mappedGameScene->m_lights[0].m_range = 100.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
 	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
@@ -183,7 +189,7 @@ void CGameScene::InitLight()
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
 	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
-	m_mappedGameScene->m_lights[1].m_range = 500.f;
+	m_mappedGameScene->m_lights[1].m_range = 100.f;
 
 	//CCameraManager::GetInstance()->GetMainCamera()->SetTarget(player);
 
@@ -205,7 +211,7 @@ void CGameScene::Update()
 	if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400) 
 		p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 
-	vector<CObject*> items = GetGroupObject(GROUP_TYPE::ITEM);
+	vector<CObject*> items = GetGroupObject(GROUP_TYPE::GROUND_ITEM);
 	for (auto& item : items) {
 		CTransform* i_tf = static_cast<CTransform*>(item->GetComponent(COMPONENT_TYPE::TRANSFORM));
 		i_tf->Rotate(XMFLOAT3(0, DT * 100.f, 0));
@@ -252,8 +258,6 @@ void CGameScene::Update()
 
 void CGameScene::PreRender()
 {
-	UpdateShaderVariables();
-
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
@@ -277,7 +281,7 @@ void CGameScene::PreRender()
 					break;
 				case LIGHT_TYPE::DIRECTIONAL:
 					//camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(TERRAIN_WIDTH), static_cast<float>(TERRAIN_HEIGHT), nearPlaneDist, farPlaneDist);
-					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(400), static_cast<float>(400), nearPlaneDist, farPlaneDist);
+					camera->GenerateOrthographicsProjectionMatrix(static_cast<float>(100), static_cast<float>(100), nearPlaneDist, farPlaneDist);
 					break;
 				}
 
@@ -305,16 +309,11 @@ void CGameScene::PreRender()
 				camera->UpdateShaderVariables();
 				depthTexture->UpdateShaderVariable();
 
-				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::MONSTER); ++i)
+				for (auto& object : GetViewList(1))
 				{
-					const vector<CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
-
-					for (const auto& object : objects)
+					if ((object->IsActive()) && (!object->IsDeleted()))
 					{
-						if ((object->IsActive()) && (!object->IsDeleted()))
-						{
-							object->PreRender(camera);
-						}
+						object->PreRender(camera);
 					}
 				}
 
@@ -347,29 +346,25 @@ void CGameScene::PreRender()
 	};
 
 	commandList->OMSetRenderTargets(_countof(rtvHandles), rtvHandles, FALSE, &framework->GetDepthStencilView());
-	commandList->ClearRenderTargetView(rtvHandles[0], Colors::SkyBlue, 0, nullptr);
-	commandList->ClearRenderTargetView(rtvHandles[1], Colors::SkyBlue, 0, nullptr);
-	commandList->ClearRenderTargetView(rtvHandles[2], Colors::SkyBlue, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandles[0], Colors::White, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandles[1], Colors::White, 0, nullptr);
+	commandList->ClearRenderTargetView(rtvHandles[2], Colors::White, 0, nullptr);
 
 	GBufferColor->UpdateShaderVariable();
 	GBufferNormal->UpdateShaderVariable();
 	GBufferWorldPos->UpdateShaderVariable();
 
 	UpdateShaderVariables();
-
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
 
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
 
-	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
+	for (auto& object : GetViewList(0))
 	{
-		for (const auto& object : m_objects[i])
+		if ((object->IsActive()) && (!object->IsDeleted()))
 		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
-			{
-				object->Render(camera);
-			}
+			object->Render(camera);
 		}
 	}
 
@@ -379,13 +374,15 @@ void CGameScene::PreRender()
 }
 
 void CGameScene::Render()
-{
+{	
 	CGameFramework* framework = CGameFramework::GetInstance();
 	ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
 
 	CMainShader* shader = reinterpret_cast<CMainShader*>(CAssetManager::GetInstance()->GetShader("MainShader"));
 
 	shader->SetPipelineState(0);
+
+	UpdateShaderVariables();
 
 	CD3DX12_VIEWPORT vctResViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, framework->GetResolution().x, framework->GetResolution().y);
 	CD3DX12_RECT vctRect = CD3DX12_RECT(0.0f, 0.0f, framework->GetResolution().x, framework->GetResolution().y);
@@ -395,10 +392,8 @@ void CGameScene::Render()
 	commandList->IASetVertexBuffers(0, 1, &framework->mFullscreenQuadVertexBufferView);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	commandList->DrawInstanced(4, 1, 0, 0);
-
+	
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
-	camera->RSSetViewportsAndScissorRects();
-	camera->UpdateShaderVariables();
 
 	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
 	{
@@ -416,14 +411,13 @@ void CGameScene::Render()
 		}
 	}
 
-	RenderImGui();
-
-	// for (auto object : m_objects_id) {
-	// 	if (object.second != nullptr)
-	// 		object.second->RenderUI(camera);
-	// }
-	// RenderChatUI();
-
+	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::NPC)])
+	{
+		if ((object->IsActive()) && (!object->IsDeleted()))
+		{
+			object->RenderBilboard(camera);
+		}
+	}
 
 	if (KEY_HOLD(KEY::SPACE))
 	{
@@ -441,10 +435,106 @@ void CGameScene::Render()
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->DrawInstanced(6, 1, 0, 0);
 	}
+
+	RenderImGui();
+
+	// for (auto object : m_objects_id) {
+	// 	if (object.second != nullptr)
+	// 		object.second->RenderUI(camera);
+	// }
+	// RenderChatUI();
 }
 
 void CGameScene::RenderImGui()
 {
+	CPlayer* player = reinterpret_cast<CPlayer*>(GetGroupObject(GROUP_TYPE::PLAYER)[0]);
+
+	if (KEY_HOLD(KEY::E)) {
+		CGameFramework* framework = CGameFramework::GetInstance();
+		framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
+
+		int rows = 3;
+		int cols = 6;
+		static bool selected[3][6] = { false };
+		static bool hovered[3][6] = { false };
+		const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // ¿Ü°û¼± »ö»ó (»¡°­)
+
+		ImGui_ImplDX12_NewFrame();
+		ImGui_ImplWin32_NewFrame();
+		ImGui::NewFrame();
+
+		ImVec2 windowSize(framework->GetResolution().x * 3 / 4, framework->GetResolution().y * 3 / 4);
+		ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y) / 2);
+
+		DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+
+		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+		ImGui::Begin("Full Screen Window", nullptr, window_flags);
+
+		// ¾ÆÀÌÅÛ Å©±â °è»ê
+		const float itemSize = windowSize.x / 8;
+		const float spacing = itemSize / 6;
+		const float totalSpacingWidth = (cols - 1) * spacing;
+		const float totalSpacingHeight = (rows - 1) * spacing;
+		const float inventoryWidth = cols * itemSize + totalSpacingWidth;
+		const float inventoryHeight = rows * itemSize + totalSpacingHeight;
+
+		float startX = (windowSize.x - inventoryWidth) / 2.0f;
+		float startY = (windowSize.y - inventoryHeight) / 2.0f;
+
+		ImGui::SetCursorPosY(startY);
+
+		for (int i = 0; i < rows; ++i)
+		{
+			ImGui::SetCursorPosX(startX);
+
+			for (int j = 0; j < cols; ++j)
+			{
+				ImGui::PushID(i * cols + j);
+
+				if (j > 0) // Ã¹ ¹øÂ° ¾ÆÀÌÅÛÀÌ ¾Æ´Ñ °æ¿ì¿¡¸¸ °£°Ý Ãß°¡
+					ImGui::SameLine(0.0f, spacing);
+
+				// ¿Ü°û¼± »ö»ó ¼³Á¤
+				ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+				if (hovered[i][j]) borderColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+				if (selected[i][j]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+				ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+
+				ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i * cols + j)), ImVec2(itemSize, itemSize));
+				{
+					if (ImGui::IsWindowHovered()) {
+						if (ImGui::GetIO().MouseClicked[0])
+							selected[i][j] = !selected[i][j];
+						else
+							hovered[i][j] = true;
+					}
+					else
+						hovered[i][j] = false;
+
+					ImGui::Text("%s", player->myItems[i][j].c_str());
+					ImGui::EndChildFrame();
+				}
+
+				ImGui::PopStyleVar();
+				ImGui::PopStyleColor();
+				ImGui::PopID();
+
+				//if (j < cols - 1) ImGui::SameLine();
+				if (i < cols - 1)
+					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + spacing);
+			}
+		}
+
+		ImGui::End();
+
+		ImGui::Render();
+
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
+	}
 	CGameFramework* framework = CGameFramework::GetInstance();
 	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
@@ -453,7 +543,6 @@ void CGameScene::RenderImGui()
 		const char* name;
 	};
 
-	InventoryItem inventory_items[3] = { "Sword", "Shield", "Potion" };
 	int rows = 3;
 	static bool selected[3] = { false };
 	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // ¿Ü°û¼± »ö»ó (»¡°­)
@@ -462,7 +551,7 @@ void CGameScene::RenderImGui()
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	ImVec2 windowSize(framework->GetResolution().x * 1 / 3, framework->GetResolution().x * 1 / 3 / 3);
+	ImVec2 windowSize(framework->GetResolution().x * 1 / 4, framework->GetResolution().x * 1 / 4 / 3);
 	ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y));
 
 	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
@@ -488,7 +577,8 @@ void CGameScene::RenderImGui()
 
 		ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i)), ImVec2(itemSize, itemSize));
 		{
-			ImGui::Text("%s", inventory_items[i].name);
+			ImGui::Text("%d", i + 1);
+			//ImGui::Text("%s", player->myItem[][]);
 			ImGui::EndChildFrame();
 		}
 		ImGui::SameLine();
@@ -504,104 +594,3 @@ void CGameScene::RenderImGui()
 
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }
-
-
-//void CGameScene::RenderImGui()
-//{
-//	CGameFramework* framework = CGameFramework::GetInstance();
-//	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
-//
-//	// ÀÎº¥Åä¸® Ç×¸ñ ±¸Á¶Ã¼
-//	struct InventoryItem {
-//		const char* name;
-//		ComPtr<ID3D12Resource> texture;
-//		D3D12_GPU_DESCRIPTOR_HANDLE srvHandle;
-//	};
-//
-//	InventoryItem inventory_items[3][6] = {
-//	{ {"Sword"}, {"Shield"}, {"Potion"}, {"Helmet"}, {"Boots"}, {"Ring"} },
-//	{ {"Axe"}, {"Bow"}, {"Arrow"}, {"Dagger"}, {"Staff"}, {"Scroll"} },
-//	{ {"Bread"}, {"Cheese"}, {"Meat"}, {"Fruit"}, {"Vegetable"}, {"Water"} }
-//	};
-//	int rows = 3;
-//	int cols = 6;
-//	static bool selected[3][6] = { false };
-//	static bool hovered[3][6] = { false };
-//	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // ¿Ü°û¼± »ö»ó (»¡°­)
-//
-//	ImGui_ImplDX12_NewFrame();
-//	ImGui_ImplWin32_NewFrame();
-//	ImGui::NewFrame();
-//
-//	ImVec2 windowSize(framework->GetResolution().x * 3 / 4, framework->GetResolution().y * 3 / 4);
-//	ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y) / 2);
-//
-//	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
-//
-//	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-//	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-//	ImGui::Begin("Full Screen Window", nullptr, window_flags);
-//
-//	// ¾ÆÀÌÅÛ Å©±â °è»ê
-//	const float itemSize = windowSize.x / 8;
-//	const float spacing = itemSize / 6;
-//	const float totalSpacingWidth = (cols - 1) * spacing;
-//	const float totalSpacingHeight = (rows - 1) * spacing;
-//	const float inventoryWidth = cols * itemSize + totalSpacingWidth;
-//	const float inventoryHeight = rows * itemSize + totalSpacingHeight;
-//
-//	float startX = (windowSize.x - inventoryWidth) / 2.0f;
-//	float startY = (windowSize.y - inventoryHeight) / 2.0f;
-//
-//	ImGui::SetCursorPosY(startY);
-//
-//	for (int i = 0; i < rows; ++i)
-//	{
-//		ImGui::SetCursorPosX(startX);
-//
-//		for (int j = 0; j < cols; ++j)
-//		{
-//			ImGui::PushID(i * cols + j);
-//
-//			if (j > 0) // Ã¹ ¹øÂ° ¾ÆÀÌÅÛÀÌ ¾Æ´Ñ °æ¿ì¿¡¸¸ °£°Ý Ãß°¡
-//				ImGui::SameLine(0.0f, spacing);
-//
-//			// ¿Ü°û¼± »ö»ó ¼³Á¤
-//			ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-//			if (hovered[i][j]) borderColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-//			if (selected[i][j]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-//
-//			ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
-//			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-//
-//			ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i* cols + j)), ImVec2(itemSize, itemSize));
-//			{
-//				if (ImGui::IsWindowHovered()) {
-//					if (ImGui::GetIO().MouseClicked[0]) 
-//						selected[i][j] = !selected[i][j];
-//					else 
-//						hovered[i][j] = true;
-//				}
-//				else
-//					hovered[i][j] = false;
-//
-//				ImGui::Text("%s", inventory_items[i][j].name);
-//				ImGui::EndChildFrame();
-//			}
-//
-//			ImGui::PopStyleVar();
-//			ImGui::PopStyleColor();
-//			ImGui::PopID();
-//
-//			//if (j < cols - 1) ImGui::SameLine();
-//			if (i < cols - 1)
-//				ImGui::SetCursorPosY(ImGui::GetCursorPosY() + spacing);
-//		}
-//	}
-//
-//	ImGui::End();
-//
-//	ImGui::Render();
-//
-//	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
-//}

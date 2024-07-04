@@ -39,10 +39,11 @@ class CScene abstract
 public:
 	string			 m_name;
 	vector<CObject*> m_objects[static_cast<int>(GROUP_TYPE::COUNT)];
+	unordered_set<CObject*> ObjectListSector[SECTOR_RANGE_ROW * SECTOR_RANGE_COL];
+	int oldXCell = -1, oldZCell = -1;
+	unordered_set<CObject*>		my_vl;
 
 protected:
-	// �� ��ü�� ������ ������ CSceneManager�� ���ؼ��� �Ͼ��.
-	// ��, �� ��ü�� ���?���� �ڽ� Ŭ������ �����ڿ��� �� Ŭ������ �����ڸ� ȣ���ؾ��ϹǷ� ���� �����ڸ� protected�� �����Ͽ���.
 	CScene();
 
 	void Load(const string& fileName);
@@ -56,7 +57,6 @@ private:
 	virtual void ReleaseShaderVariables();
 
 public:
-	// �Ҹ����� ��쿡��?SafeDelete �ܺ� �Լ��� �̿��ϱ� ������ ���� �����ڸ� public���� �����Ͽ���.
 	virtual ~CScene();
 
 	void SetName(const string& name);
@@ -66,6 +66,7 @@ public:
 
 	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
 	void DeleteGroupObject(GROUP_TYPE groupType);
+	void DeleteObject(GROUP_TYPE groupType, CObject* object);
 
 	CTerrainObject* m_terrain = nullptr;
 	float GetTerrainHeight(float x, float z) { 
@@ -91,5 +92,7 @@ public:
 	virtual void PostRender();
 
 	virtual void RenderImGui();
+
+	unordered_set<CObject*> GetViewList(int stateNum);
 
 };

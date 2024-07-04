@@ -6,6 +6,12 @@
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #endif
 
+constexpr int SECTOR_RANGE_ROW = 8;
+constexpr int SECTOR_RANGE_COL = 8;
+
+constexpr int W_WIDTH = 400;
+constexpr int W_HEIGHT = 400;
+
 #define EPSILON				    0.01f
 
 #define FRAME_BUFFER_WIDTH		1920
@@ -73,11 +79,11 @@ enum class SCENE_TYPE
 
 enum class GROUP_TYPE
 {
-	STRUCTURE,		// 0 ����
-	PLAYER,				// 1 ����
-	NPC,					// 2 ����
-	MONSTER,			// 3 ����
-	BULLET,			// 4 ����
+	STRUCTURE,		
+	PLAYER,			
+	NPC,			
+	MONSTER,		
+	BULLET,			
 	BILBOARD,
 	GROUND_ITEM,
 	SKYBOX,
