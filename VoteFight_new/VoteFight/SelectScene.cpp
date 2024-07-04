@@ -62,12 +62,15 @@ void CSelectScene::ReleaseShaderVariables()
 void CSelectScene::Enter()
 {
 	// 카메라의 타겟 설정
+	CCameraManager::GetInstance()->SetSelectSceneMainCamera();
+	
 	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	CObject* focus = new CObject();
 	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	targetTransform->SetPosition(XMFLOAT3(4, 2, 0.3));
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(focus);
-	CCameraManager::GetInstance()->GetMainCamera()->SetOffset(XMFLOAT3(0, 0, -18));
+
+	InitLight();
 }
 
 void CSelectScene::Exit()
@@ -81,10 +84,6 @@ void CSelectScene::Init()
 	//Load("Character_Scene.bin");
 
 	CreateShaderVariables();
-
-	InitLight();
-
-	CCameraManager::GetInstance()->SetSelectSceneMainCamera();
 
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
 	for (size_t i = 0; i < objects.size(); i++)

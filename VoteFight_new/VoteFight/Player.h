@@ -14,7 +14,6 @@ private:
 	string	 m_spineName;
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
-    vector<CBilboardUI*> m_bilboardUI;
 
 public:
     bool isMove = true;
@@ -31,7 +30,6 @@ public:
 	void Shoot(CScene& currScene);
 
 	virtual void Update();
-	virtual void RenderBilboard(CCamera* camera);
 
     unsigned int    m_id{};
 

@@ -48,7 +48,7 @@ void CSceneManager::Init()
 	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)]->Init();
 	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)]->Init();
 
-	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::SELECT)];
+	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::GAME)];
 	m_currentScene->Enter();
 }
 

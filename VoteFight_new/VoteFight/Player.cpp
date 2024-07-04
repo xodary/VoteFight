@@ -119,13 +119,7 @@ void CPlayer::Shoot(CScene& currScene)
 
 void CPlayer::Update()
 {
-	CObject::Update();
-	for (auto& ui : m_bilboardUI) ui->Update();
-}
-
-void CPlayer::RenderBilboard(CCamera* camera)
-{
-	for (auto& ui : m_bilboardUI) ui->Render(camera);
+	CCharacter::Update();
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)

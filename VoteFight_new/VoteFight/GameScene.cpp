@@ -23,6 +23,7 @@
 #include "./ImaysNet/PacketQueue.h"
 #include "TerrainObject.h"
 #include "DropItem.h"
+#include "NPC.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -73,7 +74,6 @@ void CGameScene::Enter()
 {
 	// ShowCursor(false);
 
-	// ī�޶��� Ÿ�� ����
 	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	const vector<CObject*>& Monsters = GetGroupObject(GROUP_TYPE::MONSTER);
 
@@ -97,6 +97,7 @@ void CGameScene::Enter()
 			static_cast<CMonster*>(Monsters[i])->PlayerDiscovery(objects[0]);
 	}
 
+	InitLight();
 }
 
 void CGameScene::Exit()
@@ -109,7 +110,7 @@ void CGameScene::Init()
 
 	//SceneLoad();
 	Load("GameScene.bin");
-	
+
 
 	CObject* object = new CSkyBox(1000, 200);
 	AddObject(GROUP_TYPE::SKYBOX, object);
@@ -129,14 +130,18 @@ void CGameScene::Init()
 	CPlayer* player = reinterpret_cast<CPlayer*>(playerObject);
 	player->Init();
 
-	// �浹 �׷� ����
+	object = CObject::Load("Marge_Police");
+	transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	transform->SetPosition(XMFLOAT3(30, 2.37f, 30));
+	AddObject(GROUP_TYPE::NPC, object);
+	CNPC* npc = reinterpret_cast<CNPC*>(object);
+	npc->Init();
+
+	// Collision Check
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::NPC);
 
 	CreateShaderVariables();
-
-	InitLight();
-	
 
 	CCameraManager::GetInstance()->SetGameSceneMainCamera();
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
@@ -252,8 +257,6 @@ void CGameScene::Update()
 
 void CGameScene::PreRender()
 {
-	UpdateShaderVariables();
-
 	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
@@ -356,7 +359,6 @@ void CGameScene::PreRender()
 	GBufferWorldPos->UpdateShaderVariable();
 
 	UpdateShaderVariables();
-
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
 
 	camera->RSSetViewportsAndScissorRects();
@@ -379,13 +381,15 @@ void CGameScene::PreRender()
 }
 
 void CGameScene::Render()
-{
+{	
 	CGameFramework* framework = CGameFramework::GetInstance();
 	ID3D12GraphicsCommandList* commandList = framework->GetGraphicsCommandList();
 
 	CMainShader* shader = reinterpret_cast<CMainShader*>(CAssetManager::GetInstance()->GetShader("MainShader"));
 
 	shader->SetPipelineState(0);
+
+	UpdateShaderVariables();
 
 	CD3DX12_VIEWPORT vctResViewport = CD3DX12_VIEWPORT(0.0f, 0.0f, framework->GetResolution().x, framework->GetResolution().y);
 	CD3DX12_RECT vctRect = CD3DX12_RECT(0.0f, 0.0f, framework->GetResolution().x, framework->GetResolution().y);
@@ -395,10 +399,8 @@ void CGameScene::Render()
 	commandList->IASetVertexBuffers(0, 1, &framework->mFullscreenQuadVertexBufferView);
 	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 	commandList->DrawInstanced(4, 1, 0, 0);
-
+	
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
-	camera->RSSetViewportsAndScissorRects();
-	camera->UpdateShaderVariables();
 
 	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
 	{
@@ -416,14 +418,13 @@ void CGameScene::Render()
 		}
 	}
 
-	RenderImGui();
-
-	// for (auto object : m_objects_id) {
-	// 	if (object.second != nullptr)
-	// 		object.second->RenderUI(camera);
-	// }
-	// RenderChatUI();
-
+	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::NPC)])
+	{
+		if ((object->IsActive()) && (!object->IsDeleted()))
+		{
+			object->RenderBilboard(camera);
+		}
+	}
 
 	if (KEY_HOLD(KEY::SPACE))
 	{
@@ -441,6 +442,14 @@ void CGameScene::Render()
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->DrawInstanced(6, 1, 0, 0);
 	}
+
+	RenderImGui();
+
+	// for (auto object : m_objects_id) {
+	// 	if (object.second != nullptr)
+	// 		object.second->RenderUI(camera);
+	// }
+	// RenderChatUI();
 }
 
 void CGameScene::RenderImGui()

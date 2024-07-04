@@ -70,6 +70,7 @@ void CCameraManager::SetSelectSceneMainCamera()
 	const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
 
 	CCamera* camera = GetMainCamera();
+	camera->SetOffset(XMFLOAT3(0, 0, -18));
 	camera->SetViewport(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y), 0.0f, 1.0f);
 	camera->SetScissorRect(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y));
 	camera->GeneratePerspectiveProjectionMatrix(30.0f, resolution.x / resolution.y, 1.0f, 500.0f);
@@ -84,7 +85,7 @@ void CCameraManager::SetGameSceneMainCamera()
 	CCamera* camera = GetMainCamera();
 	camera->SetViewport(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y), 0.0f, 1.0f);
 	camera->SetScissorRect(0, 0, static_cast<UINT>(resolution.x), static_cast<UINT>(resolution.y));
-	camera->SetOffset(XMFLOAT3(3.0f, 6.f, -3.f));
+	camera->SetOffset(XMFLOAT3(6, 10, -6));
 	camera->SetSpeed(12.0f);
 	camera->GeneratePerspectiveProjectionMatrix(90.0f, resolution.x / resolution.y, 1.0f, 500.0f);
 	camera->GenerateViewMatrix(XMFLOAT3(10.0f, 1.0f, -10.0f), XMFLOAT3(-0.4f, -0.1f, 0.4f));

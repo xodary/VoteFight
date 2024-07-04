@@ -73,11 +73,11 @@ enum class SCENE_TYPE
 
 enum class GROUP_TYPE
 {
-	STRUCTURE,		// 0 ����
-	PLAYER,				// 1 ����
-	NPC,					// 2 ����
-	MONSTER,			// 3 ����
-	BULLET,			// 4 ����
+	STRUCTURE,		
+	PLAYER,			
+	NPC,			
+	MONSTER,		
+	BULLET,			
 	BILBOARD,
 	GROUND_ITEM,
 	SKYBOX,
