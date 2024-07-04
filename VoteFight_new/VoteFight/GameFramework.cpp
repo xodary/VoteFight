@@ -604,6 +604,7 @@ void CGameFramework::PostRender()
 void CGameFramework::PopulateCommandList()
 {
 	ResetCommandAllocatorAndList();
+
 	UpdateShaderVariables();
 
 	CSceneManager::GetInstance()->Update();

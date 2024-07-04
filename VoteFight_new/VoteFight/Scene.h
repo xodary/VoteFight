@@ -90,4 +90,6 @@ public:
 	virtual void Render();
 	virtual void PostRender();
 
+	virtual void RenderImGui();
+
 };
