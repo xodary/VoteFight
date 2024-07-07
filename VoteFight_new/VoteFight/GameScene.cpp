@@ -145,8 +145,6 @@ void CGameScene::Init()
 	CreateShaderVariables();
 
 	CCameraManager::GetInstance()->SetGameSceneMainCamera();
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(objects[0]);
 }
 
 void CGameScene::SceneLoad()
@@ -225,32 +223,30 @@ void CGameScene::Update()
 #ifdef CONNECT_SERVER
 	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 
-	
+	//for (CObject* o : objects) {
+	//	CPlayer* player = reinterpret_cast<CPlayer*>(o);
 
-	for (CObject* o : objects) {
-		CPlayer* player = reinterpret_cast<CPlayer*>(o);
+	//	if ((CGameFramework::GetInstance()->my_id) >= 0) {
+	//		if (player->m_id == CGameFramework::GetInstance()->my_id) {
+	//			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	//			CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+	//			CState* net_state = net_stateMachine->GetCurrentState();
 
-		if ((CGameFramework::GetInstance()->my_id) >= 0) {
-			if (player->m_id == CGameFramework::GetInstance()->my_id) {
-				CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-				CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-				CState* net_state = net_stateMachine->GetCurrentState();
+	//			CS_MOVE_V_PACKET send_packet;
+	//			send_packet.m_size = sizeof(CS_MOVE_V_PACKET);
+	//			send_packet.m_type = PACKET_TYPE::P_CS_MOVE_V_PACKET;
+	//			send_packet.m_id = player->m_id;
+	//			send_packet.m_vec = net_transform->GetPosition();
+	//			send_packet.m_rota = net_transform->GetRotation();
+	//			send_packet.m_state = net_state->GetStateNum();
+	//			PacketQueue::AddSendPacket(&send_packet);
 
-				CS_MOVE_V_PACKET send_packet;
-				send_packet.m_size = sizeof(CS_MOVE_V_PACKET);
-				send_packet.m_type = PACKET_TYPE::P_CS_MOVE_V_PACKET;
-				send_packet.m_id = player->m_id;
-				send_packet.m_vec = net_transform->GetPosition();
-				send_packet.m_rota = net_transform->GetRotation();
-				send_packet.m_state = net_state->GetStateNum();
-				PacketQueue::AddSendPacket(&send_packet);
-
-				player->SetTerrainY(this);
-				CTransform* playerPosition = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-				m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
-			}
-		}
-	}
+	//			player->SetTerrainY(this);
+	//			CTransform* playerPosition = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	//			m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(playerPosition->GetPosition().x, playerPosition->GetPosition().y + 10, playerPosition->GetPosition().z);
+	//		}
+	//	}
+	//}
 #endif
 
 	CScene::Update();

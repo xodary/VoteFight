@@ -1,7 +1,10 @@
 #pragma once
 class Socket;
 
-class CServerManager{
+class CServerManager : public CSingleton<CServerManager>
+{
+	friend class CSingleton<CServerManager>;
+
 private:
 	static recursive_mutex		m_mutex;
 
@@ -15,7 +18,7 @@ public:
 	static bool					m_isLogin;
 
 public:
-	static void					ConnectServer();
+	static void					ConnectServer(string server_s);
 	static void					Tick();
 	static void					Connetion();
 	static void					Do_Recv();

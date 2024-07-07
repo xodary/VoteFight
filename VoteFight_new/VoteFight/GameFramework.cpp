@@ -170,10 +170,6 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 
 	m_FontData = LoadFontData("fontdata.txt");
 
-#ifdef CONNECT_SERVER
-	CServerManager::ConnectServer();
-#endif
-
 	CreateDevice();
 	CreateCommandQueueAndList();
 	CreateSwapChain();

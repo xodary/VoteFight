@@ -168,9 +168,19 @@ void CScene::AddObject(const GROUP_TYPE& groupType, CObject* object)
 	ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].insert(object);
 }
 
+void CScene::AddObjectID(CObject* object, UINT id)
+{
+	m_objects_id[id] = object;
+}
+
 const vector<CObject*>& CScene::GetGroupObject(GROUP_TYPE groupType)
 {
 	return m_objects[static_cast<int>(groupType)];
+}
+
+CObject* CScene::GetIDObject(int id)
+{
+	return m_objects_id[id];
 }
 
 void CScene::DeleteGroupObject(GROUP_TYPE groupType)

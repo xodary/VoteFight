@@ -6,6 +6,8 @@
 #pragma comment(linker, "/entry:WinMainCRTStartup /subsystem:console")
 #endif
 
+#define CONNECT_SERVER
+
 constexpr int SECTOR_RANGE_ROW = 8;
 constexpr int SECTOR_RANGE_COL = 8;
 

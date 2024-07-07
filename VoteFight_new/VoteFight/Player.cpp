@@ -33,10 +33,6 @@ CPlayer::~CPlayer()
 
 void CPlayer::Init()
 {
-	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-
-	stateMachine->SetCurrentState(CPlayerIdleState::GetInstance());
-
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
 	animator->SetWeight("Idle", 1.0f);

@@ -220,9 +220,9 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_id = _Client->m_id;
 		send_packet.m_vec = _Client->m_player->getPos();
 		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-		// cout << " >> Send ) LOGIN_OK_PACKET - Client ID : " << _Client->m_id << endl;
-		// cout << " >> Size of RemoteClient: " << RemoteClient::m_remoteClients.size() << endl;
-		// cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
+		cout << " >> Send ) LOGIN_OK_PACKET - Client ID : " << _Client->m_id << endl;
+		cout << " >> Size of RemoteClient: " << RemoteClient::m_remoteClients.size() << endl;
+		//cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
 
 		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
 		for (auto& rc : RemoteClient::m_remoteClients) {
@@ -234,12 +234,12 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_id = rc.second->m_id;
 			send_packet.m_vec = rc.second->m_player->getPos();
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			/*cout << " >> Send | << SC_ADD_PACKET 01 >>" << endl;
+			cout << " >> Send | << SC_ADD_PACKET 01 >>" << endl;
 			cout << " >> Send ) Add Packet 1 - 해당 ID : " << rc.second->m_id << endl;
 			cout << " >> Send ) Add Packet 1 - 주체 ID : " << _Client->m_id << endl;
 			cout << " >> Send ) Pos Value 1 - xPos : " << rc.second->m_player->getPos().x <<
 				", yPos : " << rc.second->m_player->getPos().y <<
-				", zPos : " << rc.second->m_player->getPos().z << endl << endl;*/
+				", zPos : " << rc.second->m_player->getPos().z << endl << endl;
 		}
 
 		// Send connected client infomation to other client (다른 모든 클라이언트에게 특정 클라이언트의 정보를 보냄)
@@ -252,12 +252,12 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_id = _Client->m_id;
 			send_packet.m_vec = rc.second->m_player->getPos();
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			/*cout << " >> Send | << SC_ADD_PACKET 02 >>" << _Client->m_id << endl;
+			cout << " >> Send | << SC_ADD_PACKET 02 >>" << _Client->m_id << endl;
 			cout << " >> Send ) Add Packet 2 - 해당 ID : " << _Client->m_id << endl;
 			cout << " >> Send ) Add Packet 2 - 주체 ID : " << rc.second->m_id << endl;
 			cout << " >> Send ) Pos Value 2 - xPos : " << _Client->m_player->getPos().x <<
 				", yPos : " << _Client->m_player->getPos().y <<
-				", zPos : " << _Client->m_player->getPos().z << endl << endl;*/
+				", zPos : " << _Client->m_player->getPos().z << endl << endl;
 		}
 		break;
 	}

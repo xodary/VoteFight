@@ -66,6 +66,7 @@ struct SC_MOVE_V_PACKET {
 struct CS_LOGIN_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
+	unsigned char		name[NAME_SIZE];
 };
 
 struct CS_WALK_ENTER_PACEKET {

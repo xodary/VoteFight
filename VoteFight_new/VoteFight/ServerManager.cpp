@@ -21,6 +21,7 @@
 #include "Camera.h"
 
 #include "Object.h"
+#include "LoginScene.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -95,26 +96,15 @@ void CALLBACK send_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED send_ove
 	delete reinterpret_cast<EXP_OVER*>(send_over);
 }
 
-void CServerManager::ConnectServer()	// 서버 연결 함수
+void CServerManager::ConnectServer(string server_s)	// 서버 연결 함수
 {
 	m_tcpSocket = make_shared<Socket>(SocketType::Tcp);
-
-	std::cout << std::endl << " [ =========== Login =========== ] " << std::endl << std::endl;
-
-	std::cout << std::endl << "Input Connect Server IP (ex 100.xxx.xxx.xxx) : " << std::endl;
-	std::string server_s;
-	std::cin >> server_s;
 	m_SERVERIP = new char[server_s.size() + 1];
-	m_SERVERIP[server_s.size()] = '\0';
 	strncpy(m_SERVERIP, server_s.c_str(), server_s.size());
+	m_SERVERIP[server_s.size()] = '\0';
 
 	m_tcpSocket->Bind(Endpoint::Any);
 	CServerManager::Connetion();		// 연결
-
-	CS_LOGIN_PACKET send_packet;
-	send_packet.m_size = sizeof(CS_LOGIN_PACKET);
-	send_packet.m_type = PACKET_TYPE::P_CS_LOGIN_PACKET;
-	PacketQueue::AddSendPacket(&send_packet);
 
 	CServerManager::Do_Recv();			// 데이터 수신 시작
 }
@@ -181,14 +171,23 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case PACKET_TYPE::P_SC_LOGIN_OK_PACKET:
 	{
 		SC_LOGIN_OK_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(_Packet);
-		// cout << "SC_LOGIN_OK_PACKET" << endl;
-		CServerManager::m_id = recv_packet->m_id;
-
+		cout << "SC_LOGIN_OK_PACKET" << endl;
+		CLoginScene* loginscene = reinterpret_cast<CLoginScene*>(CSceneManager::GetInstance()->GetCurrentScene());
+		string name = loginscene->user_name;
+		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
+		
+		// 오브젝트 로드
+		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		player->m_name = name;
+
+		// ID 설정
+		CServerManager::m_id = recv_packet->m_id;
 		CGameFramework::GetInstance()->my_id = recv_packet->m_id;
 		player->m_id = recv_packet->m_id;
 
+		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 		transform->SetPosition(recv_packet->m_vec);
 		//object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
@@ -201,13 +200,20 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 		player->Init();
 
-		vector<CObject*> UIs = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::UI);
-		for (int i = 0; i < UIs.size(); ++i)
-		{
-			static_cast<CPlayer*>(player)->SetUI(static_cast<CUI*>(UIs[i]));
-		}
+		// State Machine 설정
+		player->CreateComponent(COMPONENT_TYPE::STATE_MACHINE);
+		CStateMachine* statemachine = reinterpret_cast<CStateMachine*>(object->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+		statemachine->SetCurrentState(CPlayerIdleState::GetInstance());
 
-		// cout << "Clinet ID - " << player->m_id << endl;
+		// 씬에 추가
+		scene->AddObjectID(player, recv_packet->m_id);
+		scene->AddObject(GROUP_TYPE::PLAYER, player);
+		scene->oldXCell = scene->oldZCell = -1;
+
+		// 카메라 타겟 세팅
+		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
+
+		cout << "Clinet ID - " << player->m_id << endl;
 		break;
 	}
 

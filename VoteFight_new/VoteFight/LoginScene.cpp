@@ -3,6 +3,9 @@
 #include "InputManager.h"
 #include "GameFramework.h"
 #include "LoginScene.h"
+#include "ServerManager.h"
+#include "../Packet.h"
+#include "ImaysNet/PacketQueue.h"
 
 CLoginScene::CLoginScene()
 {
@@ -87,9 +90,9 @@ void CLoginScene::Render()
             memset(login_state, 0, sizeof(login_state));
             strcpy(login_state, "Wait For Server Message ...");
             CS_LOGIN_PACKET send_packet;
-            send_packet.size = sizeof(CS_LOGIN_PACKET);
-            send_packet.type = CS_LOGIN;
-            strcpy_s(send_packet.name, user_name);
+            send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+            send_packet.m_type = P_CS_LOGIN_PACKET;
+            strcpy_s((char*)send_packet.name, sizeof(send_packet.name), (const char*)user_name);
             PacketQueue::AddSendPacket(&send_packet);
 #else
             CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);

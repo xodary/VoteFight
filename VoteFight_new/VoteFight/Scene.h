@@ -38,8 +38,9 @@ class CScene abstract
 
 public:
 	string			 m_name;
-	vector<CObject*> m_objects[static_cast<int>(GROUP_TYPE::COUNT)];
-	unordered_set<CObject*> ObjectListSector[SECTOR_RANGE_ROW * SECTOR_RANGE_COL];
+	vector<CObject*> m_objects[static_cast<int>(GROUP_TYPE::COUNT)];	// ø¿∫Í¡ß∆ÆµÈ
+	unordered_map<int, CObject*>	m_objects_id;	// ID∞° ¿÷¥¬ ø¿∫Í¡ß∆ÆµÈ 
+	unordered_set<CObject*> ObjectListSector[SECTOR_RANGE_ROW * SECTOR_RANGE_COL];	// Ω√æﬂ√≥∏Æ
 	int oldXCell = -1, oldZCell = -1;
 	unordered_set<CObject*>		my_vl;
 
@@ -63,8 +64,10 @@ public:
 	const string& GetName();
 
 	void AddObject(const GROUP_TYPE& groupType, CObject* object);
+	void AddObjectID(CObject* object, UINT id);
 
 	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
+	CObject* GetIDObject(int id);
 	void DeleteGroupObject(GROUP_TYPE groupType);
 	void DeleteObject(GROUP_TYPE groupType, CObject* object);
 
@@ -74,7 +77,7 @@ public:
 			return m_terrain->OnGetHeight(x, z);
 		else
 		{
-			cout << "ÔøΩÕ∑ÔøΩÔøΩÔøΩ ÔøΩÔøΩÔøΩÔøΩ ÔøΩ»µÔøΩ" << endl;
+			cout << "Terrain not exist" << endl;
 			return		0.f;
 		}
 	};
