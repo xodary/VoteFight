@@ -92,7 +92,7 @@ void CLoginScene::Render()
             CS_LOGIN_PACKET send_packet;
             send_packet.m_size = sizeof(CS_LOGIN_PACKET);
             send_packet.m_type = P_CS_LOGIN_PACKET;
-            strcpy_s((char*)send_packet.name, sizeof(send_packet.name), (const char*)user_name);
+            strcpy_s(send_packet.m_name, user_name);
             PacketQueue::AddSendPacket(&send_packet);
 #else
             CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);

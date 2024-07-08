@@ -74,18 +74,24 @@ CPlayerWalkState::~CPlayerWalkState()
 
 void CPlayerWalkState::Enter(CObject* object)
 {
-	CPlayer* player = static_cast<CPlayer*>(object);
+	//CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+	//if (player->m_Weapon == WEAPON_TYPE::PUNCH) animator->Play("Run", true);
+	//else animator->Play("Pistol_run", true);
+
+	//CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
+	//CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+	//rigidBody->SetMaxSpeedXZ(150.0f);
+	//rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 3000.0f * DT));
 	
-	stateNum = STATE_ENUM::CPlayerWalkState;
-	CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-	if (player->m_Weapon == WEAPON_TYPE::PUNCH) animator->Play("Run", true);
-	else animator->Play("Pistol_run", true);
+	CPlayer* player = static_cast<CPlayer*>(object);
 
-	CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
-	CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CS_WALK_ENTER_PACEKET p;
+	p.m_size = sizeof(p);
+	p.m_type = P_CS_WALK_ENTER_PACKET;
+	p.m_weapon = player->m_Weapon;
 
-	rigidBody->SetMaxSpeedXZ(150.0f);
-	rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 3000.0f * DT));
+	PacketQueue::AddSendPacket(&p);
 }
 
 void CPlayerWalkState::Exit(CObject* object)

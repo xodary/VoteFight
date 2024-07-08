@@ -41,6 +41,7 @@
     <ClCompile Include="CPlayer.cpp">
       <Filter>03. Object</Filter>
     </ClCompile>
+    <ClCompile Include="Timer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01. Dependency">
@@ -111,5 +112,6 @@
     <ClInclude Include="CPlayer.h">
       <Filter>03. Object</Filter>
     </ClInclude>
+    <ClInclude Include="Timer.h" />
   </ItemGroup>
 </Project>

@@ -161,6 +161,7 @@ void CScene::AddObject(const GROUP_TYPE& groupType, CObject* object)
 		m_objects[static_cast<int>(groupType)].push_back(object);
 	}
 
+	// 클라이언트 시야처리 (SECTOR)
 	CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	XMFLOAT3 pos = transform->GetPosition();
 	int xNewCell = clamp((int)(pos.x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
@@ -284,10 +285,10 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 
 	CObject* myPlayer = GetGroupObject(GROUP_TYPE::PLAYER)[0];
 	newlist.insert(myPlayer);
-	CTransform* trasnform = reinterpret_cast<CTransform*>(myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CTransform* transform = reinterpret_cast<CTransform*>(myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-	int xNewCell = clamp((int)(trasnform->GetPosition().x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
-	int zNewCell = clamp((int)(trasnform->GetPosition().z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
+	int xNewCell = clamp((int)(transform->GetPosition().x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
+	int zNewCell = clamp((int)(transform->GetPosition().z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
 
 	switch (stateNum)
 	{

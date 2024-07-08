@@ -2,6 +2,7 @@
 #include "TerrainObject.h"
 
 class CObject;
+class CPlayer;
 
 struct Fog
 {
@@ -43,6 +44,8 @@ public:
 	unordered_set<CObject*> ObjectListSector[SECTOR_RANGE_ROW * SECTOR_RANGE_COL];	// 시야처리
 	int oldXCell = -1, oldZCell = -1;
 	unordered_set<CObject*>		my_vl;
+
+	CPlayer* m_myPlayer;
 
 protected:
 	CScene();

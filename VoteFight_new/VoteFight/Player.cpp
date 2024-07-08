@@ -33,9 +33,6 @@ CPlayer::~CPlayer()
 
 void CPlayer::Init()
 {
-	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-
-	animator->SetWeight("Idle", 1.0f);
 	m_Inventory = new CInventory();
 
 	m_bilboardUI.push_back(new CHPbarUI(this));

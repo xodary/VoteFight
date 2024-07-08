@@ -6,6 +6,7 @@ class CPostProcessingShader;
 class CUILayer;
 class DescriptorHeapManager;
 class DescriptorHandle;
+class CPlayer;
 
 struct CB_GameFramework
 {

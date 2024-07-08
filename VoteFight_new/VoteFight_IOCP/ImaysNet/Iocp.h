@@ -2,20 +2,21 @@
 
 class Socket;
 class IocpEvents;
+class EXP_OVER;
 
 // I/O Completion Port 객체.
 class Iocp {
 public:
-	// 1회의 GetQueuedCompletionStatus이 최대한 꺼내올 수 있는 일의 갯수
+	static Iocp iocp;
 	static const int MaxEventCount = 1000;
 	
-	Iocp(int threadCount);
+	Iocp();
 	~Iocp();
 
 	void Add(Socket& socket, void* userPtr);
+	void Add(EXP_OVER* exover, int npc_id);
 	
 	HANDLE m_hIocp;
-	int m_threadCount; // IOCP 생성시 및 소켓 추가시 계속 사용되는 값인지라...
 	void Wait(IocpEvents &output, int timeoutMs);
 };
 

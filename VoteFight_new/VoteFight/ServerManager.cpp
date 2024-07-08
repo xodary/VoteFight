@@ -181,6 +181,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
 		player->m_name = name;
+		scene->m_myPlayer = player;
 
 		// ID 설정
 		CServerManager::m_id = recv_packet->m_id;
@@ -193,11 +194,10 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		//object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->SetWeight("idle", 1.0f);
-		animator->Play("idle", true);
+		animator->SetWeight("Idle", 1.0f);
+		animator->Play("Idle", true);
 
 		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
-		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 		player->Init();
 
 		// State Machine 설정
@@ -207,7 +207,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		// 씬에 추가
 		scene->AddObjectID(player, recv_packet->m_id);
-		scene->AddObject(GROUP_TYPE::PLAYER, player);
 		scene->oldXCell = scene->oldZCell = -1;
 
 		// 카메라 타겟 세팅
@@ -220,52 +219,59 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case  PACKET_TYPE::P_SC_ADD_PACKET:
 	{
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
-		// cout << "SC_ADD_PLAYER" << endl;
+		cout << "SC_ADD_PLAYER" << endl;
 
-		// vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
-		// reinterpret_cast<CPlayer*>(objects[0])->m_id;
-		if (CGameFramework::GetInstance()->my_id == recv_packet->m_id)
+		if (CGameFramework::GetInstance()->my_id == recv_packet->m_id) {
+			cout << "Error: Add my ID" << endl;
 			return;
+		}
+		// 오브젝트 로드
 
+		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 		CObject* object = CObject::Load("hugo_idle");
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
-		player->AnotherInit();
-		player->m_id = recv_packet->m_id;
-		// cout << "Clinet ID - " << player->m_id << endl;
-		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		strcpy_s(recv_packet->m_name, player->m_name.c_str());
 
-		transform->SetPosition(XMFLOAT3(recv_packet->m_vec));
-		//object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
+		// ID 설정
+		player->m_id = recv_packet->m_id;
+
+		// 위치 설정
+		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(recv_packet->m_vec);
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		//animator->SetBlending(false);
-		animator->SetWeight("idle", 1.0f);
-		animator->Play("idle", true);
+		animator->SetWeight("Idle", 1.0f);
+		animator->Play("Idle", true);
 
-		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
-		break;
-	}
+		player->Init();
+
+		// 씬에 추가
+		scene->AddObjectID(player, recv_packet->m_id);
+		scene->AddObject(GROUP_TYPE::PLAYER, player);
+		}
+	break;
 
 	case PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET:
 	{
 		SC_WALK_ENTER_INFO_PACKET* recv_packet = reinterpret_cast<SC_WALK_ENTER_INFO_PACKET*>(_Packet);
-		// cout << "SC_WALK_ENTER_INFO_PACKET" << endl;
+		 cout << "SC_WALK_ENTER_INFO_PACKET" << endl;
 
-		/*string ani_key = recv_packet->m_key;
+		string ani_key = recv_packet->m_key;
 		float max_sed = recv_packet->m_maxSpeed;
 		float velocity = recv_packet->m_vel;
 		
-		// 플레이어 객체를 얻어와야 함. (실제 함수에선 객체를 인자로 받지 않?)
-		// CPlayer* player = GameFramework::MainGameFramework->m_pPlayer;
+		// 플레이어 객체를 얻어와야 함.
+		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+		CPlayer* player = scene->m_myPlayer;
 
-		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		CAnimator* animator = static_cast<CAnimator*>(player->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->Play(ani_key, true);
 
-		CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
-		CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		CRigidBody* rigidBody = static_cast<CRigidBody*>(player->GetComponent(COMPONENT_TYPE::RIGIDBODY));
+		CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 		rigidBody->SetMaxSpeedXZ(max_sed);
-		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), velocity * DT));*/
+		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), velocity * DT));
 		break;
 	}
 
@@ -289,6 +295,34 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		}
 		break;
 	}
+
+	case PACKET_TYPE::P_SC_POS_PACKET:
+	{
+		SC_POS_PACKET* recv_packet = reinterpret_cast<SC_POS_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+		CObject* obj = scene->GetIDObject(recv_packet->m_id);
+		if (obj != nullptr) {
+			CTransform* transform = static_cast<CTransform*>(obj->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			transform->SetPosition(recv_packet->m_pos);
+			transform->SetRotation(XMFLOAT3(0, recv_packet->m_rota, 0));
+		}
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_ANIMATION:
+	{
+		SC_ANIMATION_PACKET* recv_packet = reinterpret_cast<SC_ANIMATION_PACKET*>(_Packet);
+		cout << "SC_ANIMATION_PACKET" << endl;
+
+		string ani_key = recv_packet->m_key;
+		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+
+		CObject* obj = scene->GetIDObject(recv_packet->m_id);
+		CAnimator* animator = static_cast<CAnimator*>(obj->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		animator->Play(ani_key, true);
+	}
+	break;
+
 	default:
 		break;
 	}

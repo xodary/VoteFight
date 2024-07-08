@@ -2,9 +2,9 @@
 #include "pch.h"
 #include "./ImaysNet/ImaysNet.h"
 #include "RemoteClient.h"
+#include "Timer.h"
 
 volatile bool				stopServer = false;
-const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 static unsigned long long	nextClientID{ 0 };		// Next Client ID
 
 vector<shared_ptr<thread>>	workerThreads;			// Worker Thread Vector
@@ -16,7 +16,6 @@ vector<RemoteClient*>		remoteClients_ptr_v;
 // 삭제 클라이언트 목록
 list<shared_ptr<RemoteClient>>		deleteClinets;
 
-Iocp						iocp(numWorkerTHREAD);	// IOCP Init
 recursive_mutex				mx_accept;				
 shared_ptr<Socket>			listenSocket;			
 shared_ptr<RemoteClient>	remoteClientCandidate; 
@@ -37,7 +36,8 @@ int main(int argc, char* argv[])
 	listenSocket->Listen();
 
 	// IOCP Init & Add
-	iocp.Add(*listenSocket,listenSocket.get());
+	int num_threads = std::thread::hardware_concurrency() - 1;
+	Iocp::iocp.Add(*listenSocket,listenSocket.get());
 
 	// Client Connect Ready
 	remoteClientCandidate = make_shared<RemoteClient>(SocketType::Tcp);
@@ -51,8 +51,11 @@ int main(int argc, char* argv[])
 	listenSocket->m_isReadOverlapped = true;
 
 	// Worket Thread
-	for (int i = 0 ; i < numWorkerTHREAD; ++i)
+	for (int i = 0 ; i < num_threads; ++i)
 		workerThreads.emplace_back(make_shared<thread>(WorkerThread));
+
+	thread timer_thread{ CTimer::do_timer };
+	timer_thread.join();
 
 	for (auto& th : workerThreads) 
 		th->join();
@@ -78,7 +81,7 @@ void WorkerThread()
 		while (!stopServer) {
 			// I/O 완료 이벤트 대기
 			IocpEvents readEvents;
-			iocp.Wait(readEvents, 100);
+			Iocp::iocp.Wait(readEvents, 100);
 
 			// 받은 이벤트 처리
 			for (int i = 0; i < readEvents.m_eventCount; ++i) {
@@ -89,6 +92,13 @@ void WorkerThread()
 					// cout << " >> Send - size : " << (int)p_readOverlapped->m_buf[0] << endl;
 					// cout << " >> Send - type : " << (int)p_readOverlapped->m_buf[1] << endl;
 					p_readOverlapped->m_isReadOverlapped = false;
+					continue;
+
+				}
+				if (IO_TYPE::IO_UPDATE == p_readOverlapped->m_ioType) {
+					cout << "Update" << endl;
+					TIMER_EVENT ev{ readEvent.lpCompletionKey, chrono::system_clock::now() + 100ms, EV_UPDATE, 0 };
+					CTimer::timer_queue.push(ev);
 					continue;
 				}
 
@@ -102,7 +112,6 @@ void WorkerThread()
 						remoteClient = RemoteClient::m_remoteClients[(RemoteClient*)readEvent.lpCompletionKey];
 					}
 
-					//
 					if (remoteClient) { // 수신 완료 상태. 완료된 것 꺼내서 작업
 						remoteClient->m_tcpConnection.m_isReadOverlapped = false;
 						int ec = readEvent.dwNumberOfBytesTransferred;
@@ -173,7 +182,7 @@ void ProcessAccept()
 		remoteClients_ptr_v.emplace_back(remoteClient.get());
 
 		// 소켓 IOCP에 추가
-		iocp.Add(remoteClient->m_tcpConnection, remoteClient.get());
+		Iocp::iocp.Add(remoteClient->m_tcpConnection, remoteClient.get());
 
 		// overlapped 수신 요청
 		if (remoteClient->m_tcpConnection.ReceiveOverlapped() != 0
@@ -264,18 +273,32 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 	case PACKET_TYPE::P_CS_WALK_ENTER_PACKET:
 	{
-		// cout << " >> recv ) CS_WALK_ENTER_PACKET" << endl;
 		CS_WALK_ENTER_PACEKET* recv_packet = reinterpret_cast<CS_WALK_ENTER_PACEKET*>(_Packet);
-		{
-			SC_WALK_ENTER_INFO_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_WALK_ENTER_INFO_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET;
-			send_packet.m_key = "lisaWalk";
-			send_packet.m_maxSpeed = 400.f;
-			send_packet.m_vel = 400.f;
-			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			// cout << " >> send ) SC_WALK_ENTER_INFO_PACKET" << endl;
-		}
+
+		SC_WALK_ENTER_INFO_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_WALK_ENTER_INFO_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET;
+		send_packet.m_key = "Run";
+		send_packet.m_maxSpeed = 400.f;
+		send_packet.m_vel = 400.f;
+		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		cout << " >> send ) SC_WALK_ENTER_INFO_PACKET" << endl;
+
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (_Client->m_id != rc.second->m_id) {
+					SC_ANIMATION_PACKET send_packet;
+					send_packet.m_size = sizeof(SC_ANIMATION_PACKET);
+					send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION;
+					send_packet.m_id = _Client->m_id;
+					send_packet.m_key = "Run";
+					
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				}
+			}
+					
+		//EXP_OVER* exover = new EXP_OVER;
+		//exover->m_ioType = IO_TYPE::IO_UPDATE;
+		//Iocp::iocp.Add(exover, _Client->m_id);
 		break;
 	}
 
@@ -283,6 +306,22 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_MOVE_PACKET* recv_packet = reinterpret_cast<CS_MOVE_PACKET*>(_Packet);
 
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (_Client->m_id != rc.second->m_id) {
+				//RemoteClient::m_lock.lock();
+				//_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_pos.x, recv_packet->m_pos.y, recv_packet->m_pos.z);
+				//RemoteClient::m_lock.unlock();
+
+				SC_POS_PACKET send_packet;
+				send_packet.m_size = sizeof(SC_POS_PACKET);
+				send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
+				send_packet.m_id = _Client->m_id;
+				send_packet.m_pos = recv_packet->m_pos;
+				send_packet.m_rota = recv_packet->m_rota;
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_POS_PACKET" << endl;
+			}
+		}
 		break;
 	}
 
@@ -307,7 +346,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
 			send_packet.m_id = recv_packet->m_id;
 			send_packet.m_vec = recv_packet->m_vec;
-			send_packet.m_rota = recv_packet->m_rota;
+			//send_packet.m_rota = recv_packet->m_rota;
 			send_packet.m_state = recv_packet->m_state;
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 
@@ -325,7 +364,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			if (recv_packet->m_id == rc.second->m_id) {
 				RemoteClient::m_lock.lock();
 				_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
-				rota = recv_packet->m_rota;
+				//rota = recv_packet->m_rota;
 				state = recv_packet->m_state;
 				RemoteClient::m_lock.unlock();
 				continue;
@@ -339,7 +378,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
 			send_packet.m_id = _Client->m_id;
 			send_packet.m_vec = _Client->m_player->getPos();
-			send_packet.m_rota = rota;
+			//send_packet.m_rota = rota;
 			send_packet.m_state = state;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 
@@ -354,6 +393,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		break;
 	}
 
+	break;
 	default:
 		break;
 	}
@@ -381,7 +421,7 @@ void CloseServer()
 
 			// I/O completion이 발생 시 더 이상 Overlapped I/O를 걸지 말고 정리 신호 Flag.
 			IocpEvents readEvents;
-			iocp.Wait(readEvents, 100);
+			Iocp::iocp.Wait(readEvents, 100);
 
 			// 받은 이벤트 각각을 처리합니다.
 			for (int i = 0; i < readEvents.m_eventCount; i++) {

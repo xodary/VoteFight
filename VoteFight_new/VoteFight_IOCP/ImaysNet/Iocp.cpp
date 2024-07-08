@@ -3,10 +3,9 @@
 #include "Socket.h"
 #include "Exception.h"
 
-Iocp::Iocp(int threadCount)
+Iocp::Iocp()
 {
-	m_hIocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, threadCount);
-	m_threadCount = threadCount;
+	m_hIocp = CreateIoCompletionPort(INVALID_HANDLE_VALUE, NULL, 0, 0);
 }
 
 Iocp::~Iocp()
@@ -17,9 +16,17 @@ Iocp::~Iocp()
 // IOCP에 socket을 추가합니다.
 void Iocp::Add(Socket& socket, void* userPtr)
 {
-	if (!CreateIoCompletionPort((HANDLE)socket.m_fd, m_hIocp, (ULONG_PTR)userPtr, m_threadCount))
+	if (!CreateIoCompletionPort((HANDLE)socket.m_fd, m_hIocp, (ULONG_PTR)userPtr, 0))
 		throw Exception("IOCP add failed!");
 }
+
+// IOCP에 Event를 추가합니다.
+void Iocp::Add(EXP_OVER* exover, int id)
+{
+	if (!PostQueuedCompletionStatus(m_hIocp, 1, id, &exover->m_wsa_over))
+		throw Exception("IOCP add Event failed!");
+}
+
 
 void Iocp::Wait(IocpEvents &output, int timeoutMs)
 {
