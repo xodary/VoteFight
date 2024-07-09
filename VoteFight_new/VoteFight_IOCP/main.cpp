@@ -95,10 +95,35 @@ void WorkerThread()
 					continue;
 
 				}
+
 				if (IO_TYPE::IO_UPDATE == p_readOverlapped->m_ioType) {
-					cout << "Update" << endl;
-					TIMER_EVENT ev{ readEvent.lpCompletionKey, chrono::system_clock::now() + 100ms, EV_UPDATE, 0 };
-					CTimer::timer_queue.push(ev);
+					//cout << "Update" << endl;
+					{
+						for (auto& client : RemoteClient::m_remoteClients) {
+							if (client.second == nullptr || !client.second->m_ingame) continue;
+							for (auto& rc : RemoteClient::m_remoteClients) {
+								if (rc.second == nullptr || !rc.second->m_ingame) continue;
+								auto duration = chrono::system_clock::now() - rc.second->m_lastTime;
+								auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+								cout << seconds << endl;
+								XMFLOAT3 shift = Vector3::ScalarProduct(rc.second->m_player->m_Vec, seconds * rc.second->m_player->m_Velocity);
+								//XMFLOAT3 shift = Vector3::ScalarProduct(rc.second->m_player->m_Vec, rc.second->m_player->m_Velocity * 0.1f);
+								rc.second->m_player->m_Pos = Vector3::Add(rc.second->m_player->m_Pos, shift);
+								rc.second->m_lastTime = chrono::system_clock::now();
+
+								SC_POS_PACKET send_packet;
+								send_packet.m_size = sizeof(SC_POS_PACKET);
+								send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
+								send_packet.m_id = rc.second->m_id;
+								send_packet.m_pos = rc.second->m_player->m_Pos;
+								//send_packet.m_rota = rc.second->m_player->m_Rota;
+								client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+								cout << " >> send ) SC_POS_PACKET" << endl;
+							}
+						}
+						TIMER_EVENT ev{ (RemoteClient*)readEvent.lpCompletionKey, chrono::system_clock::now() + 100ms, EV_UPDATE, 0 };
+						CTimer::timer_queue.push(ev);
+					}
 					continue;
 				}
 
@@ -222,12 +247,13 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
 		_Client->m_id = nextClientID++;
 		_Client->m_player = make_shared<CPlayer>(XMFLOAT3(5.f, 0.f, 5.f));
+		_Client->m_ingame = true;
 		
 		SC_LOGIN_OK_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_LOGIN_OK_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_OK_PACKET;
 		send_packet.m_id = _Client->m_id;
-		send_packet.m_vec = _Client->m_player->getPos();
+		send_packet.m_pos = _Client->m_player->m_Pos;
 		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		cout << " >> Send ) LOGIN_OK_PACKET - Client ID : " << _Client->m_id << endl;
 		cout << " >> Size of RemoteClient: " << RemoteClient::m_remoteClients.size() << endl;
@@ -235,163 +261,207 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
 		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (rc.second->m_id == _Client->m_id)
+			if (rc.second == nullptr || rc.second->m_id == _Client->m_id)
 				continue;
 			SC_ADD_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
 			send_packet.m_id = rc.second->m_id;
-			send_packet.m_vec = rc.second->m_player->getPos();
+			send_packet.m_pos = rc.second->m_player->m_Pos;
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> Send | << SC_ADD_PACKET 01 >>" << endl;
 			cout << " >> Send ) Add Packet 1 - 해당 ID : " << rc.second->m_id << endl;
 			cout << " >> Send ) Add Packet 1 - 주체 ID : " << _Client->m_id << endl;
-			cout << " >> Send ) Pos Value 1 - xPos : " << rc.second->m_player->getPos().x <<
-				", yPos : " << rc.second->m_player->getPos().y <<
-				", zPos : " << rc.second->m_player->getPos().z << endl << endl;
+			cout << " >> Send ) Pos Value 1 - xPos : " << rc.second->m_player->m_Pos.x <<
+				", yPos : " << rc.second->m_player->m_Pos.y <<
+				", zPos : " << rc.second->m_player->m_Pos.z << endl << endl;
 		}
 
 		// Send connected client infomation to other client (다른 모든 클라이언트에게 특정 클라이언트의 정보를 보냄)
 		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (rc.second->m_id == _Client->m_id)
+			if (rc.second == nullptr || rc.second->m_id == _Client->m_id)
 				continue;
 			SC_ADD_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
 			send_packet.m_id = _Client->m_id;
-			send_packet.m_vec = rc.second->m_player->getPos();
+			send_packet.m_pos = rc.second->m_player->m_Pos;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> Send | << SC_ADD_PACKET 02 >>" << _Client->m_id << endl;
 			cout << " >> Send ) Add Packet 2 - 해당 ID : " << _Client->m_id << endl;
 			cout << " >> Send ) Add Packet 2 - 주체 ID : " << rc.second->m_id << endl;
-			cout << " >> Send ) Pos Value 2 - xPos : " << _Client->m_player->getPos().x <<
-				", yPos : " << _Client->m_player->getPos().y <<
-				", zPos : " << _Client->m_player->getPos().z << endl << endl;
+			cout << " >> Send ) Pos Value 2 - xPos : " << _Client->m_player->m_Pos.x <<
+				", yPos : " << _Client->m_player->m_Pos.y <<
+				", zPos : " << _Client->m_player->m_Pos.z << endl << endl;
 		}
 		break;
 	}
+
+	case PACKET_TYPE::P_CS_KEYDOWN_PACKET:
+	{
+
+	}
+	break;
 
 	case PACKET_TYPE::P_CS_WALK_ENTER_PACKET:
 	{
-		CS_WALK_ENTER_PACEKET* recv_packet = reinterpret_cast<CS_WALK_ENTER_PACEKET*>(_Packet);
+		CS_WALK_ENTER_PACKET* recv_packet = reinterpret_cast<CS_WALK_ENTER_PACKET*>(_Packet);
+		cout << "SC_WALK_ENTER_INFO_PACKET" << endl;
 
-		SC_WALK_ENTER_INFO_PACKET send_packet;
-		send_packet.m_size = sizeof(SC_WALK_ENTER_INFO_PACKET);
-		send_packet.m_type = PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET;
+		SC_ANIMATION_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_ANIMATION_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION_PACKET;
+		send_packet.m_id = _Client->m_id;
 		send_packet.m_key = "Run";
-		send_packet.m_maxSpeed = 400.f;
-		send_packet.m_vel = 400.f;
-		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-		cout << " >> send ) SC_WALK_ENTER_INFO_PACKET" << endl;
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+		cout << " >> send ) CS_WALK_ENTER_PACKET" << endl;
+	}
+	break;
+
+	case PACKET_TYPE::P_CS_VELOCITY_CHANGE_PACKET:
+	{
+		CS_VELOCITY_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_VELOCITY_CHANGE_PACKET*>(_Packet);
+
+		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_rota, 0)));
+		if (recv_packet->m_shift) _Client->m_player->m_Velocity = 15; else _Client->m_player->m_Velocity = 10;
+
+		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
+		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+		cout << seconds << endl;
+		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
+		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
+		_Client->m_lastTime = chrono::system_clock::now();
+		_Client->m_player->m_Vec = vector;
+		_Client->m_player->m_Rota = recv_packet->m_rota;
+
+		SC_VELOCITY_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+		send_packet.m_id = _Client->m_id;
+		send_packet.m_rota = recv_packet->m_rota;
+		send_packet.m_vel = _Client->m_player->m_Velocity;
+		send_packet.m_pos = _Client->m_player->m_Pos;
+		cout << " >> send ) CS_VELOCITY_CHANGE_PACKET" << endl;
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+					
+		break;
+	}
+
+	case PACKET_TYPE::P_CS_STOP_PACKET:
+	{
+		CS_STOP_PACKET* recv_packet = reinterpret_cast<CS_STOP_PACKET*>(_Packet);
+		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
+		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+		cout << seconds << endl;
+		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
+		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
+		_Client->m_lastTime = chrono::system_clock::now();
+		_Client->m_player->m_Velocity = 0;
+
+		{
+			SC_VELOCITY_CHANGE_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+			send_packet.m_id = _Client->m_id;
+			send_packet.m_rota = _Client->m_player->m_Rota;
+			send_packet.m_vel = _Client->m_player->m_Velocity;
+			send_packet.m_pos = _Client->m_player->m_Pos;
+			
+			_Client->m_lastTime = chrono::system_clock::now();
+			cout << " >> send ) CS_STOP_PACKET" << endl;
 
 			for (auto& rc : RemoteClient::m_remoteClients) {
-				if (_Client->m_id != rc.second->m_id) {
-					SC_ANIMATION_PACKET send_packet;
-					send_packet.m_size = sizeof(SC_ANIMATION_PACKET);
-					send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION;
-					send_packet.m_id = _Client->m_id;
-					send_packet.m_key = "Run";
-					
-					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-				}
-			}
-					
-		//EXP_OVER* exover = new EXP_OVER;
-		//exover->m_ioType = IO_TYPE::IO_UPDATE;
-		//Iocp::iocp.Add(exover, _Client->m_id);
-		break;
-	}
-
-	case PACKET_TYPE::P_CS_MOVE_PACKET:
-	{
-		CS_MOVE_PACKET* recv_packet = reinterpret_cast<CS_MOVE_PACKET*>(_Packet);
-
-		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (_Client->m_id != rc.second->m_id) {
-				//RemoteClient::m_lock.lock();
-				//_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_pos.x, recv_packet->m_pos.y, recv_packet->m_pos.z);
-				//RemoteClient::m_lock.unlock();
-
-				SC_POS_PACKET send_packet;
-				send_packet.m_size = sizeof(SC_POS_PACKET);
-				send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
-				send_packet.m_id = _Client->m_id;
-				send_packet.m_pos = recv_packet->m_pos;
-				send_packet.m_rota = recv_packet->m_rota;
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-				cout << " >> send ) SC_POS_PACKET" << endl;
 			}
 		}
-		break;
-	}
 
-	case PACKET_TYPE::P_CS_MOVE_V_PACKET:
-	{
-		// cout << " >> P_CS_MOVE_V_PACKET" << endl;
-		CS_MOVE_V_PACKET* recv_packet = reinterpret_cast<CS_MOVE_V_PACKET*>(_Packet);
-		// cout << " [01] Recv ID : " << recv_packet->m_id << endl;
-		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (recv_packet->m_id == rc.second->m_id) {
-				RemoteClient::m_lock.lock();
-				_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
-				RemoteClient::m_lock.unlock();
-				continue;
-			}
-
-			if(rc.second->m_player != nullptr)
-				rc.second->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
-
-			SC_MOVE_V_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
-			send_packet.m_id = recv_packet->m_id;
-			send_packet.m_vec = recv_packet->m_vec;
-			//send_packet.m_rota = recv_packet->m_rota;
-			send_packet.m_state = recv_packet->m_state;
-			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-
-			/*cout << " ------------------------------------------------- " << endl;
-			cout << " >> Send | << SC_MOVE_V_PACKET 01 >>" << _Client->m_id << endl;
-			cout << " >> Send ) 어떤 ID에게? : " << _Client->m_id << endl;
-			cout << " >> Send ) Pos Value - xPos : " << recv_packet->m_vec.x <<
-				", yPos : " << recv_packet->m_vec.y <<
-				", zPos : " << recv_packet->m_vec.z << endl << endl;*/
-		}
-
-		for (auto& rc : RemoteClient::m_remoteClients) {
-			XMFLOAT3 rota;
-			STATE_ENUM state;
-			if (recv_packet->m_id == rc.second->m_id) {
-				RemoteClient::m_lock.lock();
-				_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
-				//rota = recv_packet->m_rota;
-				state = recv_packet->m_state;
-				RemoteClient::m_lock.unlock();
-				continue;
-			}
-
-			if (rc.second->m_player != nullptr)
-				rc.second->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
-
-			SC_MOVE_V_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
+		{
+			SC_ANIMATION_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_ANIMATION_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION_PACKET;
 			send_packet.m_id = _Client->m_id;
-			send_packet.m_vec = _Client->m_player->getPos();
-			//send_packet.m_rota = rota;
-			send_packet.m_state = state;
-			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			send_packet.m_key = "Idle";
 
-			/*cout << " ------------------------------------------------- " << endl;
-			cout << " >> Send | << SC_MOVE_V_PACKET-2 >>" << _Client->m_id << endl;
-			cout << " >> Send ) 어떤 ID에게? : " << rc.second->m_id << endl;
-			cout << " >> Send ) Pos Value - xPos : " << x <<
-				", yPos : " << y <<
-				", zPos : " << z << endl << endl;*/
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
 		}
-
-		break;
 	}
+	break;
+
+	//case PACKET_TYPE::P_CS_MOVE_V_PACKET:
+	//{
+	//	// cout << " >> P_CS_MOVE_V_PACKET" << endl;
+	//	CS_MOVE_V_PACKET* recv_packet = reinterpret_cast<CS_MOVE_V_PACKET*>(_Packet);
+	//	// cout << " [01] Recv ID : " << recv_packet->m_id << endl;
+	//	for (auto& rc : RemoteClient::m_remoteClients) {
+	//		if (recv_packet->m_id == rc.second->m_id) {
+	//			RemoteClient::m_lock.lock();
+	//			_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
+	//			RemoteClient::m_lock.unlock();
+	//			continue;
+	//		}
+
+	//		if(rc.second->m_player != nullptr)
+	//			rc.second->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
+
+	//		SC_MOVE_V_PACKET send_packet;
+	//		send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
+	//		send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
+	//		send_packet.m_id = recv_packet->m_id;
+	//		send_packet.m_vec = recv_packet->m_vec;
+	//		//send_packet.m_rota = recv_packet->m_rota;
+	//		send_packet.m_state = recv_packet->m_state;
+	//		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+
+	//		/*cout << " ------------------------------------------------- " << endl;
+	//		cout << " >> Send | << SC_MOVE_V_PACKET 01 >>" << _Client->m_id << endl;
+	//		cout << " >> Send ) 어떤 ID에게? : " << _Client->m_id << endl;
+	//		cout << " >> Send ) Pos Value - xPos : " << recv_packet->m_vec.x <<
+	//			", yPos : " << recv_packet->m_vec.y <<
+	//			", zPos : " << recv_packet->m_vec.z << endl << endl;*/
+	//	}
+
+	//	for (auto& rc : RemoteClient::m_remoteClients) {
+	//		XMFLOAT3 rota;
+	//		STATE_ENUM state;
+	//		if (recv_packet->m_id == rc.second->m_id) {
+	//			RemoteClient::m_lock.lock();
+	//			_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
+	//			//rota = recv_packet->m_rota;
+	//			state = recv_packet->m_state;
+	//			RemoteClient::m_lock.unlock();
+	//			continue;
+	//		}
+
+	//		if (rc.second->m_player != nullptr)
+	//			rc.second->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
+
+	//		SC_MOVE_V_PACKET send_packet;
+	//		send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
+	//		send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
+	//		send_packet.m_id = _Client->m_id;
+	//		send_packet.m_vec = _Client->m_player->getPos();
+	//		//send_packet.m_rota = rota;
+	//		send_packet.m_state = state;
+	//		rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+
+	//		/*cout << " ------------------------------------------------- " << endl;
+	//		cout << " >> Send | << SC_MOVE_V_PACKET-2 >>" << _Client->m_id << endl;
+	//		cout << " >> Send ) 어떤 ID에게? : " << rc.second->m_id << endl;
+	//		cout << " >> Send ) Pos Value - xPos : " << x <<
+	//			", yPos : " << y <<
+	//			", zPos : " << z << endl << endl;*/
+	//	}
+
+	//	break;
+	//}
 
 	break;
 	default:

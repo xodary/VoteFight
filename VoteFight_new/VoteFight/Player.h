@@ -15,8 +15,11 @@ private:
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
 
+
 public:
     string myItems[3][6];
+
+    float goal_rota;
 
     bool isMove = true;
 	CPlayer();

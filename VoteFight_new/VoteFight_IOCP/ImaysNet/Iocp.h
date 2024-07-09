@@ -14,7 +14,6 @@ public:
 	~Iocp();
 
 	void Add(Socket& socket, void* userPtr);
-	void Add(EXP_OVER* exover, int npc_id);
 	
 	HANDLE m_hIocp;
 	void Wait(IocpEvents &output, int timeoutMs);

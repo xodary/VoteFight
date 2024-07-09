@@ -2,6 +2,7 @@
 #include "Iocp.h"
 #include "Socket.h"
 #include "Exception.h"
+#include "../RemoteClient.h"
 
 Iocp::Iocp()
 {
@@ -19,14 +20,6 @@ void Iocp::Add(Socket& socket, void* userPtr)
 	if (!CreateIoCompletionPort((HANDLE)socket.m_fd, m_hIocp, (ULONG_PTR)userPtr, 0))
 		throw Exception("IOCP add failed!");
 }
-
-// IOCP에 Event를 추가합니다.
-void Iocp::Add(EXP_OVER* exover, int id)
-{
-	if (!PostQueuedCompletionStatus(m_hIocp, 1, id, &exover->m_wsa_over))
-		throw Exception("IOCP add Event failed!");
-}
-
 
 void Iocp::Wait(IocpEvents &output, int timeoutMs)
 {

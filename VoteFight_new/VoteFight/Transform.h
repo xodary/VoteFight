@@ -20,6 +20,7 @@ protected:
 	XMFLOAT4X4			  m_worldMatrix;
 
 public:
+
 	CTransform();
 	virtual ~CTransform();
 

@@ -3,7 +3,7 @@
 
 class CRigidBody : public CComponent
 {
-private:
+public:
 	float    m_mass;           // 질량
 
 	XMFLOAT3 m_force;		   // 한 프레임동안 누적된 힘

@@ -193,21 +193,38 @@ void CGameScene::InitLight()
 
 }
 
+float Lerp(float A, float B, float Alpha)
+{
+	A = (int)A % 360;
+	B = (int)B % 360;
+	if ((A - B) > 180) B += 360;
+	else if ((B - A) > 180) A += 360;
+	float result = A * (1 - Alpha) + B * Alpha;
+	return result;
+}
+
 void CGameScene::Update()
 {
-	CObject* object = GetGroupObject(GROUP_TYPE::PLAYER)[0];
+	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 
-	if (KEY_TAP(KEY::NUM1))
-		reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::PISTOL);
-	if (KEY_TAP(KEY::NUM2))
-		reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::AXE);
-	if (KEY_TAP(KEY::NUM3))
-		reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::PUNCH);
+	for (auto& object : objects) {
 
-	CTransform* p_tf = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	XMFLOAT3 pos = p_tf->GetPosition();
-	if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400)
-		p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
+		if (KEY_TAP(KEY::NUM1))
+			reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::PISTOL);
+		if (KEY_TAP(KEY::NUM2))
+			reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::AXE);
+		if (KEY_TAP(KEY::NUM3))
+			reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::PUNCH);
+
+		CTransform* p_tf = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+		float rotation = Lerp(p_tf->GetRotation().y, reinterpret_cast<CPlayer*>(object)->goal_rota, DT * 8);
+		p_tf->SetRotation(XMFLOAT3(0, rotation, 0));
+
+		XMFLOAT3 pos = p_tf->GetPosition();
+		if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400)
+			p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
+	}
 
 	vector<CObject*> items = GetGroupObject(GROUP_TYPE::GROUND_ITEM);
 	for (auto& item : items) {
@@ -222,16 +239,16 @@ void CGameScene::Update()
 
 #ifdef CONNECT_SERVER
 
-	if (m_myPlayer != nullptr) {
-		CTransform* net_transform = static_cast<CTransform*>(m_myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-		CS_MOVE_PACKET send_packet;
-		send_packet.m_size = sizeof(CS_MOVE_PACKET);
-		send_packet.m_type = PACKET_TYPE::P_CS_MOVE_PACKET;
-		send_packet.m_pos = net_transform->GetPosition();
-		send_packet.m_rota = net_transform->GetRotation().y;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
+	// if (m_myPlayer != nullptr) {
+	// 	CTransform* net_transform = static_cast<CTransform*>(m_myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	// 
+	// 	CS_MOVE_PACKET send_packet;
+	// 	send_packet.m_size = sizeof(CS_MOVE_PACKET);
+	// 	send_packet.m_type = PACKET_TYPE::P_CS_MOVE_PACKET;
+	// 	send_packet.m_pos = net_transform->GetPosition();
+	// 	send_packet.m_rota = net_transform->GetRotation().y;
+	// 	PacketQueue::AddSendPacket(&send_packet);
+	// }
 
 #endif
 
@@ -295,7 +312,7 @@ void CGameScene::PreRender()
 				{
 					if ((object->IsActive()) && (!object->IsDeleted()))
 					{
-						object->PreRender(camera);
+						//object->PreRender(camera);
 					}
 				}
 

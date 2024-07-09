@@ -190,7 +190,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(recv_packet->m_vec);
+		transform->SetPosition(recv_packet->m_pos);
 		//object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
@@ -237,7 +237,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(recv_packet->m_vec);
+		transform->SetPosition(recv_packet->m_pos);
 
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->SetWeight("Idle", 1.0f);
@@ -251,50 +251,46 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		}
 	break;
 
-	case PACKET_TYPE::P_SC_WALK_ENTER_INFO_PACKET:
+	case PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET:
 	{
-		SC_WALK_ENTER_INFO_PACKET* recv_packet = reinterpret_cast<SC_WALK_ENTER_INFO_PACKET*>(_Packet);
-		 cout << "SC_WALK_ENTER_INFO_PACKET" << endl;
-
-		string ani_key = recv_packet->m_key;
-		float max_sed = recv_packet->m_maxSpeed;
-		float velocity = recv_packet->m_vel;
+		SC_VELOCITY_CHANGE_PACKET* recv_packet = reinterpret_cast<SC_VELOCITY_CHANGE_PACKET*>(_Packet);
+		 cout << "SC_VELOCITY_CHANGE_PACKET" << endl;
 		
 		// 플레이어 객체를 얻어와야 함.
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-		CPlayer* player = scene->m_myPlayer;
+		CObject* object = scene->GetIDObject(recv_packet->m_id);
 
-		CAnimator* animator = static_cast<CAnimator*>(player->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->Play(ani_key, true);
+		if (object == nullptr) return;
+		CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
+		CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-		CRigidBody* rigidBody = static_cast<CRigidBody*>(player->GetComponent(COMPONENT_TYPE::RIGIDBODY));
-		CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-		rigidBody->SetMaxSpeedXZ(max_sed);
-		rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), velocity * DT));
+		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_rota, 0)));
+		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
+		static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_rota;
+		transform->SetPosition(recv_packet->m_pos);
 		break;
 	}
 
-	case PACKET_TYPE::P_SC_MOVE_V_PACKET:
-	{
-		SC_MOVE_V_PACKET* recv_packet = reinterpret_cast<SC_MOVE_V_PACKET*>(_Packet);
-		vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
+	//case PACKET_TYPE::P_SC_MOVE_V_PACKET:
+	//{
+	//	SC_MOVE_V_PACKET* recv_packet = reinterpret_cast<SC_MOVE_V_PACKET*>(_Packet);
+	//	vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
 
-		for (auto& p : objects) {
-			CPlayer* player = reinterpret_cast<CPlayer*>(p);
-			if (CGameFramework::GetInstance()->my_id == recv_packet->m_id) continue;
-			if (player->m_id != recv_packet->m_id) continue;
+	//	for (auto& p : objects) {
+	//		CPlayer* player = reinterpret_cast<CPlayer*>(p);
+	//		if (CGameFramework::GetInstance()->my_id == recv_packet->m_id) continue;
+	//		if (player->m_id != recv_packet->m_id) continue;
 
-			CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-			CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+	//		CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	//		CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 
-			net_transform->SetPosition(XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z));
-			net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
+	//		net_transform->SetPosition(XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z));
+	//		net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
 
-			// cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
-		}
-		break;
-	}
+	//		// cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
+	//	}
+	//	break;
+	//}
 
 	case PACKET_TYPE::P_SC_POS_PACKET:
 	{
@@ -304,22 +300,20 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		if (obj != nullptr) {
 			CTransform* transform = static_cast<CTransform*>(obj->GetComponent(COMPONENT_TYPE::TRANSFORM));
 			transform->SetPosition(recv_packet->m_pos);
-			transform->SetRotation(XMFLOAT3(0, recv_packet->m_rota, 0));
+			//transform->SetRotation(XMFLOAT3(0, recv_packet->m_rota, 0));
+			cout << "SC_POS_PACKET" << endl;
 		}
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_ANIMATION:
+	case PACKET_TYPE::P_SC_ANIMATION_PACKET:
 	{
 		SC_ANIMATION_PACKET* recv_packet = reinterpret_cast<SC_ANIMATION_PACKET*>(_Packet);
-		cout << "SC_ANIMATION_PACKET" << endl;
 
-		string ani_key = recv_packet->m_key;
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-
-		CObject* obj = scene->GetIDObject(recv_packet->m_id);
-		CAnimator* animator = static_cast<CAnimator*>(obj->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->Play(ani_key, true);
+		CObject* object = scene->GetIDObject(recv_packet->m_id);
+		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		animator->Play(recv_packet->m_key, true);
 	}
 	break;
 

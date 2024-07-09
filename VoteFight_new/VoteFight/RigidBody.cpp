@@ -132,71 +132,73 @@ void CRigidBody::ReturnPrevLocation(const XMFLOAT3& m_velocity)
 
 void CRigidBody::Update()
 {
-    if (!m_isEnabled)
-    {
-        return;
-    }
+    MovePosition();
 
-    // 이번 프레임에 누적된 힘의 양에 따른 가속도 값 갱신
-    // Force = Mass * Accel
-    // Accel = Force / Mass = Force * (1.0f / Mass)
-    m_accel = Vector3::ScalarProduct(m_force, 1.0f / m_mass);
+    //if (!m_isEnabled)
+    //{
+    //    return;
+    //}
 
-    // 갱신된 가속도 값에 의한 속도 값 갱신
-    m_velocity = Vector3::Add(m_velocity, Vector3::ScalarProduct(m_accel, DT));
+    //// 이번 프레임에 누적된 힘의 양에 따른 가속도 값 갱신
+    //// Force = Mass * Accel
+    //// Accel = Force / Mass = Force * (1.0f / Mass)
+    //m_accel = Vector3::ScalarProduct(m_force, 1.0f / m_mass);
 
-    // XZ축 성분 처리
-    float speedXZ = GetSpeedXZ();
+    //// 갱신된 가속도 값에 의한 속도 값 갱신
+    //m_velocity = Vector3::Add(m_velocity, Vector3::ScalarProduct(m_accel, DT));
 
-    if (speedXZ > 0.0f)
-    {
-        // 이번 프레임에 X, Z축 성분으로 각각 누적된 힘이 없을 경우, 해당 성분에 매우 큰 마찰력을 적용하여 캐릭터가 빠르게 멈추게 만든다.
-        float frictionCoeffX = (Math::IsZero(m_force.x)) ? 100.0f : 0.0f;
-        float frictionCoeffZ = (Math::IsZero(m_force.z)) ? 100.0f : 0.0f;
-        XMFLOAT3 direction = XMFLOAT3(m_velocity.x / speedXZ, 0.0f, m_velocity.z / speedXZ);
-        XMFLOAT3 friction = Vector3::Inverse(direction);
+    //// XZ축 성분 처리
+    //float speedXZ = GetSpeedXZ();
 
-        friction.x *= frictionCoeffX * DT;
-        friction.z *= frictionCoeffZ * DT;
+    //if (speedXZ > 0.0f)
+    //{
+    //    // 이번 프레임에 X, Z축 성분으로 각각 누적된 힘이 없을 경우, 해당 성분에 매우 큰 마찰력을 적용하여 캐릭터가 빠르게 멈추게 만든다.
+    //    float frictionCoeffX = (Math::IsZero(m_force.x)) ? 100.0f : 0.0f;
+    //    float frictionCoeffZ = (Math::IsZero(m_force.z)) ? 100.0f : 0.0f;
+    //    XMFLOAT3 direction = XMFLOAT3(m_velocity.x / speedXZ, 0.0f, m_velocity.z / speedXZ);
+    //    XMFLOAT3 friction = Vector3::Inverse(direction);
 
-        // X축 마찰력이 현재 X축 속력보다 큰 경우
-        if (abs(friction.x) >= abs(m_velocity.x))
-        {
-            m_velocity.x = 0.0f;
-        }
-        else
-        {
-            m_velocity.x += friction.x;
-        }
+    //    friction.x *= frictionCoeffX * DT;
+    //    friction.z *= frictionCoeffZ * DT;
 
-        // Z축 마찰력이 현재 Z축 속력보다 큰 경우
-        if (abs(friction.z) >= abs(m_velocity.z))
-        {
-            m_velocity.z = 0.0f;
-        }
-        else
-        {
-            m_velocity.z += friction.z;
-        }
+    //    // X축 마찰력이 현재 X축 속력보다 큰 경우
+    //    if (abs(friction.x) >= abs(m_velocity.x))
+    //    {
+    //        m_velocity.x = 0.0f;
+    //    }
+    //    else
+    //    {
+    //        m_velocity.x += friction.x;
+    //    }
 
-        // 마찰력을 적용한 이후의 속력을 다시 구한다.
-        speedXZ = GetSpeedXZ();
+    //    // Z축 마찰력이 현재 Z축 속력보다 큰 경우
+    //    if (abs(friction.z) >= abs(m_velocity.z))
+    //    {
+    //        m_velocity.z = 0.0f;
+    //    }
+    //    else
+    //    {
+    //        m_velocity.z += friction.z;
+    //    }
 
-        float maxSpeedXZ = m_maxSpeedXZ * DT;
+    //    // 마찰력을 적용한 이후의 속력을 다시 구한다.
+    //    speedXZ = GetSpeedXZ();
 
-        // 최대 속력 제한
-        if (speedXZ > maxSpeedXZ)
-        {
-            // 초과 비율만큼 보정한다.
-            float ratio = maxSpeedXZ / speedXZ;
+    //    float maxSpeedXZ = m_maxSpeedXZ * DT;
 
-            m_velocity.x *= ratio;
-            m_velocity.z *= ratio;
-        }
+    //    // 최대 속력 제한
+    //    if (speedXZ > maxSpeedXZ)
+    //    {
+    //        // 초과 비율만큼 보정한다.
+    //        float ratio = maxSpeedXZ / speedXZ;
 
-        MovePosition();
-    }
+    //        m_velocity.x *= ratio;
+    //        m_velocity.z *= ratio;
+    //    }
 
-    // 이번 프레임에 누적된 힘의 양 초기화
-    m_force = XMFLOAT3(0.0f, 0.0f, 0.0f);
+    //    MovePosition();
+    //}
+
+    //// 이번 프레임에 누적된 힘의 양 초기화
+    //m_force = XMFLOAT3(0.0f, 0.0f, 0.0f);
 }

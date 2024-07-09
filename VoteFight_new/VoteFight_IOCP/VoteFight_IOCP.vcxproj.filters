@@ -42,6 +42,10 @@
       <Filter>03. Object</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp" />
+    <ClCompile Include="StateMachine.cpp" />
+    <ClCompile Include="Object.cpp">
+      <Filter>03. Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01. Dependency">
@@ -113,5 +117,9 @@
       <Filter>03. Object</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="StateMachine.h" />
+    <ClInclude Include="Object.h">
+      <Filter>03. Object</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
