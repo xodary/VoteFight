@@ -256,6 +256,11 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 		CObject* object = CObject::Load(string(recv_packet->m_modelName));
 
+		// 위치 설정
+		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(recv_packet->m_pos);
+		transform->SetRotation(recv_packet->m_rota);
+
 		// ID 설정
 		object->m_id = recv_packet->m_id;
 
@@ -263,6 +268,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		// 씬에 추가
 		scene->AddObject((GROUP_TYPE)recv_packet->m_grouptype, object, recv_packet->m_id);
+
 	}
 	break;
 
@@ -308,14 +314,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->Play(recv_packet->m_key, true);
-
-		CPlayer* player = reinterpret_cast<CPlayer*>(object);
-
-		// ID 설정
-		player->m_id = recv_packet->m_id;
-
-		// 씬에 추가
-		scene->AddObject(GROUP_TYPE::PLAYER, player, recv_packet->m_id);
 	}
 	break;
 

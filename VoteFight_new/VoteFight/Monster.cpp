@@ -47,7 +47,9 @@ void CMonster::Init()
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
-	animator->SetWeight("Walk", 1.0f);
+	animator->SetWeight("idle", 1.0f);
+	animator->Play("idle", true);
+
 }
 
 void CMonster::Update()

@@ -20,7 +20,7 @@ list<shared_ptr<RemoteClient>>		deleteClinets;
 recursive_mutex				mx_accept;				
 shared_ptr<Socket>			listenSocket;			
 shared_ptr<RemoteClient>	remoteClientCandidate; 
-vector<CObject*> CGameScene::m_objects[(int)GROUP_TYPE::COUNT];
+unordered_map<int, CObject*> CGameScene::m_objects[(int)GROUP_TYPE::COUNT];
 
 // Client 종료 처리 함수
 void	ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient);
@@ -32,7 +32,8 @@ void	CloseServer();
 // 서버 프로그램 진입점
 int main(int argc, char* argv[])
 {
-	CGameScene::Load("GameScene.bin");
+	CGameScene::LoadTerrain("HeightMap.bin");
+	CGameScene::Load("ServerScene.bin");
 
 	// Create listen socket & Binding
 	listenSocket = make_shared<Socket>(SocketType::Tcp);
@@ -251,7 +252,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
 		_Client->m_id = nextClientID++;
 		_Client->m_name = string(recv_packet->m_name);
-		_Client->m_player = make_shared<CPlayer>(XMFLOAT3(5.f, 0.f, 5.f));
+		_Client->m_player = make_shared<CPlayer>(XMFLOAT3());
 		_Client->m_ingame = true;
 		_Client->m_player->m_grouptype = (int)GROUP_TYPE::PLAYER;
 		
@@ -407,15 +408,17 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		XMFLOAT3 pos[3]{ {0, 0, 0},{0, 0, 400},{400, 0, 400} };
+		XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			int i = 0;
 			for (auto& rc2 : RemoteClient::m_remoteClients) {	// other players
+				rc2.second->m_player->m_Pos = pos[i++];
+
 				SC_SPAWN_PACKET send_packet;
 				send_packet.m_size = sizeof(send_packet);
 				send_packet.m_type = P_SC_SPAWN_PACKET;
 				send_packet.m_id = rc2.second->m_id;
-				send_packet.m_pos = pos[i++];
+				send_packet.m_pos = rc2.second->m_player->m_Pos;
 
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			}
@@ -423,15 +426,15 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {	// Scene Object
 				if (i == (int)GROUP_TYPE::PLAYER) continue;
 				for (auto& object : CGameScene::m_objects[i]) {
-					if (object == nullptr) continue;
+					if (object.second == nullptr) continue;
 					SC_ADD_PACKET send_packet;
 					send_packet.m_size = sizeof(SC_ADD_PACKET);
 					send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
-					send_packet.m_id = object->m_id;
+					send_packet.m_id = object.second->m_id;
 					send_packet.m_grouptype = i;
-					send_packet.m_pos = object->m_Pos;
-					send_packet.m_rota = object->m_Rota;
-					strcpy_s(send_packet.m_modelName, object->m_modelname.c_str());
+					send_packet.m_pos = object.second->m_Pos;
+					send_packet.m_rota = object.second->m_Rota;
+					strcpy_s(send_packet.m_modelName, object.second->m_modelname.c_str());
 
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				}

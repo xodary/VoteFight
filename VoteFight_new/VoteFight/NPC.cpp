@@ -47,6 +47,7 @@ void CNPC::Init()
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 	animator->SetWeight("idle", 1.0f);
+	animator->Play("idle", true);
 
 	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
 }
