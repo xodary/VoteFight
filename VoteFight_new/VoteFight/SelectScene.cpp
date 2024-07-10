@@ -18,6 +18,8 @@
 #include "SceneManager.h"
 #include "Skybox.h"
 #include "MainShader.h"
+#include "../Packet.h"
+#include "ImaysNet/PacketQueue.h"
 
 CSelectScene* CSelectScene::m_CSelectScene;
 
@@ -64,7 +66,7 @@ void CSelectScene::Enter()
 	// 카메라의 타겟 설정
 	CCameraManager::GetInstance()->SetSelectSceneMainCamera();
 	
-	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	const unordered_map<int, CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	CObject* focus = new CObject();
 	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	targetTransform->SetPosition(XMFLOAT3(4, 2, 0.3));
@@ -85,7 +87,7 @@ void CSelectScene::Init()
 
 	CreateShaderVariables();
 
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
+	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
 	for (size_t i = 0; i < objects.size(); i++)
 	{
 		objects[i]->SetDeleted(true);
@@ -135,6 +137,7 @@ void CSelectScene::InitLight()
 void CSelectScene::SelectCharacter(UINT number)
 {
 	XMFLOAT3 tempPostion = m_SelectCharacter->GetPostion();
+	m_selected_model = number;
 	
 	for (size_t i = 0; i < 3; i++)
 	{
@@ -151,8 +154,6 @@ void CSelectScene::SelectCharacter(UINT number)
 
 void CSelectScene::Update()
 {
-	CScene::Update();
-
 	if (KEY_TAP(KEY::NUM1))
 	{
 		SelectCharacter(0);
@@ -167,10 +168,18 @@ void CSelectScene::Update()
 		SelectCharacter(2);
 	}
 
+	// Ready
 	if (KEY_TAP(KEY::SPACE))
 	{
-		// 서버에 send (m_SelectCharacter)의 이름이나 번호를 전달해서 GameScene의 플레이어 설정
 		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
+	}
+
+	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
+	{
+		for (auto& object : GetGroupObject((GROUP_TYPE)i))
+		{
+			object.second->Update();
+		}
 	}
 }
 
@@ -230,18 +239,16 @@ void CSelectScene::PreRender()
 
 				for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::BULLET); ++i)
 				{
-					const vector<CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
+					const unordered_map<int, CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
 
 					for (const auto& object : objects)
 					{
-						if ((object->IsActive()) && (!object->IsDeleted()))
+						if ((object.second->IsActive()) && (!object.second->IsDeleted()))
 						{
-							object->PreRender(camera);
+							object.second->PreRender(camera);
 						}
 					}
 				}
-
-				if(m_terrain) m_terrain->PreRender(camera);
 
 				DX::ResourceTransition(d3d12GraphicsCommandList, depthTexture->GetTexture(), D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COMMON);
 			}
@@ -291,10 +298,7 @@ void CSelectScene::PreRender()
 	{
 		for (const auto& object : m_objects[i])
 		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
-			{
-				object->Render(camera);
-			}
+			object.second->Render(camera);
 		}
 	}
 
@@ -328,9 +332,9 @@ void CSelectScene::Render()
 
 	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
 	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
+		if ((object.second->IsActive()) && (!object.second->IsDeleted()))
 		{
-			object->Render(camera);
+			object.second->Render(camera);
 		}
 	}
 
@@ -383,7 +387,6 @@ void CSelectScene::RenderImGui()
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 
-	string names[3] = { "Sonic", "Mario", "Hugo" };
 	static bool selected[3] = { false };
 	static bool hovered[3] = { false };
 
@@ -395,14 +398,15 @@ void CSelectScene::RenderImGui()
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
 
 		ImVec4 borderColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-		if (hovered[i]) borderColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
+		if (hovered[i]) borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 		if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+		if (m_otherplayer_selected[i]) borderColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
 		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
 
-		ImGui::Begin(names[i].c_str(), nullptr, window_flags);
+		ImGui::Begin(m_character_names[i].c_str(), nullptr, window_flags);
 
 		if (ImGui::IsWindowHovered()) {
 			if (ImGui::GetIO().MouseClicked[0]) {
@@ -421,7 +425,7 @@ void CSelectScene::RenderImGui()
 			hovered[i] = false;
 
 
-		ImGui::Text(names[i].c_str());
+		ImGui::Text(m_character_names[i].c_str());
 		ImGui::SameLine();
 		ImGui::End();
 
@@ -439,8 +443,12 @@ void CSelectScene::RenderImGui()
 	ImGui::Begin("Button", nullptr, window_flags);
 	{
 		ImGui::SetWindowFontScale(2.5f);
-		if (ImGui::Button("GameStart", ImVec2(framework->GetResolution().x / 5, framework->GetResolution().y / 7))) {
-			CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
+		if (ImGui::Button("Ready", ImVec2(framework->GetResolution().x / 5, framework->GetResolution().y / 7))) {
+			CS_SELECT_PACKET p;
+			p.m_size = sizeof(p);
+			p.m_type = P_CS_SELECT_PACKET;
+			p.m_char = m_selected_model;
+			PacketQueue::AddSendPacket(&p);
 		}
 		ImGui::End();
 		ImGui::PopStyleColor();

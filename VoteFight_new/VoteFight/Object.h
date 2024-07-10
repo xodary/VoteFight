@@ -21,6 +21,7 @@ private:
 
 public:
 	string              m_name;
+	unsigned int		m_id{};
 					    
 	bool			    m_isActive;
 	bool			    m_isDeleted;

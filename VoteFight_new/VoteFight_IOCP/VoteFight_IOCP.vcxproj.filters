@@ -46,6 +46,9 @@
     <ClCompile Include="Object.cpp">
       <Filter>03. Object</Filter>
     </ClCompile>
+    <ClCompile Include="GameScene.cpp">
+      <Filter>04. Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01. Dependency">
@@ -59,6 +62,9 @@
     </Filter>
     <Filter Include="03. Object">
       <UniqueIdentifier>{9d6d3d0a-704d-4d8a-90a6-b1a1042dd9a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. Scene">
+      <UniqueIdentifier>{bbf9d4b4-7563-41e3-880c-391a3263cdd8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -120,6 +126,9 @@
     <ClInclude Include="StateMachine.h" />
     <ClInclude Include="Object.h">
       <Filter>03. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="GameScene.h">
+      <Filter>04. Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

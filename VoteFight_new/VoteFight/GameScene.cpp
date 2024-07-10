@@ -74,8 +74,8 @@ void CGameScene::Enter()
 {
 	// ShowCursor(false);
 
-	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	const vector<CObject*>& Monsters = GetGroupObject(GROUP_TYPE::MONSTER);
+	const unordered_map<int,CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	const unordered_map<int,CObject*>& Monsters = GetGroupObject(GROUP_TYPE::MONSTER);
 
 	// CCameraManager::GetInstance()->GetMainCamera()->SetTarget(static_cast<CPlayer*>(objects[0]));
 	// CSoundManager::GetInstance()->Play(SOUND_TYPE_INGAME_BGM_1, 0.3f, false);
@@ -83,18 +83,13 @@ void CGameScene::Enter()
 	{
 		for (const auto& object : objects)
 		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
+			if ((object.second->IsActive()) && (!object.second->IsDeleted()))
 			{
 				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
-				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI))object->InTerrainSpace(*this);
+				if (m_terrain && (object.second->GetInstanceID() != (UINT)GROUP_TYPE::UI))
+					object.second->InTerrainSpace(*this);
 			}
 		}
-	}
-
-
-	for (size_t i = 0; i < Monsters.size(); i++)
-	{
-			static_cast<CMonster*>(Monsters[i])->PlayerDiscovery(objects[0]);
 	}
 
 	InitLight();
@@ -113,7 +108,7 @@ void CGameScene::Init()
 
 
 	CObject* object = new CSkyBox(1000, 200);
-	AddObject(GROUP_TYPE::SKYBOX, object);
+	AddObject(GROUP_TYPE::SKYBOX, object, 0);
 
 	//CObject* playerObject = CObject::Load("hugo_idle");
 
@@ -161,7 +156,7 @@ void CGameScene::SceneLoad()
 	Load("FishMon_Scene.bin");
 	Load("Character_Scene.bin");
 	// Load("Sea_Scene.bin");
-	LoadUI("GameSceneUI.bin");
+	//LoadUI("GameSceneUI.bin");
 }
 
 void CGameScene::InitLight()
@@ -205,20 +200,20 @@ float Lerp(float A, float B, float Alpha)
 
 void CGameScene::Update()
 {
-	vector<CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 
 	for (auto& object : objects) {
 
 		if (KEY_TAP(KEY::NUM1))
-			reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::PISTOL);
+			reinterpret_cast<CPlayer*>(object.second)->SwapWeapon(WEAPON_TYPE::PISTOL);
 		if (KEY_TAP(KEY::NUM2))
-			reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::AXE);
+			reinterpret_cast<CPlayer*>(object.second)->SwapWeapon(WEAPON_TYPE::AXE);
 		if (KEY_TAP(KEY::NUM3))
-			reinterpret_cast<CPlayer*>(object)->SwapWeapon(WEAPON_TYPE::PUNCH);
+			reinterpret_cast<CPlayer*>(object.second)->SwapWeapon(WEAPON_TYPE::PUNCH);
 
-		CTransform* p_tf = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		CTransform* p_tf = static_cast<CTransform*>(object.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-		float rotation = Lerp(p_tf->GetRotation().y, reinterpret_cast<CPlayer*>(object)->goal_rota, DT * 8);
+		float rotation = Lerp(p_tf->GetRotation().y, reinterpret_cast<CPlayer*>(object.second)->goal_rota, DT * 8);
 		p_tf->SetRotation(XMFLOAT3(0, rotation, 0));
 
 		XMFLOAT3 pos = p_tf->GetPosition();
@@ -226,9 +221,9 @@ void CGameScene::Update()
 			p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 	}
 
-	vector<CObject*> items = GetGroupObject(GROUP_TYPE::GROUND_ITEM);
+	unordered_map<int, CObject*> items = GetGroupObject(GROUP_TYPE::GROUND_ITEM);
 	for (auto& item : items) {
-		CTransform* i_tf = static_cast<CTransform*>(item->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		CTransform* i_tf = static_cast<CTransform*>(item.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
 		i_tf->Rotate(XMFLOAT3(0, DT * 100.f, 0));
 		XMFLOAT3 p = i_tf->GetPosition();
 		if (0 <= (int)p.x && (int)p.x < 400 && 0 <= (int)p.z && (int)p.z < 400) {
@@ -236,22 +231,6 @@ void CGameScene::Update()
 			i_tf->SetPosition(XMFLOAT3(p.x, GetTerrainHeight(p.x, p.z) + 1.2f + h, p.z));
 		}
 	}
-
-#ifdef CONNECT_SERVER
-
-	// if (m_myPlayer != nullptr) {
-	// 	CTransform* net_transform = static_cast<CTransform*>(m_myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	// 
-	// 	CS_MOVE_PACKET send_packet;
-	// 	send_packet.m_size = sizeof(CS_MOVE_PACKET);
-	// 	send_packet.m_type = PACKET_TYPE::P_CS_MOVE_PACKET;
-	// 	send_packet.m_pos = net_transform->GetPosition();
-	// 	send_packet.m_rota = net_transform->GetRotation().y;
-	// 	PacketQueue::AddSendPacket(&send_packet);
-	// }
-
-#endif
-
 	CScene::Update();
 }
 
@@ -396,25 +375,25 @@ void CGameScene::Render()
 
 	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
 	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
+		if ((object.second->IsActive()) && (!object.second->IsDeleted()))
 		{
-			object->Render(camera);
+			object.second->Render(camera);
 		}
 	}
 	
 	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::PLAYER)])
 	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
+		if ((object.second->IsActive()) && (!object.second->IsDeleted()))
 		{
-			object->RenderBilboard(camera);
+			object.second->RenderBilboard(camera);
 		}
 	}
 
 	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::NPC)])
 	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
+		if ((object.second->IsActive()) && (!object.second->IsDeleted()))
 		{
-			object->RenderBilboard(camera);
+			object.second->RenderBilboard(camera);
 		}
 	}
 
@@ -446,7 +425,7 @@ void CGameScene::Render()
 
 void CGameScene::RenderImGui()
 {
-	CPlayer* player = reinterpret_cast<CPlayer*>(GetGroupObject(GROUP_TYPE::PLAYER)[0]);
+	CPlayer* player = reinterpret_cast<CPlayer*>(GetGroupObject(GROUP_TYPE::PLAYER), CGameFramework::GetInstance()->my_id);
 
 	if (KEY_HOLD(KEY::E)) {
 		CGameFramework* framework = CGameFramework::GetInstance();

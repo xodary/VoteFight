@@ -33,23 +33,14 @@ CPlayer::~CPlayer()
 
 void CPlayer::Init()
 {
+	CAnimator* animator = reinterpret_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
+	animator->SetWeight("Idle", 1.0f);
+	animator->Play("Idle", true);
+
 	m_Inventory = new CInventory();
 
 	m_bilboardUI.push_back(new CHPbarUI(this));
 	m_bilboardUI.push_back(new CTextUI(this));
-}
-
-void CPlayer::AnotherInit()
-{
-	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-
-	//stateMachine->SetCurrentState(COtherPlayerIdleState::GetInstance());
-
-	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-
-	animator->SetWeight("idle", 1.0f);
-	m_Inventory = new CInventory();
-
 }
 
 void CPlayer::Attack()
@@ -102,7 +93,7 @@ void CPlayer::Shoot(CScene& currScene)
 			XMFLOAT3 currRotate(GetRotate());
 			Bullet->SetRotate(GetRotate());
 			Bullet->SetScale(XMFLOAT3(5, 5, 5));
-			currScene.AddObject(GROUP_TYPE::BULLET, Bullet);
+			currScene.AddObject(GROUP_TYPE::BULLET, Bullet, 0);
 			Bullet->Shoot();
 
 		}
@@ -131,7 +122,7 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 		break;
 	case (UINT)GROUP_TYPE::GROUND_ITEM:
 		GetItem(collidedObject->GetName());
-		CSceneManager::GetInstance()->GetCurrentScene()->DeleteObject(GROUP_TYPE::GROUND_ITEM, collidedObject);
+		CSceneManager::GetInstance()->GetCurrentScene()->DeleteObject(GROUP_TYPE::GROUND_ITEM, collidedObject->m_id);
 		break;
 	}
 }

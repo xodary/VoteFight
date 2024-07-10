@@ -85,7 +85,7 @@ void CPlayerWalkState::Enter(CObject* object)
 	CS_WALK_ENTER_PACKET p;
 	p.m_size = sizeof(p);
 	p.m_type = P_CS_WALK_ENTER_PACKET;
-	p.m_weapon = player->m_Weapon;
+	p.m_weapon = (int)player->m_Weapon;
 
 	PacketQueue::AddSendPacket(&p);
 
@@ -106,7 +106,7 @@ void CPlayerWalkState::Enter(CObject* object)
 		CS_VELOCITY_CHANGE_PACKET p2;
 		p2.m_size = sizeof(p2);
 		p2.m_type = P_CS_VELOCITY_CHANGE_PACKET;
-		p2.m_rota = vR;
+		p2.m_angle = vR;
 		p2.m_shift = KEY_HOLD(KEY::SHIFT);
 		p2.m_pos = transform->GetPosition();
 
@@ -171,7 +171,7 @@ void CPlayerWalkState::Update(CObject* object)
 		CS_VELOCITY_CHANGE_PACKET p2;
 		p2.m_size = sizeof(p2);
 		p2.m_type = P_CS_VELOCITY_CHANGE_PACKET;
-		p2.m_rota = vR;
+		p2.m_angle = vR;
 		p2.m_shift = KEY_TAP(KEY::SHIFT) || KEY_HOLD(KEY::SHIFT);
 		p2.m_pos = transform->GetPosition();
 

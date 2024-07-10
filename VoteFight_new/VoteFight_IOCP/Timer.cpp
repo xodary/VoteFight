@@ -9,10 +9,6 @@ concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
 
 void CTimer::do_timer()
 {
-	EXP_OVER* exover = new EXP_OVER;
-	exover->m_ioType = IO_TYPE::IO_UPDATE;
-	PostQueuedCompletionStatus(Iocp::iocp.m_hIocp, 1, 0, &exover->m_wsa_over);
-
 	while (true) {
 		TIMER_EVENT ev;
 		auto current_time = chrono::system_clock::now();

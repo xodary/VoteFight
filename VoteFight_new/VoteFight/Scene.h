@@ -39,13 +39,10 @@ class CScene abstract
 
 public:
 	string			 m_name;
-	vector<CObject*> m_objects[static_cast<int>(GROUP_TYPE::COUNT)];	// 오브젝트들
-	unordered_map<int, CObject*>	m_objects_id;	// ID가 있는 오브젝트들 
+	unordered_map <int, CObject*> m_objects[static_cast<int>(GROUP_TYPE::COUNT)];	// 오브젝트들
 	unordered_set<CObject*> ObjectListSector[SECTOR_RANGE_ROW * SECTOR_RANGE_COL];	// 시야처리
 	int oldXCell = -1, oldZCell = -1;
 	unordered_set<CObject*>		my_vl;
-
-	CPlayer* m_myPlayer;
 
 protected:
 	CScene();
@@ -67,12 +64,12 @@ public:
 	const string& GetName();
 
 	void AddObject(const GROUP_TYPE& groupType, CObject* object);
-	void AddObjectID(CObject* object, UINT id);
+	void AddObject(const GROUP_TYPE& groupType, CObject* object, UINT id);
 
-	const vector<CObject*>& GetGroupObject(GROUP_TYPE groupType);
-	CObject* GetIDObject(int id);
+	const unordered_map<int, CObject*>& GetGroupObject(GROUP_TYPE groupType);
+	CObject* GetIDObject(GROUP_TYPE groupType, int id);
 	void DeleteGroupObject(GROUP_TYPE groupType);
-	void DeleteObject(GROUP_TYPE groupType, CObject* object);
+	void DeleteObject(GROUP_TYPE groupType, UINT id);
 
 	CTerrainObject* m_terrain = nullptr;
 	float GetTerrainHeight(float x, float z) { 
@@ -88,7 +85,7 @@ public:
 
 	virtual void Init() = 0;
 
-	void LoadUI(const string& fileName);
+	//void LoadUI(const string& fileName);
 	void ReleaseUploadBuffers();
 
 	virtual void Update();

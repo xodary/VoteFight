@@ -66,7 +66,7 @@ void CTitleScene::Enter()
 	// ShowCursor(false);
 
 	// 카메라의 타겟 설정
-	const vector<CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	const unordered_map<int, CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
 
 	// CCameraManager::GetInstance()->GetMainCamera()->SetTarget(static_cast<CPlayer*>(objects[0]));
 	// CSoundManager::GetInstance()->Play(SOUND_TYPE_INGAME_BGM_1, 0.3f, false);
@@ -74,10 +74,11 @@ void CTitleScene::Enter()
 	{
 		for (const auto& object : objects)
 		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
+			if ((object.second->IsActive()) && (!object.second->IsDeleted()))
 			{
 				if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
-				if (m_terrain && (object->GetInstanceID() != (UINT)GROUP_TYPE::UI))object->InTerrainSpace(*this);
+				if (m_terrain && (object.second->GetInstanceID() != (UINT)GROUP_TYPE::UI))
+					object.second->InTerrainSpace(*this);
 
 			}
 		}
@@ -92,7 +93,7 @@ void CTitleScene::Init()
 {
 	// 씬 로드
 	Load("GameScene.bin");
-	LoadUI("TitleSceneUI.bin");
+	//LoadUI("TitleSceneUI.bin");
 
 	CreateShaderVariables();
 

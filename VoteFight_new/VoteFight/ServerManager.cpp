@@ -22,6 +22,7 @@
 
 #include "Object.h"
 #include "LoginScene.h"
+#include "SelectScene.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -174,49 +175,75 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		cout << "SC_LOGIN_OK_PACKET" << endl;
 		CLoginScene* loginscene = reinterpret_cast<CLoginScene*>(CSceneManager::GetInstance()->GetCurrentScene());
 		string name = loginscene->user_name;
-		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
+		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::SELECT);
 		
-		// 오브젝트 로드
-		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-		CObject* object = CObject::Load("hugo_idle");
-		CPlayer* player = reinterpret_cast<CPlayer*>(object);
-		player->m_name = name;
-		scene->m_myPlayer = player;
-
 		// ID 설정
 		CServerManager::m_id = recv_packet->m_id;
 		CGameFramework::GetInstance()->my_id = recv_packet->m_id;
-		player->m_id = recv_packet->m_id;
-
-		// 위치 설정
-		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(recv_packet->m_pos);
-		//object->SetTerrainY(CSceneManager::GetInstance()->GetCurrentScene());
-
-		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->SetWeight("Idle", 1.0f);
-		animator->Play("Idle", true);
-
-		CSceneManager::GetInstance()->GetCurrentScene()->AddObject(GROUP_TYPE::PLAYER, object);
-		player->Init();
-
-		// State Machine 설정
-		player->CreateComponent(COMPONENT_TYPE::STATE_MACHINE);
-		CStateMachine* statemachine = reinterpret_cast<CStateMachine*>(object->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-		statemachine->SetCurrentState(CPlayerIdleState::GetInstance());
-
-		// 씬에 추가
-		scene->AddObjectID(player, recv_packet->m_id);
-		scene->oldXCell = scene->oldZCell = -1;
-
-		// 카메라 타겟 세팅
-		CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
-
-		cout << "Clinet ID - " << player->m_id << endl;
+		
+		cout << "Clinet ID - " << recv_packet->m_id << endl;
 		break;
 	}
 
-	case  PACKET_TYPE::P_SC_ADD_PACKET:
+	case PACKET_TYPE::P_SC_SPAWN_PACKET:	// Player
+	{
+		cout << "P_SC_SPAWN_PACKET" << endl;
+		SC_SPAWN_PACKET* recv_packet = reinterpret_cast<SC_SPAWN_PACKET*>(_Packet);
+
+		// GameScene에는 이미 Player들이 있다. (Select Scene 설정해서 넣어둠) 
+		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+		CObject* object = scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id);
+
+		if (recv_packet->m_id == CGameFramework::GetInstance()->my_id) {
+			// State Machine 설정
+			object->CreateComponent(COMPONENT_TYPE::STATE_MACHINE);
+			CStateMachine* statemachine = reinterpret_cast<CStateMachine*>(object->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
+			statemachine->SetCurrentState(CPlayerIdleState::GetInstance());
+		
+			scene->oldXCell = scene->oldZCell = -1;
+			CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
+		}
+		// 위치 설정
+		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+		transform->SetPosition(recv_packet->m_pos);
+
+		object->Init();
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_GAMESTART_PACKET:
+	{
+		cout << "P_SC_GAMESTART_PACKET" << endl;
+		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+		CSelectScene* selectScene = reinterpret_cast<CSelectScene*>(scene);
+
+		CObject* objects[3];
+		string modelname[3] = { "Sonic","Mario","hugo_idle" };
+		for (int i = 0; i < 3; ++i) {
+			objects[i] = CObject::Load(modelname[i]);
+			objects[i]->m_id = selectScene->m_selected_id[i];
+		}
+
+		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
+		scene = CSceneManager::GetInstance()->GetCurrentScene();
+		for (int i = 0; i < 3; ++i) {
+			scene->AddObject(GROUP_TYPE::PLAYER, objects[i], objects[i]->m_id);
+		}
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_SELECT_PACKET:
+	{
+		SC_SELECT_PACKET* recv_packet = reinterpret_cast<SC_SELECT_PACKET*>(_Packet);
+
+		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+		reinterpret_cast<CSelectScene*>(scene)->m_character_names[recv_packet->m_char] += " : ";
+		reinterpret_cast<CSelectScene*>(scene)->m_character_names[recv_packet->m_char] += recv_packet->m_name;
+		reinterpret_cast<CSelectScene*>(scene)->m_selected_id[recv_packet->m_char] = recv_packet->m_id;
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_ADD_PACKET:	// NPC
 	{
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
 		cout << "SC_ADD_PLAYER" << endl;
@@ -226,29 +253,17 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			return;
 		}
 		// 오브젝트 로드
-
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-		CObject* object = CObject::Load("hugo_idle");
-		CPlayer* player = reinterpret_cast<CPlayer*>(object);
-		strcpy_s(recv_packet->m_name, player->m_name.c_str());
+		CObject* object = CObject::Load(string(recv_packet->m_modelName));
 
 		// ID 설정
-		player->m_id = recv_packet->m_id;
+		object->m_id = recv_packet->m_id;
 
-		// 위치 설정
-		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		transform->SetPosition(recv_packet->m_pos);
-
-		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->SetWeight("Idle", 1.0f);
-		animator->Play("Idle", true);
-
-		player->Init();
+		object->Init();
 
 		// 씬에 추가
-		scene->AddObjectID(player, recv_packet->m_id);
-		scene->AddObject(GROUP_TYPE::PLAYER, player);
-		}
+		scene->AddObject((GROUP_TYPE)recv_packet->m_grouptype, object, recv_packet->m_id);
+	}
 	break;
 
 	case PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET:
@@ -258,45 +273,24 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		
 		// 플레이어 객체를 얻어와야 함.
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-		CObject* object = scene->GetIDObject(recv_packet->m_id);
+		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 
 		if (object == nullptr) return;
 		CRigidBody* rigidBody = static_cast<CRigidBody*>(object->GetComponent(COMPONENT_TYPE::RIGIDBODY));
 		CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_rota, 0)));
+		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
-		static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_rota;
+		static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_angle;
 		transform->SetPosition(recv_packet->m_pos);
-		break;
 	}
-
-	//case PACKET_TYPE::P_SC_MOVE_V_PACKET:
-	//{
-	//	SC_MOVE_V_PACKET* recv_packet = reinterpret_cast<SC_MOVE_V_PACKET*>(_Packet);
-	//	vector<CObject*> objects = CSceneManager::GetInstance()->GetCurrentScene()->GetGroupObject(GROUP_TYPE::PLAYER);
-
-	//	for (auto& p : objects) {
-	//		CPlayer* player = reinterpret_cast<CPlayer*>(p);
-	//		if (CGameFramework::GetInstance()->my_id == recv_packet->m_id) continue;
-	//		if (player->m_id != recv_packet->m_id) continue;
-
-	//		CTransform* net_transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	//		CStateMachine* net_stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-
-	//		net_transform->SetPosition(XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z));
-	//		net_transform->SetRotation(XMFLOAT3(recv_packet->m_rota.x, recv_packet->m_rota.y, recv_packet->m_rota.z));
-
-	//		// cout << "ID - " << player->m_id << ", xPos - " << recv_packet->m_vec.x << ", yPos - " << recv_packet->m_vec.y << ", zPos - " << recv_packet->m_vec.z << endl;
-	//	}
-	//	break;
-	//}
+	break;
 
 	case PACKET_TYPE::P_SC_POS_PACKET:
 	{
 		SC_POS_PACKET* recv_packet = reinterpret_cast<SC_POS_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-		CObject* obj = scene->GetIDObject(recv_packet->m_id);
+		CObject* obj = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		if (obj != nullptr) {
 			CTransform* transform = static_cast<CTransform*>(obj->GetComponent(COMPONENT_TYPE::TRANSFORM));
 			transform->SetPosition(recv_packet->m_pos);
@@ -310,10 +304,18 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	{
 		SC_ANIMATION_PACKET* recv_packet = reinterpret_cast<SC_ANIMATION_PACKET*>(_Packet);
 
-		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-		CObject* object = scene->GetIDObject(recv_packet->m_id);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->Play(recv_packet->m_key, true);
+
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+
+		// ID 설정
+		player->m_id = recv_packet->m_id;
+
+		// 씬에 추가
+		scene->AddObject(GROUP_TYPE::PLAYER, player, recv_packet->m_id);
 	}
 	break;
 

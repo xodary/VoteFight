@@ -105,32 +105,6 @@ void CScene::Load(const string& fileName)
 	}
 }
 
-void CScene::LoadUI(const string& fileName)
-{
-	string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Scene\\" + fileName;
-	ifstream in(filePath, ios::binary);
-	string str;
-
-	while (true)
-	{
-		File::ReadStringFromFile(in, str);
-
-		if (str == "<UI>")
-		{
-			CUI* ui = CUI::Load(in);
-			ui->SetGroupType((UINT)GROUP_TYPE::UI);
-			AddObject(GROUP_TYPE::UI, ui);
-		}
-		else if (str == "</UIs>")
-		{
-			cout << endl;
-			break;
-		}
-	}
-}
-
-
-
 void CScene::CreateShaderVariables()
 {
 }
@@ -156,9 +130,11 @@ const string& CScene::GetName()
 void CScene::AddObject(const GROUP_TYPE& groupType, CObject* object)
 {
 	object->SetGroupType((UINT)GROUP_TYPE(groupType));
+	object->m_id = m_objects[static_cast<int>(groupType)].size();
+
 	if (object != nullptr)
 	{
-		m_objects[static_cast<int>(groupType)].push_back(object);
+		m_objects[static_cast<int>(groupType)][object->m_id] = object;
 	}
 
 	// 클라이언트 시야처리 (SECTOR)
@@ -169,19 +145,32 @@ void CScene::AddObject(const GROUP_TYPE& groupType, CObject* object)
 	ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].insert(object);
 }
 
-void CScene::AddObjectID(CObject* object, UINT id)
+void CScene::AddObject(const GROUP_TYPE& groupType, CObject* object, UINT id)
 {
-	m_objects_id[id] = object;
+	object->SetGroupType((UINT)GROUP_TYPE(groupType));
+	object->m_id = id;
+
+	if (object != nullptr)
+	{
+		m_objects[static_cast<int>(groupType)][id] = object;
+	}
+
+	// 클라이언트 시야처리 (SECTOR)
+	CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	XMFLOAT3 pos = transform->GetPosition();
+	int xNewCell = clamp((int)(pos.x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
+	int zNewCell = clamp((int)(pos.z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
+	ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].insert(object);
 }
 
-const vector<CObject*>& CScene::GetGroupObject(GROUP_TYPE groupType)
+const unordered_map<int, CObject*>& CScene::GetGroupObject(GROUP_TYPE groupType)
 {
 	return m_objects[static_cast<int>(groupType)];
 }
 
-CObject* CScene::GetIDObject(int id)
+CObject* CScene::GetIDObject(GROUP_TYPE groupType, int id)
 {
-	return m_objects_id[id];
+	return m_objects[static_cast<int>(groupType)][id];
 }
 
 void CScene::DeleteGroupObject(GROUP_TYPE groupType)
@@ -189,17 +178,17 @@ void CScene::DeleteGroupObject(GROUP_TYPE groupType)
 	Utility::SafeDelete(m_objects[static_cast<int>(groupType)]);
 }
 
-void CScene::DeleteObject(GROUP_TYPE groupType, CObject* object)
+void CScene::DeleteObject(GROUP_TYPE groupType, UINT id)
 {
-	auto it = std::find(m_objects[static_cast<int>(groupType)].begin(), m_objects[static_cast<int>(groupType)].end(), object);
-	if (it != m_objects[static_cast<int>(groupType)].end()) {
-		m_objects[static_cast<int>(groupType)].erase(it);
-	}
+	CObject* object = m_objects[static_cast<int>(groupType)][id];
+
 	CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	XMFLOAT3 pos = transform->GetPosition();
 	int xNewCell = clamp((int)(pos.x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
 	int zNewCell = clamp((int)(pos.z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
 	ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].erase(object);
+
+	m_objects[static_cast<int>(groupType)].erase(id);
 }
 
 void CScene::ReleaseUploadBuffers()
@@ -208,7 +197,7 @@ void CScene::ReleaseUploadBuffers()
 	{
 		for (const auto& object : m_objects[i])
 		{
-			object->ReleaseUploadBuffers();
+			object.second->ReleaseUploadBuffers();
 		}
 	}
 }
@@ -222,29 +211,6 @@ void CScene::Update()
 			object->Update();
 		}
 	}
-	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
-	{
-		object->Update();
-	}
-
-	//for (int i = 0; i < static_cast<int>(GROUP_TYPE::COUNT); ++i)
-	//{
-	//	for (const auto& object : m_objects[i])
-	//	{
-	//		if ((object->IsActive()) && (!object->IsDeleted()))
-	//		{
-	//			 object->Update();
-	//			if (i == static_cast<int>(GROUP_TYPE::UI)) continue;
-	//			if (m_terrain &&
-	//				( 
-	//					i == static_cast<int>(GROUP_TYPE::STRUCTURE) ||
-	//					i == static_cast<int>(GROUP_TYPE::PLAYER) ||
-	//					i == static_cast<int>(GROUP_TYPE::NPC)
-	//					))object->InTerrainSpace(*this);
-	//	
-	//		}
-	//	}
-	//}
 }
 
 void CScene::PreRender()
@@ -258,9 +224,9 @@ void CScene::PreRender()
 	{
 		for (const auto& object : m_objects[i])
 		{
-			if ((object->IsActive()) && (!object->IsDeleted()))
+			if ((object.second->IsActive()) && (!object.second->IsDeleted()))
 			{
-				object->PreRender(camera);
+				object.second->PreRender(camera);
 			}
 		}
 	}
@@ -283,7 +249,7 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 {
 	unordered_set<CObject*> newlist;
 
-	CObject* myPlayer = GetGroupObject(GROUP_TYPE::PLAYER)[0];
+	CObject* myPlayer = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
 	newlist.insert(myPlayer);
 	CTransform* transform = reinterpret_cast<CTransform*>(myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
 

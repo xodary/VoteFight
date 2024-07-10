@@ -22,6 +22,10 @@ private:
 	CObject* m_WaitCharacters[3];
 public:
 	static CSelectScene* m_CSelectScene;
+	int m_selected_model;
+	string m_character_names[3] = { "Sonic", "Mario", "Hugo" };
+	bool m_otherplayer_selected[3] = { false, false, false };
+	int m_selected_id[3] = { -1, -1, -1 };
 
 private:
 	CSelectScene();

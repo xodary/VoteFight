@@ -5,21 +5,6 @@ class CGBufferShader : public CShader
 {
 	friend class CAssetManager;
 
-	struct CB_MODEL
-	{
-		XMFLOAT4X4 World;
-		XMFLOAT4   DiffuseColor;
-	};
-
-	struct CB_GBUFFER
-	{
-		XMFLOAT4X4 ViewProjection;
-		XMFLOAT4X4 InvViewProjection;
-		XMFLOAT4 CameraPos;
-		XMFLOAT4 ScreenSize;
-		XMFLOAT4 LightColor;
-	};
-
 public:
 	CGBufferShader();
 	virtual ~CGBufferShader();
@@ -39,13 +24,5 @@ public:
 		
 	CTexture*									m_GBuffer[3];
 	ID3D12RootSignature*						m_rootSignature;
-
-	ComPtr<ID3D12Resource>						m_GBufferCBResource;
-	CB_GBUFFER*									m_GBufferCBMappedData;
-	DescriptorHandle							m_GBufferCBCPUHandle;
-
-	ComPtr<ID3D12Resource>						m_ModelBuffer;
-	CB_MODEL*									m_ModelMappedData;
-	DescriptorHandle							m_cpuModel;
 };
 

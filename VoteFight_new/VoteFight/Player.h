@@ -15,7 +15,6 @@ private:
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
 
-
 public:
     string myItems[3][6];
 
@@ -26,7 +25,6 @@ public:
 	virtual ~CPlayer();
 
 	virtual void Init();
-    virtual void AnotherInit();
 
     void Attack();
 	virtual void SwapWeapon(WEAPON_TYPE weaponType);
@@ -35,8 +33,6 @@ public:
 	void Shoot(CScene& currScene);
 
 	virtual void Update();
-
-    unsigned int    m_id{};
 
     WEAPON_TYPE m_Weapon;
 

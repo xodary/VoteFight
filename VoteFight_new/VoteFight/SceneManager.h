@@ -9,14 +9,16 @@ class CSceneManager : public CSingleton<CSceneManager>
 private:
 	vector<CScene*> m_scenes;
 	CScene* m_currentScene;
-
 private:
 	CSceneManager();
 	virtual ~CSceneManager();
 
 public:
+	SCENE_TYPE m_sceneType;
+
 	void ChangeScene(SCENE_TYPE sceneType);
 	CScene* GetCurrentScene();
+	CScene* GetGameScene();
 
 
 	virtual void Init();

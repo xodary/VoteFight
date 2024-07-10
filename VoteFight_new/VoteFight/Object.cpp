@@ -493,7 +493,7 @@ void CObject::Render(CCamera* camera)
 {
 	UpdateShaderVariables();
 
-	if (IsVisible(camera))
+	if (true)
 	{
 		if (m_mesh != nullptr)
 		{

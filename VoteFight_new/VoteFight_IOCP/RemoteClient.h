@@ -11,8 +11,11 @@ public:
 	shared_ptr<CPlayer>		m_player;
 	Socket					m_tcpConnection;	// Acceept Tcp
 	unsigned long long		m_id;				// Client ID
+	string					m_name;				// Client Name
 	atomic_bool				m_ingame;
 	chrono::system_clock::time_point		m_lastTime;
+	atomic_bool				m_ready;
+	int						m_char = -1;
 
 public:
 	RemoteClient() : m_thread(), m_ingame(false), m_tcpConnection(SocketType::Tcp) {}

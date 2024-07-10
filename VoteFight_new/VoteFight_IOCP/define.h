@@ -1,32 +1,9 @@
 #pragma once
+
 #define EPSILON				    0.01f
+#define	MAX_PLAYER				3
 
-#define FRAME_BUFFER_WIDTH		1920
-#define FRAME_BUFFER_HEIGHT		1080 
-
-#define TERRAIN_WIDTH			257
-#define TERRAIN_HEIGHT			257
-#define DEPTH_BUFFER_WIDTH	    (FRAME_BUFFER_WIDTH * 4)
-#define DEPTH_BUFFER_HEIGHT     (FRAME_BUFFER_HEIGHT * 4)
-
-#define MAX_NPC_COUNT			15
-#define MAX_LIGHTS              3
-#define MAX_BONES				70
-#define MAX_BGM_SOUNDS			4
-#define MAX_SFX_SOUNDS			14
-
-#define TEXTURE_MASK_ALBEDO_MAP 0x0001
-#define TEXTURE_MASK_NORMAL_MAP 0x0002
-#define TEXTURE_MASK_SHADOW_MAP 0x0004
-
-#define DT						CTimeManager::GetInstance()->GetDeltaTime()
-
-#define KEY_NONE(key)			CInputManager::GetInstance()->GetKeyState(key) == KEY_STATE::NONE
-#define KEY_TAP(key)			CInputManager::GetInstance()->GetKeyState(key) == KEY_STATE::TAP
-#define KEY_HOLD(key)			CInputManager::GetInstance()->GetKeyState(key) == KEY_STATE::HOLD
-#define KEY_AWAY(key)			CInputManager::GetInstance()->GetKeyState(key) == KEY_STATE::AWAY
-#define CURSOR					CInputManager::GetInstance()->GetCursor()
-#define OLD_CURSOR				CInputManager::GetInstance()->GetOldCursor()
+enum class STATE_ENUM { CPlayerIdleState = 0, CPlayerWalkState, CPlayerRunState, CPlayerLeftTurn, CPlayerRightTurn, };
 
 enum class MSG_TYPE
 {
@@ -51,6 +28,9 @@ enum class MSG_TYPE
 
 enum class SCENE_TYPE
 {
+	TITLE,
+	SELECT,
+	LOGIN,
 	GAME,
 
 	COUNT
@@ -58,18 +38,21 @@ enum class SCENE_TYPE
 
 enum class GROUP_TYPE
 {
-	STRUCTURE,	// 0 고정
-	PLAYER,	// 1 고정
-	NPC,		// 2 고정
+	STRUCTURE,
+	PLAYER,
+	NPC,
+	MONSTER,
+	BULLET,
 	BILBOARD,
 	GROUND_ITEM,
 	SKYBOX,
 	TERRAIN,
+	ITEM,
+
 	UI,
+	Test,
 	COUNT
 };
-
-enum class STATE_ENUM { CPlayerIdleState = 0, CPlayerWalkState, CPlayerRunState, CPlayerLeftTurn, CPlayerRightTurn, };
 
 enum class COMPONENT_TYPE
 {
@@ -96,6 +79,7 @@ enum class WEAPON_TYPE
 {
 	PUNCH,
 	PISTOL,
+	AXE,
 
 	COUNT
 };
@@ -173,6 +157,10 @@ enum class ROOT_PARAMETER_TYPE
 	NORMAL_MAP,
 	CUBE_MAP,
 	SHADOW_MAP,
+	CUBE_MAP2,
+	G_COLOR,
+	G_NORMAL,
+	G_WORLDPOS,
 
 	COUNT
 };
@@ -183,6 +171,10 @@ enum class TEXTURE_TYPE
 	NORMAL_MAP,
 	CUBE_MAP,
 	SHADOW_MAP,
+	CUBE_MAP2,
+	G_COLOR,
+	G_NORMAL,
+	G_WORLDPOS,
 
 	COUNT
 };
@@ -192,6 +184,9 @@ enum class POST_PROCESSING_TYPE
 	NONE,
 	FADE_IN,
 	FADE_OUT,
+	G_COLOR,
+	G_NORMAL,
+	G_WORLDPOS,
 
 	COUNT
 };

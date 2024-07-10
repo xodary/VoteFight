@@ -3,6 +3,7 @@
 #include "./ImaysNet/ImaysNet.h"
 #include "RemoteClient.h"
 #include "Timer.h"
+#include "GameScene.h"
 
 volatile bool				stopServer = false;
 static unsigned long long	nextClientID{ 0 };		// Next Client ID
@@ -19,6 +20,7 @@ list<shared_ptr<RemoteClient>>		deleteClinets;
 recursive_mutex				mx_accept;				
 shared_ptr<Socket>			listenSocket;			
 shared_ptr<RemoteClient>	remoteClientCandidate; 
+vector<CObject*> CGameScene::m_objects[(int)GROUP_TYPE::COUNT];
 
 // Client 종료 처리 함수
 void	ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient);
@@ -30,6 +32,8 @@ void	CloseServer();
 // 서버 프로그램 진입점
 int main(int argc, char* argv[])
 {
+	CGameScene::Load("GameScene.bin");
+
 	// Create listen socket & Binding
 	listenSocket = make_shared<Socket>(SocketType::Tcp);
 	listenSocket->Bind(Endpoint("0.0.0.0", SERVER_PORT));
@@ -246,59 +250,30 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
 		_Client->m_id = nextClientID++;
+		_Client->m_name = string(recv_packet->m_name);
 		_Client->m_player = make_shared<CPlayer>(XMFLOAT3(5.f, 0.f, 5.f));
 		_Client->m_ingame = true;
+		_Client->m_player->m_grouptype = (int)GROUP_TYPE::PLAYER;
 		
 		SC_LOGIN_OK_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_LOGIN_OK_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_OK_PACKET;
 		send_packet.m_id = _Client->m_id;
-		send_packet.m_pos = _Client->m_player->m_Pos;
 		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-		cout << " >> Send ) LOGIN_OK_PACKET - Client ID : " << _Client->m_id << endl;
+		cout << " >> Send ) LOGIN_OK_PACKET - Client ID : " << _Client->m_id << ", Client Name : " << _Client->m_name << endl;
 		cout << " >> Size of RemoteClient: " << RemoteClient::m_remoteClients.size() << endl;
-		//cout << "SC_LOGIN_OK_PACKET - X : " << p.getXpos() * (_Client->m_id) << ", Y : " << p.getYpos() << ", Z : " << p.getZpos() << endl;
 
-		// Send all player infomation to connected Client (새로 연결된 클라이언트가 다른 클라이언트들의 정보를 알 수 있도록 함)
 		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (rc.second == nullptr || rc.second->m_id == _Client->m_id)
-				continue;
-			SC_ADD_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_ADD_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+			if (rc.second->m_char < 0) continue;
+			SC_SELECT_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_SELECT_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_SELECT_PACKET;
 			send_packet.m_id = rc.second->m_id;
-			send_packet.m_pos = rc.second->m_player->m_Pos;
+			send_packet.m_char = rc.second->m_char;
+			strcpy_s(send_packet.m_name, rc.second->m_name.c_str());
+
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> Send | << SC_ADD_PACKET 01 >>" << endl;
-			cout << " >> Send ) Add Packet 1 - 해당 ID : " << rc.second->m_id << endl;
-			cout << " >> Send ) Add Packet 1 - 주체 ID : " << _Client->m_id << endl;
-			cout << " >> Send ) Pos Value 1 - xPos : " << rc.second->m_player->m_Pos.x <<
-				", yPos : " << rc.second->m_player->m_Pos.y <<
-				", zPos : " << rc.second->m_player->m_Pos.z << endl << endl;
 		}
-
-		// Send connected client infomation to other client (다른 모든 클라이언트에게 특정 클라이언트의 정보를 보냄)
-		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (rc.second == nullptr || rc.second->m_id == _Client->m_id)
-				continue;
-			SC_ADD_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_ADD_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
-			send_packet.m_id = _Client->m_id;
-			send_packet.m_pos = rc.second->m_player->m_Pos;
-			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> Send | << SC_ADD_PACKET 02 >>" << _Client->m_id << endl;
-			cout << " >> Send ) Add Packet 2 - 해당 ID : " << _Client->m_id << endl;
-			cout << " >> Send ) Add Packet 2 - 주체 ID : " << rc.second->m_id << endl;
-			cout << " >> Send ) Pos Value 2 - xPos : " << _Client->m_player->m_Pos.x <<
-				", yPos : " << _Client->m_player->m_Pos.y <<
-				", zPos : " << _Client->m_player->m_Pos.z << endl << endl;
-		}
-		break;
-	}
-
-	case PACKET_TYPE::P_CS_KEYDOWN_PACKET:
-	{
 
 	}
 	break;
@@ -311,8 +286,9 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		SC_ANIMATION_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_ANIMATION_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION_PACKET;
+		send_packet.m_grouptype = _Client->m_player->m_grouptype;
 		send_packet.m_id = _Client->m_id;
-		send_packet.m_key = "Run";
+		strcpy_s(send_packet.m_key, "Run");
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -325,7 +301,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_VELOCITY_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_VELOCITY_CHANGE_PACKET*>(_Packet);
 
-		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_rota, 0)));
+		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		if (recv_packet->m_shift) _Client->m_player->m_Velocity = 15; else _Client->m_player->m_Velocity = 10;
 
 		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
@@ -335,13 +311,14 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
 		_Client->m_lastTime = chrono::system_clock::now();
 		_Client->m_player->m_Vec = vector;
-		_Client->m_player->m_Rota = recv_packet->m_rota;
+		_Client->m_player->m_Angle = recv_packet->m_angle;
 
 		SC_VELOCITY_CHANGE_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
 		send_packet.m_id = _Client->m_id;
-		send_packet.m_rota = recv_packet->m_rota;
+		send_packet.m_angle = recv_packet->m_angle;
+		send_packet.m_grouptype = _Client->m_player->m_grouptype;
 		send_packet.m_vel = _Client->m_player->m_Velocity;
 		send_packet.m_pos = _Client->m_player->m_Pos;
 		cout << " >> send ) CS_VELOCITY_CHANGE_PACKET" << endl;
@@ -369,7 +346,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
 			send_packet.m_id = _Client->m_id;
-			send_packet.m_rota = _Client->m_player->m_Rota;
+			send_packet.m_grouptype = _Client->m_player->m_grouptype;
+			send_packet.m_angle = _Client->m_player->m_Angle;
 			send_packet.m_vel = _Client->m_player->m_Velocity;
 			send_packet.m_pos = _Client->m_player->m_Pos;
 			
@@ -385,8 +363,9 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			SC_ANIMATION_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_ANIMATION_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION_PACKET;
+			send_packet.m_grouptype = _Client->m_player->m_grouptype;
 			send_packet.m_id = _Client->m_id;
-			send_packet.m_key = "Idle";
+			strcpy_s(send_packet.m_key, "Idle");
 
 			for (auto& rc : RemoteClient::m_remoteClients) {
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -395,75 +374,84 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	}
 	break;
 
-	//case PACKET_TYPE::P_CS_MOVE_V_PACKET:
-	//{
-	//	// cout << " >> P_CS_MOVE_V_PACKET" << endl;
-	//	CS_MOVE_V_PACKET* recv_packet = reinterpret_cast<CS_MOVE_V_PACKET*>(_Packet);
-	//	// cout << " [01] Recv ID : " << recv_packet->m_id << endl;
-	//	for (auto& rc : RemoteClient::m_remoteClients) {
-	//		if (recv_packet->m_id == rc.second->m_id) {
-	//			RemoteClient::m_lock.lock();
-	//			_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
-	//			RemoteClient::m_lock.unlock();
-	//			continue;
-	//		}
+	case PACKET_TYPE::P_CS_SELECT_PACKET:
+	{
+		CS_SELECT_PACKET* recv_packet = reinterpret_cast<CS_SELECT_PACKET*>(_Packet);
+		_Client->m_ready = true;
+		_Client->m_char = recv_packet->m_char;
 
-	//		if(rc.second->m_player != nullptr)
-	//			rc.second->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
+		SC_SELECT_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_SELECT_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_SELECT_PACKET;
+		send_packet.m_id = _Client->m_id;
+		send_packet.m_char = _Client->m_char;
+		strcpy_s(send_packet.m_name, _Client->m_name.c_str());
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
 
-	//		SC_MOVE_V_PACKET send_packet;
-	//		send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
-	//		send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
-	//		send_packet.m_id = recv_packet->m_id;
-	//		send_packet.m_vec = recv_packet->m_vec;
-	//		//send_packet.m_rota = recv_packet->m_rota;
-	//		send_packet.m_state = recv_packet->m_state;
-	//		_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		if (RemoteClient::m_remoteClients.size() < MAX_PLAYER) return;
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ready) {
+				return;
+			}
+		}
 
-	//		/*cout << " ------------------------------------------------- " << endl;
-	//		cout << " >> Send | << SC_MOVE_V_PACKET 01 >>" << _Client->m_id << endl;
-	//		cout << " >> Send ) 어떤 ID에게? : " << _Client->m_id << endl;
-	//		cout << " >> Send ) Pos Value - xPos : " << recv_packet->m_vec.x <<
-	//			", yPos : " << recv_packet->m_vec.y <<
-	//			", zPos : " << recv_packet->m_vec.z << endl << endl;*/
-	//	}
+		{
+			SC_GAMESTART_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_GAMESTART_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_GAMESTART_PACKET;
 
-	//	for (auto& rc : RemoteClient::m_remoteClients) {
-	//		XMFLOAT3 rota;
-	//		STATE_ENUM state;
-	//		if (recv_packet->m_id == rc.second->m_id) {
-	//			RemoteClient::m_lock.lock();
-	//			_Client->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
-	//			//rota = recv_packet->m_rota;
-	//			state = recv_packet->m_state;
-	//			RemoteClient::m_lock.unlock();
-	//			continue;
-	//		}
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
+		}
 
-	//		if (rc.second->m_player != nullptr)
-	//			rc.second->m_player->m_Pos = XMFLOAT3(recv_packet->m_vec.x, recv_packet->m_vec.y, recv_packet->m_vec.z);
+		XMFLOAT3 pos[3]{ {0, 0, 0},{0, 0, 400},{400, 0, 400} };
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			int i = 0;
+			for (auto& rc2 : RemoteClient::m_remoteClients) {	// other players
+				SC_SPAWN_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_SPAWN_PACKET;
+				send_packet.m_id = rc2.second->m_id;
+				send_packet.m_pos = pos[i++];
 
-	//		SC_MOVE_V_PACKET send_packet;
-	//		send_packet.m_size = sizeof(SC_MOVE_V_PACKET);
-	//		send_packet.m_type = PACKET_TYPE::P_SC_MOVE_V_PACKET;
-	//		send_packet.m_id = _Client->m_id;
-	//		send_packet.m_vec = _Client->m_player->getPos();
-	//		//send_packet.m_rota = rota;
-	//		send_packet.m_state = state;
-	//		rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
 
-	//		/*cout << " ------------------------------------------------- " << endl;
-	//		cout << " >> Send | << SC_MOVE_V_PACKET-2 >>" << _Client->m_id << endl;
-	//		cout << " >> Send ) 어떤 ID에게? : " << rc.second->m_id << endl;
-	//		cout << " >> Send ) Pos Value - xPos : " << x <<
-	//			", yPos : " << y <<
-	//			", zPos : " << z << endl << endl;*/
-	//	}
+			for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {	// Scene Object
+				if (i == (int)GROUP_TYPE::PLAYER) continue;
+				for (auto& object : CGameScene::m_objects[i]) {
+					if (object == nullptr) continue;
+					SC_ADD_PACKET send_packet;
+					send_packet.m_size = sizeof(SC_ADD_PACKET);
+					send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+					send_packet.m_id = object->m_id;
+					send_packet.m_grouptype = i;
+					send_packet.m_pos = object->m_Pos;
+					send_packet.m_rota = object->m_Rota;
+					strcpy_s(send_packet.m_modelName, object->m_modelname.c_str());
 
-	//	break;
-	//}
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				}
+			}
+		}
 
+		EXP_OVER* exover = new EXP_OVER;
+		exover->m_ioType = IO_TYPE::IO_UPDATE;
+		PostQueuedCompletionStatus(Iocp::iocp.m_hIocp, 1, 0, &exover->m_wsa_over);
+	}
 	break;
+
+	case PACKET_TYPE::P_CS_ATTACK_PACKET:
+	{
+		CS_ATTACK_PACKET* recv_packet = reinterpret_cast<CS_ATTACK_PACKET*>(_Packet);
+		//_Client->m_player->m_Pos
+		//recv_packet->m_vec;
+	}
+	break;
+
 	default:
 		break;
 	}

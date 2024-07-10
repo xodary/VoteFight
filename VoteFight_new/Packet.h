@@ -17,18 +17,21 @@ enum PACKET_TYPE {
 	P_CS_VELOCITY_CHANGE_PACKET,
 	P_CS_MOVE_PACKET,
 	P_CS_ANIMATION,
-	P_CS_MOVE_V_PACKET,
-	P_CS_KEYDOWN_PACKET,
 	P_CS_WALK_ENTER_PACKET,
 	P_CS_STOP_PACKET,
+	P_CS_SELECT_PACKET,
+	P_CS_ATTACK_PACKET,
 
 	// Server -> Client packet
 	P_SC_LOGIN_OK_PACKET,
+	P_SC_SPAWN_PACKET,
 	P_SC_ADD_PACKET,
 	P_SC_VELOCITY_CHANGE_PACKET,
 	P_SC_ANIMATION_PACKET,
-	P_SC_MOVE_V_PACKET,
-	P_SC_POS_PACKET
+	P_SC_POS_PACKET,
+	P_SC_SELECT_PACKET,
+	P_SC_GAMESTART_PACKET,
+	P_SC_CHANGE_STATE,
 };
 
 #pragma pack (push, 1)
@@ -38,22 +41,44 @@ struct SC_LOGIN_OK_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
+};
+
+struct SC_SPAWN_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
 	XMFLOAT3			m_pos;
+};
+
+struct SC_GAMESTART_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+};
+
+struct SC_SELECT_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
+	unsigned int		m_char;
+	char				m_name[NAME_SIZE];
 };
 
 struct SC_ANIMATION_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
-	std::string			m_key;
+	unsigned int		m_grouptype;
+	char				m_key[NAME_SIZE];
 };
 
 struct SC_ADD_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
-	char				m_name[NAME_SIZE];
+	unsigned int		m_grouptype;
+	char				m_modelName[NAME_SIZE];
 	XMFLOAT3			m_pos;
+	XMFLOAT3			m_rota;
 };
 
 struct SC_VELOCITY_CHANGE_PACKET {
@@ -61,25 +86,25 @@ struct SC_VELOCITY_CHANGE_PACKET {
 	unsigned char		m_type;
 	unsigned int		m_id;
 	XMFLOAT3			m_pos;
+	unsigned int		m_grouptype;
 	float				m_vel;
-	float				m_rota;
-};
-
-struct SC_MOVE_V_PACKET {
-	unsigned char		m_size;
-	unsigned char		m_type;
-	unsigned int		m_id;
-	XMFLOAT3			m_vec;
-	XMFLOAT3			m_rota;
-	STATE_ENUM			m_state;
+	float				m_angle;
 };
 
 struct SC_POS_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
+	unsigned int		m_grouptype;
 	XMFLOAT3			m_pos;
-	float				m_rota;
+	float				m_angle;
+};
+
+struct SC_CHANGE_STATE {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
+	int					m_health;
 };
 
 // Packet(Clinet->Server)
@@ -92,48 +117,47 @@ struct CS_LOGIN_PACKET {
 struct CS_ANIMATION_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
-	std::string			m_key;
+	char				m_key[NAME_SIZE];
 };
 
 struct CS_WALK_ENTER_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
-	WEAPON_TYPE			m_weapon;
+	unsigned int		m_weapon;
 };
 
 struct CS_VELOCITY_CHANGE_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
-	float				m_rota;
+	float				m_angle;
 	bool				m_shift;
 	XMFLOAT3			m_pos;
 };
-
 
 struct CS_MOVE_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	XMFLOAT3			m_vel;
-	float				m_rota;
-};
-
-struct CS_MOVE_V_PACKET {
-	unsigned char		m_size;
-	unsigned char		m_type;
-	unsigned int		m_id;
-	XMFLOAT3			m_vec;
-	float				m_rota;
-	STATE_ENUM			m_state;
-};
-
-struct CS_KEYDOWN_PACKET {
-	unsigned char		m_size;
-	unsigned char		m_type;
+	float				m_angle;
 };
 
 struct CS_STOP_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 };
+
+struct CS_SELECT_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_char;
+};
+
+struct CS_ATTACK_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_weapon;
+	XMFLOAT3			m_vec;
+};
+
 
 #pragma pack (pop)

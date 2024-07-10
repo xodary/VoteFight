@@ -157,7 +157,9 @@
   <ItemGroup>
     <ClInclude Include="Animation.h" />
     <ClInclude Include="Animator.h" />
-    <ClInclude Include="AnisoMipmap.h" />
+    <ClInclude Include="AnisoMipmap.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Asset.h" />
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Bilboard.h" />
@@ -197,8 +199,12 @@
     <ClInclude Include="MainShader.h" />
     <ClInclude Include="TerrainObject.h" />
     <ClInclude Include="UIStates.h" />
-    <ClInclude Include="UpsampleBlur.h" />
-    <ClInclude Include="VCTMainShader.h" />
+    <ClInclude Include="UpsampleBlur.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
+    <ClInclude Include="VCTMainShader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
@@ -208,7 +214,9 @@
     <ClInclude Include="func.h" />
     <ClInclude Include="GameFramework.h" />
     <ClInclude Include="GameScene.h" />
-    <ClInclude Include="GBufferShader.h" />
+    <ClInclude Include="GBufferShader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="ImaysNet\Endpoint.h" />
     <ClInclude Include="ImaysNet\Exception.h" />
     <ClInclude Include="ImaysNet\ImaysNet.h" />
@@ -256,14 +264,18 @@
     <ClInclude Include="udt.h" />
     <ClInclude Include="UI.h" />
     <ClInclude Include="UIShader.h" />
-    <ClInclude Include="VoxelizationShader.h" />
+    <ClInclude Include="VoxelizationShader.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="Weapon.h" />
     <ClInclude Include="WireFrameShader.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Animation.cpp" />
     <ClCompile Include="Animator.cpp" />
-    <ClCompile Include="AnisoMipmap.cpp" />
+    <ClCompile Include="AnisoMipmap.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Asset.cpp" />
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Bilboard.cpp" />
@@ -305,8 +317,12 @@
     <ClCompile Include="MainShader.cpp" />
     <ClCompile Include="TerrainObject.cpp" />
     <ClCompile Include="UIStates.cpp" />
-    <ClCompile Include="UpsampleBlur.cpp" />
-    <ClCompile Include="VCTMainShader.cpp" />
+    <ClCompile Include="UpsampleBlur.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="VCTMainShader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="DepthBuffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -317,7 +333,9 @@
     <ClCompile Include="DDSTextureLoader12.cpp" />
     <ClCompile Include="func.cpp" />
     <ClCompile Include="GameScene.cpp" />
-    <ClCompile Include="GBufferShader.cpp" />
+    <ClCompile Include="GBufferShader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="ImaysNet\Endpoint.cpp" />
     <ClCompile Include="ImaysNet\Exception.cpp" />
     <ClCompile Include="ImaysNet\Iocp.cpp" />
@@ -380,7 +398,9 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="VoxelizationShader.cpp" />
+    <ClCompile Include="VoxelizationShader.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="Weapon.cpp" />
     <ClCompile Include="WireFrameShader.cpp" />
   </ItemGroup>

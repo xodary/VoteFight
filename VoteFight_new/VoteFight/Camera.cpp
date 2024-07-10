@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Camera.h"
+#include "SceneManager.h"
 #include "GameFramework.h"
 #include "TimeManager.h"
 #include "Transform.h"
@@ -210,7 +211,8 @@ void CCamera::Update()
 
 		transform->SetPosition(Vector3::Add(focusPosition, m_offset));
 		XMFLOAT3 originRotation = transform->GetRotation();
-		transform->SetRotation(XMFLOAT3(55, originRotation.y, originRotation.z));
+		if(CSceneManager::GetInstance()->m_sceneType == SCENE_TYPE::GAME)
+			transform->SetRotation(XMFLOAT3(55, originRotation.y, originRotation.z));
 	}
 
 	RegenerateViewMatrix();

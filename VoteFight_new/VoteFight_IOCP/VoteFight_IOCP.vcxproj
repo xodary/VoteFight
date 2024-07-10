@@ -142,6 +142,7 @@
     <ClCompile Include="CPlayer.cpp" />
     <ClCompile Include="DDSTextrueLoader.cpp" />
     <ClCompile Include="func.cpp" />
+    <ClCompile Include="GameScene.cpp" />
     <ClCompile Include="ImaysNet\Endpoint.cpp" />
     <ClCompile Include="ImaysNet\Exception.cpp" />
     <ClCompile Include="ImaysNet\Iocp.cpp" />
@@ -168,6 +169,7 @@
     <ClInclude Include="DDSTextureLoader12.h" />
     <ClInclude Include="define.h" />
     <ClInclude Include="func.h" />
+    <ClInclude Include="GameScene.h" />
     <ClInclude Include="ImaysNet\Endpoint.h" />
     <ClInclude Include="ImaysNet\Exception.h" />
     <ClInclude Include="ImaysNet\ImaysNet.h" />
