@@ -4,6 +4,7 @@
 #include "TimeManager.h"
 #include "InputManager.h"
 #include "CameraManager.h"
+#include "RigidBody.h"
 #include "SceneManager.h"
 #include "Scene.h"
 #include "AssetManager.h"
@@ -125,6 +126,14 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 		CSceneManager::GetInstance()->GetCurrentScene()->DeleteObject(GROUP_TYPE::GROUND_ITEM, collidedObject->m_id);
 		break;
 	}
+	switch (collidedObject->GetGroupType())
+	{
+	case (UINT)GROUP_TYPE::STRUCTURE:
+	case (UINT)GROUP_TYPE::BOX:
+		CRigidBody* rigidBody = static_cast<CRigidBody*>(GetComponent(COMPONENT_TYPE::RIGIDBODY));
+		rigidBody->ReturnPrevLocation(rigidBody->GetVelocity());
+		break;
+	}
 }
 void CPlayer::OnCollision(CObject* collidedObject)
 {
@@ -151,7 +160,11 @@ void CPlayer::OnCollision(CObject* collidedObject)
 			//}
 		}
 	}
+
+	CRigidBody* rigidBody = static_cast<CRigidBody*>(GetComponent(COMPONENT_TYPE::RIGIDBODY));
+	rigidBody->ReturnPrevLocation(rigidBody->GetVelocity());
 }
+
 void CPlayer::OnCollisionExit(CObject* collidedObject)
 {
 	switch (collidedObject->GetGroupType())

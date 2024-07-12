@@ -221,15 +221,19 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* objects[3];
 		string modelname[3] = { "Sonic","Mario","hugo_idle" };
 		for (int i = 0; i < 3; ++i) {
-			objects[i] = CObject::Load(modelname[i]);
-			objects[i]->m_id = selectScene->m_selected_id[i];
+			if (selectScene->m_selected_id[i] != -1) {
+				objects[i] = CObject::Load(modelname[i]);
+				objects[i]->m_id = selectScene->m_selected_id[i];
+			}
 		}
 
 		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
 		scene = CSceneManager::GetInstance()->GetCurrentScene();
 		for (int i = 0; i < 3; ++i) {
-			scene->AddObject(GROUP_TYPE::PLAYER, objects[i], objects[i]->m_id);
-			objects[i]->Init();
+			if (selectScene->m_selected_id[i] != -1) {
+				scene->AddObject(GROUP_TYPE::PLAYER, objects[i], objects[i]->m_id);
+				objects[i]->Init();
+			}
 		}
 	}
 	break;

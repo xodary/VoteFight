@@ -13,10 +13,17 @@ public:
 	int			m_grouptype;
 	std::string	m_modelname;
 
+	bool		m_collider = false;
+	BoundingBox	m_origin;
+	BoundingBox m_boundingBox;
+
 	bool alive = true;
 	bool ingame = false;
 
 	CObject() {}
 	~CObject() {}
+
+	static CObject* Load(const string& fileName);
+	static CObject* LoadFrame(ifstream& in);
 };
 

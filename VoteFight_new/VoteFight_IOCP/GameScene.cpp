@@ -88,6 +88,7 @@ void CGameScene::Load(const string& fileName)
 
 			switch (groupType)
 			{
+			case GROUP_TYPE::STRUCTURE:
 			case GROUP_TYPE::NPC:
 			case GROUP_TYPE::MONSTER:
 			case GROUP_TYPE::BOX:
@@ -95,25 +96,8 @@ void CGameScene::Load(const string& fileName)
 				cout << modelFileName << " is Loading..." << endl;
 				for (int i = 0; i < instanceCount; ++i)
 				{
-					CObject* object;
-					switch (groupType)
-					{
-					case GROUP_TYPE::NPC:
-						object = new CNPC();
-						break;
-					case GROUP_TYPE::MONSTER:
-						object = new CObject();	// CMonster·Î º¯°æ
-						break;
-					case GROUP_TYPE::BOX:
-						object = new CBox();
-						break;
-					case GROUP_TYPE::ONCE_ITEM:
-						object = new COnceItem();
-						break;
-					default:
-						object = new CObject();
-						break;
-					}
+					CObject* object = CObject::Load(modelFileName);
+
 					object->m_grouptype = (int)groupType;
 					object->m_modelname = modelFileName;
 					object->m_Pos = transforms[3 * i];
@@ -121,6 +105,14 @@ void CGameScene::Load(const string& fileName)
 					object->m_Rota = transforms[3 * i + 1];
 					object->m_Sca = transforms[3 * i + 2];
 					object->m_id = m_objects[static_cast<int>(groupType)].size();
+
+					if (object->m_collider) {
+						XMFLOAT4X4 matrix = Matrix4x4::Identity();
+						matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(object->m_Sca));
+						matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(object->m_Rota));
+						matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object->m_Pos));
+						object->m_origin.Transform(object->m_boundingBox, XMLoadFloat4x4(&matrix));
+					}
 
 					m_objects[static_cast<int>(groupType)][object->m_id] = object;
 				}
@@ -133,8 +125,6 @@ void CGameScene::Load(const string& fileName)
 			break;
 		}
 	}
-
-	NPCInitialize();
 }
 
 void CGameScene::LoadTerrain(const string& fileName)
@@ -211,5 +201,4 @@ void CGameScene::NPCInitialize()
 			box->items.push_back(box_ex[rand() % size(box_ex)]);
 		}
 	}
-
 }

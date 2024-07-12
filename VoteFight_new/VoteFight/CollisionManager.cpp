@@ -121,7 +121,7 @@ bool CCollisionManager::IsCollided(CObject* object1, CObject* object2)
 	CCollider* collider1 = static_cast<CCollider*>(object1->GetComponent(COMPONENT_TYPE::COLLIDER));
 	CCollider* collider2 = static_cast<CCollider*>(object2->GetComponent(COMPONENT_TYPE::COLLIDER));
 
-	if ((collider1 == nullptr) || (collider2 == nullptr) || (!collider1->m_boxcollider) || (!collider1->m_boxcollider))
+	if (!collider1 || !collider2 || !collider1->m_boxcollider || !collider2->m_boxcollider)
 	{
 		return false;
 	}

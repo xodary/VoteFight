@@ -40,6 +40,9 @@ int main(int argc, char* argv[])
 {
 	CGameScene::LoadTerrain("HeightMap.bin");
 	CGameScene::Load("ServerScene.bin");
+	CGameScene::Load("GameScene.bin");
+
+	CGameScene::NPCInitialize();
 
 	// Create listen socket & Binding
 	listenSocket = make_shared<Socket>(SocketType::Tcp);
@@ -196,6 +199,24 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 		XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
 		client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
 		client.second->m_lastTime = chrono::system_clock::now();
+		
+		XMFLOAT4X4 matrix = Matrix4x4::Identity();
+		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(client.second->m_player->m_Sca));
+		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(client.second->m_player->m_Rota));
+		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(client.second->m_player->m_Pos));
+		client.second->m_player->m_origin.Transform(client.second->m_player->m_boundingBox, XMLoadFloat4x4(&matrix));
+		
+		for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {
+			if (i == (int)GROUP_TYPE::PLAYER) continue;
+			for (auto& object : CGameScene::m_objects[i]) {
+				if (!client.second->m_player->m_collider) continue;
+				if (!object.second->m_collider) continue;
+				if (client.second->m_player->m_boundingBox.Intersects(object.second->m_boundingBox)) {
+					client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
+					cout << "Collide !" << endl;
+				}
+			}
+		}
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (rc.second == nullptr || !rc.second->m_ingame) continue;
@@ -291,6 +312,9 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		_Client->m_id = nextClientID++;
 		_Client->m_name = string(recv_packet->m_name);
 		_Client->m_player = make_shared<CPlayer>(XMFLOAT3());
+		_Client->m_player->m_collider = true;
+		_Client->m_player->m_origin.Center = XMFLOAT3(0, 1.59f, 0);
+		_Client->m_player->m_origin.Extents = XMFLOAT3(1, 2.14f, 1);
 		_Client->m_ingame = true;
 		_Client->m_player->m_grouptype = (int)GROUP_TYPE::PLAYER;
 		
@@ -465,6 +489,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 
 			for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {
+				if (i == (int)GROUP_TYPE::STRUCTURE) continue;
 				for (auto& object : CGameScene::m_objects[i]) {
 
 					SC_ADD_PACKET send_packet;

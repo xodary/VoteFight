@@ -73,5 +73,4 @@ void CTimeManager::Update()
 	}
 
 	m_lastTime -= m_deltaTime;
-	cout << "Last Time : " << m_lastTime << endl;
 }
