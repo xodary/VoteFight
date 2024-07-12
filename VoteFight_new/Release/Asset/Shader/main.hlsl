@@ -1,3 +1,5 @@
+#include "Noise.hlsl"
+
 // --------------define----------------
 #define MAX_LIGHTS			2
 #define SHADOWMAP_LIGHT     0
@@ -201,7 +203,7 @@ float4 franelOuterLine(float3 vPosition, float3 vNormal, float4 cColor)
     float3 vToCamera = normalize(vCameraPosition - vPosition);
     float rim = abs(dot(vNormal, vToCamera));
     float4 newColor = cColor;
-    if (rim > 0.3)
+    if (rim > 0.1)
         rim = 1.0;
     else
         rim = -1;
@@ -272,7 +274,24 @@ VS_STANDARD_OUTPUT VS_GBuffer(VS_STANDARD_INPUT input)
     output.bitangentW = mul(input.bitangent, (float3x3) gmtxGameObject);
     output.position = mul(mul(pW, gmtxView), gmtxProjection);
     output.uv = input.uv;
-   
+    
+   // 바다의 움직임을 위한 노이즈 기반 Y 좌표 변형
+    float waveHeight = 0.5f; // 물결의 높이
+    float waveFrequency = 5.f; // 물결의 주기
+    float waveSpeed = 0.8f; // 물결의 속도
+    
+    // 중심점(섬의 위치)을 기준으로 파도 효과 적용
+    float3 center = float3(0.0, 0.0, 0.0);
+    float3 direction = normalize(center - input.position);
+
+    // 방향 벡터를 기반으로 노이즈 입력을 계산
+    float distanceToCenter = length(center - pW.xyz);
+    float2 noiseInput = float2(distanceToCenter * waveFrequency, gfTotalTime * waveSpeed);
+
+    // 파도 방향을 중심을 향해 변형
+    float waveNoise = noise(noiseInput);
+    pW.y += waveHeight * waveNoise;
+    output.position = mul(mul(pW, gmtxView), gmtxProjection);
     return (output);
 }
 
@@ -326,6 +345,8 @@ PSOutput PS_GBuffer(VS_STANDARD_OUTPUT input) : SV_TARGET
 
     }
     output.worldpos = float4(input.positionW, 1.0f);
+    
+    output.color = franelOuterLine(output.worldpos, output.normal, output.color);
     return output;
 }
 
@@ -639,9 +660,9 @@ float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
     float4 cColor = cBaseTexColor;
     float3 normal = normalize(input.normal);
     float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs, TERRAIN);
-    cColor = cColor * cIllumination;
+    cColor = lerp(cColor , cIllumination,0.3f);
     
-    // cColor = franelOuterLine(input.position, normal, cColor);
+    cColor = franelOuterLine(input.position, normal, cColor);
     return cColor;
     //return cColor * cIllumination;
 

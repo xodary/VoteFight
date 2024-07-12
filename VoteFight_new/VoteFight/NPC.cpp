@@ -49,6 +49,7 @@ void CNPC::Init()
 	animator->SetWeight("idle", 1.0f);
 
 	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
+	m_bilboardUI.push_back(new CIcon(this));
 }
 
 void CNPC::Update()

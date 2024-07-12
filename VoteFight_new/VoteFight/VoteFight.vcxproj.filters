@@ -702,5 +702,11 @@
     <FxCompile Include="..\Release\Asset\Shader\VoxelConeTracingVoxelizationDebug.hlsl">
       <Filter>셰이더 파일</Filter>
     </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\Noise.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
+    <FxCompile Include="..\Release\Asset\Shader\Light.hlsl">
+      <Filter>셰이더 파일</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

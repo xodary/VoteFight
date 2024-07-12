@@ -6,7 +6,7 @@ class CBullet : public CObject
 private:
     XMFLOAT3 m_direction;
     float m_fLifeTime = 3.f;
-    float m_fSpeed = 3.f;
+    float m_fSpeed = 0.0f;
     bool m_bFired = false;
 
     void UpdatePostion();
