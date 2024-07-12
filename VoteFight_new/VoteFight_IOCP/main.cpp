@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "GameScene.h"
 #include "NPC.h"
+#include "Box.h"
 
 volatile bool				stopServer = false;
 static unsigned long long	nextClientID{ 0 };		// Next Client ID
@@ -430,60 +431,75 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				cout << " >> send ) SC_SPAWN_PACKET" << endl;
 			}
 
-			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::NPC]) {
-				if (object.second == nullptr) continue;
-				SC_ADD_PACKET send_packet;
-				send_packet.m_size = sizeof(SC_ADD_PACKET);
-				send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
-				send_packet.m_id = object.second->m_id;
-				send_packet.m_grouptype = (int)GROUP_TYPE::NPC;
-				send_packet.m_pos = object.second->m_Pos;
-				send_packet.m_rota = object.second->m_Rota;
-				send_packet.m_sca = object.second->m_Sca;
-				strcpy_s(send_packet.m_modelName, object.second->m_modelname.c_str());
+			for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {
+				for (auto& object : CGameScene::m_objects[i]) {
 
-				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-				cout << " >> send ) SC_NPC_ADD_PACKET" << endl;
+					SC_ADD_PACKET send_packet;
+					send_packet.m_size = sizeof(SC_ADD_PACKET);
+					send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+					send_packet.m_id = object.second->m_id;
+					send_packet.m_grouptype = object.second->m_grouptype;
+					send_packet.m_pos = object.second->m_Pos;
+					send_packet.m_rota = object.second->m_Rota;
+					send_packet.m_sca = object.second->m_Sca;
+					strcpy_s(send_packet.m_modelName, object.second->m_modelname.c_str());
 
-				CNPC* npc = reinterpret_cast<CNPC*>(object.second);
-				{
-					for (auto name : npc->m_needs) {
-						SC_NPC_EXCHANGE_PACKET send_packet;
-						send_packet.m_size = sizeof(SC_NPC_EXCHANGE_PACKET);
-						send_packet.m_type = P_SC_NPC_EXCHANGE_PACKET;
-						send_packet.m_id = npc->m_id;
-						send_packet.m_itemType = 0;
-						strcpy_s(send_packet.m_itemName, name.c_str());
-						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-						cout << " >> send ) SC_NPC_EXCHANGE_PACKET : need" << endl;
-					}
-					for (auto name : npc->m_outputs) {
-						SC_NPC_EXCHANGE_PACKET send_packet;
-						send_packet.m_size = sizeof(SC_NPC_EXCHANGE_PACKET);
-						send_packet.m_type = P_SC_NPC_EXCHANGE_PACKET;
-						send_packet.m_id = npc->m_id;
-						send_packet.m_itemType = 1;
-						strcpy_s(send_packet.m_itemName, name.c_str());
-						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-						cout << " >> send ) SC_NPC_EXCHANGE_PACKET : output" << endl;
-					}
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_NPC_ADD_PACKET" << endl;
+
+				}
+			}
+			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::BOX]) {
+				CBox* box = reinterpret_cast<CBox*>(object.second);
+				for (auto name : box->items) {
+					SC_NPC_EXCHANGE_PACKET send_packet;
+					send_packet.m_size = sizeof(SC_NPC_EXCHANGE_PACKET);
+					send_packet.m_type = P_SC_NPC_EXCHANGE_PACKET;
+					send_packet.m_id = box->m_id;
+					send_packet.m_itemType = 2;
+					strcpy_s(send_packet.m_itemName, name.c_str());
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_NPC_EXCHANGE_PACKET : need" << endl;
 				}
 			}
 
-			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
-				if (object.second == nullptr) continue;
-				SC_ADD_PACKET send_packet;
-				send_packet.m_size = sizeof(SC_ADD_PACKET);
-				send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
-				send_packet.m_id = object.second->m_id;
-				send_packet.m_grouptype = (int)GROUP_TYPE::NPC;
-				send_packet.m_pos = object.second->m_Pos;
-				send_packet.m_rota = object.second->m_Rota;
-				send_packet.m_sca = object.second->m_Sca;
-				strcpy_s(send_packet.m_modelName, object.second->m_modelname.c_str());
 
-				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-				cout << " >> send ) SC_MONSTER_ADD_PACKET" << endl;
+			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::ONCE_ITEM]) {
+				COnceItem* item = reinterpret_cast<COnceItem*>(object.second);
+				for (auto name : item->items) {
+					SC_NPC_EXCHANGE_PACKET send_packet;
+					send_packet.m_size = sizeof(SC_NPC_EXCHANGE_PACKET);
+					send_packet.m_type = P_SC_NPC_EXCHANGE_PACKET;
+					send_packet.m_id = item->m_id;
+					send_packet.m_itemType = 3;
+					strcpy_s(send_packet.m_itemName, name.c_str());
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_NPC_EXCHANGE_PACKET : need" << endl;
+				}
+			}
+
+			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::NPC]) {
+				CNPC* npc = reinterpret_cast<CNPC*>(object.second);
+				for (auto name : npc->m_needs) {
+					SC_NPC_EXCHANGE_PACKET send_packet;
+					send_packet.m_size = sizeof(SC_NPC_EXCHANGE_PACKET);
+					send_packet.m_type = P_SC_NPC_EXCHANGE_PACKET;
+					send_packet.m_id = npc->m_id;
+					send_packet.m_itemType = 0;
+					strcpy_s(send_packet.m_itemName, name.c_str());
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_NPC_EXCHANGE_PACKET : need" << endl;
+				}
+				for (auto name : npc->m_outputs) {
+					SC_NPC_EXCHANGE_PACKET send_packet;
+					send_packet.m_size = sizeof(SC_NPC_EXCHANGE_PACKET);
+					send_packet.m_type = P_SC_NPC_EXCHANGE_PACKET;
+					send_packet.m_id = npc->m_id;
+					send_packet.m_itemType = 1;
+					strcpy_s(send_packet.m_itemName, name.c_str());
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_NPC_EXCHANGE_PACKET : output" << endl;
+				}
 			}
 		}
 

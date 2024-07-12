@@ -2,6 +2,7 @@
 #include "GameScene.h"
 #include "NPC.h"
 #include "Object.h"
+#include "Box.h"
 
 float CGameScene::m_heights[400][400];
 
@@ -89,6 +90,8 @@ void CGameScene::Load(const string& fileName)
 			{
 			case GROUP_TYPE::NPC:
 			case GROUP_TYPE::MONSTER:
+			case GROUP_TYPE::BOX:
+			case GROUP_TYPE::ONCE_ITEM:
 				cout << modelFileName << " is Loading..." << endl;
 				for (int i = 0; i < instanceCount; ++i)
 				{
@@ -100,6 +103,12 @@ void CGameScene::Load(const string& fileName)
 						break;
 					case GROUP_TYPE::MONSTER:
 						object = new CObject();	// CMonster·Î º¯°æ
+						break;
+					case GROUP_TYPE::BOX:
+						object = new CBox();
+						break;
+					case GROUP_TYPE::ONCE_ITEM:
+						object = new COnceItem();
 						break;
 					default:
 						object = new CObject();
@@ -185,4 +194,22 @@ void CGameScene::NPCInitialize()
 			npc->m_outputs.push_back(output_ex[rand() % size(output_ex)]);
 		}
 	}
+
+	for (auto& object : m_objects[(int)GROUP_TYPE::ONCE_ITEM])
+	{
+		COnceItem* onceitem = reinterpret_cast<COnceItem*>(object.second);
+		onceitem->items.push_back("flower");
+	}
+
+	string box_ex[] = { "trash", "sword", "carrot", "icecream", "potato" };
+	for (auto& object : m_objects[(int)GROUP_TYPE::BOX])
+	{
+		CBox* box = reinterpret_cast<CBox*>(object.second);
+		int o = rand() % size(box_ex) + 1;
+		for (int i = 0; i < rand() % size(box_ex) + 1; ++i)
+		{
+			box->items.push_back(box_ex[rand() % size(box_ex)]);
+		}
+	}
+
 }

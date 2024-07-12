@@ -383,20 +383,9 @@ void CGameScene::Render()
 		}
 	}
 	
-	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::PLAYER)])
+	for (auto& object : GetViewList(0))
 	{
-		if ((object.second->IsActive()) && (!object.second->IsDeleted()))
-		{
-			object.second->RenderBilboard(camera);
-		}
-	}
-
-	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::NPC)])
-	{
-		if ((object.second->IsActive()) && (!object.second->IsDeleted()))
-		{
-			object.second->RenderBilboard(camera);
-		}
+		object->RenderBilboard(camera);
 	}
 
 	if (KEY_HOLD(KEY::SPACE))

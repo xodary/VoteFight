@@ -46,20 +46,7 @@ void CCharacter::SwapWeapon(WEAPON_TYPE weaponType)
 {
 }
 
-void CCharacter::RenderBilboard(CCamera* camera)
-{
-    for (auto& ui : m_bilboardUI)
-    {
-        if (ui->IsActive()) ui->Render(camera);
-    }
-}
-
 void CCharacter::Update()
 {
     CObject::Update();
-    for (auto& ui : m_bilboardUI)
-    {
-        if(ui->IsActive())
-            ui->Update();
-    }
 }

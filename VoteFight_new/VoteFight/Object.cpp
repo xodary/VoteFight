@@ -2,12 +2,12 @@
 #include "Object.h"
 #include "AssetManager.h"
 #include "InputManager.h"
-
+#include "Box.h"
 #include "Player.h"
 #include "NPC.h"
 #include "Monster.h"
 #include "Bullet.h"
-
+#include "UI.h"
 #include "Mesh.h"
 #include "Shader.h"
 #include "Material.h"
@@ -108,6 +108,8 @@ CObject* CObject::LoadFrame(ifstream& in)
 			case 4: object = new CBullet(); break;
 			case 5: object = new CGun(); break;
 			case 6: object = new CSword(); break;
+			case 7: object = new CBox(); break;
+			case 8: object = new COnceItem(); break;
 			}
 		}
 		else if (str == "<Name>")
@@ -449,6 +451,12 @@ void CObject::OnCollisionExit(CObject* collidedObject)
 
 void CObject::Update()
 {
+	for (auto& ui : m_bilboardUI)
+	{
+		if (ui->IsActive())
+			ui->Update();
+	}
+
 	for (const auto& component : m_components)
 	{
 		if (component != nullptr)
@@ -523,6 +531,14 @@ void CObject::Render(CCamera* camera)
 		{
 			child->Render(camera);
 		}
+	}
+}
+
+void CObject::RenderBilboard(CCamera* camera)
+{
+	for (auto& ui : m_bilboardUI)
+	{
+		if (ui->IsActive()) ui->Render(camera);
 	}
 }
 

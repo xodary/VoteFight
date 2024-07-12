@@ -48,6 +48,8 @@ enum class GROUP_TYPE
 	SKYBOX,
 	TERRAIN,
 	ITEM,
+	BOX,
+	ONCE_ITEM,
 
 	UI,
 	Test,

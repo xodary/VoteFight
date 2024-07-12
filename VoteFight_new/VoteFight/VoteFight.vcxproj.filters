@@ -150,6 +150,9 @@
     <Filter Include="소스 파일\05. Object\05-07. Weapon">
       <UniqueIdentifier>{59303aa4-5441-442a-8ce2-124ec641dfa7}</UniqueIdentifier>
     </Filter>
+    <Filter Include="헤더 파일\05. Object\05-06. Otherobject">
+      <UniqueIdentifier>{25435c4f-ff34-4a68-a706-0001a11a188e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -401,9 +404,6 @@
     <ClInclude Include="Weapon.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="DropItem.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="TitleScene.h">
       <Filter>헤더 파일\04. Scene</Filter>
     </ClInclude>
@@ -413,14 +413,20 @@
     <ClInclude Include="Monster.h">
       <Filter>헤더 파일\05. Object\05-01. Character</Filter>
     </ClInclude>
-    <ClInclude Include="Bullet.h">
-      <Filter>헤더 파일\05. Object</Filter>
-    </ClInclude>
     <ClInclude Include="SelectScene.h">
       <Filter>헤더 파일\04. Scene</Filter>
     </ClInclude>
     <ClInclude Include="UIStates.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h">
+      <Filter>헤더 파일\05. Object\05-06. Otherobject</Filter>
+    </ClInclude>
+    <ClInclude Include="Box.h">
+      <Filter>헤더 파일\05. Object\05-06. Otherobject</Filter>
+    </ClInclude>
+    <ClInclude Include="DropItem.h">
+      <Filter>헤더 파일\05. Object\05-06. Otherobject</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -655,9 +661,6 @@
     <ClCompile Include="TerrainObject.cpp">
       <Filter>소스 파일\05. Object\05-04. Terrain</Filter>
     </ClCompile>
-    <ClCompile Include="DropItem.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="TitleScene.cpp">
       <Filter>소스 파일\04. Scene</Filter>
     </ClCompile>
@@ -678,6 +681,12 @@
     </ClCompile>
     <ClCompile Include="UIStates.cpp">
       <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="Box.cpp">
+      <Filter>소스 파일\05. Object\05-06. OtherObject</Filter>
+    </ClCompile>
+    <ClCompile Include="DropItem.cpp">
+      <Filter>소스 파일\05. Object\05-06. OtherObject</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

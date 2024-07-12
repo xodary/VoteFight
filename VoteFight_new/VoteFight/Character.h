@@ -11,7 +11,6 @@ private:
 	CObject* m_weapon;
 
 public:
-	vector<CBilboardUI*> m_bilboardUI;
 	
 	CCharacter();
 	virtual ~CCharacter();
@@ -24,6 +23,5 @@ public:
 
 	bool IsEquippedWeapon();
 	virtual void SwapWeapon(WEAPON_TYPE weaponType);
-	void RenderBilboard(CCamera* camera);
 	virtual void Update();
 };

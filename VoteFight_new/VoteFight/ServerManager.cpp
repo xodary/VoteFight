@@ -24,6 +24,7 @@
 #include "LoginScene.h"
 #include "SelectScene.h"
 #include "NPC.h"
+#include "Box.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -169,7 +170,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	// Packet Types Processing
 	switch (_Packet[1])
 	{
-
 	case PACKET_TYPE::P_SC_LOGIN_OK_PACKET:
 	{
 		SC_LOGIN_OK_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_OK_PACKET*>(_Packet);
@@ -177,11 +177,11 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CLoginScene* loginscene = reinterpret_cast<CLoginScene*>(CSceneManager::GetInstance()->GetCurrentScene());
 		string name = loginscene->user_name;
 		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::SELECT);
-		
+
 		// ID 설정
 		CServerManager::m_id = recv_packet->m_id;
 		CGameFramework::GetInstance()->my_id = recv_packet->m_id;
-		
+
 		cout << "Clinet ID - " << recv_packet->m_id << endl;
 		break;
 	}
@@ -200,7 +200,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			object->CreateComponent(COMPONENT_TYPE::STATE_MACHINE);
 			CStateMachine* statemachine = reinterpret_cast<CStateMachine*>(object->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 			statemachine->SetCurrentState(CPlayerIdleState::GetInstance());
-		
+
 			scene->oldXCell = scene->oldZCell = -1;
 			CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 		}
@@ -273,8 +273,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET:
 	{
 		SC_VELOCITY_CHANGE_PACKET* recv_packet = reinterpret_cast<SC_VELOCITY_CHANGE_PACKET*>(_Packet);
-		 cout << "SC_VELOCITY_CHANGE_PACKET" << endl;
-		
+		cout << "SC_VELOCITY_CHANGE_PACKET" << endl;
+
 		// 플레이어 객체를 얻어와야 함.
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
@@ -324,15 +324,38 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	{
 		SC_NPC_EXCHANGE_PACKET* recv_packet = reinterpret_cast<SC_NPC_EXCHANGE_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
-		CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_id);
-		CNPC* npc = reinterpret_cast<CNPC*>(object);
-		if(recv_packet->m_itemType == 0)
+		switch (recv_packet->m_itemType) {
+		case 0:
+		{
+			CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_id);
+			CNPC* npc = reinterpret_cast<CNPC*>(object);
 			npc->m_needs.push_back(string(recv_packet->m_itemName));
-		else
+			break;
+		}
+		case 1:
+		{
+			CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_id);
+			CNPC* npc = reinterpret_cast<CNPC*>(object);
 			npc->m_outputs.push_back(string(recv_packet->m_itemName));
+			break;
+		}
+		case 2:
+		{
+			CObject* object = scene->GetIDObject(GROUP_TYPE::BOX, recv_packet->m_id);
+			CBox* box = reinterpret_cast<CBox*>(object);
+			box->m_items.push_back(string(recv_packet->m_itemName));
+			break;
+		}
+		case 3:
+		{
+			CObject* object = scene->GetIDObject(GROUP_TYPE::ONCE_ITEM, recv_packet->m_id);
+			COnceItem* item = reinterpret_cast<COnceItem*>(object);
+			item->m_items.push_back(string(recv_packet->m_itemName));
+			break;
+		}
+		}
+		break;
 	}
-	break;
-
 	default:
 		break;
 	}

@@ -164,6 +164,7 @@
     <ClInclude Include="AssetManager.h" />
     <ClInclude Include="Bilboard.h" />
     <ClInclude Include="BilboardShader.h" />
+    <ClInclude Include="Box.h" />
     <ClInclude Include="Buffer.h" />
     <ClInclude Include="Bullet.h" />
     <ClInclude Include="Camera.h" />
@@ -280,6 +281,7 @@
     <ClCompile Include="AssetManager.cpp" />
     <ClCompile Include="Bilboard.cpp" />
     <ClCompile Include="BilboardShader.cpp" />
+    <ClCompile Include="Box.cpp" />
     <ClCompile Include="Buffer.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>

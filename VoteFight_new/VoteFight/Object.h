@@ -11,6 +11,7 @@ class CSpriteRenderer;
 class CCollider;
 class CCamera;
 class CScene;
+class CBilboardUI;
 
 class CObject
 {
@@ -33,6 +34,8 @@ public:
 
 	CObject*		    m_parent;
 	vector<CObject*>    m_children;
+
+	vector<CBilboardUI*> m_bilboardUI;
 
 	CObject();
 	CObject(const CObject& rhs) = delete;
@@ -94,7 +97,7 @@ public:
 
 	virtual void PreRender(CCamera* camera);
 	virtual void Render(CCamera* camera);
-	virtual void RenderBilboard(CCamera* camera) {}
+	virtual void RenderBilboard(CCamera* camera);
 
 	virtual const XMFLOAT3& GetPosition() ;
 	virtual void SetPostion(const XMFLOAT3& rVector);
