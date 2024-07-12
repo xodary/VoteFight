@@ -38,9 +38,9 @@ void CPlayer::Init()
 	animator->Play("Idle", true);
 
 	m_Inventory = new CInventory();
-
-	//m_bilboardUI.emplace_back(new CHPbarUI(this));
-	//m_bilboardUI.push_back(new CTextUI(this));
+	
+	m_bilboardUI.emplace_back(new CHPbarUI(this));
+	m_bilboardUI.push_back(new CTextUI(this));
 }
 
 void CPlayer::Attack()

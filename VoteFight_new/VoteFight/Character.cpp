@@ -50,8 +50,7 @@ void CCharacter::RenderBilboard(CCamera* camera)
 {
     for (auto& ui : m_bilboardUI)
     {
-        //if (ui->IsActive())
-        ui->Render(camera);
+        if (ui->IsActive()) ui->Render(camera);
     }
 }
 

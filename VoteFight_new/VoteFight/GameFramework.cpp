@@ -177,7 +177,6 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CreateRootSignature();
 	CreateShaderVariables();
 
-	// Close ������ Ŀ�ǵ帮��Ʈ�� Open ���·� �����Ų��?
 	DX::ThrowIfFailed(m_d3d12GraphicsCommandList->Reset(m_d3d12CommandAllocator.Get(), nullptr));
 
 	m_DescriptorHeapManager = new DescriptorHeapManager();

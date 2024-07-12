@@ -74,6 +74,8 @@ void CGameScene::Enter()
 {
 	// ShowCursor(false);
 
+	CCameraManager::GetInstance()->SetGameSceneMainCamera();
+
 	const unordered_map<int,CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	const unordered_map<int,CObject*>& Monsters = GetGroupObject(GROUP_TYPE::MONSTER);
 
@@ -138,8 +140,6 @@ void CGameScene::Init()
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::GROUND_ITEM);
 
 	CreateShaderVariables();
-
-	CCameraManager::GetInstance()->SetGameSceneMainCamera();
 }
 
 void CGameScene::SceneLoad()

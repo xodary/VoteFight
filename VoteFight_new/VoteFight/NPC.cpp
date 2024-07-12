@@ -36,7 +36,7 @@ void CNPC::Init()
 	animator->SetWeight("idle", 1.0f);
 	animator->Play("idle", true);
 
-	//m_bilboardUI.push_back(new CSpeechBubbleUI(this));
+	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
 }
 
 void CNPC::Update()

@@ -229,6 +229,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		scene = CSceneManager::GetInstance()->GetCurrentScene();
 		for (int i = 0; i < 3; ++i) {
 			scene->AddObject(GROUP_TYPE::PLAYER, objects[i], objects[i]->m_id);
+			objects[i]->Init();
 		}
 	}
 	break;

@@ -95,6 +95,9 @@ void CAssetManager::LoadMeshes(const string& fileName)
 			break;
 		}
 	}
+
+	m_meshes["HealthBar"] = new CRectMesh(1.5, 0.1);
+	m_meshes["SpeechBubble"] = new CRectMesh(2, 1);
 }
 
 void CAssetManager::LoadTextures(const string& fileName)

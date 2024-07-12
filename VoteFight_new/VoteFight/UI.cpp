@@ -5,7 +5,6 @@
 #include "Camera.h"
 #include "AssetManager.h"
 #include "InputManager.h"
-
 #include "Mesh.h"
 #include "Texture.h"
 #include "Material.h"
@@ -330,8 +329,7 @@ CSpeechBubbleUI::CSpeechBubbleUI(CObject* owner)
 	m_isActive = true;
 	CMaterial* material = new CMaterial();
 	material->SetStateNum(0);
-	CRectMesh* mesh = new CRectMesh(2, 1);
-	SetMesh(mesh);
+	SetMesh(CAssetManager::GetInstance()->GetMesh(string("SpeechBubble")));
 	material->SetTexture(CAssetManager::GetInstance()->GetTexture("speech_bubble"));
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
 	material->m_shaders.push_back(BilboardShader);
@@ -340,6 +338,8 @@ CSpeechBubbleUI::CSpeechBubbleUI(CObject* owner)
 
 void CSpeechBubbleUI::Update()
 {
+	CObject::Update();
+	
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 
@@ -347,8 +347,6 @@ void CSpeechBubbleUI::Update()
 	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
 
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 6.0f, transform->GetPosition().z));
-
-	CObject::Update();
 }
 
 CHPbarUI::CHPbarUI(CObject* owner)
@@ -359,8 +357,7 @@ CHPbarUI::CHPbarUI(CObject* owner)
 	CMaterial* material = new CMaterial();
 	material->SetStateNum(0);
 	material->SetColor(XMFLOAT4(1, 0, 0, 1));
-	CRectMesh* mesh = new CRectMesh(1.5, 0.1);
-	SetMesh(mesh);
+	SetMesh(CAssetManager::GetInstance()->GetMesh(string("HealthBar")));
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
 	material->m_shaders.push_back(BilboardShader);
 	m_materials.push_back(material);
@@ -425,6 +422,8 @@ void CTextUI::Render(CCamera* camera)
 
 void CTextUI::Update()
 {
+	CObject::Update();
+	
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	
@@ -432,7 +431,5 @@ void CTextUI::Update()
 	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
 	
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 4.2f, transform->GetPosition().z));
-
-	CObject::Update();
 }
 
