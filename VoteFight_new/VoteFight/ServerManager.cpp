@@ -19,7 +19,7 @@
 #include "Transform.h"
 #include "GameFramework.h"
 #include "Camera.h"
-
+#include "TimeManager.h"
 #include "Object.h"
 #include "LoginScene.h"
 #include "SelectScene.h"
@@ -356,6 +356,20 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		}
 		break;
 	}
+	case PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET:
+	{
+		SC_UPDATE_PHASE_PACKET* recv_packet = reinterpret_cast<SC_UPDATE_PHASE_PACKET*>(_Packet);
+		
+		std::chrono::duration<float> duration_in_float = recv_packet->m_time;
+		float seconds_as_float = duration_in_float.count();
+
+		CTimeManager::GetInstance()->m_phaseTime = seconds_as_float;
+		CTimeManager::GetInstance()->m_lastTime = seconds_as_float;
+		CTimeManager::GetInstance()->m_phase = recv_packet->m_phase;
+		cout << "Phase " << recv_packet->m_phase << endl;
+	}
+	break;
+
 	default:
 		break;
 	}

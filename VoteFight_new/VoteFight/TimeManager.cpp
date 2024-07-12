@@ -71,4 +71,7 @@ void CTimeManager::Update()
 		sprintf_s(buffer, sizeof(buffer), "FPS: %d", m_fps);
 		SetWindowTextA(CGameFramework::GetInstance()->GetHwnd(), buffer);
 	}
+
+	m_lastTime -= m_deltaTime;
+	cout << "Last Time : " << m_lastTime << endl;
 }

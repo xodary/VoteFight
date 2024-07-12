@@ -3,7 +3,7 @@
 
 class RemoteClient;
 
-enum EVENT_TYPE { EV_UPDATE };
+enum EVENT_TYPE { EV_UPDATE, EV_PHASE };
 
 struct TIMER_EVENT {
 	RemoteClient* obj_id;
@@ -18,6 +18,7 @@ class CTimer
 {
 public:
 	static concurrency::concurrent_priority_queue<TIMER_EVENT> timer_queue;
+	static int phase;
 
 	CTimer() {}
 	~CTimer() {}

@@ -27,6 +27,13 @@ void CTimer::do_timer()
 				PostQueuedCompletionStatus(Iocp::iocp.m_hIocp, 1, (ULONG_PTR)ev.obj_id, &ov->m_wsa_over);
 			}
 			break;
+			case EV_PHASE:
+			{
+				EXP_OVER* ov = new EXP_OVER;
+				ov->m_ioType = IO_TYPE::IO_PHASE;
+				PostQueuedCompletionStatus(Iocp::iocp.m_hIocp, 1, (ULONG_PTR)ev.obj_id, &ov->m_wsa_over);
+			}
+			break;
 			}
 			continue;		// 즉시 다음 작업 꺼내기
 		}

@@ -142,23 +142,6 @@ void CGameScene::Init()
 	CreateShaderVariables();
 }
 
-void CGameScene::SceneLoad()
-{
-	Load("GameScene.bin");
-	Load("Fir_Tree_Scene.bin");
-	// Load("White_House_Scene.bin");
-	// Load("Building_Bakery_Scene.bin");
-	// Load("Woods.bin");
-	// Load("FenceScene.bin");
-	// Load("Homer_link_Scene.bin");
-	// //Load("Homer_Solider_Scene.bin");
-	// Load("Marge_Police_Scene.bin");
-	Load("FishMon_Scene.bin");
-	Load("Character_Scene.bin");
-	// Load("Sea_Scene.bin");
-	//LoadUI("GameSceneUI.bin");
-}
-
 void CGameScene::InitLight()
 {
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
@@ -484,7 +467,8 @@ void CGameScene::RenderImGui()
 					else
 						hovered[i][j] = false;
 
-					ImGui::Text("%s", player->myItems[i][j].c_str());
+					if(!player->myItems[i][j].empty())
+						ImGui::Text("%s", player->myItems[i][j].c_str());
 					ImGui::EndChildFrame();
 				}
 
@@ -556,7 +540,42 @@ void CGameScene::RenderImGui()
 		ImGui::PopStyleColor();
 		ImGui::PopID();
 	}
+	ImGui::End();
+	ImGui::Render();
 
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
+
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
+
+	windowSize.x = framework->GetResolution().x / 5;
+	windowSize.y = framework->GetResolution().y / 15;
+	windowPos.x = framework->GetResolution().x - windowSize.x - 10;
+	windowPos.y = 10;
+
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 1.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+
+	ImGui::Begin("White Background Window", nullptr, window_flags);
+	{
+		ImVec2 center = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
+		
+		float rate = CTimeManager::GetInstance()->m_lastTime / CTimeManager::GetInstance()->m_phaseTime;
+		ImVec2 top_left = ImVec2(center.x - windowSize.x / 2, center.y - windowSize.y / 2);
+		ImVec2 bottom_right = ImVec2((center.x - windowSize.x / 2) + windowSize.x * rate, center.y + windowSize.y / 2);
+
+		// 사각형 그리기
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(0, 0, 0, 255));
+
+	}
+
+	ImGui::PopStyleVar();
+	ImGui::PopStyleColor();
 	ImGui::End();
 
 	ImGui::Render();

@@ -29,7 +29,8 @@ enum class SocketType {
 enum class IO_TYPE {
 	IO_RECV,
 	IO_SEND,
-	IO_UPDATE
+	IO_UPDATE,
+	IO_PHASE
 };
 
 class EXP_OVER {

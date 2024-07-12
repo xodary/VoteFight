@@ -21,6 +21,10 @@ private:
 	virtual ~CTimeManager();
 
 public:
+	int m_phase;
+	float m_phaseTime;
+	float m_lastTime;
+
 	void Init();
 
 	float GetDeltaTime();

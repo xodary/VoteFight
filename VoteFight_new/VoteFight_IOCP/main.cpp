@@ -23,6 +23,8 @@ recursive_mutex				mx_accept;
 shared_ptr<Socket>			listenSocket;			
 shared_ptr<RemoteClient>	remoteClientCandidate; 
 unordered_map<int, CObject*> CGameScene::m_objects[(int)GROUP_TYPE::COUNT];
+int	CTimer::phase;
+chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
 
 // Client 종료 처리 함수
 void	ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient);
@@ -30,6 +32,7 @@ void	ProcessAccept();
 void	PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet);
 void	WorkerThread();
 void	UpdatePos(OVERLAPPED_ENTRY& readEvent);
+void	UpdatePhase(OVERLAPPED_ENTRY& readEvent);
 void	CloseServer();
 
 // 서버 프로그램 진입점
@@ -107,6 +110,12 @@ void WorkerThread()
 				if (IO_TYPE::IO_UPDATE == p_readOverlapped->m_ioType) {
 					//cout << "Update" << endl;
 					UpdatePos(readEvent);
+					continue;
+				}
+
+				if (IO_TYPE::IO_PHASE == p_readOverlapped->m_ioType) {
+					//cout << "Update" << endl;
+					UpdatePhase(readEvent);
 					continue;
 				}
 
@@ -204,6 +213,30 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 	TIMER_EVENT ev{ (RemoteClient*)readEvent.lpCompletionKey, chrono::system_clock::now() + 100ms, EV_UPDATE, 0 };
 	CTimer::timer_queue.push(ev);
 }
+
+void UpdatePhase(OVERLAPPED_ENTRY& readEvent)
+{
+	for (auto& client : RemoteClient::m_remoteClients) {
+		if (client.second == nullptr || !client.second->m_ingame) continue;
+		auto duration = chrono::system_clock::now() - client.second->m_lastTime;
+		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+		XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
+		client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
+		client.second->m_lastTime = chrono::system_clock::now();
+
+		SC_UPDATE_PHASE_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_UPDATE_PHASE_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET;
+		send_packet.m_phase = CTimer::phase;
+		send_packet.m_time = phase_time[CTimer::phase];
+		client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+
+		cout << "Phase " << CTimer::phase << endl;
+	}
+	TIMER_EVENT ev{ (RemoteClient*)readEvent.lpCompletionKey, chrono::system_clock::now() + phase_time[CTimer::phase++], EV_PHASE, 0 };
+	CTimer::timer_queue.push(ev);
+}
+
 void ProcessAccept()
 {
 	lock_guard<recursive_mutex> lock_accept(mx_accept);
@@ -504,6 +537,10 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		}
 
 		EXP_OVER* exover = new EXP_OVER;
+		exover->m_ioType = IO_TYPE::IO_PHASE;
+		PostQueuedCompletionStatus(Iocp::iocp.m_hIocp, 1, 0, &exover->m_wsa_over);
+
+		exover = new EXP_OVER;
 		exover->m_ioType = IO_TYPE::IO_UPDATE;
 		PostQueuedCompletionStatus(Iocp::iocp.m_hIocp, 1, 0, &exover->m_wsa_over);
 	}

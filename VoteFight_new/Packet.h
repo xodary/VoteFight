@@ -33,6 +33,7 @@ enum PACKET_TYPE {
 	P_SC_GAMESTART_PACKET,
 	P_SC_CHANGE_STATE,
 	P_SC_NPC_EXCHANGE_PACKET,
+	P_SC_UPDATE_PHASE_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -116,6 +117,13 @@ struct SC_NPC_EXCHANGE_PACKET {
 	int					m_id;
 	int					m_itemType;	// 0이면 need, 1이면 output
 	char				m_itemName[NAME_SIZE];
+};
+
+struct SC_UPDATE_PHASE_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	int					m_phase;
+	chrono::seconds		m_time;
 };
 
 // Packet(Clinet->Server)
