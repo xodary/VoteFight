@@ -372,6 +372,8 @@ void CGameScene::Render()
 	commandList->DrawInstanced(4, 1, 0, 0);
 	
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
+	camera->RSSetViewportsAndScissorRects();
+	camera->UpdateShaderVariables();
 
 	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
 	{

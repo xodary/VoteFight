@@ -109,5 +109,5 @@ void CLoginScene::Render()
 
 CLoginScene::~CLoginScene()
 {
-    ReleaseShaderVariables();
+    //ReleaseShaderVariables();
 }

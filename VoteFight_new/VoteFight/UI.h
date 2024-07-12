@@ -54,6 +54,8 @@ class CHPbarUI : public CBilboardUI
 {
 public:
 	CHPbarUI(CObject* owner);
+	~CHPbarUI() { 
+		cout << "deleted" << endl; }
 	virtual void Update();
 };
 
@@ -61,6 +63,9 @@ class CSpeechBubbleUI : public CBilboardUI
 {
 public:
 	CSpeechBubbleUI(CObject* owner);
+	~CSpeechBubbleUI() {
+		cout << "deleted" << endl;
+	}
 	virtual void Update();
 };
 
@@ -69,7 +74,8 @@ class CTextUI : public CBilboardUI
 public:
 
 	CTextUI(CObject* owner);
-	~CTextUI();
+	~CTextUI() {
+		cout << "deleted" << endl; }
 
 	virtual void Render(CCamera* camera);
 	virtual void Update();

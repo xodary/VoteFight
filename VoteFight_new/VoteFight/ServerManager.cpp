@@ -23,6 +23,7 @@
 #include "Object.h"
 #include "LoginScene.h"
 #include "SelectScene.h"
+#include "NPC.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -248,10 +249,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
 		cout << "SC_ADD_PLAYER" << endl;
 
-		if (CGameFramework::GetInstance()->my_id == recv_packet->m_id) {
-			cout << "Error: Add my ID" << endl;
-			return;
-		}
 		// 오브젝트 로드
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 		CObject* object = CObject::Load(string(recv_packet->m_modelName));
@@ -260,6 +257,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 		transform->SetPosition(recv_packet->m_pos);
 		transform->SetRotation(recv_packet->m_rota);
+		transform->SetScale(recv_packet->m_sca);
 
 		// ID 설정
 		object->m_id = recv_packet->m_id;
@@ -268,7 +266,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		// 씬에 추가
 		scene->AddObject((GROUP_TYPE)recv_packet->m_grouptype, object, recv_packet->m_id);
-
 	}
 	break;
 
@@ -287,6 +284,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
+		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_upAnimation, 2);
 		static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_angle;
 		transform->SetPosition(recv_packet->m_pos);
 	}
@@ -296,12 +295,15 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	{
 		SC_POS_PACKET* recv_packet = reinterpret_cast<SC_POS_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-		CObject* obj = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
-		if (obj != nullptr) {
-			CTransform* transform = static_cast<CTransform*>(obj->GetComponent(COMPONENT_TYPE::TRANSFORM));
-			transform->SetPosition(recv_packet->m_pos);
-			//transform->SetRotation(XMFLOAT3(0, recv_packet->m_rota, 0));
-			cout << "SC_POS_PACKET" << endl;
+		if (scene->m_name == "GameScene")
+		{
+			CObject* obj = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
+			if (obj != nullptr) {
+				CTransform* transform = static_cast<CTransform*>(obj->GetComponent(COMPONENT_TYPE::TRANSFORM));
+				transform->SetPosition(recv_packet->m_pos);
+				//transform->SetRotation(XMFLOAT3(0, recv_packet->m_rota, 0));
+				//cout << "SC_POS_PACKET" << endl;
+			}
 		}
 	}
 	break;
@@ -314,6 +316,19 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->Play(recv_packet->m_key, true);
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_NPC_EXCHANGE_PACKET:
+	{
+		SC_NPC_EXCHANGE_PACKET* recv_packet = reinterpret_cast<SC_NPC_EXCHANGE_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_id);
+		CNPC* npc = reinterpret_cast<CNPC*>(object);
+		if(recv_packet->m_itemType == 0)
+			npc->m_needs.push_back(string(recv_packet->m_itemName));
+		else
+			npc->m_outputs.push_back(string(recv_packet->m_itemName));
 	}
 	break;
 

@@ -4,6 +4,7 @@
 #include "RemoteClient.h"
 #include "Timer.h"
 #include "GameScene.h"
+#include "NPC.h"
 
 volatile bool				stopServer = false;
 static unsigned long long	nextClientID{ 0 };		// Next Client ID
@@ -27,6 +28,7 @@ void	ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient);
 void	ProcessAccept();
 void	PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet);
 void	WorkerThread();
+void	UpdatePos(OVERLAPPED_ENTRY& readEvent);
 void	CloseServer();
 
 // 서버 프로그램 진입점
@@ -103,32 +105,7 @@ void WorkerThread()
 
 				if (IO_TYPE::IO_UPDATE == p_readOverlapped->m_ioType) {
 					//cout << "Update" << endl;
-					{
-						for (auto& client : RemoteClient::m_remoteClients) {
-							if (client.second == nullptr || !client.second->m_ingame) continue;
-							for (auto& rc : RemoteClient::m_remoteClients) {
-								if (rc.second == nullptr || !rc.second->m_ingame) continue;
-								auto duration = chrono::system_clock::now() - rc.second->m_lastTime;
-								auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
-								cout << seconds << endl;
-								XMFLOAT3 shift = Vector3::ScalarProduct(rc.second->m_player->m_Vec, seconds * rc.second->m_player->m_Velocity);
-								//XMFLOAT3 shift = Vector3::ScalarProduct(rc.second->m_player->m_Vec, rc.second->m_player->m_Velocity * 0.1f);
-								rc.second->m_player->m_Pos = Vector3::Add(rc.second->m_player->m_Pos, shift);
-								rc.second->m_lastTime = chrono::system_clock::now();
-
-								SC_POS_PACKET send_packet;
-								send_packet.m_size = sizeof(SC_POS_PACKET);
-								send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
-								send_packet.m_id = rc.second->m_id;
-								send_packet.m_pos = rc.second->m_player->m_Pos;
-								//send_packet.m_rota = rc.second->m_player->m_Rota;
-								client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-								cout << " >> send ) SC_POS_PACKET" << endl;
-							}
-						}
-						TIMER_EVENT ev{ (RemoteClient*)readEvent.lpCompletionKey, chrono::system_clock::now() + 100ms, EV_UPDATE, 0 };
-						CTimer::timer_queue.push(ev);
-					}
+					UpdatePos(readEvent);
 					continue;
 				}
 
@@ -198,6 +175,33 @@ void WorkerThread()
 	catch (Exception& e) {
 		cout << " [ Exception ] " << e.what() << endl;
 	}
+}
+
+void UpdatePos(OVERLAPPED_ENTRY& readEvent)
+{
+	for (auto& client : RemoteClient::m_remoteClients) {
+		if (client.second == nullptr || !client.second->m_ingame) continue;
+		auto duration = chrono::system_clock::now() - client.second->m_lastTime;
+		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+		XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
+		client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
+		client.second->m_lastTime = chrono::system_clock::now();
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (rc.second == nullptr || !rc.second->m_ingame) continue;
+			SC_POS_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_POS_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
+			//send_packet.m_grouptype = client.second->m_player->m_grouptype;
+			send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+			send_packet.m_id = client.second->m_id;
+			send_packet.m_pos = client.second->m_player->m_Pos;
+			//send_packet.m_rota = rc.second->m_player->m_Rota;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+	}
+	TIMER_EVENT ev{ (RemoteClient*)readEvent.lpCompletionKey, chrono::system_clock::now() + 100ms, EV_UPDATE, 0 };
+	CTimer::timer_queue.push(ev);
 }
 void ProcessAccept()
 {
@@ -327,7 +331,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
-					
 		break;
 	}
 
@@ -338,7 +341,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
 		cout << seconds << endl;
 		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
-		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
+		_Client->m_player->m_Pos = recv_packet->m_pos;
 		_Client->m_lastTime = chrono::system_clock::now();
 		_Client->m_player->m_Velocity = 0;
 
@@ -353,7 +356,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_pos = _Client->m_player->m_Pos;
 			
 			_Client->m_lastTime = chrono::system_clock::now();
-			cout << " >> send ) CS_STOP_PACKET" << endl;
+			cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
 
 			for (auto& rc : RemoteClient::m_remoteClients) {
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -367,6 +370,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_grouptype = _Client->m_player->m_grouptype;
 			send_packet.m_id = _Client->m_id;
 			strcpy_s(send_packet.m_key, "Idle");
+			cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 
 			for (auto& rc : RemoteClient::m_remoteClients) {
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -398,6 +402,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
+		cout << " GameStart" << endl;
 		{
 			SC_GAMESTART_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_GAMESTART_PACKET);
@@ -407,6 +412,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			}
 		}
+		cout << " >> send ) SC_GAMESTART_PACKET" << endl;
 
 		XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
 		for (auto& rc : RemoteClient::m_remoteClients) {
@@ -421,23 +427,63 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				send_packet.m_pos = rc2.second->m_player->m_Pos;
 
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_SPAWN_PACKET" << endl;
 			}
 
-			for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {	// Scene Object
-				if (i == (int)GROUP_TYPE::PLAYER) continue;
-				for (auto& object : CGameScene::m_objects[i]) {
-					if (object.second == nullptr) continue;
-					SC_ADD_PACKET send_packet;
-					send_packet.m_size = sizeof(SC_ADD_PACKET);
-					send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
-					send_packet.m_id = object.second->m_id;
-					send_packet.m_grouptype = i;
-					send_packet.m_pos = object.second->m_Pos;
-					send_packet.m_rota = object.second->m_Rota;
-					strcpy_s(send_packet.m_modelName, object.second->m_modelname.c_str());
+			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::NPC]) {
+				if (object.second == nullptr) continue;
+				SC_ADD_PACKET send_packet;
+				send_packet.m_size = sizeof(SC_ADD_PACKET);
+				send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+				send_packet.m_id = object.second->m_id;
+				send_packet.m_grouptype = (int)GROUP_TYPE::NPC;
+				send_packet.m_pos = object.second->m_Pos;
+				send_packet.m_rota = object.second->m_Rota;
+				send_packet.m_sca = object.second->m_Sca;
+				strcpy_s(send_packet.m_modelName, object.second->m_modelname.c_str());
 
-					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_NPC_ADD_PACKET" << endl;
+
+				CNPC* npc = reinterpret_cast<CNPC*>(object.second);
+				{
+					for (auto name : npc->m_needs) {
+						SC_NPC_EXCHANGE_PACKET send_packet;
+						send_packet.m_size = sizeof(SC_NPC_EXCHANGE_PACKET);
+						send_packet.m_type = P_SC_NPC_EXCHANGE_PACKET;
+						send_packet.m_id = npc->m_id;
+						send_packet.m_itemType = 0;
+						strcpy_s(send_packet.m_itemName, name.c_str());
+						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+						cout << " >> send ) SC_NPC_EXCHANGE_PACKET : need" << endl;
+					}
+					for (auto name : npc->m_outputs) {
+						SC_NPC_EXCHANGE_PACKET send_packet;
+						send_packet.m_size = sizeof(SC_NPC_EXCHANGE_PACKET);
+						send_packet.m_type = P_SC_NPC_EXCHANGE_PACKET;
+						send_packet.m_id = npc->m_id;
+						send_packet.m_itemType = 1;
+						strcpy_s(send_packet.m_itemName, name.c_str());
+						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+						cout << " >> send ) SC_NPC_EXCHANGE_PACKET : output" << endl;
+					}
 				}
+			}
+
+			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
+				if (object.second == nullptr) continue;
+				SC_ADD_PACKET send_packet;
+				send_packet.m_size = sizeof(SC_ADD_PACKET);
+				send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
+				send_packet.m_id = object.second->m_id;
+				send_packet.m_grouptype = (int)GROUP_TYPE::NPC;
+				send_packet.m_pos = object.second->m_Pos;
+				send_packet.m_rota = object.second->m_Rota;
+				send_packet.m_sca = object.second->m_Sca;
+				strcpy_s(send_packet.m_modelName, object.second->m_modelname.c_str());
+
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_MONSTER_ADD_PACKET" << endl;
 			}
 		}
 

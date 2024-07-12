@@ -340,7 +340,6 @@ CSpeechBubbleUI::CSpeechBubbleUI(CObject* owner)
 
 void CSpeechBubbleUI::Update()
 {
-	CObject::Update();
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 
@@ -348,6 +347,8 @@ void CSpeechBubbleUI::Update()
 	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
 
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 6.0f, transform->GetPosition().z));
+
+	CObject::Update();
 }
 
 CHPbarUI::CHPbarUI(CObject* owner)
@@ -367,7 +368,6 @@ CHPbarUI::CHPbarUI(CObject* owner)
 
 void CHPbarUI::Update()
 {
-	CObject::Update();
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 
@@ -375,6 +375,7 @@ void CHPbarUI::Update()
 	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
 
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 3.5f, transform->GetPosition().z));
+	CObject::Update();
 }
 
 CTextUI::CTextUI(CObject* owner)
@@ -391,10 +392,6 @@ CTextUI::CTextUI(CObject* owner)
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
 	textMaterial->m_shaders.push_back(BilboardShader);
 	m_materials.push_back(textMaterial);
-}
-
-CTextUI::~CTextUI()
-{
 }
 
 void CTextUI::Render(CCamera* camera)
@@ -428,7 +425,6 @@ void CTextUI::Render(CCamera* camera)
 
 void CTextUI::Update()
 {
-	CObject::Update();
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	
@@ -436,5 +432,7 @@ void CTextUI::Update()
 	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
 	
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 4.2f, transform->GetPosition().z));
+
+	CObject::Update();
 }
 

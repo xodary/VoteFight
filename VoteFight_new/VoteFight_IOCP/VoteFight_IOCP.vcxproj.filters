@@ -49,6 +49,9 @@
     <ClCompile Include="GameScene.cpp">
       <Filter>04. Scene</Filter>
     </ClCompile>
+    <ClCompile Include="NPC.cpp">
+      <Filter>03. Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01. Dependency">
@@ -129,6 +132,9 @@
     </ClInclude>
     <ClInclude Include="GameScene.h">
       <Filter>04. Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="NPC.h">
+      <Filter>03. Object</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

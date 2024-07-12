@@ -57,8 +57,8 @@ void CMonster::Update()
 	CObject::Update();
 	if (AimObejct)
 	{
-		XMFLOAT3 MyPostion = GetPostion();
-		XMFLOAT3 TargetPostion = AimObejct->GetPostion();
+		XMFLOAT3 MyPostion = GetPosition();
+		XMFLOAT3 TargetPostion = AimObejct->GetPosition();
 		double dx = TargetPostion.x - MyPostion.x;
 		double dz = TargetPostion.z - MyPostion.z;
 		float angle = atan2(dz, dx); // ¶Ç´Â M_PI

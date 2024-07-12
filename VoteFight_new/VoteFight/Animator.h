@@ -6,7 +6,7 @@ class CAnimation;
 
 class CAnimator abstract : public CComponent
 {
-protected:
+public:
 	bool							   m_isLoop;
 	bool							   m_isFinished;
 	bool							   m_bBlending;
@@ -18,7 +18,6 @@ protected:
 	float							   m_elapsedTime;
 	string							   m_upAnimation;
 
-public:
 	CAnimator();
 	~CAnimator();
 	

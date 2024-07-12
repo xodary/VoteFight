@@ -600,9 +600,17 @@ void CGameFramework::PostRender()
 
 void CGameFramework::PopulateCommandList()
 {
-	ResetCommandAllocatorAndList();
+	if (KEY_TAP(KEY::ESC))
+	{
+		PostQuitMessage(0);
+	}
 
+	ResetCommandAllocatorAndList();
 	UpdateShaderVariables();
+
+#ifdef CONNECT_SERVER
+	CServerManager::Tick();
+#endif
 
 	CSceneManager::GetInstance()->Update();
 	CCameraManager::GetInstance()->Update();
@@ -635,13 +643,8 @@ void CGameFramework::PopulateCommandList()
 
 void CGameFramework::AdvanceFrame()
 {
-
 	CTimeManager::GetInstance()->Update();
 	CInputManager::GetInstance()->Update();
-
-#ifdef CONNECT_SERVER
-	CServerManager::Tick();
-#endif
 
 	PopulateCommandList();
 	DX::ThrowIfFailed(m_dxgiSwapChain->Present(1, 0));

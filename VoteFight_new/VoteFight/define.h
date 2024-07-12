@@ -7,6 +7,7 @@
 #endif
 
 #define CONNECT_SERVER
+#define NPC_RANGE 5
 
 constexpr int SECTOR_RANGE_ROW = 8;
 constexpr int SECTOR_RANGE_COL = 8;

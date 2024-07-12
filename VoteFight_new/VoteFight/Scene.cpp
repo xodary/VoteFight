@@ -170,6 +170,7 @@ const unordered_map<int, CObject*>& CScene::GetGroupObject(GROUP_TYPE groupType)
 
 CObject* CScene::GetIDObject(GROUP_TYPE groupType, int id)
 {
+	if (m_objects[static_cast<int>(groupType)].count(id) == 0) return NULL;
 	return m_objects[static_cast<int>(groupType)][id];
 }
 

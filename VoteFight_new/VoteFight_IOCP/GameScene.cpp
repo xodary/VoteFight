@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "GameScene.h"
+#include "NPC.h"
 #include "Object.h"
 
 float CGameScene::m_heights[400][400];
@@ -86,18 +87,30 @@ void CGameScene::Load(const string& fileName)
 
 			switch (groupType)
 			{
-			case GROUP_TYPE::ITEM:
 			case GROUP_TYPE::NPC:
 			case GROUP_TYPE::MONSTER:
 				cout << modelFileName << " is Loading..." << endl;
 				for (int i = 0; i < instanceCount; ++i)
 				{
-					CObject* object = new CObject();
+					CObject* object;
+					switch (groupType)
+					{
+					case GROUP_TYPE::NPC:
+						object = new CNPC();
+						break;
+					case GROUP_TYPE::MONSTER:
+						object = new CObject();	// CMonster·Î º¯°æ
+						break;
+					default:
+						object = new CObject();
+						break;
+					}
 					object->m_grouptype = (int)groupType;
 					object->m_modelname = modelFileName;
 					object->m_Pos = transforms[3 * i];
 					object->m_Pos.y = CGameScene::OnGetHeight(object->m_Pos.x, object->m_Pos.z);
 					object->m_Rota = transforms[3 * i + 1];
+					object->m_Sca = transforms[3 * i + 2];
 					object->m_id = m_objects[static_cast<int>(groupType)].size();
 
 					m_objects[static_cast<int>(groupType)][object->m_id] = object;
@@ -111,6 +124,8 @@ void CGameScene::Load(const string& fileName)
 			break;
 		}
 	}
+
+	NPCInitialize();
 }
 
 void CGameScene::LoadTerrain(const string& fileName)
@@ -146,4 +161,28 @@ void CGameScene::LoadTerrain(const string& fileName)
 		}
 	}
 
+}
+
+void CGameScene::NPCInitialize()
+{
+	cout << "NPCInitialize()" << endl;
+
+	string needs_ex[] = {"fish_meet", "wood", "flower"};
+	string output_ex[] = { "gun", "election_ticket", "drug" };
+	for (auto& object : m_objects[(int)GROUP_TYPE::NPC])
+	{
+		CNPC* npc = reinterpret_cast<CNPC*>(object.second);
+		
+		int n = rand() % size(needs_ex) + 1;
+		for (int i = 0; i < n; ++i)
+		{
+			npc->m_needs.push_back(needs_ex[rand() % size(needs_ex)]);
+		}
+
+		int o = rand() % size(output_ex) + 1;
+		for (int i = 0; i < rand() % size(output_ex) + 1; ++i)
+		{
+			npc->m_outputs.push_back(output_ex[rand() % size(output_ex)]);
+		}
+	}
 }

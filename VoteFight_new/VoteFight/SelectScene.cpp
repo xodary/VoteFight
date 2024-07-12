@@ -66,7 +66,6 @@ void CSelectScene::Enter()
 	// 카메라의 타겟 설정
 	CCameraManager::GetInstance()->SetSelectSceneMainCamera();
 	
-	const unordered_map<int, CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	CObject* focus = new CObject();
 	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	targetTransform->SetPosition(XMFLOAT3(4, 2, 0.3));
@@ -87,21 +86,13 @@ void CSelectScene::Init()
 
 	CreateShaderVariables();
 
-	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::STRUCTURE);
-	for (size_t i = 0; i < objects.size(); i++)
-	{
-		objects[i]->SetDeleted(true);
-	}
+	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 
-	objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	m_SelectCharacter = objects[0];
-	m_SelectCharacter->SetRotate(XMFLOAT3(0, 180, 0));
-
-	for (size_t i = 0; i < objects.size(); i++)
+	for (size_t i = 0; i < 3; i++)
 	{
 		m_WaitCharacters[i] = objects[i];
 		m_WaitCharacters[i]->SetPostion(XMFLOAT3(4 + i * 2, 1, 0.3));
-		m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
+		//m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
 		cout << m_WaitCharacters[i]->GetName() << endl;
 	}
 
@@ -136,7 +127,6 @@ void CSelectScene::InitLight()
 
 void CSelectScene::SelectCharacter(UINT number)
 {
-	XMFLOAT3 tempPostion = m_SelectCharacter->GetPostion();
 	m_selected_model = number;
 	
 	for (size_t i = 0; i < 3; i++)
@@ -178,7 +168,7 @@ void CSelectScene::Update()
 	{
 		for (auto& object : GetGroupObject((GROUP_TYPE)i))
 		{
-			object.second->Update();
+			if(object.second) object.second->Update();
 		}
 	}
 }

@@ -11,5 +11,6 @@ public:
 	static void Load(const string& fileName);
 	static void LoadTerrain(const string& fileName);
 	static float OnGetHeight(float fx, float fz);
+	static void NPCInitialize();
 };
 

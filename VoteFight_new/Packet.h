@@ -4,7 +4,7 @@
 
 #include "Protocol.h"
 
-constexpr int NAME_SIZE = 15;
+constexpr int NAME_SIZE = 30;
 constexpr int CHAT_SIZE = 30;
 
 constexpr int MAX_BUFSIZE_CLIENT = 1024;
@@ -32,6 +32,7 @@ enum PACKET_TYPE {
 	P_SC_SELECT_PACKET,
 	P_SC_GAMESTART_PACKET,
 	P_SC_CHANGE_STATE,
+	P_SC_NPC_EXCHANGE_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -68,6 +69,7 @@ struct SC_ANIMATION_PACKET {
 	unsigned char		m_type;
 	unsigned int		m_id;
 	unsigned int		m_grouptype;
+	unsigned int		m_speed;
 	char				m_key[NAME_SIZE];
 };
 
@@ -79,6 +81,7 @@ struct SC_ADD_PACKET {
 	char				m_modelName[NAME_SIZE];
 	XMFLOAT3			m_pos;
 	XMFLOAT3			m_rota;
+	XMFLOAT3			m_sca;
 };
 
 struct SC_VELOCITY_CHANGE_PACKET {
@@ -105,6 +108,14 @@ struct SC_CHANGE_STATE {
 	unsigned char		m_type;
 	unsigned int		m_id;
 	int					m_health;
+};
+
+struct SC_NPC_EXCHANGE_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	int					m_id;
+	int					m_itemType;	// 0이면 need, 1이면 output
+	char				m_itemName[NAME_SIZE];
 };
 
 // Packet(Clinet->Server)
@@ -144,6 +155,7 @@ struct CS_MOVE_PACKET {
 struct CS_STOP_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
+	XMFLOAT3			m_pos;
 };
 
 struct CS_SELECT_PACKET {

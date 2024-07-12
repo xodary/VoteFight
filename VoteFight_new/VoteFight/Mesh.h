@@ -62,7 +62,7 @@ public:
 	virtual void Render();
 };
 
-class CTextMesh : public CRectMesh
+class CTextMesh : public CMesh
 {
 public:
 	struct FontType {
@@ -73,4 +73,5 @@ public:
 
 	CTextMesh(const std::vector<FontType>& font, const char* sentence, float drawX, float drawY, float scaleX, float scaleY);
 	~CTextMesh();
+	virtual void Render();
 };

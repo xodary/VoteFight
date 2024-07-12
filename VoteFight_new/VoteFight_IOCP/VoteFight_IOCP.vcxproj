@@ -153,6 +153,7 @@
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Disabled</Optimization>
     </ClCompile>
+    <ClCompile Include="NPC.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="pch.cpp" />
     <ClCompile Include="RemoteClient.cpp" />
@@ -180,6 +181,7 @@
     <ClInclude Include="ImaysNet\Socket.h" />
     <ClInclude Include="ImaysNet\SocketInit.h" />
     <ClInclude Include="ImaysNet\targetver.h" />
+    <ClInclude Include="NPC.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="RemoteClient.h" />

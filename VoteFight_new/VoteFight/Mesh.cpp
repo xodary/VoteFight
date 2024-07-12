@@ -312,7 +312,7 @@ void CMesh::Render(int subSetIndex)
 	}
 }
 
-CRectMesh::CRectMesh(float fsizeX, float fsizeY)
+CRectMesh::CRectMesh(float fsizeX, float fsizeY) : CMesh()
 {
 	vector<XMFLOAT2> uv(6); 
 	m_positions.resize(6);
@@ -339,10 +339,14 @@ CRectMesh::CRectMesh(float fsizeX, float fsizeY)
 	m_d3d12PositionBufferView.StrideInBytes = sizeof(XMFLOAT3);
 	m_d3d12PositionBufferView.SizeInBytes = sizeof(XMFLOAT3) * m_positions.size();
 
+	m_d3d12PositionBuffer->SetName(L"m_d3d12PositionBuffer");
+
 	m_d3d12TexCoordBuffer = DX::CreateBufferResource(d3d12Device, d3d12GraphicsCommandList, uv.data(), sizeof(XMFLOAT2) * uv.size(), D3D12_HEAP_TYPE_DEFAULT, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER, m_d3d12TexCoordUploadBuffer.GetAddressOf());
 	m_d3d12TexCoordBufferView.BufferLocation = m_d3d12TexCoordBuffer->GetGPUVirtualAddress();
 	m_d3d12TexCoordBufferView.StrideInBytes = sizeof(XMFLOAT2);
 	m_d3d12TexCoordBufferView.SizeInBytes = sizeof(XMFLOAT2) * uv.size();
+
+	m_d3d12TexCoordBuffer->SetName(L"m_d3d12TexCoordBuffer");
 }
 
 CRectMesh::~CRectMesh()
@@ -361,7 +365,7 @@ void CRectMesh::Render()
 	d3d12GraphicsCommandList->DrawInstanced(m_positions.size(), 1, 0, 0);
 }
 
-CTextMesh::CTextMesh(const std::vector<FontType>& font, const char* sentence, float drawX, float drawY, float scaleX, float scaleY)
+CTextMesh::CTextMesh(const std::vector<FontType>& font, const char* sentence, float drawX, float drawY, float scaleX, float scaleY) : CMesh()
 {
 	m_d3d12PrimitiveTopology = D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
 
@@ -432,4 +436,16 @@ CTextMesh::CTextMesh(const std::vector<FontType>& font, const char* sentence, fl
 
 CTextMesh::~CTextMesh()
 {
+}
+
+void CTextMesh::Render()
+{
+	ID3D12GraphicsCommandList* d3d12GraphicsCommandList = CGameFramework::GetInstance()->GetGraphicsCommandList();
+	d3d12GraphicsCommandList->IASetPrimitiveTopology(m_d3d12PrimitiveTopology);
+
+	// Position Buffer View와 UV Buffer View 2개의 View가 있음.
+	D3D12_VERTEX_BUFFER_VIEW pVertexBufferViews[2] = { m_d3d12PositionBufferView, m_d3d12TexCoordBufferView };
+	d3d12GraphicsCommandList->IASetVertexBuffers(0, 2, pVertexBufferViews);
+
+	d3d12GraphicsCommandList->DrawInstanced(m_positions.size(), 1, 0, 0);
 }

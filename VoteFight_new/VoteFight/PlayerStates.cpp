@@ -123,14 +123,14 @@ void CPlayerWalkState::Update(CObject* object)
 {
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-	//CRigidBody* rigidBody = static_cast<CRigidBody*>(player->GetComponent(COMPONENT_TYPE::RIGIDBODY));
-	//CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 	if (KEY_NONE(KEY::W) && KEY_NONE(KEY::A) && KEY_NONE(KEY::S) && KEY_NONE(KEY::D))
 	{
 		CS_STOP_PACKET p2;
 		p2.m_size = sizeof(p2);
 		p2.m_type = P_CS_STOP_PACKET;
+		p2.m_pos = transform->GetPosition();
 
 		PacketQueue::AddSendPacket(&p2);
 
@@ -138,26 +138,9 @@ void CPlayerWalkState::Update(CObject* object)
 		return;
 	}
 
-	//if (KEY_TAP(KEY::SHIFT))
-	//{
-	//	rigidBody->SetMaxSpeedXZ(300.0f);
-	//	//rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 4000.0f * DT));
-	//	animator->SetSpeed("Pistol_run", 2.0f);
-	//	animator->SetSpeed("Run", 2.0f);
-	//}
-	//else if (KEY_AWAY(KEY::SHIFT))
-	//{
-	//	rigidBody->SetMaxSpeedXZ(150.0f);
-	//	//rigidBody->AddVelocity(Vector3::ScalarProduct(transform->GetForward(), 3000.0f * DT));
-	//	animator->SetSpeed("Pistol_run", 1.0f);
-	//	animator->SetSpeed("Run", 1.0f);
-	//}
-
 	if (KEY_TAP(KEY::S) || KEY_TAP(KEY::A) || KEY_TAP(KEY::W) || KEY_TAP(KEY::D) || KEY_TAP(KEY::SHIFT) ||
 		KEY_AWAY(KEY::S) || KEY_AWAY(KEY::A) || KEY_AWAY(KEY::W) || KEY_AWAY(KEY::D) || KEY_AWAY(KEY::SHIFT))
 	{
-		CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
-
 		XMFLOAT3 v(0, 0, 0);
 		if (KEY_TAP(KEY::W) || KEY_HOLD(KEY::W)) v.z -= 1.0f;
 		if (KEY_TAP(KEY::A) || KEY_HOLD(KEY::A)) v.x -= 1.0f;
@@ -177,15 +160,4 @@ void CPlayerWalkState::Update(CObject* object)
 
 		PacketQueue::AddSendPacket(&p2);
 	}
-	//XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, vR, 0)));
-	//if (KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::W) || KEY_HOLD(KEY::D))
-	//{
-	//	rigidBody->AddForce(Vector3::ScalarProduct(vector, 3000.0f * DT), player->isMove);
-	//}
-
-	//if (Math::IsZero(rigidBody->GetSpeedXZ()))
-	//{
-	//	stateMachine->ChangeState(CPlayerIdleState::GetInstance());
-	//	return;
-	//}
 }

@@ -5,6 +5,7 @@ class CObject
 public:
 	XMFLOAT3	m_Pos;
 	XMFLOAT3	m_Rota;
+	XMFLOAT3	m_Sca;
 	float		m_Angle;
 	float		m_Velocity;
 	XMFLOAT3	m_Vec;

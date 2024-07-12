@@ -526,7 +526,7 @@ void CObject::Render(CCamera* camera)
 	}
 }
 
-const XMFLOAT3& CObject::GetPostion() 
+const XMFLOAT3& CObject::GetPosition() 
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 

@@ -17,7 +17,7 @@ void CBullet::UpdatePostion()
     XMVECTOR moveVector = rotatedForward * m_fSpeed * CTimeManager::GetInstance()->GetDeltaTime();
 
     // 현재 위치 얻기
-    XMFLOAT3 currPosition = GetPostion();
+    XMFLOAT3 currPosition = GetPosition();
 
     // 새로운 위치 계산
     XMFLOAT3 newPosition;

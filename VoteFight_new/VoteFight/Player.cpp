@@ -39,8 +39,8 @@ void CPlayer::Init()
 
 	m_Inventory = new CInventory();
 
-	m_bilboardUI.push_back(new CHPbarUI(this));
-	m_bilboardUI.push_back(new CTextUI(this));
+	//m_bilboardUI.emplace_back(new CHPbarUI(this));
+	//m_bilboardUI.push_back(new CTextUI(this));
 }
 
 void CPlayer::Attack()
@@ -87,7 +87,7 @@ void CPlayer::Shoot(CScene& currScene)
 	{
 		CBullet* Bullet = static_cast<CBullet*>(Load("Bullet"));
 		if (Bullet) {
-			XMFLOAT3 currPostion(GetPostion());
+			XMFLOAT3 currPostion(GetPosition());
 			currPostion.y += 2.f;
 			Bullet->SetPostion(currPostion);
 			XMFLOAT3 currRotate(GetRotate());
@@ -143,12 +143,12 @@ void CPlayer::OnCollision(CObject* collidedObject)
 		}
 		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::NPC)
 		{
-			CNPC* targetNPC = (CNPC*)collidedObject;
-			if (!targetNPC->GetQuest()->getCompletionStatus())
-			{
-				SetNumber_of_items_UI("tiket", m_Inventory->getItems("tiket"), m_Inventory->getItems("tiket") + 1);
-				m_Inventory->exchangeItem(targetNPC->GetQuest()->GetItemName(), targetNPC->GetQuest()->GetItemQuantity(), "tiket", 1);
-			}
+			//CNPC* targetNPC = (CNPC*)collidedObject;
+			//if (!targetNPC->GetQuest()->getCompletionStatus())
+			//{
+			//	SetNumber_of_items_UI("tiket", m_Inventory->getItems("tiket"), m_Inventory->getItems("tiket") + 1);
+			//	m_Inventory->exchangeItem(targetNPC->GetQuest()->GetItemName(), targetNPC->GetQuest()->GetItemQuantity(), "tiket", 1);
+			//}
 		}
 	}
 }
