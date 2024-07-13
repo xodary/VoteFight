@@ -276,9 +276,9 @@ VS_STANDARD_OUTPUT VS_GBuffer(VS_STANDARD_INPUT input)
     output.uv = input.uv;
     
    // 바다의 움직임을 위한 노이즈 기반 Y 좌표 변형
-    float waveHeight = 0.5f; // 물결의 높이
-    float waveFrequency = 5.f; // 물결의 주기
-    float waveSpeed = 0.8f; // 물결의 속도
+    float waveHeight = 0.8f; // 물결의 높이
+    float waveFrequency = 0.1f; // 물결의 주기
+    float waveSpeed = 2.8f; // 물결의 속도
     
     // 중심점(섬의 위치)을 기준으로 파도 효과 적용
     float3 center = float3(0.0, 0.0, 0.0);
@@ -290,8 +290,8 @@ VS_STANDARD_OUTPUT VS_GBuffer(VS_STANDARD_INPUT input)
 
     // 파도 방향을 중심을 향해 변형
     float waveNoise = noise(noiseInput);
-    pW.y += waveHeight * waveNoise;
-    output.position = mul(mul(pW, gmtxView), gmtxProjection);
+    //pW.y += waveHeight * waveNoise;
+    //output.position = mul(mul(pW, gmtxView), gmtxProjection);
     return (output);
 }
 

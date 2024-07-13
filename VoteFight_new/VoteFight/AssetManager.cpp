@@ -599,7 +599,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("Meshes.bin");
 	LoadMeshes("WeaponMeshes.bin");
 	LoadMeshes("PlayerMeshes.bin");
-	LoadMeshes("Meshs2.bin");
+	LoadMeshes("Meshes2.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()

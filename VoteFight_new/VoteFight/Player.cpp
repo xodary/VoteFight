@@ -103,15 +103,14 @@ void CPlayer::Shoot(CScene& currScene)
 	if (currScene.GetName() == "GameScene")
 	{
 		cout << "in GameScene" << endl;
-		CObject* Bullet = reinterpret_cast<CObject*>(Load("Bullet"));
+		CBullet* Bullet = reinterpret_cast<CBullet*>(Load("Bullet"));
 		if (Bullet) {
-			CObject* pos = FindFrame("GunPos");
+			CObject* pos = FindFrame("Gun");
 			XMFLOAT3 currPostion(pos->GetPostion());
 			Bullet->SetPostion(currPostion);
-			XMFLOAT3 currRotate(GetRotate());
 			Bullet->SetRotate(GetRotate());
 			currScene.AddObject(GROUP_TYPE::STRUCTURE, Bullet);
-		//	Bullet->Shoot();
+			Bullet->Shoot();
 
 		}
 	}
