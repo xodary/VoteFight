@@ -42,6 +42,7 @@ void CPlayer::Init()
 	
 	m_bilboardUI.emplace_back(new CHPbarUI(this));
 	m_bilboardUI.push_back(new CTextUI(this));
+	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
 }
 
 void CPlayer::Attack()
@@ -86,14 +87,13 @@ void CPlayer::Shoot(CScene& currScene)
 {
 	if (currScene.GetName() == "GameScene")
 	{
-		CBullet* Bullet = static_cast<CBullet*>(Load("Bullet"));
+		cout << "in GameScene" << endl;
+		CBullet* Bullet = reinterpret_cast<CBullet*>(Load("Bullet"));
 		if (Bullet) {
-			XMFLOAT3 currPostion(GetPosition());
-			currPostion.y += 2.f;
+			CObject* pos = FindFrame("Gun");
+			XMFLOAT3 currPostion(pos->GetPosition());
 			Bullet->SetPostion(currPostion);
-			XMFLOAT3 currRotate(GetRotate());
 			Bullet->SetRotate(GetRotate());
-			Bullet->SetScale(XMFLOAT3(5, 5, 5));
 			currScene.AddObject(GROUP_TYPE::BULLET, Bullet, 0);
 			Bullet->Shoot();
 

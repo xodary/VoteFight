@@ -199,6 +199,11 @@ void CAssetManager::LoadTextures(const string& fileName)
 	bubbleTexture->SetName("speech_bubble");
 	bubbleTexture->Load("speech_bubble", TEXTURE_TYPE::ALBEDO_MAP);
 	m_textures.emplace(bubbleTexture->GetName(), bubbleTexture);
+
+	CTexture* IconsTexture = new CTexture();
+	IconsTexture->SetName("Icons");
+	IconsTexture->Load("Icons", TEXTURE_TYPE::ALBEDO_MAP);
+	m_textures.emplace(IconsTexture->GetName(), IconsTexture);
 }
 
 void CAssetManager::LoadShaders()
@@ -592,6 +597,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("Meshes.bin");
 	LoadMeshes("WeaponMeshes.bin");
 	LoadMeshes("PlayerMeshes.bin");
+	LoadMeshes("Meshes2.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
@@ -599,6 +605,7 @@ void CAssetManager::SceneLoadMaterials()
 	LoadMaterials("Materials.bin");
 	LoadMaterials("WeaponMaterials.bin");
 	LoadMaterials("PlayerMaterials.bin");
+	LoadMaterials("Materials2.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
@@ -606,4 +613,5 @@ void CAssetManager::SceneLoadTextures()
 	LoadTextures("Textures.bin");
 	LoadTextures("WeaponTextures.bin");
 	LoadTextures("PlayerTextures.bin");
+	LoadTextures("Textures2.bin");
 }

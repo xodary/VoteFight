@@ -80,3 +80,11 @@ public:
 	virtual void Render(CCamera* camera);
 	virtual void Update();
 };
+
+class CIcon : public CBilboardUI
+{
+public:
+	CIcon(CObject* owner);
+	virtual void Update();
+};
+

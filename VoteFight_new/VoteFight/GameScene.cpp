@@ -24,6 +24,7 @@
 #include "TerrainObject.h"
 #include "DropItem.h"
 #include "NPC.h"
+#include "Texture.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -107,6 +108,7 @@ void CGameScene::Init()
 
 	//SceneLoad();
 	Load("GameScene.bin");
+	Load("GameScene2.bin");
 
 
 	CObject* object = new CSkyBox(1000, 200);
@@ -438,6 +440,7 @@ void CGameScene::RenderImGui()
 		float startX = (windowSize.x - inventoryWidth) / 2.0f;
 		float startY = (windowSize.y - inventoryHeight) / 2.0f;
 
+
 		ImGui::SetCursorPosY(startY);
 
 		for (int i = 0; i < rows; ++i)
@@ -515,6 +518,7 @@ void CGameScene::RenderImGui()
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
 	ImGui::Begin("Full Screen Window", nullptr, window_flags);
+
 
 	// 아이템 크기 계산
 	const float itemSize = windowSize.y * 5 / 6;
