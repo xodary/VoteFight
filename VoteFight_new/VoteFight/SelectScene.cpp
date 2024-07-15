@@ -429,10 +429,11 @@ void CSelectScene::RenderImGui()
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
+	ImGui::GetFont()->Scale = 2.5;
+	ImGui::PushFont(ImGui::GetFont());
 
 	ImGui::Begin("Button", nullptr, window_flags);
 	{
-		ImGui::SetWindowFontScale(2.5f);
 		if (ImGui::Button("Ready", ImVec2(framework->GetResolution().x / 5, framework->GetResolution().y / 7))) {
 			CS_SELECT_PACKET p;
 			p.m_size = sizeof(p);
@@ -441,6 +442,7 @@ void CSelectScene::RenderImGui()
 			PacketQueue::AddSendPacket(&p);
 		}
 		ImGui::End();
+		ImGui::PopFont();
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
 	}

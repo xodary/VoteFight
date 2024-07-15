@@ -20,7 +20,7 @@ public:
 	bool alive = true;
 	bool ingame = false;
 
-	CObject() {}
+	CObject();
 	~CObject() {}
 
 	static CObject* Load(const string& fileName);

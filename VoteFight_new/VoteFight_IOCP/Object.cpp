@@ -4,6 +4,9 @@
 #include "NPC.h"
 #include "Box.h"
 
+CObject::CObject()
+{
+}
 
 CObject* CObject::Load(const string& fileName)
 {

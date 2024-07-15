@@ -35,10 +35,15 @@ CPlayer::~CPlayer()
 void CPlayer::Init()
 {
 	CAnimator* animator = reinterpret_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->SetWeight("Idle", 1.0f);
-	animator->Play("Idle", true);
+	//animator->SetWeight("Idle", 1.0f);
+	//animator->Play("Idle", true);
+	animator->SetWeight("Pistol_slowwalk", 1.0f);
+	animator->Play("Pistol_slowwalk", true);
 
 	m_Inventory = new CInventory();
+
+	myItems.resize(18);
+	myItems[0] = "wood";
 	
 	m_bilboardUI.emplace_back(new CHPbarUI(this));
 	m_bilboardUI.push_back(new CTextUI(this));
@@ -139,7 +144,7 @@ void CPlayer::OnCollision(CObject* collidedObject)
 {
 	if (collidedObject->GetName() == "PP_Tree_02") {
 		if (KEY_TAP(KEY::LBUTTON) && m_Weapon == WEAPON_TYPE::AXE) {
-			GetItem("Wood");
+			GetItem("wood");
 		}
 	}
 
@@ -430,12 +435,10 @@ void CPlayer::SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, in
 
 void CPlayer::GetItem(string item)
 {
-	for (int i = 0; i < 3; ++i) {
-		for (int j = 0; j < 6; ++j) {
-			if (myItems[i][j].empty()) {
-				myItems[i][j] = item;
-				return;
-			}
+	for (int i = 0; i < 18; ++i) {
+		if (myItems[i].empty()) {
+			myItems[i] = item;
+			return;
 		}
 	}
 }

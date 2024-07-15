@@ -5,10 +5,14 @@
 #include "SceneManager.h"
 #include "Scene.h"
 #include "Animator.h"
+#include "InputManager.h"
 #include "StateMachine.h"
 #include "Transform.h"
+#include "Player.h"
 #include "NPCStates.h"
 #include "UI.h"
+#include "ImaysNet/PacketQueue.h"
+#include "../Packet.h"
 
 CNPC::CNPC() :
 	m_spineName("mixamorig:Spine")
@@ -66,6 +70,36 @@ void CNPC::Update()
 			else if (m_bilboardUI[0]->m_isActive) {
 				cout << "NPC ¸Ö¾îÁü" << endl;
 				m_bilboardUI[0]->m_isActive = false;
+			}
+
+			if (m_bilboardUI[0]->m_isActive && KEY_TAP(KEY::SPACE)) {
+				CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+				CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
+				bool allFound = true;
+
+				vector<string> new_item = player->myItems;
+				for (const string& need : m_needs) {
+					auto it = find(new_item.rbegin(), new_item.rend(), need);
+					if (it == new_item.rend()) allFound = false;
+					else {
+						it->clear();
+					}
+				}
+
+				if(allFound) {
+					for (const string& need : m_needs) {
+						player->myItems = new_item;
+					}
+
+					for (const string& output : m_outputs) {
+						player->GetItem(output);
+					}
+					CS_EXCHANGE_DONE_PACKET p;
+					p.m_type = P_CS_EXCHANGE_DONE_PACKET;
+					p.m_size = sizeof(p);
+					p.m_npc_id = m_id;
+					PacketQueue::AddSendPacket(&p);
+				}
 			}
 		}
 	}

@@ -223,11 +223,9 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 			SC_POS_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_POS_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
-			//send_packet.m_grouptype = client.second->m_player->m_grouptype;
 			send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
 			send_packet.m_id = client.second->m_id;
 			send_packet.m_pos = client.second->m_player->m_Pos;
-			//send_packet.m_rota = rc.second->m_player->m_Rota;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 	}
@@ -351,8 +349,25 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION_PACKET;
 		send_packet.m_grouptype = _Client->m_player->m_grouptype;
 		send_packet.m_id = _Client->m_id;
-		strcpy_s(send_packet.m_key, "Run");
 
+		switch (recv_packet->m_walkType)
+		{
+		case 0:
+			strcpy_s(send_packet.m_key, "Run");
+			break;
+		case 1:
+			strcpy_s(send_packet.m_key, "Pistol_run");
+			break;
+		case 2:
+			strcpy_s(send_packet.m_key, "Walk");
+			break;
+		case 3:
+			strcpy_s(send_packet.m_key, "Weapon_slowwalk");
+			break;
+		case 4:
+			strcpy_s(send_packet.m_key, "Pistol_slowwalk");
+			break;
+		}
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
@@ -473,6 +488,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		cout << " >> send ) SC_GAMESTART_PACKET" << endl;
 
 		XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
+		//XMFLOAT3 pos[3]{ {10, 0, 10},{20, 0, 10},{30, 0, 10} };
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			int i = 0;
 			for (auto& rc2 : RemoteClient::m_remoteClients) {	// other players
@@ -576,6 +592,24 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CS_ATTACK_PACKET* recv_packet = reinterpret_cast<CS_ATTACK_PACKET*>(_Packet);
 		//_Client->m_player->m_Pos
 		//recv_packet->m_vec;
+	}
+	break;
+
+	case PACKET_TYPE::P_CS_EXCHANGE_DONE_PACKET:
+	{
+		CS_EXCHANGE_DONE_PACKET* recv_packet = reinterpret_cast<CS_EXCHANGE_DONE_PACKET*>(_Packet);
+		CNPC* npc = reinterpret_cast<CNPC*>(CGameScene::m_objects[(int)GROUP_TYPE::NPC][recv_packet->m_npc_id]);
+		npc->m_standBy_id = _Client->m_id;
+
+		for (auto& rc : RemoteClient::m_remoteClients)
+		{
+			SC_EXCHANGE_DONE_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_EXCHANGE_DONE_PACKET;
+			send_packet.m_npc_id = recv_packet->m_npc_id;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> send ) SC_EXCHANGE_DONE_PACKET" << endl;
+		}
 	}
 	break;
 

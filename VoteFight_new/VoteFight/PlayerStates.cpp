@@ -82,12 +82,40 @@ void CPlayerWalkState::Enter(CObject* object)
 	
 	CPlayer* player = static_cast<CPlayer*>(object);
 
-	CS_WALK_ENTER_PACKET p;
-	p.m_size = sizeof(p);
-	p.m_type = P_CS_WALK_ENTER_PACKET;
-	p.m_weapon = (int)player->m_Weapon;
-
-	PacketQueue::AddSendPacket(&p);
+	if (KEY_NONE(KEY::RBUTTON))
+	{
+		CS_WALK_ENTER_PACKET p;
+		p.m_size = sizeof(p);
+		p.m_type = P_CS_WALK_ENTER_PACKET;
+		switch (player->m_Weapon)
+		{
+		case WEAPON_TYPE::PUNCH:	// Run
+			p.m_walkType = 0;	
+			break;
+		case WEAPON_TYPE::AXE:		// Pistol_run
+		case WEAPON_TYPE::PISTOL:
+			p.m_walkType = 1;
+			break;
+		}
+	}
+	else {
+		CS_WALK_ENTER_PACKET p;
+		p.m_size = sizeof(p);
+		p.m_type = P_CS_WALK_ENTER_PACKET;
+		switch (player->m_Weapon)
+		{
+		case WEAPON_TYPE::PUNCH:	// Walk
+			p.m_walkType = 2;
+			break;
+		case WEAPON_TYPE::AXE:		// Weapon_slowwalk
+			p.m_walkType = 3;
+			break;
+		case WEAPON_TYPE::PISTOL:	// Pistol_slowwalk
+			p.m_walkType = 4;
+			break;
+		}
+		PacketQueue::AddSendPacket(&p);
+	}
 
 	if (KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::W) || KEY_HOLD(KEY::D) || KEY_HOLD(KEY::SHIFT))
 	{
@@ -112,7 +140,6 @@ void CPlayerWalkState::Enter(CObject* object)
 
 		PacketQueue::AddSendPacket(&p2);
 	}
-
 }
 
 void CPlayerWalkState::Exit(CObject* object)

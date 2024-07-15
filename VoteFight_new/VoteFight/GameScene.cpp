@@ -217,6 +217,10 @@ void CGameScene::Update()
 			i_tf->SetPosition(XMFLOAT3(p.x, GetTerrainHeight(p.x, p.z) + 1.2f + h, p.z));
 		}
 	}
+
+	CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
+	m_mappedGameScene->m_lights[0].m_position = object->GetPosition();
+	m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
 	CScene::Update();
 }
 
@@ -277,7 +281,7 @@ void CGameScene::PreRender()
 				{
 					if ((object->IsActive()) && (!object->IsDeleted()))
 					{
-						//object->PreRender(camera);
+						object->PreRender(camera);
 					}
 				}
 
@@ -402,21 +406,21 @@ void CGameScene::Render()
 
 void CGameScene::RenderImGui()
 {
-	CPlayer* player = reinterpret_cast<CPlayer*>(GetGroupObject(GROUP_TYPE::PLAYER), CGameFramework::GetInstance()->my_id);
+	CGameFramework* framework = CGameFramework::GetInstance();
+	CPlayer* player = reinterpret_cast<CPlayer*>(GetIDObject(GROUP_TYPE::PLAYER, framework->my_id));
+	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
+
+	ImGui_ImplDX12_NewFrame();
+	ImGui_ImplWin32_NewFrame();
+	ImGui::NewFrame();
 
 	if (KEY_HOLD(KEY::E)) {
-		CGameFramework* framework = CGameFramework::GetInstance();
-		framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
 		int rows = 3;
 		int cols = 6;
 		static bool selected[3][6] = { false };
 		static bool hovered[3][6] = { false };
 		const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
-
-		ImGui_ImplDX12_NewFrame();
-		ImGui_ImplWin32_NewFrame();
-		ImGui::NewFrame();
 
 		ImVec2 windowSize(framework->GetResolution().x * 3 / 4, framework->GetResolution().y * 3 / 4);
 		ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y) / 2);
@@ -456,6 +460,8 @@ void CGameScene::RenderImGui()
 				if (hovered[i][j]) borderColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
 				if (selected[i][j]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 
+				ImGui::GetFont()->Scale = 1.0f;
+				ImGui::PushFont(ImGui::GetFont());
 				ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
 				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 
@@ -470,13 +476,15 @@ void CGameScene::RenderImGui()
 					else
 						hovered[i][j] = false;
 
-					if(!player->myItems[i][j].empty())
-						ImGui::Text("%s", player->myItems[i][j].c_str());
+					if (!player->myItems[i * cols + j].empty()) {
+						ImGui::Text("%s", player->myItems[i * cols + j].c_str());
+					}
 					ImGui::EndChildFrame();
 				}
 
 				ImGui::PopStyleVar();
 				ImGui::PopStyleColor();
+				ImGui::PopFont();
 				ImGui::PopID();
 
 				//if (j < cols - 1) ImGui::SameLine();
@@ -486,26 +494,11 @@ void CGameScene::RenderImGui()
 		}
 
 		ImGui::End();
-
-		ImGui::Render();
-
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 	}
-	CGameFramework* framework = CGameFramework::GetInstance();
-	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
-
-	// 인벤토리 항목 구조체
-	struct InventoryItem {
-		const char* name;
-	};
 
 	int rows = 3;
 	static bool selected[3] = { false };
 	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
-
-	ImGui_ImplDX12_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
 
 	ImVec2 windowSize(framework->GetResolution().x * 1 / 4, framework->GetResolution().x * 1 / 4 / 3);
 	ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y));
@@ -522,35 +515,41 @@ void CGameScene::RenderImGui()
 	ImGui::SetCursorPosX(itemSize / 5);
 	for (int i = 0; i < rows; ++i)
 	{
-		ImGui::PushID(i);
+		ImGui::PushID(i+ 1000);
 
 		// 외곽선 색상 설정
 		ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 		if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 
+		ImGui::GetFont()->Scale = 1.0f;
+		ImGui::PushFont(ImGui::GetFont());
 		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 
-		ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i)), ImVec2(itemSize, itemSize));
+
+		ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i+1000)), ImVec2(itemSize, itemSize));
 		{
 			ImGui::Text("%d", i + 1);
-			//ImGui::Text("%s", player->myItem[][]);
+			if (!player->myItems[i].empty()) {
+				int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i]);
+				if (item != 0) {
+					ImGui::SameLine();
+					auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i]]->m_IconGPUHandle;
+					ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
+				}
+			}
+			ImGui::Text(player->myItems[i].c_str());
 			ImGui::EndChildFrame();
 		}
 		ImGui::SameLine();
 
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
+		ImGui::PopFont();
+
 		ImGui::PopID();
 	}
 	ImGui::End();
-	ImGui::Render();
-
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
-
-	ImGui_ImplDX12_NewFrame();
-	ImGui_ImplWin32_NewFrame();
-	ImGui::NewFrame();
 
 	windowSize.x = framework->GetResolution().x / 5;
 	windowSize.y = framework->GetResolution().y / 15;

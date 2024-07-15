@@ -21,6 +21,7 @@ enum PACKET_TYPE {
 	P_CS_STOP_PACKET,
 	P_CS_SELECT_PACKET,
 	P_CS_ATTACK_PACKET,
+	P_CS_EXCHANGE_DONE_PACKET,
 
 	// Server -> Client packet
 	P_SC_LOGIN_OK_PACKET,
@@ -34,6 +35,7 @@ enum PACKET_TYPE {
 	P_SC_CHANGE_STATE,
 	P_SC_NPC_EXCHANGE_PACKET,
 	P_SC_UPDATE_PHASE_PACKET,
+	P_SC_EXCHANGE_DONE_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -126,6 +128,12 @@ struct SC_UPDATE_PHASE_PACKET {
 	chrono::seconds		m_time;
 };
 
+struct SC_EXCHANGE_DONE_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_npc_id;
+};
+
 // Packet(Clinet->Server)
 struct CS_LOGIN_PACKET {
 	unsigned char		m_size;
@@ -142,7 +150,7 @@ struct CS_ANIMATION_PACKET {
 struct CS_WALK_ENTER_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
-	unsigned int		m_weapon;
+	unsigned int		m_walkType;
 };
 
 struct CS_VELOCITY_CHANGE_PACKET {
@@ -179,5 +187,10 @@ struct CS_ATTACK_PACKET {
 	XMFLOAT3			m_vec;
 };
 
+struct CS_EXCHANGE_DONE_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_npc_id;
+};
 
 #pragma pack (pop)

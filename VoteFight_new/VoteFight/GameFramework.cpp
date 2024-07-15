@@ -193,7 +193,27 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CreateRenderTargetViews();
 	CreateDepthStencilView();
 
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
+	desc.NumDescriptors = 5;
+	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
+	m_d3d12Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_GUISrvDescHeap));
+
 	CreateShaderResourceViews();
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui_ImplWin32_Init(m_hWnd);
+	ImGuiIO& io = ImGui::GetIO(); (void)io;
+	io.Fonts->AddFontDefault();
+
+	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
+	ImGui::StyleColorsLight();
+
+	ImGui_ImplDX12_Init(m_d3d12Device.Get(), 3,
+		DXGI_FORMAT_R8G8B8A8_UNORM, m_GUISrvDescHeap,
+		m_GUISrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
+		m_GUISrvDescHeap->GetGPUDescriptorHandleForHeapStart());
 
 	CreateShaderVariables();
 
@@ -206,24 +226,6 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 
 	CAssetManager::GetInstance()->ReleaseUploadBuffers();
 	CSceneManager::GetInstance()->ReleaseUploadBuffers();
-
-	IMGUI_CHECKVERSION();
-	ImGui::CreateContext();
-	ImGui_ImplWin32_Init(m_hWnd);
-	ImGuiIO& io = ImGui::GetIO(); (void)io;
-	io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;       // Enable Keyboard Controls
-	ImGui::StyleColorsLight();
-
-	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
-	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	desc.NumDescriptors = 1;
-	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
-	m_d3d12Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_GUISrvDescHeap));
-
-	ImGui_ImplDX12_Init(m_d3d12Device.Get(), 3,
-		DXGI_FORMAT_R8G8B8A8_UNORM, m_GUISrvDescHeap,
-		m_GUISrvDescHeap->GetCPUDescriptorHandleForHeapStart(),
-		m_GUISrvDescHeap->GetGPUDescriptorHandleForHeapStart());
 }
 
 void CGameFramework::CreateDevice()
@@ -368,6 +370,8 @@ void CGameFramework::CreateRtvAndDsvDescriptorHeaps()
 
 	// ����-���ٽ� ������ ���� ������ ũ�⸦ �����Ѵ�.
 	m_dsvDescriptorIncrementSize = m_d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+
+	m_srvDescriptorIncrementSize = m_d3d12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 void CGameFramework::CreateRenderTargetViews()

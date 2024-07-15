@@ -149,7 +149,7 @@ void CAssetManager::LoadTextures(const string& fileName)
 	// DepthWrite Texture
 	const XMFLOAT2& resolution = framework->GetResolution();
 	CTexture* texture = new CTexture();
-	
+
 	texture->SetName("DepthWrite");
 	texture->Create(static_cast<UINT64>(DEPTH_BUFFER_WIDTH), static_cast<UINT>(DEPTH_BUFFER_HEIGHT), D3D12_RESOURCE_STATE_COMMON, D3D12_RESOURCE_FLAG_ALLOW_RENDER_TARGET, DXGI_FORMAT_R32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_R32_FLOAT, { 1.0f, 1.0f, 1.0f, 1.0f } }, TEXTURE_TYPE::SHADOW_MAP);
 	m_textures.emplace(texture->GetName(), texture);
@@ -199,6 +199,15 @@ void CAssetManager::LoadTextures(const string& fileName)
 	bubbleTexture->SetName("speech_bubble");
 	bubbleTexture->Load("speech_bubble", TEXTURE_TYPE::ALBEDO_MAP);
 	m_textures.emplace(bubbleTexture->GetName(), bubbleTexture);
+
+	// Icons
+	string itemName[] = { "axe", "wood", "punch", "money" };
+	for (auto str : itemName)
+	{
+		CTexture* ex = new CTexture();
+		ex->Load(str, TEXTURE_TYPE::ALBEDO_MAP);
+		m_IconTextures[str] = ex;
+	}
 }
 
 void CAssetManager::LoadShaders()
@@ -553,9 +562,12 @@ void CAssetManager::Init()
 void CAssetManager::CreateShaderResourceViews()
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
+	DescriptorHeapManager* descriptorManager = CGameFramework::GetInstance()->GetDescriptorHeapManager();
 
 	for (const auto& texture : m_textures)
 	{
+		texture.second->m_SRVHandle = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+
 		ID3D12Resource* pShaderResource = texture.second->GetTexture();
 		if (((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP) ||	// Cubemap (Skybox) 
 			((texture.second)->GetType() == TEXTURE_TYPE::CUBE_MAP2)) {	// Cubemap (Skybox) 
@@ -571,6 +583,18 @@ void CAssetManager::CreateShaderResourceViews()
 		}
 		else
 			d3d12Device->CreateShaderResourceView(pShaderResource, nullptr, texture.second->m_SRVHandle.GetCPUHandle());
+	}
+
+	D3D12_CPU_DESCRIPTOR_HANDLE cpuHandle = CGameFramework::GetInstance()->m_GUISrvDescHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_GPU_DESCRIPTOR_HANDLE gpuHandle = CGameFramework::GetInstance()->m_GUISrvDescHeap->GetGPUDescriptorHandleForHeapStart();
+
+	for (auto& texture : m_IconTextures)
+	{
+		cpuHandle.ptr += CGameFramework::GetInstance()->m_srvDescriptorIncrementSize;
+		gpuHandle.ptr += CGameFramework::GetInstance()->m_srvDescriptorIncrementSize;
+
+		texture.second->m_IconGPUHandle = gpuHandle;
+		d3d12Device->CreateShaderResourceView(texture.second->GetTexture(), nullptr, cpuHandle);
 	}
 }
 

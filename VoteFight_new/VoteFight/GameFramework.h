@@ -44,8 +44,7 @@ public:
 	ComPtr<ID3D12Resource>			  m_d3d12DepthStencilBuffer;
 	ComPtr<ID3D12DescriptorHeap>	  m_d3d12DsvDescriptorHeap;
 	UINT							  m_dsvDescriptorIncrementSize;
-
-	//ComPtr<ID3D12DescriptorHeap>	  m_d3d12CbvSrvUavDescriptorHeap;
+	UINT							  m_srvDescriptorIncrementSize;
 
 	// Descriptor Heap Manager
 	DescriptorHeapManager*			  m_DescriptorHeapManager;

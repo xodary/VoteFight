@@ -8,9 +8,6 @@ CTexture::CTexture() :
 	m_d3d12Texture(),
 	m_d3d12UploadBuffer()
 {
-	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();
-	DescriptorHeapManager* descriptorManager = CGameFramework::GetInstance()->GetDescriptorHeapManager();
-	m_SRVHandle = descriptorManager->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 }
 
 CTexture::~CTexture()
