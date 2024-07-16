@@ -20,6 +20,8 @@
 #include "Bullet.h"
 #include "Transform.h"
 #include "Mesh.h"
+#include "../Packet.h"
+#include "ImaysNet/PacketQueue.h"
 
 CPlayer::CPlayer() : m_spineName("mixamorig:Spine")
 {
@@ -52,6 +54,17 @@ void CPlayer::Init()
 void CPlayer::Attack()
 {
 	//m_Weapon->Attack(this);
+
+	if (CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene")
+	{
+		CS_ATTACK_PACKET p;
+		p.m_size = sizeof(p);
+		p.m_type = P_CS_ATTACK_PACKET;
+		p.m_weapon = (int)m_Weapon;
+		p.m_angle = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM))->GetRotation().y;
+		
+		PacketQueue::AddSendPacket(&p);
+	}
 }
 
 void CPlayer::SwapWeapon(WEAPON_TYPE weaponType)
@@ -101,7 +114,6 @@ void CPlayer::Shoot(CScene& currScene)
 			Bullet->SetScale(XMFLOAT3(5, 5, 5));
 			currScene.AddObject(GROUP_TYPE::BULLET, Bullet, 0);
 			Bullet->Shoot();
-
 		}
 	}
 }

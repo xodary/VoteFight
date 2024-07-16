@@ -6,6 +6,7 @@
 #include "GameScene.h"
 #include "NPC.h"
 #include "Box.h"
+#include "Monster.h"
 
 volatile bool				stopServer = false;
 static unsigned long long	nextClientID{ 0 };		// Next Client ID
@@ -612,8 +613,87 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	case PACKET_TYPE::P_CS_ATTACK_PACKET:
 	{
 		CS_ATTACK_PACKET* recv_packet = reinterpret_cast<CS_ATTACK_PACKET*>(_Packet);
-		//_Client->m_player->m_Pos
-		//recv_packet->m_vec;
+		int demage = 0;
+		{
+			SC_ANIMATION_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_ANIMATION_PACKET;
+			send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+			send_packet.m_id = _Client->m_id;
+
+			switch (recv_packet->m_weapon)
+			{
+			case 0:
+				strcpy_s(send_packet.m_key, "Punch");
+				demage = 5;
+				break;
+			case 1:
+				strcpy_s(send_packet.m_key, "Pistol_shoot");
+				demage = 25;
+				break;
+			case 2:
+				strcpy_s(send_packet.m_key, "Attack_onehand");
+				demage = 10;
+				break;
+			}
+
+			for (auto& rc : RemoteClient::m_remoteClients)
+			{
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+			}
+		}
+
+		BoundingBox bounding;
+		bounding.Center = XMFLOAT3(0, 3, 0);
+		bounding.Extents = XMFLOAT3(3, 3, 3);
+		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
+		XMFLOAT3 attack = Vector3::Add(_Client->m_player->m_Pos, Vector3::ScalarProduct(vector, 3.0f));
+		XMFLOAT4X4 matrix = Matrix4x4::Identity();
+		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(attack));
+		bounding.Transform(bounding, XMLoadFloat4x4(&matrix));
+
+		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
+			if (bounding.Intersects(object.second->m_boundingBox))
+			{
+				reinterpret_cast<CMonster*>(object.second)->m_Health -= demage * 3;
+				cout << object.first << " : Health " << reinterpret_cast<CMonster*>(object.second)->m_Health << endl;
+
+				SC_HEALTH_CHANGE_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
+				send_packet.m_id = object.first;
+				send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
+				send_packet.m_health = reinterpret_cast<CMonster*>(object.second)->m_Health;
+				for (auto& rc : RemoteClient::m_remoteClients)
+				{
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+				}
+			}
+		}
+		for (auto& object : RemoteClient::m_remoteClients) {
+			if (object.second->m_id == _Client->m_id) continue;
+			if (bounding.Intersects(object.second->m_player->m_boundingBox))
+			{
+				object.second->m_player->m_Health -= demage;
+				cout << object.first << " : Health " << object.second->m_player->m_Health << endl;
+			
+				SC_HEALTH_CHANGE_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
+				send_packet.m_id = object.second->m_id;
+				send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
+				send_packet.m_health = object.second->m_player->m_Health;
+				for (auto& rc : RemoteClient::m_remoteClients)
+				{
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+				}
+			}
+		}
+
+
 	}
 	break;
 

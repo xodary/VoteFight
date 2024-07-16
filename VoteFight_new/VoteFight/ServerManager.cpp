@@ -335,7 +335,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->Play(recv_packet->m_key, true);
+		animator->Play(recv_packet->m_key, recv_packet->m_loop);
 	}
 	break;
 
@@ -389,7 +389,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_EXCHANGE_DONE_PACKET:		// NPC와 거래 완료
+	case PACKET_TYPE::P_SC_EXCHANGE_DONE_PACKET:	// NPC와 거래 완료
 	{
 		SC_EXCHANGE_DONE_PACKET* recv_packet = reinterpret_cast<SC_EXCHANGE_DONE_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
@@ -399,13 +399,25 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_PLAYER_RBUTTON_PACKET:		// 오른쪽 버튼 클릭
+	case PACKET_TYPE::P_SC_PLAYER_RBUTTON_PACKET:	// 오른쪽 버튼 클릭
 	{
 		SC_PLAYER_RBUTTON_PACKET* recv_packet = reinterpret_cast<SC_PLAYER_RBUTTON_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CObject* object = scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id);
 		CPlayer* player = reinterpret_cast<CPlayer*>(object);
 		player->goal_rota = recv_packet->m_angle;
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_HEALTH_CHANGE_PACKET:
+	{
+		SC_HEALTH_CHANGE_PACKET* recv_packet = reinterpret_cast<SC_HEALTH_CHANGE_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_id);
+
+		CCharacter* character = reinterpret_cast<CCharacter*>(object);
+		character->SetHealth(recv_packet->m_health);
+		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
 	}
 	break;
 

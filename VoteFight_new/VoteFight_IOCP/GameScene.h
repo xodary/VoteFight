@@ -12,5 +12,12 @@ public:
 	static void LoadTerrain(const string& fileName);
 	static float OnGetHeight(float fx, float fz);
 	static void NPCInitialize();
+
+	static bool can_see(XMFLOAT3 from, XMFLOAT3 to, int range)
+	{
+		if (abs(from.x - to.x) > range) return false;
+		return abs(from.z - from.z) <= range;
+	}
+
 };
 

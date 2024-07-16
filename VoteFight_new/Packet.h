@@ -37,6 +37,7 @@ enum PACKET_TYPE {
 	P_SC_UPDATE_PHASE_PACKET,
 	P_SC_EXCHANGE_DONE_PACKET,
 	P_SC_PLAYER_RBUTTON_PACKET,
+	P_SC_HEALTH_CHANGE_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -73,8 +74,8 @@ struct SC_ANIMATION_PACKET {
 	unsigned char		m_type;
 	unsigned int		m_id;
 	unsigned int		m_grouptype;
-	unsigned int		m_speed;
 	char				m_key[NAME_SIZE];
+	bool				m_loop;
 };
 
 struct SC_ADD_PACKET {
@@ -144,6 +145,14 @@ struct SC_EXCHANGE_DONE_PACKET {
 	unsigned int		m_npc_id;
 };
 
+struct SC_HEALTH_CHANGE_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
+	unsigned int		m_groupType;
+	unsigned int		m_health;
+};
+
 // Packet(Clinet->Server)
 struct CS_LOGIN_PACKET {
 	unsigned char		m_size;
@@ -192,7 +201,7 @@ struct CS_ATTACK_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_weapon;
-	XMFLOAT3			m_vec;
+	float				m_angle;
 };
 
 struct CS_EXCHANGE_DONE_PACKET {

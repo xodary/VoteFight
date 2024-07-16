@@ -60,11 +60,11 @@ void CPlayerIdleState::Update(CObject* object)
 
 	if (KEY_TAP(KEY::LBUTTON))
 	{
-		//player->Attack();
-		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		if(player->m_Weapon == WEAPON_TYPE::PUNCH) animator->Play("Punch", false);
-		else if(player->m_Weapon == WEAPON_TYPE::PISTOL) animator->Play("Pistol_shoot", false);
-		else if (player->m_Weapon == WEAPON_TYPE::AXE) animator->Play("Attack_onehand", false);
+		player->Attack();
+		//CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
+		//if(player->m_Weapon == WEAPON_TYPE::PUNCH) animator->Play("Punch", false);
+		//else if(player->m_Weapon == WEAPON_TYPE::PISTOL) animator->Play("Pistol_shoot", false);
+		//else if (player->m_Weapon == WEAPON_TYPE::AXE) animator->Play("Attack_onehand", false);
 	}
 
 	if (KEY_TAP(KEY::RBUTTON))
