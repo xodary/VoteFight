@@ -293,7 +293,9 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_upAnimation, 2);
-		static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_angle;
+		if(recv_packet->m_look != -1) 
+			static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_look;
+		//static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_angle;
 		transform->SetPosition(recv_packet->m_pos);
 	}
 	break;
@@ -326,7 +328,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_ANIMATION_PACKET:
+	case PACKET_TYPE::P_SC_ANIMATION_PACKET:		// 애니메이션
 	{
 		SC_ANIMATION_PACKET* recv_packet = reinterpret_cast<SC_ANIMATION_PACKET*>(_Packet);
 
@@ -337,7 +339,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_NPC_EXCHANGE_PACKET:
+	case PACKET_TYPE::P_SC_NPC_EXCHANGE_PACKET:		// NPC 교환 정보 전달
 	{
 		SC_NPC_EXCHANGE_PACKET* recv_packet = reinterpret_cast<SC_NPC_EXCHANGE_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
@@ -373,7 +375,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		}
 		break;
 	}
-	case PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET:
+	case PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET:		// 페이즈 업데이트
 	{
 		SC_UPDATE_PHASE_PACKET* recv_packet = reinterpret_cast<SC_UPDATE_PHASE_PACKET*>(_Packet);
 		
@@ -387,13 +389,23 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_EXCHANGE_DONE_PACKET:
+	case PACKET_TYPE::P_SC_EXCHANGE_DONE_PACKET:		// NPC와 거래 완료
 	{
 		SC_EXCHANGE_DONE_PACKET* recv_packet = reinterpret_cast<SC_EXCHANGE_DONE_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_npc_id);
 		CNPC* npc = reinterpret_cast<CNPC*>(object);
 		npc->m_standBy_id = recv_packet->m_npc_id;
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_PLAYER_RBUTTON_PACKET:		// 오른쪽 버튼 클릭
+	{
+		SC_PLAYER_RBUTTON_PACKET* recv_packet = reinterpret_cast<SC_PLAYER_RBUTTON_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id);
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		player->goal_rota = recv_packet->m_angle;
 	}
 	break;
 

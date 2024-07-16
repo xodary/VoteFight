@@ -17,11 +17,11 @@ enum PACKET_TYPE {
 	P_CS_VELOCITY_CHANGE_PACKET,
 	P_CS_MOVE_PACKET,
 	P_CS_ANIMATION,
-	P_CS_WALK_ENTER_PACKET,
-	P_CS_STOP_PACKET,
+	P_CS_STATE_ENTER_PACKET,
 	P_CS_SELECT_PACKET,
 	P_CS_ATTACK_PACKET,
 	P_CS_EXCHANGE_DONE_PACKET,
+	P_CS_PLAYER_RBUTTON_PACKET,
 
 	// Server -> Client packet
 	P_SC_LOGIN_OK_PACKET,
@@ -36,6 +36,7 @@ enum PACKET_TYPE {
 	P_SC_NPC_EXCHANGE_PACKET,
 	P_SC_UPDATE_PHASE_PACKET,
 	P_SC_EXCHANGE_DONE_PACKET,
+	P_SC_PLAYER_RBUTTON_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -93,7 +94,16 @@ struct SC_VELOCITY_CHANGE_PACKET {
 	unsigned int		m_id;
 	XMFLOAT3			m_pos;
 	unsigned int		m_grouptype;
+	unsigned int		m_keytype;
 	float				m_vel;
+	float				m_angle;
+	float				m_look;
+};
+
+struct SC_PLAYER_RBUTTON_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
 	float				m_angle;
 };
 
@@ -147,18 +157,14 @@ struct CS_ANIMATION_PACKET {
 	char				m_key[NAME_SIZE];
 };
 
-struct CS_WALK_ENTER_PACKET {
-	unsigned char		m_size;
-	unsigned char		m_type;
-	unsigned int		m_walkType;
-};
-
 struct CS_VELOCITY_CHANGE_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	float				m_angle;
-	bool				m_shift;
+	float				m_look;
 	XMFLOAT3			m_pos;
+	bool				m_shift; 
+	bool				m_Rbutton;
 };
 
 struct CS_MOVE_PACKET {
@@ -168,9 +174,11 @@ struct CS_MOVE_PACKET {
 	float				m_angle;
 };
 
-struct CS_STOP_PACKET {
+struct CS_STATE_ENTER_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
+	unsigned int		m_state;
+	unsigned int		m_weapon;
 	XMFLOAT3			m_pos;
 };
 
@@ -191,6 +199,12 @@ struct CS_EXCHANGE_DONE_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_npc_id;
+};
+
+struct CS_PLAYER_RBUTTON_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	float				m_angle;
 };
 
 #pragma pack (pop)

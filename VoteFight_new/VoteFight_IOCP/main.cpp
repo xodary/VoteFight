@@ -339,10 +339,34 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	}
 	break;
 
-	case PACKET_TYPE::P_CS_WALK_ENTER_PACKET:
+	case PACKET_TYPE::P_CS_STATE_ENTER_PACKET:
 	{
-		CS_WALK_ENTER_PACKET* recv_packet = reinterpret_cast<CS_WALK_ENTER_PACKET*>(_Packet);
-		cout << "SC_WALK_ENTER_INFO_PACKET" << endl;
+		CS_STATE_ENTER_PACKET* recv_packet = reinterpret_cast<CS_STATE_ENTER_PACKET*>(_Packet);
+		cout << "P_CS_STATE_ENTER_PACKET" << endl;
+
+		if (recv_packet->m_state == 0 || recv_packet->m_state == 2)
+		{
+			_Client->m_player->m_Velocity = 0;
+			auto duration = chrono::system_clock::now() - _Client->m_lastTime;
+			auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+			cout << seconds << endl;
+			_Client->m_lastTime = chrono::system_clock::now();
+
+			SC_VELOCITY_CHANGE_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+			send_packet.m_id = _Client->m_id;
+			send_packet.m_grouptype = _Client->m_player->m_grouptype;
+			send_packet.m_vel = _Client->m_player->m_Velocity;
+			send_packet.m_pos = _Client->m_player->m_Pos;
+			send_packet.m_look = -1; 
+			cout << " >> send ) CS_VELOCITY_CHANGE_PACKET" << endl;
+
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
+
+		}
 
 		SC_ANIMATION_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_ANIMATION_PACKET);
@@ -350,23 +374,56 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_grouptype = _Client->m_player->m_grouptype;
 		send_packet.m_id = _Client->m_id;
 
-		switch (recv_packet->m_walkType)
+		switch (recv_packet->m_weapon)
 		{
-		case 0:
-			strcpy_s(send_packet.m_key, "Run");
+		case 0:	// Punch
+			switch (recv_packet->m_state)
+			{
+			case 0:		// idle
+			case 2:		// focusidle
+				strcpy_s(send_packet.m_key, "Idle");
+				break;
+			case 1:		// walk
+				strcpy_s(send_packet.m_key, "Run");
+				break;
+			case 3:		// focuswalk
+				strcpy_s(send_packet.m_key, "Walk");
+				break;
+			}
 			break;
-		case 1:
-			strcpy_s(send_packet.m_key, "Pistol_run");
+		case 1:	// Pistol
+			switch (recv_packet->m_state)
+			{
+			case 0:		// idle
+				strcpy_s(send_packet.m_key, "Pistol_idle");
+				break;
+			case 1:		// walk
+				strcpy_s(send_packet.m_key, "Pistol_run");
+				break;
+			case 2:		// focusidle
+				strcpy_s(send_packet.m_key, "Pistol_focus");
+				break;
+			case 3:		// focuswalk
+				strcpy_s(send_packet.m_key, "Pistol_slowwalk");
+				break;
+			}
 			break;
 		case 2:
-			strcpy_s(send_packet.m_key, "Walk");
+			switch (recv_packet->m_state)
+			{
+			case 0:		// idle
+			case 2:		// focusidle
+				strcpy_s(send_packet.m_key, "Pistol_idle");
+				break;
+			case 1:		// walk
+				strcpy_s(send_packet.m_key, "Pistol_run");
+				break;
+			case 3:		// focuswalk
+				strcpy_s(send_packet.m_key, "Weapon_slowwalk");
+				break;
+			}
 			break;
-		case 3:
-			strcpy_s(send_packet.m_key, "Weapon_slowwalk");
-			break;
-		case 4:
-			strcpy_s(send_packet.m_key, "Pistol_slowwalk");
-			break;
+
 		}
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -380,7 +437,12 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CS_VELOCITY_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_VELOCITY_CHANGE_PACKET*>(_Packet);
 
 		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
-		if (recv_packet->m_shift) _Client->m_player->m_Velocity = 15; else _Client->m_player->m_Velocity = 10;
+
+		if (recv_packet->m_Rbutton) _Client->m_player->m_Velocity = 5; 
+		else {
+			if (recv_packet->m_shift) _Client->m_player->m_Velocity = 15;
+			else _Client->m_player->m_Velocity = 10;
+		}
 
 		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
 		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
@@ -396,6 +458,10 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
 		send_packet.m_id = _Client->m_id;
 		send_packet.m_angle = recv_packet->m_angle;
+		if(recv_packet->m_Rbutton)
+			send_packet.m_look = -1;
+		else
+			send_packet.m_look = recv_packet->m_angle;
 		send_packet.m_grouptype = _Client->m_player->m_grouptype;
 		send_packet.m_vel = _Client->m_player->m_Velocity;
 		send_packet.m_pos = _Client->m_player->m_Pos;
@@ -405,50 +471,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 		break;
-	}
-
-	case PACKET_TYPE::P_CS_STOP_PACKET:
-	{
-		CS_STOP_PACKET* recv_packet = reinterpret_cast<CS_STOP_PACKET*>(_Packet);
-		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
-		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
-		cout << seconds << endl;
-		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
-		_Client->m_player->m_Pos = recv_packet->m_pos;
-		_Client->m_lastTime = chrono::system_clock::now();
-		_Client->m_player->m_Velocity = 0;
-
-		{
-			SC_VELOCITY_CHANGE_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
-			send_packet.m_id = _Client->m_id;
-			send_packet.m_grouptype = _Client->m_player->m_grouptype;
-			send_packet.m_angle = _Client->m_player->m_Angle;
-			send_packet.m_vel = _Client->m_player->m_Velocity;
-			send_packet.m_pos = _Client->m_player->m_Pos;
-			
-			_Client->m_lastTime = chrono::system_clock::now();
-			cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
-
-			for (auto& rc : RemoteClient::m_remoteClients) {
-				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			}
-		}
-
-		{
-			SC_ANIMATION_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_ANIMATION_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION_PACKET;
-			send_packet.m_grouptype = _Client->m_player->m_grouptype;
-			send_packet.m_id = _Client->m_id;
-			strcpy_s(send_packet.m_key, "Idle");
-			cout << " >> send ) SC_ANIMATION_PACKET" << endl;
-
-			for (auto& rc : RemoteClient::m_remoteClients) {
-				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			}
-		}
 	}
 	break;
 
@@ -609,6 +631,23 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_npc_id = recv_packet->m_npc_id;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> send ) SC_EXCHANGE_DONE_PACKET" << endl;
+		}
+	}
+	break;
+
+	case PACKET_TYPE::P_CS_PLAYER_RBUTTON_PACKET:
+	{
+		CS_PLAYER_RBUTTON_PACKET* recv_packet = reinterpret_cast<CS_PLAYER_RBUTTON_PACKET*>(_Packet);
+		for (auto& rc : RemoteClient::m_remoteClients)
+		{
+			SC_PLAYER_RBUTTON_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_PLAYER_RBUTTON_PACKET;
+			send_packet.m_angle = recv_packet->m_angle;
+			send_packet.m_id = _Client->m_id;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> send ) SC_EXCHANGE_DONE_PACKET" << endl;
+
 		}
 	}
 	break;
