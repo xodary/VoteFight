@@ -421,6 +421,24 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
+	case PACKET_TYPE::P_SC_TAKEOUT_PACKET:
+	{
+		SC_TAKEOUT_PACKET* recv_packet = reinterpret_cast<SC_TAKEOUT_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject(GROUP_TYPE::BOX, recv_packet->m_itemID);
+		CBox* item = reinterpret_cast<CBox*>(object);
+		item->m_items.clear();
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_DELETE_PACKET:
+	{
+		SC_DELETE_PACKET* recv_packet = reinterpret_cast<SC_DELETE_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		scene->DeleteObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_itemID);
+	}
+	break;
+
 	default:
 		break;
 	}

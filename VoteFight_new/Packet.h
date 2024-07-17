@@ -22,11 +22,13 @@ enum PACKET_TYPE {
 	P_CS_ATTACK_PACKET,
 	P_CS_EXCHANGE_DONE_PACKET,
 	P_CS_PLAYER_RBUTTON_PACKET,
+	P_CS_TAKEOUT_PACKET,
 
 	// Server -> Client packet
 	P_SC_LOGIN_OK_PACKET,
 	P_SC_SPAWN_PACKET,
 	P_SC_ADD_PACKET,
+	P_SC_DELETE_PACKET,
 	P_SC_VELOCITY_CHANGE_PACKET,
 	P_SC_ANIMATION_PACKET,
 	P_SC_POS_PACKET,
@@ -38,6 +40,7 @@ enum PACKET_TYPE {
 	P_SC_EXCHANGE_DONE_PACKET,
 	P_SC_PLAYER_RBUTTON_PACKET,
 	P_SC_HEALTH_CHANGE_PACKET,
+	P_SC_TAKEOUT_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -87,6 +90,13 @@ struct SC_ADD_PACKET {
 	XMFLOAT3			m_pos;
 	XMFLOAT3			m_rota;
 	XMFLOAT3			m_sca;
+};
+
+struct SC_DELETE_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_groupType;
+	unsigned int		m_itemID;
 };
 
 struct SC_VELOCITY_CHANGE_PACKET {
@@ -153,6 +163,12 @@ struct SC_HEALTH_CHANGE_PACKET {
 	unsigned int		m_health;
 };
 
+struct SC_TAKEOUT_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_itemID;
+};
+
 // Packet(Clinet->Server)
 struct CS_LOGIN_PACKET {
 	unsigned char		m_size;
@@ -208,6 +224,13 @@ struct CS_EXCHANGE_DONE_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_npc_id;
+};
+
+struct CS_TAKEOUT_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_groupType;
+	unsigned int		m_itemID;
 };
 
 struct CS_PLAYER_RBUTTON_PACKET {

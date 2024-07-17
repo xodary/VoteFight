@@ -732,6 +732,43 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	}
 	break;
 
+	case PACKET_TYPE::P_CS_TAKEOUT_PACKET:
+	{
+		CS_TAKEOUT_PACKET* recv_packet = reinterpret_cast<CS_TAKEOUT_PACKET*>(_Packet);
+
+		CObject* object = CGameScene::m_objects[recv_packet->m_groupType][recv_packet->m_itemID];
+
+		CBox* box = reinterpret_cast<CBox*>(object);
+		box->items.clear();
+
+		if (recv_packet->m_groupType == (int)GROUP_TYPE::ONCE_ITEM)
+		{
+			for (auto& rc : RemoteClient::m_remoteClients)
+			{
+				SC_DELETE_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_DELETE_PACKET;
+				send_packet.m_groupType = recv_packet->m_groupType;
+				send_packet.m_itemID = recv_packet->m_itemID;
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_DELETE_PACKET" << endl;
+			}
+		}
+		else if (recv_packet->m_groupType == (int)GROUP_TYPE::BOX)
+		{
+			for (auto& rc : RemoteClient::m_remoteClients)
+			{
+				SC_TAKEOUT_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_TAKEOUT_PACKET;
+				send_packet.m_itemID = recv_packet->m_itemID;
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_TAKEOUT_PACKET" << endl;
+			}
+		}
+	}
+	break;
+
 	default:
 		break;
 	}
