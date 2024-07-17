@@ -2,8 +2,12 @@
 #include "Object.h"
 #include "CPlayer.h"
 #include "NPC.h"
+#include "Monster.h"
 #include "Box.h"
 
+CObject::CObject()
+{
+}
 
 CObject* CObject::Load(const string& fileName)
 {
@@ -77,11 +81,7 @@ CObject* CObject::LoadFrame(ifstream& in)
 			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
 			case 2: object = new CNPC(); break;
-			// case 3: object = new CMonster(); break;
-			// case 4: object = new CBullet(); break;
-			// case 5: object = new CGun(); break;
-			// case 6: object = new CSword(); break;
-			case 3: object = new CObject(); break;
+			case 3: object = new CMonster(); break;
 			case 4: object = new CObject(); break;
 			case 5: object = new CObject(); break;
 			case 6: object = new CObject(); break;

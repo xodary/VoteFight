@@ -76,9 +76,10 @@ void CLoginScene::Render()
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(40, 40));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, window_size);
+    ImGui::GetFont()->Scale = 3.0f;
+    ImGui::PushFont(ImGui::GetFont());
     ImGui::Begin("Full Screen Window", nullptr, window_flags);
     {
-        ImGui::SetWindowFontScale(3.0f);
         ImGui::Text("Server Address :");
         ImGui::InputText("##ServrName", server_addr, IM_ARRAYSIZE(server_addr));
         ImGui::Text(login_state);
@@ -99,6 +100,7 @@ void CLoginScene::Render()
 #endif
         }
     }
+    ImGui::PopFont();
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
     ImGui::End();

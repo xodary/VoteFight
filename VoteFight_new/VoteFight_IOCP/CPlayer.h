@@ -6,6 +6,7 @@
 class CPlayer : public CObject 
 {
 public:
+	int		m_Health;
 
 	CPlayer();
 	CPlayer(XMFLOAT3 _pos);

@@ -191,7 +191,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		cout << "P_SC_SPAWN_PACKET" << endl;
 		SC_SPAWN_PACKET* recv_packet = reinterpret_cast<SC_SPAWN_PACKET*>(_Packet);
 
-		// GameScene에는 이미 Player들이 있다. (Select Scene 설정해서 넣어둠) 
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 		CObject* object = scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id);
 
@@ -207,6 +206,9 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 		transform->SetPosition(recv_packet->m_pos);
+		int xNewCell = clamp((int)(recv_packet->m_pos.x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
+		int zNewCell = clamp((int)(recv_packet->m_pos.z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
+		scene->ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].insert(object);
 
 		object->Init();
 	}
@@ -231,8 +233,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		scene = CSceneManager::GetInstance()->GetCurrentScene();
 		for (int i = 0; i < 3; ++i) {
 			if (selectScene->m_selected_id[i] != -1) {
-				scene->AddObject(GROUP_TYPE::PLAYER, objects[i], objects[i]->m_id);
-				objects[i]->Init();
+				objects[i]->SetGroupType((UINT)GROUP_TYPE::PLAYER);
+				scene->m_objects[static_cast<int>(GROUP_TYPE::PLAYER)][objects[i]->m_id] = objects[i];
 			}
 		}
 	}
@@ -291,7 +293,9 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_upAnimation, 2);
-		static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_angle;
+		if(recv_packet->m_look != -1) 
+			static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_look;
+		//static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_angle;
 		transform->SetPosition(recv_packet->m_pos);
 	}
 	break;
@@ -304,7 +308,18 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		{
 			CObject* obj = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 			if (obj != nullptr) {
+
+				int xNewCell = clamp((int)(recv_packet->m_pos.x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
+				int zNewCell = clamp((int)(recv_packet->m_pos.z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
+
 				CTransform* transform = static_cast<CTransform*>(obj->GetComponent(COMPONENT_TYPE::TRANSFORM));
+				int oldX = clamp((int)(transform->GetPosition().x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
+				int oldZ = clamp((int)(transform->GetPosition().z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
+
+				if (xNewCell != oldX || zNewCell != oldZ) {
+					scene->ObjectListSector[oldZ * SECTOR_RANGE_ROW + oldX].erase(obj);
+					scene->ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].insert(obj);
+				}
 				transform->SetPosition(recv_packet->m_pos);
 				//transform->SetRotation(XMFLOAT3(0, recv_packet->m_rota, 0));
 				//cout << "SC_POS_PACKET" << endl;
@@ -313,18 +328,18 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_ANIMATION_PACKET:
+	case PACKET_TYPE::P_SC_ANIMATION_PACKET:		// 애니메이션
 	{
 		SC_ANIMATION_PACKET* recv_packet = reinterpret_cast<SC_ANIMATION_PACKET*>(_Packet);
 
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->Play(recv_packet->m_key, true);
+		animator->Play(recv_packet->m_key, recv_packet->m_loop);
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_NPC_EXCHANGE_PACKET:
+	case PACKET_TYPE::P_SC_NPC_EXCHANGE_PACKET:		// NPC 교환 정보 전달
 	{
 		SC_NPC_EXCHANGE_PACKET* recv_packet = reinterpret_cast<SC_NPC_EXCHANGE_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
@@ -360,7 +375,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		}
 		break;
 	}
-	case PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET:
+	case PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET:		// 페이즈 업데이트
 	{
 		SC_UPDATE_PHASE_PACKET* recv_packet = reinterpret_cast<SC_UPDATE_PHASE_PACKET*>(_Packet);
 		
@@ -371,6 +386,56 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CTimeManager::GetInstance()->m_lastTime = seconds_as_float;
 		CTimeManager::GetInstance()->m_phase = recv_packet->m_phase;
 		cout << "Phase " << recv_packet->m_phase << endl;
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_EXCHANGE_DONE_PACKET:	// NPC와 거래 완료
+	{
+		SC_EXCHANGE_DONE_PACKET* recv_packet = reinterpret_cast<SC_EXCHANGE_DONE_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_npc_id);
+		CNPC* npc = reinterpret_cast<CNPC*>(object);
+		npc->m_standBy_id = recv_packet->m_npc_id;
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_PLAYER_RBUTTON_PACKET:	// 오른쪽 버튼 클릭
+	{
+		SC_PLAYER_RBUTTON_PACKET* recv_packet = reinterpret_cast<SC_PLAYER_RBUTTON_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id);
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		player->goal_rota = recv_packet->m_angle;
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_HEALTH_CHANGE_PACKET:
+	{
+		SC_HEALTH_CHANGE_PACKET* recv_packet = reinterpret_cast<SC_HEALTH_CHANGE_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_id);
+
+		CCharacter* character = reinterpret_cast<CCharacter*>(object);
+		character->SetHealth(recv_packet->m_health);
+		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_TAKEOUT_PACKET:
+	{
+		SC_TAKEOUT_PACKET* recv_packet = reinterpret_cast<SC_TAKEOUT_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CObject* object = scene->GetIDObject(GROUP_TYPE::BOX, recv_packet->m_itemID);
+		CBox* item = reinterpret_cast<CBox*>(object);
+		item->m_items.clear();
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_DELETE_PACKET:
+	{
+		SC_DELETE_PACKET* recv_packet = reinterpret_cast<SC_DELETE_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		scene->DeleteObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_itemID);
 	}
 	break;
 

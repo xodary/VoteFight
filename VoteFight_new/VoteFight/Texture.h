@@ -41,6 +41,9 @@ public:
 	DescriptorHandle			m_RTVHandle;
 	DescriptorHandle			m_DSVHandle;
 	ComPtr<ID3D12Resource>		m_DepthStencilResource;
+
+	// Only Icon have it.
+	D3D12_GPU_DESCRIPTOR_HANDLE	m_IconGPUHandle;
 };
 
 class Texture3D : public CTexture {

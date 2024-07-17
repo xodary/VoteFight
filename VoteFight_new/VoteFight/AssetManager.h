@@ -30,6 +30,8 @@ private:
 	void LoadMaterials(const string& fileName);
 
 public:
+	unordered_map<string, CTexture*>           m_IconTextures;
+
 	const string& GetAssetPath();
 
 	CMesh* GetMesh(string& key);

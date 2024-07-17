@@ -16,7 +16,7 @@ private:
     vector<CUI*> m_UI;
 
 public:
-    string myItems[3][6];
+    vector<string> myItems;
 
     float goal_rota;
 
