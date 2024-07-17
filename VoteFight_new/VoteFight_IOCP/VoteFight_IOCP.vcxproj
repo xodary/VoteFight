@@ -140,6 +140,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Box.cpp" />
+    <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="CPlayer.cpp" />
     <ClCompile Include="DDSTextrueLoader.cpp" />
     <ClCompile Include="func.cpp" />
@@ -168,6 +169,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Box.h" />
+    <ClInclude Include="Bullet.h" />
     <ClInclude Include="CPlayer.h" />
     <ClInclude Include="D3DX12.h" />
     <ClInclude Include="DDSTextureLoader12.h" />

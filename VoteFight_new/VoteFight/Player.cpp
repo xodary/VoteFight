@@ -62,8 +62,11 @@ void CPlayer::Attack()
 		p.m_size = sizeof(p);
 		p.m_type = P_CS_ATTACK_PACKET;
 		p.m_weapon = (int)m_Weapon;
-		p.m_angle = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM))->GetRotation().y;
-		
+		p.m_angle = GetRotate().y;
+		p.m_pos = FindFrame("GunPos")->GetPosition();
+		p.m_Rbutton = KEY_HOLD(KEY::RBUTTON);
+		//p.m_pos = GetPosition();
+
 		PacketQueue::AddSendPacket(&p);
 	}
 }
@@ -101,22 +104,22 @@ void CPlayer::Punch()
 {
 }
 
-void CPlayer::Shoot(CScene& currScene)
-{
-	if (currScene.GetName() == "GameScene")
-	{
-		cout << "in GameScene" << endl;
-		CBullet* Bullet = reinterpret_cast<CBullet*>(Load("Bullet"));
-		if (Bullet) {
-			CObject* pos = FindFrame("Gun");
-			XMFLOAT3 currPostion(pos->GetPosition());
-			Bullet->SetPostion(currPostion);
-			Bullet->SetRotate(GetRotate());
-			currScene.AddObject(GROUP_TYPE::BULLET, Bullet, 0);
-			Bullet->Shoot();
-		}
-	}
-}
+//void CPlayer::Shoot(CScene& currScene)
+//{
+//	if (currScene.GetName() == "GameScene")
+//	{
+//		cout << "in GameScene" << endl;
+//		CBullet* Bullet = reinterpret_cast<CBullet*>(Load("Bullet"));
+//		if (Bullet) {
+//			CObject* pos = FindFrame("Gun");
+//			XMFLOAT3 currPostion(pos->GetPosition());
+//			Bullet->SetPostion(currPostion);
+//			Bullet->SetRotate(GetRotate());
+//			currScene.AddObject(GROUP_TYPE::BULLET, Bullet, 0);
+//			Bullet->Shoot();
+//		}
+//	}
+//}
 
 void CPlayer::Update()
 {

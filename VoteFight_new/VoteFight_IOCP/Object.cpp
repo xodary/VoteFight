@@ -4,6 +4,7 @@
 #include "NPC.h"
 #include "Monster.h"
 #include "Box.h"
+#include "Bullet.h"
 
 CObject::CObject()
 {
@@ -82,9 +83,7 @@ CObject* CObject::LoadFrame(ifstream& in)
 			case 1: object = new CPlayer(); break;
 			case 2: object = new CNPC(); break;
 			case 3: object = new CMonster(); break;
-			case 4: object = new CObject(); break;
-			case 5: object = new CObject(); break;
-			case 6: object = new CObject(); break;
+			case 4: object = new CBullet(); break;
 			case 7: object = new CBox(); break;
 			case 8: object = new COnceItem(); break;
 			}

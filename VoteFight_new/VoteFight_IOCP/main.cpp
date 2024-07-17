@@ -5,6 +5,7 @@
 #include "Timer.h"
 #include "GameScene.h"
 #include "NPC.h"
+#include "Bullet.h"
 #include "Box.h"
 #include "Monster.h"
 
@@ -25,6 +26,7 @@ shared_ptr<Socket>			listenSocket;
 shared_ptr<RemoteClient>	remoteClientCandidate; 
 unordered_map<int, CObject*> CGameScene::m_objects[(int)GROUP_TYPE::COUNT];
 int	CTimer::phase;
+int bullet_id = 0;
 chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
 
 // Client 종료 처리 함수
@@ -193,6 +195,66 @@ void WorkerThread()
 
 void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 {
+	// 총알 위치 업데이트
+	vector<int>	deleteBullet;
+	for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::BULLET]) {
+		if (object.second == nullptr) continue;
+		CBullet* bullet = reinterpret_cast<CBullet*>(object.second);
+		auto duration = chrono::system_clock::now() - bullet->m_lastTime;
+		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+		XMFLOAT3 shift = Vector3::ScalarProduct(bullet->m_Vec, 0.1 * bullet->m_Velocity);
+		bullet->m_Pos = Vector3::Add(bullet->m_Pos, shift);
+		if (bullet->m_Pos.x > 400 || bullet->m_Pos.x < 0 ||
+			bullet->m_Pos.z > 400 || bullet->m_Pos.z < 0)
+		{
+			deleteBullet.push_back(bullet->m_id);
+			SC_DELETE_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_DELETE_PACKET;
+			send_packet.m_itemID = bullet->m_id;
+			send_packet.m_groupType = (int)GROUP_TYPE::BULLET;
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
+			continue;
+		}
+		bullet->m_lastTime = chrono::system_clock::now();
+
+		XMFLOAT4X4 matrix = Matrix4x4::Identity();
+		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(client.second->m_player->m_Sca));
+		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(client.second->m_player->m_Rota));
+		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object.second->m_Pos));
+		object.second->m_origin.Transform(object.second->m_boundingBox, XMLoadFloat4x4(&matrix));
+
+		//for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {
+		//	if (i == (int)GROUP_TYPE::PLAYER) continue;
+		//	for (auto& object : CGameScene::m_objects[i]) {
+		//		if (!client.second->m_player->m_collider) continue;
+		//		if (!object.second->m_collider) continue;
+		//		if (client.second->m_player->m_boundingBox.Intersects(object.second->m_boundingBox)) {
+		//			client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
+		//			cout << "Collide !" << endl;
+		//		}
+		//	}
+		//}
+
+		SC_POS_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_POS_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
+		send_packet.m_grouptype = (int)GROUP_TYPE::BULLET;
+		send_packet.m_id = object.second->m_id;
+		send_packet.m_pos = object.second->m_Pos;
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (rc.second == nullptr || !rc.second->m_ingame) continue;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+	}
+
+	for (auto id : deleteBullet) {
+		CGameScene::m_objects[(int)GROUP_TYPE::BULLET].erase(id);
+	}
+
 	for (auto& client : RemoteClient::m_remoteClients) {
 		if (client.second == nullptr || !client.second->m_ingame) continue;
 		auto duration = chrono::system_clock::now() - client.second->m_lastTime;
@@ -237,13 +299,6 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 void UpdatePhase(OVERLAPPED_ENTRY& readEvent)
 {
 	for (auto& client : RemoteClient::m_remoteClients) {
-		if (client.second == nullptr || !client.second->m_ingame) continue;
-		auto duration = chrono::system_clock::now() - client.second->m_lastTime;
-		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
-		XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
-		client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
-		client.second->m_lastTime = chrono::system_clock::now();
-
 		SC_UPDATE_PHASE_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_UPDATE_PHASE_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET;
@@ -529,8 +584,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 			for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {
 				if (i == (int)GROUP_TYPE::STRUCTURE) continue;
+				if (i == (int)GROUP_TYPE::BULLET) continue;
 				for (auto& object : CGameScene::m_objects[i]) {
-
 					SC_ADD_PACKET send_packet;
 					send_packet.m_size = sizeof(SC_ADD_PACKET);
 					send_packet.m_type = PACKET_TYPE::P_SC_ADD_PACKET;
@@ -628,8 +683,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				demage = 5;
 				break;
 			case 1:
-				strcpy_s(send_packet.m_key, "Pistol_shoot");
-				demage = 25;
+				if(!recv_packet->m_Rbutton)
+					strcpy_s(send_packet.m_key, "Pistol_shoot");
 				break;
 			case 2:
 				strcpy_s(send_packet.m_key, "Attack_onehand");
@@ -641,6 +696,34 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			{
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+			}
+		}
+
+		if (recv_packet->m_weapon == 1)
+		{
+			CObject* Bullet = CObject::Load("Bullet");
+			Bullet->m_Pos = recv_packet->m_pos;
+			Bullet->m_Rota = XMFLOAT3(0, recv_packet->m_angle, 0);
+			Bullet->m_Vec = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(Bullet->m_Rota));
+			Bullet->m_Velocity = 10.0f;
+			CBullet* bullet = reinterpret_cast<CBullet*>(Bullet);
+			bullet->m_lastTime = chrono::system_clock::now();
+			bullet->m_id = bullet_id++;
+			CGameScene::m_objects[(int)GROUP_TYPE::BULLET][bullet->m_id] = Bullet;
+
+			SC_ADD_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_ADD_PACKET);
+			send_packet.m_type = P_SC_ADD_PACKET;
+			send_packet.m_id = bullet->m_id;
+			send_packet.m_grouptype = (int)GROUP_TYPE::BULLET;
+			send_packet.m_pos = Bullet->m_Pos;
+			send_packet.m_rota = Bullet->m_Rota;
+			send_packet.m_sca = XMFLOAT3(1, 1, 1);
+			strcpy_s(send_packet.m_modelName, "Bullet");
+			for (auto& rc : RemoteClient::m_remoteClients)
+			{
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_BULLET_ADD_PACKET" << endl;
 			}
 		}
 

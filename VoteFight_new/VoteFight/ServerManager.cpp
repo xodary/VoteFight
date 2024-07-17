@@ -25,6 +25,7 @@
 #include "SelectScene.h"
 #include "NPC.h"
 #include "Box.h"
+#include "Bullet.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -251,7 +252,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_ADD_PACKET:	// NPC
+	case PACKET_TYPE::P_SC_ADD_PACKET:	// NPC, Monster, Box
 	{
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
 		cout << "SC_ADD_PLAYER" << endl;

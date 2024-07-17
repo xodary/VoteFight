@@ -4,7 +4,7 @@
 
 #include "Protocol.h"
 
-constexpr int NAME_SIZE = 30;
+constexpr int NAME_SIZE = 20;
 constexpr int CHAT_SIZE = 30;
 
 constexpr int MAX_BUFSIZE_CLIENT = 1024;
@@ -218,6 +218,8 @@ struct CS_ATTACK_PACKET {
 	unsigned char		m_type;
 	unsigned int		m_weapon;
 	float				m_angle;
+	XMFLOAT3			m_pos;
+	bool				m_Rbutton;
 };
 
 struct CS_EXCHANGE_DONE_PACKET {

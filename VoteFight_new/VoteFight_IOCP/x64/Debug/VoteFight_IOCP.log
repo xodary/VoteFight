@@ -1,12 +1,15 @@
 ﻿  main.cpp
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(227,36): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(322,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(332,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(360,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(376,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(460,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(487,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(523,34): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(625,30): warning C4244: '=': 'unsigned __int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(648,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(205,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(290,36): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(378,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(388,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(414,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(431,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(515,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(542,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(578,34): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(677,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(768,37): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(787,30): warning C4244: '=': 'unsigned __int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(810,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   VoteFight_IOCP.vcxproj -> C:\directX_work\VoteFight_new\x64\Debug\VoteFight_IOCP.exe
