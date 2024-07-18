@@ -200,8 +200,16 @@ void CAssetManager::LoadTextures(const string& fileName)
 	bubbleTexture->Load("speech_bubble", TEXTURE_TYPE::ALBEDO_MAP);
 	m_textures.emplace(bubbleTexture->GetName(), bubbleTexture);
 
+	CTexture* IconsTexture = new CTexture();
+	IconsTexture->SetName("Icons");
+	IconsTexture->Load("Icons", TEXTURE_TYPE::ALBEDO_MAP);
+	m_textures.emplace(IconsTexture->GetName(), IconsTexture);
+
 	// Icons
-	string itemName[] = { "axe", "wood", "punch", "money" };
+	string itemName[] = { "axe", "wood", "punch", "money", 
+		"election_ticket", "fish_meet", "potato", "trash",
+		"icecream", "carrot" };
+
 	for (auto str : itemName)
 	{
 		CTexture* ex = new CTexture();

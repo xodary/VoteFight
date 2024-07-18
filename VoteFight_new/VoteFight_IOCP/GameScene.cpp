@@ -191,7 +191,7 @@ void CGameScene::NPCInitialize()
 		onceitem->items.push_back("flower");
 	}
 
-	string box_ex[] = { "trash", "sword", "carrot", "icecream", "potato" };
+	string box_ex[] = { "trash", "carrot", "icecream", "potato" };
 	for (auto& object : m_objects[(int)GROUP_TYPE::BOX])
 	{
 		CBox* box = reinterpret_cast<CBox*>(object.second);
