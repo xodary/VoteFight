@@ -429,6 +429,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_type = PACKET_TYPE::P_SC_ANIMATION_PACKET;
 		send_packet.m_grouptype = _Client->m_player->m_grouptype;
 		send_packet.m_id = _Client->m_id;
+		send_packet.m_loop = true;
 
 		switch (recv_packet->m_weapon)
 		{
@@ -675,6 +676,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_type = P_SC_ANIMATION_PACKET;
 			send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
 			send_packet.m_id = _Client->m_id;
+			send_packet.m_loop = false;
 
 			switch (recv_packet->m_weapon)
 			{
@@ -730,31 +732,72 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		BoundingBox bounding;
 		bounding.Center = XMFLOAT3(0, 3, 0);
 		bounding.Extents = XMFLOAT3(3, 3, 3);
-		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
-		XMFLOAT3 attack = Vector3::Add(_Client->m_player->m_Pos, Vector3::ScalarProduct(vector, 3.0f));
+		XMFLOAT3 look = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
+		XMFLOAT3 attack = Vector3::Add(_Client->m_player->m_Pos, Vector3::ScalarProduct(look, 3.0f));
 		XMFLOAT4X4 matrix = Matrix4x4::Identity();
 		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(attack));
 		bounding.Transform(bounding, XMLoadFloat4x4(&matrix));
 
+		vector<int> deleteMonsters;
 		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
 			if (bounding.Intersects(object.second->m_boundingBox))
 			{
-				reinterpret_cast<CMonster*>(object.second)->m_Health -= demage * 3;
-				cout << object.first << " : Health " << reinterpret_cast<CMonster*>(object.second)->m_Health << endl;
+				CMonster* monster = reinterpret_cast<CMonster*>(object.second);
+				monster->m_Health -= demage * 3;
+				if (monster->m_Health <= 0 && !monster->m_dead) {
+					// Monster 사망
+					deleteMonsters.push_back(monster->m_id);
+					{
+						SC_MONSTER_DEAD_PACKET send_packet;
+						send_packet.m_size = sizeof(send_packet);
+						send_packet.m_type = P_SC_MONSTER_DEAD_PACKET;
+						send_packet.m_id = monster->m_id;
+						for (auto& rc : RemoteClient::m_remoteClients)
+						{
+							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+							cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+						}
+					}
+					{
+						SC_ANIMATION_PACKET send_packet;
+						send_packet.m_size = sizeof(send_packet);
+						send_packet.m_type = P_SC_ANIMATION_PACKET;
+						send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+						send_packet.m_id = monster->m_id;
+						send_packet.m_loop = false;
+						strcpy_s(send_packet.m_key, "Monster_dead");
+						for (auto& rc : RemoteClient::m_remoteClients)
+						{
+							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+							cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+						}
+					}
 
-				SC_HEALTH_CHANGE_PACKET send_packet;
-				send_packet.m_size = sizeof(send_packet);
-				send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
-				send_packet.m_id = object.first;
-				send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
-				send_packet.m_health = reinterpret_cast<CMonster*>(object.second)->m_Health;
-				for (auto& rc : RemoteClient::m_remoteClients)
+				}
+				else
 				{
-					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+					cout << object.first << " : Health " << monster->m_Health << endl;
+
+					SC_HEALTH_CHANGE_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
+					send_packet.m_id = object.first;
+					send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
+					send_packet.m_health = monster->m_Health;
+					for (auto& rc : RemoteClient::m_remoteClients)
+					{
+						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+						cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+					}
 				}
 			}
 		}
+
+		for (auto id : deleteMonsters)
+		{
+			CGameScene::m_objects[(int)GROUP_TYPE::MONSTER].erase(id);
+		}
+
 		for (auto& object : RemoteClient::m_remoteClients) {
 			if (object.second->m_id == _Client->m_id) continue;
 			if (bounding.Intersects(object.second->m_player->m_boundingBox))

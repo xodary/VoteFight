@@ -13,6 +13,9 @@ private:
     float m_fSpeed = 0.01f;
 
 public:
+
+    bool m_dead;
+
     CMonster();
     virtual ~CMonster();
 

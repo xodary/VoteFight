@@ -41,6 +41,7 @@ enum PACKET_TYPE {
 	P_SC_PLAYER_RBUTTON_PACKET,
 	P_SC_HEALTH_CHANGE_PACKET,
 	P_SC_TAKEOUT_PACKET,
+	P_SC_MONSTER_DEAD_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -167,6 +168,12 @@ struct SC_TAKEOUT_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_itemID;
+};
+
+struct SC_MONSTER_DEAD_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
 };
 
 // Packet(Clinet->Server)

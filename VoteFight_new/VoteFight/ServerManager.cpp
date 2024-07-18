@@ -26,6 +26,7 @@
 #include "NPC.h"
 #include "Box.h"
 #include "Bullet.h"
+#include "Monster.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -437,6 +438,15 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		SC_DELETE_PACKET* recv_packet = reinterpret_cast<SC_DELETE_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		scene->DeleteObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_itemID);
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_MONSTER_DEAD_PACKET:
+	{
+		SC_MONSTER_DEAD_PACKET* recv_packet = reinterpret_cast<SC_MONSTER_DEAD_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CMonster* monster = reinterpret_cast<CMonster*>(scene->GetIDObject(GROUP_TYPE::MONSTER, recv_packet->m_id));
+		monster->m_dead = true;
 	}
 	break;
 

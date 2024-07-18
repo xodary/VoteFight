@@ -480,6 +480,11 @@ void CGameScene::RenderImGui()
 						hovered[i][j] = false;
 
 					if (!player->myItems[i * cols + j].empty()) {
+						int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i * cols + j]);
+						if (item != 0) {
+							auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i * cols + j]]->m_IconGPUHandle;
+							ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
+						}
 						ImGui::Text("%s", player->myItems[i * cols + j].c_str());
 					}
 					ImGui::EndChildFrame();
