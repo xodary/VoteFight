@@ -7,6 +7,7 @@ public:
 	XMFLOAT3	m_Rota;
 	XMFLOAT3	m_Sca;
 	float		m_Angle;
+	float		m_Look;
 	float		m_Velocity;
 	XMFLOAT3	m_Vec;
 	int			m_id;
@@ -20,7 +21,7 @@ public:
 	bool alive = true;
 	bool ingame = false;
 
-	CObject() {}
+	CObject();
 	~CObject() {}
 
 	static CObject* Load(const string& fileName);

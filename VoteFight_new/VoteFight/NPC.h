@@ -8,12 +8,13 @@ class CBilboardUI;
 class CNPC : public CCharacter
 {
 private:
-	string	 m_spineName;
+	string			m_spineName;
 
-   CBilboardUI* speech_bubble;
+   CBilboardUI*		speech_bubble;
 public:
-	vector<string> m_needs;
-	vector<string> m_outputs;
+	vector<string>	m_needs;
+	vector<string>	m_outputs;
+	int				m_standBy_id;
 
 	CNPC();
 	virtual ~CNPC();

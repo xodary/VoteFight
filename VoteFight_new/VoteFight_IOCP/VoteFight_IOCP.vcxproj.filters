@@ -55,6 +55,10 @@
     <ClCompile Include="Box.cpp">
       <Filter>03. Object</Filter>
     </ClCompile>
+    <ClCompile Include="Monster.cpp">
+      <Filter>03. Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01. Dependency">
@@ -142,5 +146,9 @@
     <ClInclude Include="Box.h">
       <Filter>03. Object</Filter>
     </ClInclude>
+    <ClInclude Include="Monster.h">
+      <Filter>03. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h" />
   </ItemGroup>
 </Project>

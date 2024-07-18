@@ -4,6 +4,10 @@
 #include "SceneManager.h"
 #include "Scene.h"
 #include "GameFramework.h"
+#include "Player.h"
+#include "InputManager.h"
+#include "ImaysNet/PacketQueue.h"
+#include "../Packet.h"
 
 void CBox::Init()
 {
@@ -34,6 +38,20 @@ void CBox::Update()
 			else if (m_bilboardUI[0]->m_isActive) {
 				cout << "Item ¸Ö¾îÁü" << endl;
 				m_bilboardUI[0]->m_isActive = false;
+			}
+
+			if (m_bilboardUI[0]->m_isActive && KEY_TAP(KEY::SPACE)) {
+				CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+				CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
+				for (const string& item : m_items) {
+					player->GetItem(item);
+				}
+				CS_TAKEOUT_PACKET p;
+				p.m_type = P_CS_TAKEOUT_PACKET;
+				p.m_size = sizeof(p);
+				p.m_groupType = (int)GROUP_TYPE::BOX;
+				p.m_itemID = m_id;
+				PacketQueue::AddSendPacket(&p);
 			}
 		}
 	}
@@ -68,6 +86,20 @@ void COnceItem::Update()
 			else if (m_bilboardUI[0]->m_isActive) {
 				cout << "Item ¸Ö¾îÁü" << endl;
 				m_bilboardUI[0]->m_isActive = false;
+			}
+
+			if (m_bilboardUI[0]->m_isActive && KEY_TAP(KEY::SPACE)) {
+				CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
+				CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
+				for (const string& item : m_items) {
+					player->GetItem(item);
+				}
+				CS_TAKEOUT_PACKET p;
+				p.m_type = P_CS_TAKEOUT_PACKET;
+				p.m_size = sizeof(p);
+				p.m_groupType = (int)GROUP_TYPE::ONCE_ITEM;
+				p.m_itemID = m_id;
+				PacketQueue::AddSendPacket(&p);
 			}
 		}
 	}

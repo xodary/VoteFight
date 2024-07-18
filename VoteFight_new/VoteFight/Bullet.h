@@ -14,7 +14,7 @@ public:
     CBullet();
     virtual ~CBullet();
 
-    void Shoot();
+    virtual void Init();
     virtual void Update();
 
     virtual void OnCollisionEnter(CObject* collidedObject);

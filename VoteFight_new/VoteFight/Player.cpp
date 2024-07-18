@@ -20,6 +20,8 @@
 #include "Bullet.h"
 #include "Transform.h"
 #include "Mesh.h"
+#include "../Packet.h"
+#include "ImaysNet/PacketQueue.h"
 
 CPlayer::CPlayer() : m_spineName("mixamorig:Spine")
 {
@@ -35,10 +37,15 @@ CPlayer::~CPlayer()
 void CPlayer::Init()
 {
 	CAnimator* animator = reinterpret_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->SetWeight("Idle", 1.0f);
-	animator->Play("Idle", true);
+	//animator->SetWeight("Idle", 1.0f);
+	//animator->Play("Idle", true);
+	animator->SetWeight("Pistol_slowwalk", 1.0f);
+	animator->Play("Pistol_slowwalk", true);
 
 	m_Inventory = new CInventory();
+
+	myItems.resize(18);
+	myItems[0] = "wood";
 	
 	m_bilboardUI.emplace_back(new CHPbarUI(this));
 	m_bilboardUI.push_back(new CTextUI(this));
@@ -48,6 +55,20 @@ void CPlayer::Init()
 void CPlayer::Attack()
 {
 	//m_Weapon->Attack(this);
+
+	if (CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene")
+	{
+		CS_ATTACK_PACKET p;
+		p.m_size = sizeof(p);
+		p.m_type = P_CS_ATTACK_PACKET;
+		p.m_weapon = (int)m_Weapon;
+		p.m_angle = GetRotate().y;
+		p.m_pos = FindFrame("GunPos")->GetPosition();
+		p.m_Rbutton = KEY_HOLD(KEY::RBUTTON);
+		//p.m_pos = GetPosition();
+
+		PacketQueue::AddSendPacket(&p);
+	}
 }
 
 void CPlayer::SwapWeapon(WEAPON_TYPE weaponType)
@@ -83,23 +104,22 @@ void CPlayer::Punch()
 {
 }
 
-void CPlayer::Shoot(CScene& currScene)
-{
-	if (currScene.GetName() == "GameScene")
-	{
-		cout << "in GameScene" << endl;
-		CBullet* Bullet = reinterpret_cast<CBullet*>(Load("Bullet"));
-		if (Bullet) {
-			CObject* pos = FindFrame("Gun");
-			XMFLOAT3 currPostion(pos->GetPosition());
-			Bullet->SetPostion(currPostion);
-			Bullet->SetRotate(GetRotate());
-			currScene.AddObject(GROUP_TYPE::BULLET, Bullet, 0);
-			Bullet->Shoot();
-
-		}
-	}
-}
+//void CPlayer::Shoot(CScene& currScene)
+//{
+//	if (currScene.GetName() == "GameScene")
+//	{
+//		cout << "in GameScene" << endl;
+//		CBullet* Bullet = reinterpret_cast<CBullet*>(Load("Bullet"));
+//		if (Bullet) {
+//			CObject* pos = FindFrame("Gun");
+//			XMFLOAT3 currPostion(pos->GetPosition());
+//			Bullet->SetPostion(currPostion);
+//			Bullet->SetRotate(GetRotate());
+//			currScene.AddObject(GROUP_TYPE::BULLET, Bullet, 0);
+//			Bullet->Shoot();
+//		}
+//	}
+//}
 
 void CPlayer::Update()
 {
@@ -139,7 +159,7 @@ void CPlayer::OnCollision(CObject* collidedObject)
 {
 	if (collidedObject->GetName() == "PP_Tree_02") {
 		if (KEY_TAP(KEY::LBUTTON) && m_Weapon == WEAPON_TYPE::AXE) {
-			GetItem("Wood");
+			GetItem("wood");
 		}
 	}
 
@@ -430,12 +450,10 @@ void CPlayer::SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, in
 
 void CPlayer::GetItem(string item)
 {
-	for (int i = 0; i < 3; ++i) {
-		for (int j = 0; j < 6; ++j) {
-			if (myItems[i][j].empty()) {
-				myItems[i][j] = item;
-				return;
-			}
+	for (int i = 0; i < 18; ++i) {
+		if (myItems[i].empty()) {
+			myItems[i] = item;
+			return;
 		}
 	}
 }
