@@ -111,17 +111,12 @@ void CGameScene::Init()
 	Load("GameScene2.bin");
 
 
+
 	CObject* object = new CSkyBox(1000, 200);
 	AddObject(GROUP_TYPE::SKYBOX, object, 0);
 
 	//CObject* playerObject = CObject::Load("hugo_idle");
 
-	//{
-	//	CObject* gun = CObject::Load("Gun");
-	//	CTransform* transform = reinterpret_cast<CTransform*>(gun->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	//	transform->SetPosition(XMFLOAT3(10, 3.0f, 10));
-	//	AddObject(GROUP_TYPE::GROUND_ITEM, gun);
-	//}
 
 	//CTransform* transform = reinterpret_cast<CTransform*>(playerObject->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	//transform->SetPosition(XMFLOAT3(20, 2.37f, 20));
@@ -404,6 +399,12 @@ void CGameScene::Render()
 
 void CGameScene::RenderImGui()
 {
+	static bool fontsLoaded = false;
+	if (!fontsLoaded) {
+		LoadFonts("Simpsonfont");
+		fontsLoaded = true;
+	}
+
 	CPlayer* player = reinterpret_cast<CPlayer*>(GetGroupObject(GROUP_TYPE::PLAYER), CGameFramework::GetInstance()->my_id);
 
 	if (KEY_HOLD(KEY::E)) {
@@ -577,7 +578,8 @@ void CGameScene::RenderImGui()
 
 		// 사각형 그리기
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(0, 0, 0, 255));
+		
+		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(230, 200, 0, 255));
 
 	}
 

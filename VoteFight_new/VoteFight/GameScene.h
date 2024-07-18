@@ -1,6 +1,7 @@
 #pragma once
 #include "Scene.h"
 #include "Player.h"
+#include "AssetManager.h"
 
 
 struct CB_GameScene
@@ -22,6 +23,7 @@ private:
 	CObject*			   m_towerLight;
 	float				   m_towerLightAngle;
 
+	int m_round = 1;
 	//INIT_GAME_DATA		   m_InitGameData{};
 
 public:
@@ -51,4 +53,14 @@ public:
 	virtual void PreRender();
 	virtual void Render();
 	virtual void RenderImGui();
+
+	void LoadFonts(const string& fileName)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		// 기본 폰트 크기 18.0f, 원하는 폰트 경로로 변경
+		string filePath = CAssetManager::GetInstance()->GetAssetPath() + "Font\\" + fileName + ".ttf";
+		io.Fonts->AddFontFromFileTTF(filePath.data(), 18.0f);
+		// 폰트가 다시 로드될 수 있도록 이 함수를 호출해야 합니다.
+		io.Fonts->Build();
+	}
 };

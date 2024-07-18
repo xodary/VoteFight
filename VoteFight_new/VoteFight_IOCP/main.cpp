@@ -41,7 +41,6 @@ int main(int argc, char* argv[])
 	CGameScene::LoadTerrain("HeightMap.bin");
 	CGameScene::Load("ServerScene.bin");
 	CGameScene::Load("GameScene.bin");
-
 	CGameScene::NPCInitialize();
 
 	// Create listen socket & Binding
