@@ -206,9 +206,9 @@ void CAssetManager::LoadTextures(const string& fileName)
 	m_textures.emplace(IconsTexture->GetName(), IconsTexture);
 
 	// Icons
-	string itemName[] = { "axe", "wood", "punch", "money", 
+	string itemName[] = { "axe", "wood", "punch", "money",
 		"election_ticket", "fish_meet", "potato", "trash",
-		"icecream", "carrot" };
+		"icecream", "carrot", "drug", "gun", "flower" };
 
 	for (auto str : itemName)
 	{

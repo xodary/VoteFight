@@ -441,12 +441,11 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_MONSTER_DEAD_PACKET:
+	case PACKET_TYPE::P_SC_TREE_PACKET:
 	{
-		SC_MONSTER_DEAD_PACKET* recv_packet = reinterpret_cast<SC_MONSTER_DEAD_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
-		CMonster* monster = reinterpret_cast<CMonster*>(scene->GetIDObject(GROUP_TYPE::MONSTER, recv_packet->m_id));
-		monster->m_dead = true;
+		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
+		player->GetItem("wood");
 	}
 	break;
 

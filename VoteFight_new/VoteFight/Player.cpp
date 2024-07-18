@@ -157,12 +157,6 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 }
 void CPlayer::OnCollision(CObject* collidedObject)
 {
-	if (collidedObject->GetName() == "PP_Tree_02") {
-		if (KEY_TAP(KEY::LBUTTON) && m_Weapon == WEAPON_TYPE::AXE) {
-			GetItem("wood");
-		}
-	}
-
 	if (KEY_TAP(KEY::F))
 	{
 		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::STRUCTURE)

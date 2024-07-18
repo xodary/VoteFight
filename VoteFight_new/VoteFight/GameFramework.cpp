@@ -195,7 +195,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-	desc.NumDescriptors = 100;
+	desc.NumDescriptors = 50;
 	desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 	m_d3d12Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_GUISrvDescHeap));
 

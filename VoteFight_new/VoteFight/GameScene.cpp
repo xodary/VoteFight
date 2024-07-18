@@ -221,7 +221,7 @@ void CGameScene::Update()
 	}
 
 	CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
-	m_mappedGameScene->m_lights[0].m_position = object->GetPosition();
+	m_mappedGameScene->m_lights[0].m_position = Vector3::Add(object->GetPosition(), XMFLOAT3(-25.f, 0, -25.f));
 	m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
 	CScene::Update();
 }
