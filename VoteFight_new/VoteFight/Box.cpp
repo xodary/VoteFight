@@ -32,12 +32,20 @@ void CBox::Update()
 					cout << "Item inside :" << endl;
 					for (auto n : m_items)
 						cout << n << endl;
-					m_bilboardUI[0]->m_isActive = true;
+					for (auto& b : m_bilboardUI)
+						b->m_isActive = true;
+
+					for (int i = 0; i < m_items.size(); ++i) {
+						reinterpret_cast<CIcon*>(m_bilboardUI[1 + i])->centerX = (float)-BUBBLE_WIDTH + ((float)BUBBLE_WIDTH*2 / m_items.size()) * i + ((float)BUBBLE_WIDTH*2 / m_items.size()) / 2;
+						reinterpret_cast<CIcon*>(m_bilboardUI[1 + i])->centerY = 0;
+					}
+
 				}
 			}
 			else if (m_bilboardUI[0]->m_isActive) {
 				cout << "Item ¸Ö¾îÁü" << endl;
-				m_bilboardUI[0]->m_isActive = false;
+				for (auto& b : m_bilboardUI)
+					b->m_isActive = false;
 			}
 
 			if (m_bilboardUI[0]->m_isActive && KEY_TAP(KEY::SPACE)) {
@@ -80,12 +88,14 @@ void COnceItem::Update()
 					cout << "Item inside :" << endl;
 					for (auto n : m_items)
 						cout << n << endl;
-					m_bilboardUI[0]->m_isActive = true;
+					for (auto& b : m_bilboardUI)
+						b->m_isActive = true;
 				}
 			}
 			else if (m_bilboardUI[0]->m_isActive) {
 				cout << "Item ¸Ö¾îÁü" << endl;
-				m_bilboardUI[0]->m_isActive = false;
+				for (auto& b : m_bilboardUI)
+					b->m_isActive = false;
 			}
 
 			if (m_bilboardUI[0]->m_isActive && KEY_TAP(KEY::SPACE)) {

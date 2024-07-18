@@ -49,7 +49,6 @@ void CPlayer::Init()
 	
 	m_bilboardUI.emplace_back(new CHPbarUI(this));
 	m_bilboardUI.push_back(new CTextUI(this));
-	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
 }
 
 void CPlayer::Attack()

@@ -97,7 +97,7 @@ void CAssetManager::LoadMeshes(const string& fileName)
 	}
 
 	m_meshes["HealthBar"] = new CRectMesh(1.5, 0.1);
-	m_meshes["SpeechBubble"] = new CRectMesh(2, 1);
+	m_meshes["SpeechBubble"] = new CRectMesh(2.5, BUBBLE_HEIGHT);
 }
 
 void CAssetManager::LoadTextures(const string& fileName)
@@ -213,7 +213,9 @@ void CAssetManager::LoadTextures(const string& fileName)
 	for (auto str : itemName)
 	{
 		CTexture* ex = new CTexture();
+		ex->SetName(str);
 		ex->Load(str, TEXTURE_TYPE::ALBEDO_MAP);
+		m_textures.emplace(ex->GetName(), ex);
 		m_IconTextures[str] = ex;
 	}
 }

@@ -433,16 +433,16 @@ void CTextUI::Update()
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 4.2f, transform->GetPosition().z));
 }
 
-CIcon::CIcon(CObject* owner)
+CIcon::CIcon(CObject* owner, string str)
 {
 	CreateComponent(COMPONENT_TYPE::TRANSFORM);
 	m_owner = owner;
 	m_isActive = true;
 	CMaterial* material = new CMaterial();
 	material->SetStateNum(0);
-	CRectMesh* mesh = new CRectMesh(2, 1);
+	CRectMesh* mesh = new CRectMesh(0.5, 0.5);
 	SetMesh(mesh);
-	material->SetTexture(CAssetManager::GetInstance()->GetTexture("Icons"));
+	material->SetTexture(CAssetManager::GetInstance()->GetTexture(str));
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
 	material->m_shaders.push_back(BilboardShader);
 	m_materials.push_back(material);
@@ -457,5 +457,10 @@ void CIcon::Update()
 	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
 
-	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 6.0f, transform->GetPosition().z));
+	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, 
+		transform->GetPosition().y + 6.5f,
+		transform->GetPosition().z));
+
+	XMFLOAT3 add = Vector3::TransformCoord(XMFLOAT3(centerX, centerY, 0), Matrix4x4::Rotation(uitransform->GetRotation()));
+	uitransform->SetPosition(Vector3::Add(add, uitransform->GetPosition()));
 }

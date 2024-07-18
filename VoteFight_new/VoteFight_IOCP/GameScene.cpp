@@ -166,20 +166,20 @@ void CGameScene::NPCInitialize()
 {
 	cout << "NPCInitialize()" << endl;
 
-	string needs_ex[] = {"fish_meet", "wood", "flower"};
+	string needs_ex[] = {"fish_meet", "wood", "flower", "trash", "carrot", "icecream", "potato" };
 	string output_ex[] = { "gun", "election_ticket", "drug" };
 	for (auto& object : m_objects[(int)GROUP_TYPE::NPC])
 	{
 		CNPC* npc = reinterpret_cast<CNPC*>(object.second);
 		
-		int n = rand() % size(needs_ex) + 1;
+		int n = rand() % 3 + 1;
 		for (int i = 0; i < n; ++i)
 		{
 			npc->m_needs.push_back(needs_ex[rand() % size(needs_ex)]);
 		}
 
 		int o = rand() % size(output_ex) + 1;
-		for (int i = 0; i < rand() % size(output_ex) + 1; ++i)
+		for (int i = 0; i < o + 1; ++i)
 		{
 			npc->m_outputs.push_back(output_ex[rand() % size(output_ex)]);
 		}
@@ -191,14 +191,13 @@ void CGameScene::NPCInitialize()
 		onceitem->items.push_back("flower");
 	}
 
-	string box_ex[] = { "trash", "carrot", "icecream", "potato" };
 	for (auto& object : m_objects[(int)GROUP_TYPE::BOX])
 	{
 		CBox* box = reinterpret_cast<CBox*>(object.second);
-		int o = rand() % size(box_ex) + 1;
-		for (int i = 0; i < rand() % size(box_ex) + 1; ++i)
+		int o = rand() % 3 + 1;
+		for (int i = 0; i < o; ++i)
 		{
-			box->items.push_back(box_ex[rand() % size(box_ex)]);
+			box->items.push_back(needs_ex[rand() % size(needs_ex)]);
 		}
 	}
 }

@@ -351,6 +351,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_id);
 			CNPC* npc = reinterpret_cast<CNPC*>(object);
 			npc->m_needs.push_back(string(recv_packet->m_itemName));
+			npc->m_bilboardUI.push_back(new CIcon(npc, recv_packet->m_itemName));
 			break;
 		}
 		case 1:
@@ -358,6 +359,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_id);
 			CNPC* npc = reinterpret_cast<CNPC*>(object);
 			npc->m_outputs.push_back(string(recv_packet->m_itemName));
+			npc->m_bilboardUI.push_back(new CIcon(npc, recv_packet->m_itemName));
 			break;
 		}
 		case 2:
@@ -365,6 +367,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			CObject* object = scene->GetIDObject(GROUP_TYPE::BOX, recv_packet->m_id);
 			CBox* box = reinterpret_cast<CBox*>(object);
 			box->m_items.push_back(string(recv_packet->m_itemName));
+			box->m_bilboardUI.push_back(new CIcon(box, recv_packet->m_itemName));
 			break;
 		}
 		case 3:
@@ -372,6 +375,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			CObject* object = scene->GetIDObject(GROUP_TYPE::ONCE_ITEM, recv_packet->m_id);
 			COnceItem* item = reinterpret_cast<COnceItem*>(object);
 			item->m_items.push_back(string(recv_packet->m_itemName));
+			item->m_bilboardUI.push_back(new CIcon(item, recv_packet->m_itemName));
 			break;
 		}
 		}
@@ -398,6 +402,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_npc_id);
 		CNPC* npc = reinterpret_cast<CNPC*>(object);
 		npc->m_standBy_id = recv_packet->m_npc_id;
+		npc->m_bilboardUI.clear();
 	}
 	break;
 
@@ -430,6 +435,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject(GROUP_TYPE::BOX, recv_packet->m_itemID);
 		CBox* item = reinterpret_cast<CBox*>(object);
 		item->m_items.clear();
+		item->m_bilboardUI.clear();
 	}
 	break;
 

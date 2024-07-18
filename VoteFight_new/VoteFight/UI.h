@@ -84,7 +84,10 @@ public:
 class CIcon : public CBilboardUI
 {
 public:
-	CIcon(CObject* owner);
+	float centerX;
+	float centerY;
+
+	CIcon(CObject* owner, string str);
 	virtual void Update();
 };
 

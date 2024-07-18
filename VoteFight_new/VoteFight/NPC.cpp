@@ -41,7 +41,7 @@ void CNPC::Init()
 	animator->Play("idle", true);
 
 	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
-	m_bilboardUI.push_back(new CIcon(this));
+	// m_bilboardUI.push_back(new CIcon(this));
 }
 
 void CNPC::Update()
@@ -65,12 +65,24 @@ void CNPC::Update()
 					cout << "output: " << endl;
 					for (auto o : m_outputs)
 						cout << o << endl;
-					m_bilboardUI[0]->m_isActive = true;
+					for(auto& b : m_bilboardUI)
+						b->m_isActive = true;
+
+					for (int i = 0; i < m_needs.size(); ++i) {
+						reinterpret_cast<CIcon*>(m_bilboardUI[1 + i])->centerX = (float)-BUBBLE_WIDTH + ((float)BUBBLE_WIDTH*2 / m_needs.size()) * i + ((float)BUBBLE_WIDTH*2 / m_needs.size()) / 2;
+						reinterpret_cast<CIcon*>(m_bilboardUI[1 + i])->centerY = (float)2/3;
+					}
+					for (int i = 0; i < m_outputs.size(); ++i) {
+						reinterpret_cast<CIcon*>(m_bilboardUI[1 + m_needs.size() + i])->centerX = (float)-BUBBLE_WIDTH + ((float)BUBBLE_WIDTH*2 / m_outputs.size()) * i + ((float)BUBBLE_WIDTH*2 / m_outputs.size()) / 2;
+						reinterpret_cast<CIcon*>(m_bilboardUI[1 + m_needs.size() + i])->centerY = (float)-1 / 2;
+					}
+
 				}
 			}
 			else if (m_bilboardUI[0]->m_isActive) {
 				cout << "NPC ¸Ö¾îÁü" << endl;
-				m_bilboardUI[0]->m_isActive = false;
+				for (auto& b : m_bilboardUI)
+					b->m_isActive = false;
 			}
 
 			if (m_bilboardUI[0]->m_isActive && KEY_TAP(KEY::SPACE)) {

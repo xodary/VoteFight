@@ -9,6 +9,10 @@
 #define CONNECT_SERVER
 #define NPC_RANGE 5
 
+#define BUBBLE_WIDTH 2
+#define BUBBLE_HEIGHT 2
+
+
 constexpr int SECTOR_RANGE_ROW = 8;
 constexpr int SECTOR_RANGE_COL = 8;
 
