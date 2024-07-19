@@ -560,21 +560,6 @@ void CGameFramework::MoveToNextFrame()
 	m_swapChainBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
 	WaitForGpuComplete();
-
-	//if (CSceneManager::GetInstance()->GetReservedScene())
-	//{
-	//	if (m_PostProcessingShader)
-	//	{
-	//		if (m_PostProcessingShader->GetPostProcessingType() == POST_PROCESSING_TYPE_NONE)
-	//		{
-	//			m_PostProcessingShader->SetPostProcessingType(POST_PROCESSING_TYPE_FADE_IN);
-
-	//			CSceneManager::GetInstance()->ChangeToReservedScene();
-	//		}
-	//	}
-	//}
-
-	//CSoundManager::GetInstance()->Update();
 }
 
 void CGameFramework::PreRender()
@@ -585,16 +570,6 @@ void CGameFramework::PreRender()
 void CGameFramework::Render()
 {
 	CSceneManager::GetInstance()->Render();
-
-	//reinterpret_cast<CGBufferShader*>(CAssetManager::GetInstance()->GetShader("GBuffer"))->Render(0);
-
-	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(0);
-	//reinterpret_cast<CVoxelizationShader*>(CAssetManager::GetInstance()->GetShader("Voxelization"))->Render(1);
-	//reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(0);
-	//reinterpret_cast<CAnisoMipmapShader*>(CAssetManager::GetInstance()->GetShader("AnisoMipmap"))->Render(1);
-
-	//reinterpret_cast<CVCTMainShader*>(CAssetManager::GetInstance()->GetShader("VCTMain"))->Render(0);
-	// reinterpret_cast<CUpsampleBlur*>(CAssetManager::GetInstance()->GetShader("UpsampleBlur"))->Render(0);
 }
 
 void CGameFramework::PostRender()

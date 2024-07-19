@@ -412,22 +412,24 @@ void CGameScene::RenderImGui()
 	CPlayer* player = reinterpret_cast<CPlayer*>(GetIDObject(GROUP_TYPE::PLAYER, framework->my_id));
 	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
+	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+	int rows = 3;
+	int cols = 6;
+	static ImVec2 select = { -1, -1 };
+	const float itemSize = framework->GetResolution().x * 3 / 5 / 8;
+	static bool inven = false;
+	if (KEY_TAP(KEY::E)) inven = !inven;
+
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
 
-	if (KEY_HOLD(KEY::E)) {
-
-		int rows = 3;
-		int cols = 6;
-		static bool selected[3][6] = { false };
+	if (inven) {
 		static bool hovered[3][6] = { false };
 		const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
 
-		ImVec2 windowSize(framework->GetResolution().x * 3 / 4, framework->GetResolution().y * 3 / 4);
+		ImVec2 windowSize(framework->GetResolution().x * 3/5, framework->GetResolution().y * 2/3);
 		ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y) / 2);
-
-		DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
 
 		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
@@ -435,7 +437,7 @@ void CGameScene::RenderImGui()
 
 		// 아이템 크기 계산
 		const float itemSize = windowSize.x / 8;
-		const float spacing = itemSize / 6;
+		const float spacing = itemSize / 7;
 		const float totalSpacingWidth = (cols - 1) * spacing;
 		const float totalSpacingHeight = (rows - 1) * spacing;
 		const float inventoryWidth = cols * itemSize + totalSpacingWidth;
@@ -443,7 +445,6 @@ void CGameScene::RenderImGui()
 
 		float startX = (windowSize.x - inventoryWidth) / 2.0f;
 		float startY = (windowSize.y - inventoryHeight) / 2.0f;
-
 
 		ImGui::SetCursorPosY(startY);
 
@@ -461,7 +462,7 @@ void CGameScene::RenderImGui()
 				// 외곽선 색상 설정
 				ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 				if (hovered[i][j]) borderColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-				if (selected[i][j]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+				if (i == select.x && j == select.y) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 
 				ImGui::GetFont()->Scale = 1.0f;
 				ImGui::PushFont(ImGui::GetFont());
@@ -470,9 +471,18 @@ void CGameScene::RenderImGui()
 
 				ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i * cols + j)), ImVec2(itemSize, itemSize));
 				{
-					if (ImGui::IsWindowHovered()) {
-						if (ImGui::GetIO().MouseClicked[0])
-							selected[i][j] = !selected[i][j];
+					if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
+						if (ImGui::GetIO().MouseClicked[0] && !player->myItems[i * cols + j].empty()) {
+							select.x = i; select.y = j;
+						}
+						else if (KEY_AWAY(KEY::LBUTTON)) {
+							if (select.x != -1 || select.x != -1) {
+								string str = player->myItems[i * cols + j];
+								string item = player->myItems[select.x * cols + select.y];
+								player->myItems[i * cols + j] = item;
+								player->myItems[select.x * cols + select.y] = str;
+							}
+						}
 						else
 							hovered[i][j] = true;
 					}
@@ -500,96 +510,122 @@ void CGameScene::RenderImGui()
 					ImGui::SetCursorPosY(ImGui::GetCursorPosY() + spacing);
 			}
 		}
-
 		ImGui::End();
 	}
 
-	int rows = 3;
-	static bool selected[3] = { false };
-	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
-
-	ImVec2 windowSize(framework->GetResolution().x * 1 / 4, framework->GetResolution().x * 1 / 4 / 3);
-	ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y));
-
-	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
-
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-	ImGui::Begin("Full Screen Window", nullptr, window_flags);
-
-
-	// 아이템 크기 계산
-	const float itemSize = windowSize.y * 5 / 6;
-
-	ImGui::SetCursorPosX(itemSize / 5);
-	for (int i = 0; i < rows; ++i)
+	if (select.x != -1 && select.y != -1)
 	{
-		ImGui::PushID(i+ 1000);
+		if (KEY_AWAY(KEY::LBUTTON)) {
+			select.x = -1; select.y = -1;
+		}
+		else {
+			ImVec2 mousepos = ImGui::GetMousePos();
+			mousepos.x += 5;
+			mousepos.y += 5;
+			//ImGui::SetCursorPos(ImVec2(mousepos.x - windowPos.x - itemSize / 2,
+			//	mousepos.y - windowPos.y - itemSize / 2));
+			ImGui::SetNextWindowSize(ImVec2(itemSize, itemSize), ImGuiCond_Always);
+			ImGui::SetNextWindowPos(mousepos, ImGuiCond_Always);
+			ImGui::Begin("cursor", nullptr, window_flags);
+			{
+				if (!player->myItems[select.x * cols + select.y].empty()) {
+					int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[select.x * cols + select.y]);
+					if (item != 0) {
+						auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[select.x * cols + select.y]]->m_IconGPUHandle;
+						ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
+					}
+					ImGui::Text("%s", player->myItems[select.x * cols + select.y].c_str());
+				}
+				ImGui::End();
+			}
+		}
+	}
 
-		// 외곽선 색상 설정
-		ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-		if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+	{
+		int rows = 3;
+		static bool selected[3] = { false };
+		const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
 
-		ImGui::GetFont()->Scale = 1.0f;
-		ImGui::PushFont(ImGui::GetFont());
-		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+		ImVec2 windowSize(framework->GetResolution().x * 1 / 4, framework->GetResolution().x * 1 / 4 / 3);
+		ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y));
+
+		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+		ImGui::Begin("Window", nullptr, window_flags);
+
+
+		// 아이템 크기 계산
+		const float itemSize = windowSize.y * 5 / 6;
+
+		ImGui::SetCursorPosX(itemSize / 5);
+		for (int i = 0; i < rows; ++i)
+		{
+			ImGui::PushID(i + 1000);
+
+			// 외곽선 색상 설정
+			ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+			if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+
+			ImGui::GetFont()->Scale = 1.0f;
+			ImGui::PushFont(ImGui::GetFont());
+			ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+
+			ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i + 1000)), ImVec2(itemSize, itemSize));
+			{
+				ImGui::Text("%d", i + 1);
+				if (!player->myItems[i].empty()) {
+					int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i]);
+					if (item != 0) {
+						ImGui::SameLine();
+						auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i]]->m_IconGPUHandle;
+						ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
+					}
+				}
+				ImGui::Text(player->myItems[i].c_str());
+				ImGui::EndChildFrame();
+			}
+			ImGui::SameLine();
+
+			ImGui::PopStyleVar();
+			ImGui::PopStyleColor();
+			ImGui::PopFont();
+
+			ImGui::PopID();
+		}
+		ImGui::End();
+
+		windowSize.x = framework->GetResolution().x / 5;
+		windowSize.y = framework->GetResolution().y / 15;
+		windowPos.x = framework->GetResolution().x - windowSize.x - 10;
+		windowPos.y = 10;
+
+		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 1.f));
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 
-
-		ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i+1000)), ImVec2(itemSize, itemSize));
+		ImGui::Begin("White Background Window", nullptr, window_flags);
 		{
-			ImGui::Text("%d", i + 1);
-			if (!player->myItems[i].empty()) {
-				int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i]);
-				if (item != 0) {
-					ImGui::SameLine();
-					auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i]]->m_IconGPUHandle;
-					ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
-				}
-			}
-			ImGui::Text(player->myItems[i].c_str());
-			ImGui::EndChildFrame();
+			ImVec2 center = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
+
+			float rate = CTimeManager::GetInstance()->m_lastTime / CTimeManager::GetInstance()->m_phaseTime;
+			ImVec2 top_left = ImVec2(center.x - windowSize.x / 2, center.y - windowSize.y / 2);
+			ImVec2 bottom_right = ImVec2((center.x - windowSize.x / 2) + windowSize.x * rate, center.y + windowSize.y / 2);
+
+			// 사각형 그리기
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+			draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(0, 0, 0, 255));
+
 		}
-		ImGui::SameLine();
 
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
-		ImGui::PopFont();
+		ImGui::End();
 
-		ImGui::PopID();
+		ImGui::Render();
+
+		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 	}
-	ImGui::End();
-
-	windowSize.x = framework->GetResolution().x / 5;
-	windowSize.y = framework->GetResolution().y / 15;
-	windowPos.x = framework->GetResolution().x - windowSize.x - 10;
-	windowPos.y = 10;
-
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 1.f));
-	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
-
-	ImGui::Begin("White Background Window", nullptr, window_flags);
-	{
-		ImVec2 center = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
-		
-		float rate = CTimeManager::GetInstance()->m_lastTime / CTimeManager::GetInstance()->m_phaseTime;
-		ImVec2 top_left = ImVec2(center.x - windowSize.x / 2, center.y - windowSize.y / 2);
-		ImVec2 bottom_right = ImVec2((center.x - windowSize.x / 2) + windowSize.x * rate, center.y + windowSize.y / 2);
-
-		// 사각형 그리기
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(0, 0, 0, 255));
-
-	}
-
-	ImGui::PopStyleVar();
-	ImGui::PopStyleColor();
-	ImGui::End();
-
-	ImGui::Render();
-
-	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }

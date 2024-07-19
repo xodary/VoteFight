@@ -131,7 +131,7 @@ void WorkerThread()
 					auto now = chrono::system_clock::now();
 					auto last = CGameScene::m_objects[(int)GROUP_TYPE::MONSTER][(int)readEvent.lpCompletionKey]->m_AnilastTime;
 					if (now - last > CGameScene::m_animations["FishMon"][CGameScene::m_objects[(int)GROUP_TYPE::MONSTER][(int)readEvent.lpCompletionKey]->m_upAnimation]) {
-						cout << "ANIMATION DONE" << endl;
+						cout << "ANIMATION DONE" << endl;  
 
 						SC_ANIMATION_PACKET send_packet;
 						send_packet.m_size = sizeof(send_packet);
