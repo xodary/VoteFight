@@ -10,6 +10,7 @@
 #include "Monster.h"
 
 volatile bool				stopServer = false;
+volatile bool				GameStart = false;
 static unsigned long long	nextClientID{ 0 };		// Next Client ID
 
 vector<shared_ptr<thread>>	workerThreads;			// Worker Thread Vector
@@ -88,9 +89,19 @@ void ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient)
 	// 에러 혹은 소켓 종료 시
 	_remoteClient->m_tcpConnection.Close();
 	{
-		lock_guard<recursive_mutex> lock_rc(RemoteClient::m_lock);
 		RemoteClient::m_remoteClients.erase(_remoteClient.get());	// 클라이언트 제거
 
+		if (_remoteClient->m_ingame) {
+			SC_DELETE_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_DELETE_PACKET;
+			send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
+			send_packet.m_itemID = _remoteClient->m_id;
+
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
+		}
 		cout << " >> Client left. There are " << RemoteClient::m_remoteClients.size() << " connections.\n";
 	}
 }
@@ -240,6 +251,7 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 			send_packet.m_itemID = bullet->m_id;
 			send_packet.m_groupType = (int)GROUP_TYPE::BULLET;
 			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			}
 			continue;
@@ -272,7 +284,7 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 		send_packet.m_pos = object.second->m_Pos;
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (rc.second == nullptr || !rc.second->m_ingame) continue;
+			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 	}
@@ -308,7 +320,7 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 		}
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (rc.second == nullptr || !rc.second->m_ingame) continue;
+			if (!rc.second->m_ingame) continue;
 			SC_POS_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_POS_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
@@ -325,6 +337,7 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 void UpdatePhase(OVERLAPPED_ENTRY& readEvent)
 {
 	for (auto& client : RemoteClient::m_remoteClients) {
+		if (!client.second->m_ingame) continue;
 		SC_UPDATE_PHASE_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_UPDATE_PHASE_PACKET);
 		send_packet.m_type = PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET;
@@ -388,6 +401,26 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 	case PACKET_TYPE::P_CS_LOGIN_PACKET:
 	{
+		if (GameStart) {
+			SC_LOGIN_FAIL_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_LOGIN_FAIL_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_FAIL_PACKET;
+			send_packet.m_fail_type = 0;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			ProcessClientLeave(_Client);
+			return;
+		}
+
+		if (RemoteClient::m_remoteClients.size() == 3) {
+			SC_LOGIN_FAIL_PACKET send_packet;
+			send_packet.m_size = sizeof(SC_LOGIN_FAIL_PACKET);
+			send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_FAIL_PACKET;
+			send_packet.m_fail_type = 1;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			ProcessClientLeave(_Client);
+			return;
+		}
+
 		CS_LOGIN_PACKET* recv_packet = reinterpret_cast<CS_LOGIN_PACKET*>(_Packet);
 		_Client->m_id = nextClientID++;
 		_Client->m_name = string(recv_packet->m_name);
@@ -407,6 +440,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		cout << " >> Size of RemoteClient: " << RemoteClient::m_remoteClients.size() << endl;
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
 			if (rc.second->m_char < 0) continue;
 			SC_SELECT_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_SELECT_PACKET);
@@ -445,6 +479,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			cout << " >> send ) CS_VELOCITY_CHANGE_PACKET" << endl;
 
 			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			}
 
@@ -509,6 +544,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		}
 		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 		cout << " >> send ) CS_WALK_ENTER_PACKET" << endl;
@@ -551,6 +587,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		cout << " >> send ) CS_VELOCITY_CHANGE_PACKET" << endl;
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 		break;
@@ -570,11 +607,13 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_char = _Client->m_char;
 		strcpy_s(send_packet.m_name, _Client->m_name.c_str());
 		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 
 		if (RemoteClient::m_remoteClients.size() < MAX_PLAYER) return;
 		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
 			if (!rc.second->m_ready) {
 				return;
 			}
@@ -582,11 +621,13 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		cout << " GameStart" << endl;
 		{
+			GameStart = true;
 			SC_GAMESTART_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_GAMESTART_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_GAMESTART_PACKET;
 
 			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			}
 		}
@@ -595,8 +636,10 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
 		//XMFLOAT3 pos[3]{ {10, 0, 10},{20, 0, 10},{30, 0, 10} };
 		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
 			int i = 0;
 			for (auto& rc2 : RemoteClient::m_remoteClients) {	// other players
+				if (!rc2.second->m_ingame) continue;
 				rc2.second->m_player->m_Pos = pos[i++];
 
 				SC_SPAWN_PACKET send_packet;
@@ -720,8 +763,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				break;
 			}
 
-			for (auto& rc : RemoteClient::m_remoteClients)
-			{
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 			}
@@ -748,8 +791,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_rota = Bullet->m_Rota;
 			send_packet.m_sca = XMFLOAT3(1, 1, 1);
 			strcpy_s(send_packet.m_modelName, "Bullet");
-			for (auto& rc : RemoteClient::m_remoteClients)
-			{
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				cout << " >> send ) SC_BULLET_ADD_PACKET" << endl;
 			}
@@ -806,8 +849,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				}
 				
 				monster->m_upAnimation = send_packet.m_key;
-				for (auto& rc : RemoteClient::m_remoteClients)
-				{
+				for (auto& rc : RemoteClient::m_remoteClients) {
+					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 				}
@@ -820,8 +863,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					send_packet.m_id = object.first;
 					send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
 					send_packet.m_health = monster->m_Health;
-					for (auto& rc : RemoteClient::m_remoteClients)
-					{
+					for (auto& rc : RemoteClient::m_remoteClients) {
+						if (!rc.second->m_ingame) continue;
 						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 						cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 					}
@@ -835,6 +878,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		}
 
 		for (auto& object : RemoteClient::m_remoteClients) {
+			if (!object.second->m_ingame) continue;
 			if (object.second->m_id == _Client->m_id) continue;
 			if (bounding.Intersects(object.second->m_player->m_boundingBox))
 			{
@@ -847,8 +891,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				send_packet.m_id = object.second->m_id;
 				send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
 				send_packet.m_health = object.second->m_player->m_Health;
-				for (auto& rc : RemoteClient::m_remoteClients)
-				{
+				for (auto& rc : RemoteClient::m_remoteClients) {
+					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 				}
@@ -865,8 +909,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CNPC* npc = reinterpret_cast<CNPC*>(CGameScene::m_objects[(int)GROUP_TYPE::NPC][recv_packet->m_npc_id]);
 		npc->m_standBy_id = _Client->m_id;
 
-		for (auto& rc : RemoteClient::m_remoteClients)
-		{
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
 			SC_EXCHANGE_DONE_PACKET send_packet;
 			send_packet.m_size = sizeof(send_packet);
 			send_packet.m_type = P_SC_EXCHANGE_DONE_PACKET;
@@ -880,8 +924,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	case PACKET_TYPE::P_CS_PLAYER_RBUTTON_PACKET:
 	{
 		CS_PLAYER_RBUTTON_PACKET* recv_packet = reinterpret_cast<CS_PLAYER_RBUTTON_PACKET*>(_Packet);
-		for (auto& rc : RemoteClient::m_remoteClients)
-		{
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
 			SC_PLAYER_RBUTTON_PACKET send_packet;
 			send_packet.m_size = sizeof(send_packet);
 			send_packet.m_type = P_SC_PLAYER_RBUTTON_PACKET;
@@ -905,8 +949,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		if (recv_packet->m_groupType == (int)GROUP_TYPE::ONCE_ITEM)
 		{
-			for (auto& rc : RemoteClient::m_remoteClients)
-			{
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
 				SC_DELETE_PACKET send_packet;
 				send_packet.m_size = sizeof(send_packet);
 				send_packet.m_type = P_SC_DELETE_PACKET;
@@ -924,6 +968,22 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_itemID = recv_packet->m_itemID;
 			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> send ) SC_TAKEOUT_PACKET" << endl;
+		}
+	}
+	break;
+
+	case PACKET_TYPE::P_CS_WEAPON_CHANGE_PACKET:
+	{
+		CS_WEAPON_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_WEAPON_CHANGE_PACKET*>(_Packet);
+
+		SC_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_SC_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = recv_packet->m_weapon;
+		send_packet.m_id = _Client->m_id;
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 	}
 	break;

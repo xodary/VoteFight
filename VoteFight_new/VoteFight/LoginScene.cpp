@@ -86,7 +86,7 @@ void CLoginScene::Render()
         ImGui::InputText("##ChatInput", user_name, IM_ARRAYSIZE(user_name));
         ImGui::SameLine();
         if (ImGui::Button("Login")) {
-#ifdef CONNECT_SERVER
+            CGameFramework::GetInstance()->m_connect_server = true;
             CServerManager::GetInstance()->ConnectServer(server_addr);
             memset(login_state, 0, sizeof(login_state));
             strcpy(login_state, "Wait For Server Message ...");
@@ -95,9 +95,6 @@ void CLoginScene::Render()
             send_packet.m_type = P_CS_LOGIN_PACKET;
             strcpy_s(send_packet.m_name, user_name);
             PacketQueue::AddSendPacket(&send_packet);
-#else
-            CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
-#endif
         }
     }
     ImGui::PopFont();

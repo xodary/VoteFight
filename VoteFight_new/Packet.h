@@ -23,9 +23,11 @@ enum PACKET_TYPE {
 	P_CS_EXCHANGE_DONE_PACKET,
 	P_CS_PLAYER_RBUTTON_PACKET,
 	P_CS_TAKEOUT_PACKET,
+	P_CS_WEAPON_CHANGE_PACKET,
 
 	// Server -> Client packet
 	P_SC_LOGIN_OK_PACKET,
+	P_SC_LOGIN_FAIL_PACKET,
 	P_SC_SPAWN_PACKET,
 	P_SC_ADD_PACKET,
 	P_SC_DELETE_PACKET,
@@ -43,6 +45,7 @@ enum PACKET_TYPE {
 	P_SC_TAKEOUT_PACKET,
 	P_SC_MONSTER_DEAD_PACKET,
 	P_SC_TREE_PACKET,
+	P_SC_WEAPON_CHANGE_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -52,6 +55,12 @@ struct SC_LOGIN_OK_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
+};
+
+struct SC_LOGIN_FAIL_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_fail_type;
 };
 
 struct SC_SPAWN_PACKET {
@@ -182,6 +191,13 @@ struct SC_MONSTER_DEAD_PACKET {
 	unsigned int		m_id;
 };
 
+struct SC_WEAPON_CHANGE_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
+	unsigned int		m_weapon;
+};
+
 // Packet(Clinet->Server)
 struct CS_LOGIN_PACKET {
 	unsigned char		m_size;
@@ -254,4 +270,9 @@ struct CS_PLAYER_RBUTTON_PACKET {
 	float				m_angle;
 };
 
+struct CS_WEAPON_CHANGE_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_weapon;
+};
 #pragma pack (pop)

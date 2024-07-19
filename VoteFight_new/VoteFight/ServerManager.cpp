@@ -88,9 +88,9 @@ void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_ove
 	
 	// 오버랩 구조체 초기화
 	memset(&CServerManager::m_tcpSocket->m_recvOverlapped.m_wsa_over, 0, sizeof(CServerManager::m_tcpSocket->m_recvOverlapped.m_wsa_over));
-	
+
 	// 다음 데이터 수신
-	CServerManager::Do_Recv();
+	if(CGameFramework::GetInstance()->m_connect_server) CServerManager::Do_Recv();
 }
 
 // 송신 콜백 함수
@@ -185,8 +185,20 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CGameFramework::GetInstance()->my_id = recv_packet->m_id;
 
 		cout << "Clinet ID - " << recv_packet->m_id << endl;
-		break;
 	}
+	break;
+
+	case PACKET_TYPE::P_SC_LOGIN_FAIL_PACKET:
+	{
+		SC_LOGIN_FAIL_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_FAIL_PACKET*>(_Packet);
+		CLoginScene* loginscene = reinterpret_cast<CLoginScene*>(CSceneManager::GetInstance()->GetCurrentScene());
+		memset(loginscene->login_state, 0, sizeof(loginscene->login_state));
+		if(recv_packet->m_fail_type == 0) strcpy_s(loginscene->login_state, "Already Game Started.");
+		if(recv_packet->m_fail_type == 1) strcpy_s(loginscene->login_state, "Already 3 Player in Room.");
+
+		CGameFramework::GetInstance()->m_connect_server = false;
+	}
+	break;
 
 	case PACKET_TYPE::P_SC_SPAWN_PACKET:	// Player
 	{
@@ -454,6 +466,15 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
 		player->GetItem("wood");
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_WEAPON_CHANGE_PACKET:
+	{
+		SC_WEAPON_CHANGE_PACKET* recv_packet = reinterpret_cast<SC_WEAPON_CHANGE_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id));
+		player->SwapWeapon((WEAPON_TYPE)recv_packet->m_weapon);
 	}
 	break;
 

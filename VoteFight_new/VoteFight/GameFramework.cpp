@@ -45,11 +45,8 @@ CGameFramework::CGameFramework() :
 	m_fenceEvent(),
 	m_d3d12RootSignature(),
 	m_d3d12GameFramework(),
-	m_mappedGameFramework()
-	//m_RenderingResultTexture(),
-	//m_PostProcessingShader(),
-	//m_UILayer()
-	//m_socketInfo(),
+	m_mappedGameFramework(),
+	m_connect_server(true)
 {
 }
 
@@ -586,9 +583,7 @@ void CGameFramework::PopulateCommandList()
 	ResetCommandAllocatorAndList();
 	UpdateShaderVariables();
 
-#ifdef CONNECT_SERVER
-	CServerManager::Tick();
-#endif
+	if(m_connect_server) CServerManager::Tick();
 
 	CSceneManager::GetInstance()->Update();
 	CCameraManager::GetInstance()->Update();

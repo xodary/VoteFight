@@ -120,6 +120,28 @@ void CPlayer::Punch()
 void CPlayer::Update()
 {
 	CCharacter::Update();
+
+	if (KEY_TAP(KEY::NUM1)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM2)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM3)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)

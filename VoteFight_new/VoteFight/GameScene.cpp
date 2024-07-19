@@ -191,14 +191,6 @@ void CGameScene::Update()
 	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 
 	for (auto& object : objects) {
-
-		if (KEY_TAP(KEY::NUM1))
-			reinterpret_cast<CPlayer*>(object.second)->SwapWeapon(WEAPON_TYPE::PISTOL);
-		if (KEY_TAP(KEY::NUM2))
-			reinterpret_cast<CPlayer*>(object.second)->SwapWeapon(WEAPON_TYPE::AXE);
-		if (KEY_TAP(KEY::NUM3))
-			reinterpret_cast<CPlayer*>(object.second)->SwapWeapon(WEAPON_TYPE::PUNCH);
-
 		CTransform* p_tf = static_cast<CTransform*>(object.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 		float rotation = Lerp(p_tf->GetRotation().y, reinterpret_cast<CPlayer*>(object.second)->goal_rota, DT * 8);

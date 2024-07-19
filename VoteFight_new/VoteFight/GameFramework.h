@@ -19,6 +19,7 @@ class CGameFramework : public CSingleton<CGameFramework>
 	friend class CSingleton<CGameFramework>;
 
 public:
+	bool							  m_connect_server;
 	// 윈도우 관련 멤버 변수
 	HWND							  m_hWnd;		// 메인 윈도우 핸들
 	char							  m_title[64];  // 윈도우 타이틀
