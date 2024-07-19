@@ -1,4 +1,23 @@
-﻿  main.cpp
+﻿  Box.cpp
+  Bullet.cpp
+  CPlayer.cpp
+  DDSTextrueLoader.cpp
+  GameScene.cpp
+C:\directX_work\VoteFight_new\VoteFight_IOCP\GameScene.cpp(107,64): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  Endpoint.cpp
+  Exception.cpp
+  Iocp.cpp
+  PacketQueue.cpp
+  Poll.cpp
+  Socket.cpp
+  SocketInit.cpp
+  Monster.cpp
+  NPC.cpp
+  Object.cpp
+  RemoteClient.cpp
+  Timer.cpp
+  func.cpp
+  main.cpp
 C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(231,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(316,36): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(404,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
@@ -13,4 +32,9 @@ C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(807,22): warning C4312: '�
 C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(850,37): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(869,30): warning C4244: '=': 'unsigned __int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(892,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  pch.cpp
+  코드를 생성하고 있습니다...
+  컴파일하고 있습니다...
+  udt.cpp
+  코드를 생성하고 있습니다...
   VoteFight_IOCP.vcxproj -> C:\directX_work\VoteFight_new\x64\Debug\VoteFight_IOCP.exe

@@ -25,7 +25,9 @@ CSelectScene* CSelectScene::m_CSelectScene;
 
 CSelectScene::CSelectScene() :
 	m_d3d12GameScene(),
-	m_mappedGameScene()
+	m_mappedGameScene(),
+	m_selected_model(-1),
+	m_button("Ready")
 {
 	SetName("SelectScene");
 }
@@ -144,26 +146,6 @@ void CSelectScene::SelectCharacter(UINT number)
 
 void CSelectScene::Update()
 {
-	if (KEY_TAP(KEY::NUM1))
-	{
-		SelectCharacter(0);
-	}
-	if (KEY_TAP(KEY::NUM2))
-	{
-		SelectCharacter(1);
-	}
-
-	if (KEY_TAP(KEY::NUM3))
-	{
-		SelectCharacter(2);
-	}
-
-	// Ready
-	if (KEY_TAP(KEY::SPACE))
-	{
-		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::GAME);
-	}
-
 	for (int i = 0; i < static_cast<int>(GROUP_TYPE::UI); ++i)
 	{
 		for (auto& object : GetGroupObject((GROUP_TYPE)i))
@@ -366,6 +348,8 @@ void CSelectScene::RenderImGui()
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(1.0f, 1.0f, 1.0f, 1.0f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+	ImGui::GetFont()->Scale = 1.5;
+	ImGui::PushFont(ImGui::GetFont());
 
 	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
 	ImGui::Begin("Selected",nullptr, window_flags);
@@ -373,11 +357,11 @@ void CSelectScene::RenderImGui()
 	ImGui::SameLine();
 	ImGui::End();
 
+	ImGui::PopFont();
 	ImGui::PopStyleVar();
 	ImGui::PopStyleColor();
 	ImGui::PopStyleColor();
 
-	static bool selected[3] = { false };
 	static bool hovered[3] = { false };
 
 	windowSize.x = windowSize.x / 1.3f;
@@ -389,36 +373,36 @@ void CSelectScene::RenderImGui()
 
 		ImVec4 borderColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 		if (hovered[i]) borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-		if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
-		if (m_otherplayer_selected[i]) borderColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+		if (m_selected_id[i] != -1 || m_selected_model == i) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
 		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 3.0f);
+		ImGui::GetFont()->Scale = 1.5;
+		ImGui::PushFont(ImGui::GetFont());
 
 		ImGui::Begin(m_character_names[i].c_str(), nullptr, window_flags);
 
 		if (ImGui::IsWindowHovered()) {
-			if (ImGui::GetIO().MouseClicked[0]) {
-				for (int j = 0; j < 3; ++j) {
-					if (i == j)
-						selected[j] = true;
-					else
-						selected[j] = false;
+			if (m_selected_id[i] == -1 && !m_ready) {
+				if (ImGui::GetIO().MouseClicked[0]) {
+					SelectCharacter(i);
+					m_button = "Ready";
 				}
-				SelectCharacter(i);
+				else
+					hovered[i] = true;
 			}
-			else
-				hovered[i] = true;
 		}
 		else
 			hovered[i] = false;
 
 
 		ImGui::Text(m_character_names[i].c_str());
+		ImGui::Text((": " + m_nicknames[i]).c_str());
 		ImGui::SameLine();
 		ImGui::End();
 
+		ImGui::PopFont();
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
@@ -429,17 +413,23 @@ void CSelectScene::RenderImGui()
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0, 0, 0, 0));
-	ImGui::GetFont()->Scale = 2.5;
+	ImGui::GetFont()->Scale = 2.0;
 	ImGui::PushFont(ImGui::GetFont());
 
 	ImGui::Begin("Button", nullptr, window_flags);
 	{
-		if (ImGui::Button("Ready", ImVec2(framework->GetResolution().x / 5, framework->GetResolution().y / 7))) {
-			CS_SELECT_PACKET p;
-			p.m_size = sizeof(p);
-			p.m_type = P_CS_SELECT_PACKET;
-			p.m_char = m_selected_model;
-			PacketQueue::AddSendPacket(&p);
+		if (ImGui::Button(m_button.c_str(), ImVec2(framework->GetResolution().x / 5, framework->GetResolution().y / 7))) {
+			if (m_selected_model >= 0 && m_selected_id[m_selected_model] == -1) {
+				CS_SELECT_PACKET p;
+				p.m_size = sizeof(p);
+				p.m_type = P_CS_SELECT_PACKET;
+				p.m_char = m_selected_model;
+				PacketQueue::AddSendPacket(&p);
+				m_button = "Wait...";
+			}
+			else {
+				m_button = "Already choosen\nCharacter.";
+			}
 		}
 		ImGui::End();
 		ImGui::PopFont();

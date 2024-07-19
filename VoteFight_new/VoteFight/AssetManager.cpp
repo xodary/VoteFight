@@ -565,8 +565,6 @@ void CAssetManager::Init()
 	texture->m_DSVHandle = framework->GetDescriptorHeapManager()->CreateCPUHandle(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
 	texture->m_DepthStencilResource = DX::CreateTextureResource(framework->GetDevice(), DEPTH_BUFFER_WIDTH, DEPTH_BUFFER_HEIGHT, 1, 1, D3D12_RESOURCE_STATE_DEPTH_WRITE, D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL, DXGI_FORMAT_D32_FLOAT, D3D12_CLEAR_VALUE{ DXGI_FORMAT_D32_FLOAT, {1.0f, 0.0f} });
 	framework->GetDevice()->CreateDepthStencilView(texture->m_DepthStencilResource.Get(), &d3d12DepthStencilViewDesc, texture->m_DSVHandle.GetCPUHandle());
-
-	
 }
 
 void CAssetManager::CreateShaderResourceViews()

@@ -772,11 +772,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				SC_TREE_PACKET send_packet;
 				send_packet.m_size = sizeof(send_packet);
 				send_packet.m_type = P_SC_TREE_PACKET;
-				for (auto& rc : RemoteClient::m_remoteClients)
-				{
-					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
-				}
+				_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				cout << " >> send ) SC_TREE_PACKET" << endl;
 			}
 		}
 
@@ -921,15 +918,12 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		}
 		else if (recv_packet->m_groupType == (int)GROUP_TYPE::BOX)
 		{
-			for (auto& rc : RemoteClient::m_remoteClients)
-			{
-				SC_TAKEOUT_PACKET send_packet;
-				send_packet.m_size = sizeof(send_packet);
-				send_packet.m_type = P_SC_TAKEOUT_PACKET;
-				send_packet.m_itemID = recv_packet->m_itemID;
-				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-				cout << " >> send ) SC_TAKEOUT_PACKET" << endl;
-			}
+			SC_TAKEOUT_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_TAKEOUT_PACKET;
+			send_packet.m_itemID = recv_packet->m_itemID;
+			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> send ) SC_TAKEOUT_PACKET" << endl;
 		}
 	}
 	break;

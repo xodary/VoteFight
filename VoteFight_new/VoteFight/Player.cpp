@@ -44,9 +44,6 @@ void CPlayer::Init()
 
 	m_Inventory = new CInventory();
 
-	myItems.resize(18);
-	myItems[0] = "wood";
-	
 	m_bilboardUI.emplace_back(new CHPbarUI(this));
 	m_bilboardUI.push_back(new CTextUI(this));
 }

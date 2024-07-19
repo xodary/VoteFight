@@ -204,6 +204,9 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 			scene->oldXCell = scene->oldZCell = -1;
 			CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
+
+			reinterpret_cast<CPlayer*>(object)->myItems.resize(18);
+			reinterpret_cast<CPlayer*>(object)->myItems[0] = "wood";
 		}
 		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -247,8 +250,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		SC_SELECT_PACKET* recv_packet = reinterpret_cast<SC_SELECT_PACKET*>(_Packet);
 
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
-		reinterpret_cast<CSelectScene*>(scene)->m_character_names[recv_packet->m_char] += " : ";
-		reinterpret_cast<CSelectScene*>(scene)->m_character_names[recv_packet->m_char] += recv_packet->m_name;
+		reinterpret_cast<CSelectScene*>(scene)->m_nicknames[recv_packet->m_char] = recv_packet->m_name;
 		reinterpret_cast<CSelectScene*>(scene)->m_selected_id[recv_packet->m_char] = recv_packet->m_id;
 	}
 	break;

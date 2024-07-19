@@ -410,6 +410,7 @@ void CGameScene::RenderImGui()
 {
 	CGameFramework* framework = CGameFramework::GetInstance();
 	CPlayer* player = reinterpret_cast<CPlayer*>(GetIDObject(GROUP_TYPE::PLAYER, framework->my_id));
+	if (player->myItems.size() == 0) return;
 	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
 	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
@@ -433,7 +434,7 @@ void CGameScene::RenderImGui()
 
 		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-		ImGui::Begin("Full Screen Window", nullptr, window_flags);
+		ImGui::Begin("Inventory", nullptr, window_flags);
 
 		// 아이템 크기 계산
 		const float itemSize = windowSize.x / 8;
@@ -467,7 +468,7 @@ void CGameScene::RenderImGui()
 				ImGui::GetFont()->Scale = 1.0f;
 				ImGui::PushFont(ImGui::GetFont());
 				ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
-				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+				ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 2.0f);
 
 				ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i * cols + j)), ImVec2(itemSize, itemSize));
 				{
@@ -476,7 +477,7 @@ void CGameScene::RenderImGui()
 							select.x = i; select.y = j;
 						}
 						else if (KEY_AWAY(KEY::LBUTTON)) {
-							if (select.x != -1 || select.x != -1) {
+							if (select.x != -1 || select.y != -1) {
 								string str = player->myItems[i * cols + j];
 								string item = player->myItems[select.x * cols + select.y];
 								player->myItems[i * cols + j] = item;
