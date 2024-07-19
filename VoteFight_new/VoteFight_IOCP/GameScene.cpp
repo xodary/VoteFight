@@ -201,3 +201,108 @@ void CGameScene::NPCInitialize()
 		}
 	}
 }
+
+void CGameScene::LoadSkinningAnimations()
+{
+	string models[] { "FishMon","Solider_Homer","Homer_Link","Marge_Police","hugo_idle","Sonic","Mario" };
+	char assetPath[255] = {};
+	GetCurrentDirectoryA(255, assetPath);
+	for (int i = static_cast<int>(strlen(assetPath) - 1); i >= 0; --i)
+	{
+		if (assetPath[i] == '\\')
+		{
+			assetPath[i] = '\0';
+
+			break;
+		}
+	}
+	strcat_s(assetPath, 255, "\\Release\\Asset\\");
+	string m_assetPath = assetPath;
+
+	for (auto modelname : models)
+	{
+		string filePath = m_assetPath + "Animation\\" + modelname + "_Animation.bin";
+		ifstream in(filePath, ios::binary);
+		string str;
+
+		while (true)
+		{
+			File::ReadStringFromFile(in, str);
+
+			if (str == "<Animations>")
+			{
+				int animationCount = 0;
+				in.read(reinterpret_cast<char*>(&animationCount), sizeof(int));
+			}
+			else if (str == "<Animation>")
+			{
+				string str;
+				string name;
+				int skinnedMeshCount = 0;
+
+				while (true)
+				{
+					File::ReadStringFromFile(in, str);
+
+					if (str == "<Name>")
+					{
+						File::ReadStringFromFile(in, name);
+					}
+					else if (str == "<FrameRate>")
+					{
+						int a;
+						in.read(reinterpret_cast<char*>(&a), sizeof(int));
+					}
+					else if (str == "<FrameCount>")
+					{
+						int a;
+						in.read(reinterpret_cast<char*>(&a), sizeof(int));
+					}
+					else if (str == "<Duration>")
+					{
+						float time;
+						in.read(reinterpret_cast<char*>(&time), sizeof(float));
+						std::chrono::duration<float> duration_in_seconds(time);
+						m_animations[modelname][name] = chrono::duration_cast<chrono::system_clock::duration>(duration_in_seconds);
+					}
+					else if (str == "<SkinnedMeshes>")
+					{
+						in.read(reinterpret_cast<char*>(&skinnedMeshCount), sizeof(int));
+					}
+					else if (str == "<ElapsedTime>")
+					{
+						float elapsedTime = 0.0f;
+
+						in.read(reinterpret_cast<char*>(&elapsedTime), sizeof(float));
+
+						for (int i = 0; i < skinnedMeshCount; ++i)
+						{
+							// <BoneTransformMatrix>
+							File::ReadStringFromFile(in, str);
+
+							int boneCount = 0;
+
+							in.read(reinterpret_cast<char*>(&boneCount), sizeof(int));
+
+							for (int j = 0; j < boneCount; ++j)
+							{
+								// localPosition, localRotation, localScale
+								XMFLOAT3 transform[3] = {};
+
+								in.read(reinterpret_cast<char*>(&transform[0]), 3 * sizeof(XMFLOAT3));
+							}
+						}
+					}
+					else if (str == "</Animation>")
+					{
+						break;
+					}
+				}
+			}
+			else if (str == "</Animations>")
+			{
+				break;
+			}
+		}
+	}
+}

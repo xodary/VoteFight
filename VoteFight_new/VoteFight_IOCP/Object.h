@@ -13,10 +13,13 @@ public:
 	int			m_id;
 	int			m_grouptype;
 	std::string	m_modelname;
+	std::string	m_upAnimation;
 
 	bool		m_collider = false;
 	BoundingBox	m_origin;
 	BoundingBox m_boundingBox;
+
+	chrono::system_clock::time_point		m_AnilastTime;
 
 	bool alive = true;
 	bool ingame = false;

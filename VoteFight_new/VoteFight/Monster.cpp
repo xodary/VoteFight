@@ -7,7 +7,6 @@
 #include "Animator.h"
 #include "StateMachine.h"
 #include "Transform.h"
-#include "MonsterStates.h"
 
 CMonster::CMonster() :
 	m_spineName("mixamorig:Spine"),
@@ -41,30 +40,25 @@ void CMonster::SetSpineAngle(float angle)
 
 void CMonster::Init()
 {
-	CStateMachine* stateMachine = static_cast<CStateMachine*>(GetComponent(COMPONENT_TYPE::STATE_MACHINE));
-
-	stateMachine->SetCurrentState(CMonsterWalkState::GetInstance());
-
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-
-	animator->SetWeight("idle", 1.0f);
 	animator->Play("idle", true);
-
 }
 
 void CMonster::Update()
 {
 	CObject::Update();
 
-	if (m_dead) {
-		CAnimator* animator = reinterpret_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-		if (animator->IsFinished())		// 죽는 몬스터 애니메이션 끝나면 삭제
-		{
-			CSceneManager::GetInstance()->GetCurrentScene()->DeleteObject(GROUP_TYPE::MONSTER, m_id);
-		}
-		
-		return;
-	}
+	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
+
+	//if (m_dead) {
+	//	CAnimator* animator = reinterpret_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
+	//	if (animator->IsFinished())		// 죽는 몬스터 애니메이션 끝나면 삭제
+	//	{
+	//		CSceneManager::GetInstance()->GetCurrentScene()->DeleteObject(GROUP_TYPE::MONSTER, m_id);
+	//	}
+	//	
+	//	return;
+	//}
 
 	//if (AimObejct)
 	//{

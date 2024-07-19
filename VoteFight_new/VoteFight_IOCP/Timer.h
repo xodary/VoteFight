@@ -3,7 +3,7 @@
 
 class RemoteClient;
 
-enum EVENT_TYPE { EV_UPDATE, EV_PHASE };
+enum EVENT_TYPE { EV_UPDATE, EV_PHASE, EV_ANIMATION };
 
 struct TIMER_EVENT {
 	RemoteClient* obj_id;

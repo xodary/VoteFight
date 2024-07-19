@@ -568,9 +568,6 @@
     <ClCompile Include="NPC.cpp">
       <Filter>소스 파일\05. Object\05-01. Character</Filter>
     </ClCompile>
-    <ClCompile Include="NPCStates.cpp">
-      <Filter>소스 파일\08. State</Filter>
-    </ClCompile>
     <ClCompile Include="DepthWriteShader.cpp">
       <Filter>소스 파일\06. Asset\Shader</Filter>
     </ClCompile>
@@ -666,9 +663,6 @@
     </ClCompile>
     <ClCompile Include="Monster.cpp">
       <Filter>소스 파일\05. Object\05-01. Character</Filter>
-    </ClCompile>
-    <ClCompile Include="MonsterStates.cpp">
-      <Filter>소스 파일\08. State</Filter>
     </ClCompile>
     <ClCompile Include="Bullet.cpp">
       <Filter>소스 파일\05. Object\05-06. OtherObject</Filter>

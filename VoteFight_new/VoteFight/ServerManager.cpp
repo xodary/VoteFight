@@ -423,7 +423,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_id);
 
 		CCharacter* character = reinterpret_cast<CCharacter*>(object);
-		character->SetHealth(recv_packet->m_health);
+		//character->SetHealth(recv_packet->m_health);
 		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
 	}
 	break;

@@ -78,7 +78,7 @@ CObject* CObject::LoadFrame(ifstream& in)
 
 			switch (classType)
 			{
-			// Obejct
+				// Obejct
 			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
 			case 2: object = new CNPC(); break;

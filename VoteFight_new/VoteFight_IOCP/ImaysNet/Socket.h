@@ -30,7 +30,8 @@ enum class IO_TYPE {
 	IO_RECV,
 	IO_SEND,
 	IO_UPDATE,
-	IO_PHASE
+	IO_PHASE,
+	IO_ANIMATION
 };
 
 class EXP_OVER {

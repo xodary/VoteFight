@@ -22,9 +22,10 @@ vector<RemoteClient*>		remoteClients_ptr_v;
 list<shared_ptr<RemoteClient>>		deleteClinets;
 
 recursive_mutex				mx_accept;				
-shared_ptr<Socket>			listenSocket;			
+shared_ptr<Socket>			listenSocket;		
 shared_ptr<RemoteClient>	remoteClientCandidate; 
 unordered_map<int, CObject*> CGameScene::m_objects[(int)GROUP_TYPE::COUNT];
+unordered_map<string, unordered_map<string, std::chrono::system_clock::duration>> CGameScene::m_animations;
 int	CTimer::phase;
 int bullet_id = 0;
 chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
@@ -46,6 +47,7 @@ int main(int argc, char* argv[])
 	CGameScene::Load("GameScene.bin");
 
 	CGameScene::NPCInitialize();
+	CGameScene::LoadSkinningAnimations();
 
 	// Create listen socket & Binding
 	listenSocket = make_shared<Socket>(SocketType::Tcp);
@@ -122,6 +124,30 @@ void WorkerThread()
 				if (IO_TYPE::IO_PHASE == p_readOverlapped->m_ioType) {
 					//cout << "Update" << endl;
 					UpdatePhase(readEvent);
+					continue;
+				}
+
+				if (IO_TYPE::IO_ANIMATION == p_readOverlapped->m_ioType) {
+					auto now = chrono::system_clock::now();
+					auto last = CGameScene::m_objects[(int)GROUP_TYPE::MONSTER][(int)readEvent.lpCompletionKey]->m_AnilastTime;
+					if (now - last > CGameScene::m_animations["FishMon"][CGameScene::m_objects[(int)GROUP_TYPE::MONSTER][(int)readEvent.lpCompletionKey]->m_upAnimation]) {
+						cout << "ANIMATION DONE" << endl;
+
+						SC_ANIMATION_PACKET send_packet;
+						send_packet.m_size = sizeof(send_packet);
+						send_packet.m_type = P_SC_ANIMATION_PACKET;
+						send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
+						send_packet.m_id = (int)readEvent.lpCompletionKey;
+						send_packet.m_loop = true;
+						strcpy_s(send_packet.m_key, "idle");
+
+						for (auto& rc : RemoteClient::m_remoteClients)
+						{
+							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+							cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+						}
+
+					}
 					continue;
 				}
 
@@ -773,33 +799,34 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					// Monster 사망
 					monster->m_dead = true;
 					strcpy_s(send_packet.m_key, "Dead");
-					for (auto& rc : RemoteClient::m_remoteClients)
-					{
-						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-						cout << " >> send ) SC_ANIMATION_PACKET" << endl;
-					}
 				}
 				else
 				{
 					strcpy_s(send_packet.m_key, "Gethit");
+					monster->m_AnilastTime = chrono::system_clock::now();
+					TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, 0};
+					CTimer::timer_queue.push(ev);
+				}
+				
+				monster->m_upAnimation = send_packet.m_key;
+				for (auto& rc : RemoteClient::m_remoteClients)
+				{
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+				}
+
+
+				{
+					SC_HEALTH_CHANGE_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
+					send_packet.m_id = object.first;
+					send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
+					send_packet.m_health = monster->m_Health;
 					for (auto& rc : RemoteClient::m_remoteClients)
 					{
 						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-						cout << " >> send ) SC_ANIMATION_PACKET" << endl;
-					}
-					cout << object.first << " : Health " << monster->m_Health << endl;
-					{
-						SC_HEALTH_CHANGE_PACKET send_packet;
-						send_packet.m_size = sizeof(send_packet);
-						send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
-						send_packet.m_id = object.first;
-						send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
-						send_packet.m_health = monster->m_Health;
-						for (auto& rc : RemoteClient::m_remoteClients)
-						{
-							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-							cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
-						}
+						cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 					}
 				}
 			}
