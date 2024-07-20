@@ -154,24 +154,6 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 {
 	switch (collidedObject->GetGroupType())
 	{
-	case (UINT)GROUP_TYPE::NPC:
-		for (size_t i = 0; i < m_UI.size(); i++)
-		{
-			if (m_UI[i]->GetName() == "Pick")
-				m_UI[i]->SetActive(true);
-		}
-		break;
-
-	case (UINT)GROUP_TYPE::BULLET:
-		cout << "��Ʈ!" << endl;
-		break;
-	case (UINT)GROUP_TYPE::GROUND_ITEM:
-		GetItem(collidedObject->GetName());
-		CSceneManager::GetInstance()->GetCurrentScene()->DeleteObject(GROUP_TYPE::GROUND_ITEM, collidedObject->m_id);
-		break;
-	}
-	switch (collidedObject->GetGroupType())
-	{
 	case (UINT)GROUP_TYPE::STRUCTURE:
 	case (UINT)GROUP_TYPE::BOX:
 		CRigidBody* rigidBody = static_cast<CRigidBody*>(GetComponent(COMPONENT_TYPE::RIGIDBODY));
@@ -181,43 +163,18 @@ void CPlayer::OnCollisionEnter(CObject* collidedObject)
 }
 void CPlayer::OnCollision(CObject* collidedObject)
 {
-	if (KEY_TAP(KEY::F))
+	switch (collidedObject->GetGroupType())
 	{
-		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::STRUCTURE)
-		{
-			m_Inventory->addItem(collidedObject->GetName(), 1);
-			collidedObject->SetDeleted(true);
-		}
-		if (collidedObject->GetGroupType() == (UINT)GROUP_TYPE::NPC)
-		{
-			//CNPC* targetNPC = (CNPC*)collidedObject;
-			//if (!targetNPC->GetQuest()->getCompletionStatus())
-			//{
-			//	SetNumber_of_items_UI("tiket", m_Inventory->getItems("tiket"), m_Inventory->getItems("tiket") + 1);
-			//	m_Inventory->exchangeItem(targetNPC->GetQuest()->GetItemName(), targetNPC->GetQuest()->GetItemQuantity(), "tiket", 1);
-			//}
-		}
+	case (UINT)GROUP_TYPE::STRUCTURE:
+	case (UINT)GROUP_TYPE::BOX:
+		CRigidBody* rigidBody = static_cast<CRigidBody*>(GetComponent(COMPONENT_TYPE::RIGIDBODY));
+		rigidBody->ReturnPrevLocation(rigidBody->GetVelocity());
+		break;
 	}
-
-	CRigidBody* rigidBody = static_cast<CRigidBody*>(GetComponent(COMPONENT_TYPE::RIGIDBODY));
-	rigidBody->ReturnPrevLocation(rigidBody->GetVelocity());
 }
 
 void CPlayer::OnCollisionExit(CObject* collidedObject)
 {
-	switch (collidedObject->GetGroupType())
-	{
-	case (UINT)GROUP_TYPE::STRUCTURE:
-		isMove = true;
-		break;
-	case (UINT)GROUP_TYPE::NPC:
-		for (size_t i = 0; i < m_UI.size(); i++)
-		{
-			if (m_UI[i]->GetName() == "Pick")
-				m_UI[i]->SetActive(false);
-		}
-		break;
-	}
 }
 
 void CPlayer::SetUI(CUI* ui)

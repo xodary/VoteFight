@@ -51,7 +51,7 @@ void CBullet::Init()
     
     XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(GetRotate()));
     CRigidBody* rigidbody = reinterpret_cast<CRigidBody*>(GetComponent(COMPONENT_TYPE::RIGIDBODY));
-    rigidbody->m_velocity = Vector3::ScalarProduct(vector, 10.f);
+    rigidbody->m_velocity = Vector3::ScalarProduct(vector, 40.0f);
 }
 
 

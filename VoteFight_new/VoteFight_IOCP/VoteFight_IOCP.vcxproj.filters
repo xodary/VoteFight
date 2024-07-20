@@ -58,8 +58,10 @@
     <ClCompile Include="Monster.cpp">
       <Filter>03. Object</Filter>
     </ClCompile>
-    <ClCompile Include="Bullet.cpp" />
     <ClCompile Include="Item.cpp">
+      <Filter>03. Object</Filter>
+    </ClCompile>
+    <ClCompile Include="Bullet.cpp">
       <Filter>03. Object</Filter>
     </ClCompile>
   </ItemGroup>
@@ -152,8 +154,10 @@
     <ClInclude Include="Monster.h">
       <Filter>03. Object</Filter>
     </ClInclude>
-    <ClInclude Include="Bullet.h" />
     <ClInclude Include="Item.h">
+      <Filter>03. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="Bullet.h">
       <Filter>03. Object</Filter>
     </ClInclude>
   </ItemGroup>

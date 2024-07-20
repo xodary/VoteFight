@@ -311,7 +311,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_upAnimation, 2);
 		if(recv_packet->m_look != -1) 
 			static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_look;
-		//static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_angle;
 		transform->SetPosition(recv_packet->m_pos);
 	}
 	break;
@@ -337,8 +336,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 					scene->ObjectListSector[zNewCell * SECTOR_RANGE_ROW + xNewCell].insert(obj);
 				}
 				transform->SetPosition(recv_packet->m_pos);
-				//transform->SetRotation(XMFLOAT3(0, recv_packet->m_rota, 0));
-				//cout << "SC_POS_PACKET" << endl;
 			}
 		}
 	}
@@ -437,7 +434,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_id);
 
 		CCharacter* character = reinterpret_cast<CCharacter*>(object);
-		//character->SetHealth(recv_packet->m_health);
+		character->SetHealth(recv_packet->m_health);
 		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
 	}
 	break;

@@ -212,6 +212,13 @@ void CScene::Update()
 			object->Update();
 		}
 	}
+	for (auto& object : m_objects[(int)GROUP_TYPE::UI])
+	{
+		if ((object.second->IsActive()) && (!object.second->IsDeleted()))
+		{
+			object.second->Update();
+		}
+	}
 }
 
 void CScene::PreRender()
@@ -266,8 +273,9 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 		for (int i = 0; i < 16; ++i) {
 			short xSearchCell = clamp(xNewCell + searchDirection_[i][0], 0, SECTOR_RANGE_COL - 1);
 			short zSearchCell = clamp(zNewCell + searchDirection_[i][1], 0, SECTOR_RANGE_ROW - 1);
-			for (auto& object : ObjectListSector[zSearchCell * SECTOR_RANGE_ROW + xSearchCell])
-				newlist.insert(object);
+			for (auto& object : ObjectListSector[zSearchCell * SECTOR_RANGE_ROW + xSearchCell]) {
+				if (object->GetGroupType() != (int)GROUP_TYPE::UI) newlist.insert(object);
+			}
 		}
 	}
 	break;

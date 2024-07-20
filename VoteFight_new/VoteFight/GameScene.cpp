@@ -358,6 +358,11 @@ void CGameScene::Render()
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
+
+	for (auto& object : m_objects[(int)GROUP_TYPE::UI])
+	{
+		object.second->Render(camera);
+	}
 	
 	for (auto& object : GetViewList(0))
 	{

@@ -266,17 +266,56 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object.second->m_Pos));
 		object.second->m_origin.Transform(object.second->m_boundingBox, XMLoadFloat4x4(&matrix));
 
-		//for (int i = 0; i < (int)GROUP_TYPE::COUNT; ++i) {
-		//	if (i == (int)GROUP_TYPE::PLAYER) continue;
-		//	for (auto& object : CGameScene::m_objects[i]) {
-		//		if (!client.second->m_player->m_collider) continue;
-		//		if (!object.second->m_collider) continue;
-		//		if (client.second->m_player->m_boundingBox.Intersects(object.second->m_boundingBox)) {
-		//			client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
-		//			cout << "Collide !" << endl;
-		//		}
-		//	}
-		//}
+		for (auto& monsterobject : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
+			if (monsterobject.second->m_boundingBox.Intersects(object.second->m_boundingBox)) {
+				cout << "Collide !" << endl;
+				deleteBullet.push_back(bullet->m_id);
+				CMonster* monster = reinterpret_cast<CMonster*>(monsterobject.second);
+				if (monster->m_dead) continue;
+				monster->m_Health -= 25 * 3;
+
+				SC_ANIMATION_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_ANIMATION_PACKET;
+				send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
+				send_packet.m_id = monster->m_id;
+				send_packet.m_loop = false;
+
+				if (monster->m_Health <= 0) {
+					// Monster 사망
+					monster->m_dead = true;
+					strcpy_s(send_packet.m_key, "Dead");
+				}
+				else
+				{
+					strcpy_s(send_packet.m_key, "Gethit");
+					monster->m_AnilastTime = chrono::system_clock::now();
+					TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, 0 };
+					CTimer::timer_queue.push(ev);
+				}
+
+				monster->m_upAnimation = send_packet.m_key;
+				for (auto& rc : RemoteClient::m_remoteClients) {
+					if (!rc.second->m_ingame) continue;
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+				}
+
+				{
+					SC_HEALTH_CHANGE_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
+					send_packet.m_id = monster->m_id;
+					send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
+					send_packet.m_health = monster->m_Health;
+					for (auto& rc : RemoteClient::m_remoteClients) {
+						if (!rc.second->m_ingame) continue;
+						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+						cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+					}
+				}
+			}
+		}
 
 		SC_POS_PACKET send_packet;
 		send_packet.m_size = sizeof(SC_POS_PACKET);
@@ -301,6 +340,7 @@ void UpdatePos(OVERLAPPED_ENTRY& readEvent)
 		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
 		XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
 		client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
+		client.second->m_player->m_Pos.y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
 		client.second->m_lastTime = chrono::system_clock::now();
 		
 		XMFLOAT4X4 matrix = Matrix4x4::Identity();
@@ -636,7 +676,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		cout << " >> send ) SC_GAMESTART_PACKET" << endl;
 
 		XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
-		//XMFLOAT3 pos[3]{ {10, 0, 10},{20, 0, 10},{30, 0, 10} };
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			int i = 0;
@@ -792,7 +831,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			Bullet->m_Pos = recv_packet->m_pos;
 			Bullet->m_Rota = XMFLOAT3(0, recv_packet->m_angle, 0);
 			Bullet->m_Vec = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(Bullet->m_Rota));
-			Bullet->m_Velocity = 10.0f;
+			Bullet->m_Velocity = 40.0f;
 			CBullet* bullet = reinterpret_cast<CBullet*>(Bullet);
 			bullet->m_lastTime = chrono::system_clock::now();
 			bullet->m_id = bullet_id++;
@@ -823,7 +862,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(attack));
 		bounding.Transform(bounding, XMLoadFloat4x4(&matrix));
 
-		if (recv_packet->m_weapon == 2)
+		if (recv_packet->m_weapon == 2) {
 			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::STRUCTURE]) {
 				if (object.second->m_modelname != "PP_Tree_02" && object.second->m_modelname != "dead_tree_a") continue;
 				if (bounding.Intersects(object.second->m_boundingBox))
@@ -833,16 +872,26 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					send_packet.m_type = P_SC_PICKUP_PACKET;
 					strcpy_s(send_packet.m_itemName, "wood");
 					_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_TREE_PACKET" << endl;
+					cout << " >> send ) SC_PICKUP_PACKET" << endl;
 				}
 			}
+		}
 
 		vector<int> deleteMonsters;
 		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
 			if (bounding.Intersects(object.second->m_boundingBox))
 			{
 				CMonster* monster = reinterpret_cast<CMonster*>(object.second);
-				if (monster->m_dead) continue;
+				if (monster->m_dead && recv_packet->m_weapon != 1) {
+					if (monster->m_meet-- > 0) {
+						SC_PICKUP_PACKET send_packet;
+						send_packet.m_size = sizeof(send_packet);
+						send_packet.m_type = P_SC_PICKUP_PACKET;
+						strcpy_s(send_packet.m_itemName, "fish_meet");
+						_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					}
+					continue;
+				}
 				monster->m_Health -= demage * 3;
 
 				SC_ANIMATION_PACKET send_packet;
@@ -1034,7 +1083,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		vector<int> deleteID;
 		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::UI]) {
-			if (CGameScene::can_see(_Client->m_player->m_Pos, object.second->m_Pos, 1)) {
+			if (CGameScene::can_see(_Client->m_player->m_Pos, object.second->m_Pos, 3)) {
 				{
 					SC_DELETE_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
