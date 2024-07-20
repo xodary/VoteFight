@@ -49,7 +49,6 @@ void CPlayer::Init()
 	
 	m_bilboardUI.emplace_back(new CHPbarUI(this));
 	m_bilboardUI.push_back(new CTextUI(this));
-	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
 }
 
 void CPlayer::Attack()
@@ -64,6 +63,7 @@ void CPlayer::Attack()
 		p.m_weapon = (int)m_Weapon;
 		p.m_angle = GetRotate().y;
 		p.m_pos = FindFrame("GunPos")->GetPosition();
+		p.m_pos.y = FindFrame("GunPos")->GetPosition().y - 1.f;
 		p.m_Rbutton = KEY_HOLD(KEY::RBUTTON);
 		//p.m_pos = GetPosition();
 

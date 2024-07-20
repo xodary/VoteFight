@@ -1,20 +1,20 @@
 ﻿  main.cpp
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(229,36): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(324,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(334,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(360,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(377,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(461,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(488,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(524,34): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(623,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(654,12): warning C4267: '초기화 중': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(712,37): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(731,30): warning C4244: '=': 'unsigned __int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-C:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(754,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(205,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(290,36): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(378,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(388,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(414,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(431,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(516,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(543,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(579,34): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(678,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(811,37): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(830,30): warning C4244: '=': 'unsigned __int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(853,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   코드를 생성하고 있습니다.
-  14 of 1387 functions ( 1.0%) were compiled, the rest were copied from previous compilation.
+  0 of 1404 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
-    10 functions had inline decision re-evaluated but remain unchanged
+    0 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
-  VoteFight_IOCP.vcxproj -> C:\directX_work\VoteFight_new\x64\Release\VoteFight_IOCP.exe
+  VoteFight_IOCP.vcxproj -> D:\directX_work\VoteFight_new\x64\Release\VoteFight_IOCP.exe

@@ -1,4 +1,5 @@
 #pragma once
+#include "GameScene.h"
 
 class CScene;
 
@@ -18,7 +19,7 @@ public:
 
 	void ChangeScene(SCENE_TYPE sceneType);
 	CScene* GetCurrentScene();
-	CScene* GetGameScene();
+	CGameScene* GetGameScene();
 
 
 	virtual void Init();

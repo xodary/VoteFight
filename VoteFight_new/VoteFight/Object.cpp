@@ -549,7 +549,7 @@ const XMFLOAT3& CObject::GetPosition()
 	return transform->GetPosition();
 }
 
-void CObject::SetPostion(const XMFLOAT3& rVector)
+void CObject::SetPosition(const XMFLOAT3& rVector)
 {
 	CTransform* transform = static_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	transform->SetPosition(rVector);
