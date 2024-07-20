@@ -142,6 +142,12 @@ void CPlayer::Update()
 		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
+	if (KEY_TAP(KEY::F)) {
+		CS_PICKUP_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_PICKUP_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)

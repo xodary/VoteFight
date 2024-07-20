@@ -461,11 +461,12 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
-	case PACKET_TYPE::P_SC_TREE_PACKET:
+	case PACKET_TYPE::P_SC_PICKUP_PACKET:
 	{
+		SC_PICKUP_PACKET* recv_packet = reinterpret_cast<SC_PICKUP_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
-		player->GetItem("wood");
+		player->GetItem(recv_packet->m_itemName);
 	}
 	break;
 
@@ -475,6 +476,16 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id));
 		player->SwapWeapon((WEAPON_TYPE)recv_packet->m_weapon);
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_DROPED_ITEM:
+	{
+		SC_DROPED_ITEM* recv_packet = reinterpret_cast<SC_DROPED_ITEM*>(_Packet);
+		auto bilboard = new CDropedIcon(string(recv_packet->m_itemName));
+		reinterpret_cast<CTransform*>(bilboard->GetComponent(COMPONENT_TYPE::TRANSFORM))->SetPosition(recv_packet->m_pos);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		scene->AddObject(GROUP_TYPE::UI, bilboard, recv_packet->m_itemID);
 	}
 	break;
 

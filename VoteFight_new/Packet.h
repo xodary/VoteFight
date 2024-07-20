@@ -24,6 +24,8 @@ enum PACKET_TYPE {
 	P_CS_PLAYER_RBUTTON_PACKET,
 	P_CS_TAKEOUT_PACKET,
 	P_CS_WEAPON_CHANGE_PACKET,
+	P_CS_DROPED_ITEM,
+	P_CS_PICKUP_PACKET,
 
 	// Server -> Client packet
 	P_SC_LOGIN_OK_PACKET,
@@ -44,8 +46,9 @@ enum PACKET_TYPE {
 	P_SC_HEALTH_CHANGE_PACKET,
 	P_SC_TAKEOUT_PACKET,
 	P_SC_MONSTER_DEAD_PACKET,
-	P_SC_TREE_PACKET,
 	P_SC_WEAPON_CHANGE_PACKET,
+	P_SC_DROPED_ITEM,
+	P_SC_PICKUP_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -180,11 +183,6 @@ struct SC_TAKEOUT_PACKET {
 	unsigned int		m_itemID;
 };
 
-struct SC_TREE_PACKET {
-	unsigned char		m_size;
-	unsigned char		m_type;
-};
-
 struct SC_MONSTER_DEAD_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
@@ -196,6 +194,20 @@ struct SC_WEAPON_CHANGE_PACKET {
 	unsigned char		m_type;
 	unsigned int		m_id;
 	unsigned int		m_weapon;
+};
+
+struct SC_DROPED_ITEM {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	XMFLOAT3			m_pos;
+	unsigned int		m_itemID;
+	char				m_itemName[NAME_SIZE];
+};
+
+struct SC_PICKUP_PACKET{
+	unsigned char		m_size;
+	unsigned char		m_type;
+	char				m_itemName[NAME_SIZE];
 };
 
 // Packet(Clinet->Server)
@@ -275,4 +287,16 @@ struct CS_WEAPON_CHANGE_PACKET {
 	unsigned char		m_type;
 	unsigned int		m_weapon;
 };
+
+struct CS_DROPED_ITEM {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	char				m_itemName[NAME_SIZE];
+};
+
+struct CS_PICKUP_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+};
+
 #pragma pack (pop)

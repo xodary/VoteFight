@@ -91,3 +91,11 @@ public:
 	virtual void Update();
 };
 
+class CDropedIcon : public CBilboardUI
+{
+public:
+
+	CDropedIcon(string str);
+	virtual void Update();
+};
+

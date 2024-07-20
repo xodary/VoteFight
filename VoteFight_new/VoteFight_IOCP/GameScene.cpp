@@ -6,6 +6,12 @@
 
 float CGameScene::m_heights[400][400];
 
+bool CGameScene::can_see(XMFLOAT3 a, XMFLOAT3 b, float range)
+{
+	if (abs(a.x - b.x) > range) return false;
+	return abs(a.z - b.z) <= range;
+}
+
 float CGameScene::OnGetHeight(float fx, float fz)
 {
 	if ((fx < 0.0f) || (fz < 0.0f) || (fx >= 400) || (fz >= 400)) return(0.0f);

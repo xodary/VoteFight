@@ -358,14 +358,6 @@ void CGameScene::Render()
 	CCamera* camera = CCameraManager::GetInstance()->GetMainCamera();
 	camera->RSSetViewportsAndScissorRects();
 	camera->UpdateShaderVariables();
-
-	for (const auto& object : m_objects[static_cast<int>(GROUP_TYPE::UI)])
-	{
-		if ((object.second->IsActive()) && (!object.second->IsDeleted()))
-		{
-			object.second->Render(camera);
-		}
-	}
 	
 	for (auto& object : GetViewList(0))
 	{
@@ -482,13 +474,15 @@ void CGameScene::RenderImGui()
 					else
 						hovered[i][j] = false;
 
-					if (!player->myItems[i * cols + j].empty()) {
-						int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i * cols + j]);
-						if (item != 0) {
-							auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i * cols + j]]->m_IconGPUHandle;
-							ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
+					if (i != select.x || j != select.y) {
+						if (!player->myItems[i * cols + j].empty()) {
+							int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i * cols + j]);
+							if (item != 0) {
+								auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i * cols + j]]->m_IconGPUHandle;
+								ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
+							}
+							ImGui::Text("%s", player->myItems[i * cols + j].c_str());
 						}
-						ImGui::Text("%s", player->myItems[i * cols + j].c_str());
 					}
 					ImGui::EndChildFrame();
 				}
@@ -504,34 +498,47 @@ void CGameScene::RenderImGui()
 			}
 		}
 		ImGui::End();
-	}
 
-	if (select.x != -1 && select.y != -1)
-	{
-		if (KEY_AWAY(KEY::LBUTTON)) {
-			select.x = -1; select.y = -1;
-		}
-		else {
-			ImVec2 mousepos = ImGui::GetMousePos();
-			mousepos.x += 5;
-			mousepos.y += 5;
-			//ImGui::SetCursorPos(ImVec2(mousepos.x - windowPos.x - itemSize / 2,
-			//	mousepos.y - windowPos.y - itemSize / 2));
-			ImGui::SetNextWindowSize(ImVec2(itemSize, itemSize), ImGuiCond_Always);
-			ImGui::SetNextWindowPos(mousepos, ImGuiCond_Always);
-			ImGui::Begin("cursor", nullptr, window_flags);
-			{
-				if (!player->myItems[select.x * cols + select.y].empty()) {
-					int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[select.x * cols + select.y]);
-					if (item != 0) {
-						auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[select.x * cols + select.y]]->m_IconGPUHandle;
-						ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
-					}
-					ImGui::Text("%s", player->myItems[select.x * cols + select.y].c_str());
+		if (select.x != -1 && select.y != -1)
+		{
+			if (KEY_AWAY(KEY::LBUTTON)) {
+				if ((CURSOR.x <= windowPos.x || windowPos.x + windowSize.x <= CURSOR.x) ||
+					(CURSOR.y <= windowPos.y || windowPos.x + windowSize.y <= CURSOR.y)) {
+					cout << "Drop Items" << endl;
+
+					CS_DROPED_ITEM send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_CS_DROPED_ITEM;
+					strcpy_s(send_packet.m_itemName, (player->myItems[select.x * cols + select.y]).c_str());
+					PacketQueue::AddSendPacket(&send_packet);
+
+					player->myItems[select.x * cols + select.y].clear();
 				}
-				ImGui::End();
+				select.x = -1; select.y = -1;
+			}
+			else {
+				ImVec2 mousepos = ImGui::GetMousePos();
+				mousepos.x += 5;
+				mousepos.y += 5;
+				//ImGui::SetCursorPos(ImVec2(mousepos.x - windowPos.x - itemSize / 2,
+				//	mousepos.y - windowPos.y - itemSize / 2));
+				ImGui::SetNextWindowSize(ImVec2(itemSize, itemSize), ImGuiCond_Always);
+				ImGui::SetNextWindowPos(mousepos, ImGuiCond_Always);
+				ImGui::Begin("cursor", nullptr, window_flags);
+				{
+					if (!player->myItems[select.x * cols + select.y].empty()) {
+						int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[select.x * cols + select.y]);
+						if (item != 0) {
+							auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[select.x * cols + select.y]]->m_IconGPUHandle;
+							ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
+						}
+						ImGui::Text("%s", player->myItems[select.x * cols + select.y].c_str());
+					}
+					ImGui::End();
+				}
 			}
 		}
+
 	}
 
 	{

@@ -59,6 +59,9 @@
       <Filter>03. Object</Filter>
     </ClCompile>
     <ClCompile Include="Bullet.cpp" />
+    <ClCompile Include="Item.cpp">
+      <Filter>03. Object</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01. Dependency">
@@ -150,5 +153,8 @@
       <Filter>03. Object</Filter>
     </ClInclude>
     <ClInclude Include="Bullet.h" />
+    <ClInclude Include="Item.h">
+      <Filter>03. Object</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

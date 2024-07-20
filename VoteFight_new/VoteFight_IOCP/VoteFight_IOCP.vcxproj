@@ -152,6 +152,7 @@
     <ClCompile Include="ImaysNet\Poll.cpp" />
     <ClCompile Include="ImaysNet\Socket.cpp" />
     <ClCompile Include="ImaysNet\SocketInit.cpp" />
+    <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp">
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Disabled</Optimization>
     </ClCompile>
@@ -186,6 +187,7 @@
     <ClInclude Include="ImaysNet\Socket.h" />
     <ClInclude Include="ImaysNet\SocketInit.h" />
     <ClInclude Include="ImaysNet\targetver.h" />
+    <ClInclude Include="Item.h" />
     <ClInclude Include="Monster.h" />
     <ClInclude Include="NPC.h" />
     <ClInclude Include="Object.h" />

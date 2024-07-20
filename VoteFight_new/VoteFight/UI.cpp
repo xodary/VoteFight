@@ -8,12 +8,12 @@
 #include "Mesh.h"
 #include "Texture.h"
 #include "Material.h"
-
+#include "SceneManager.h"
 #include "StateMachine.h"
 #include "Animator.h"
 #include "Transform.h"
 #include "SpriteRenderer.h"
-
+#include "Scene.h"
 #include "UIStates.h"
 
 CUI::CUI() :
@@ -304,16 +304,10 @@ CComponent* CBilboardUI::CreateComponent(COMPONENT_TYPE componentType)
 
 	switch (componentType)
 	{
-		// UI는 CSkinningAnimator 컴포넌트가 아닌 CUIAnimator 컴포넌트를 사용한다.
-	//case COMPONENT_TYPE::ANIMATOR:
-	//	m_components[static_cast<int>(componentType)] = new CUIAnimator();
-	//	break;
 	case COMPONENT_TYPE::TRANSFORM:
-		// UI는 CTransform 컴포넌트가 아닌 CRectTransform 컴포넌트를 사용한다.
 		m_components[static_cast<int>(componentType)] = new CTransform();
 		break;
 	default:
-		// 그 외의 컴포넌트는 CObject의 함수를 호출한다.
 		return CObject::CreateComponent(componentType);
 	}
 
@@ -334,6 +328,8 @@ CSpeechBubbleUI::CSpeechBubbleUI(CObject* owner)
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
 	material->m_shaders.push_back(BilboardShader);
 	m_materials.push_back(material);
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(XMFLOAT3(-1, -1, 1));
 }
 
 void CSpeechBubbleUI::Update()
@@ -342,9 +338,6 @@ void CSpeechBubbleUI::Update()
 	
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
 
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 6.0f, transform->GetPosition().z));
 }
@@ -361,15 +354,14 @@ CHPbarUI::CHPbarUI(CObject* owner)
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
 	material->m_shaders.push_back(BilboardShader);
 	m_materials.push_back(material);
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(XMFLOAT3(-1, -1, 1));
 }
 
 void CHPbarUI::Update()
 {
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
 
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 3.5f, transform->GetPosition().z));
 	CObject::Update();
@@ -389,6 +381,8 @@ CTextUI::CTextUI(CObject* owner)
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
 	textMaterial->m_shaders.push_back(BilboardShader);
 	m_materials.push_back(textMaterial);
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(XMFLOAT3(-1, -1, 1));
 }
 
 void CTextUI::Render(CCamera* camera)
@@ -427,9 +421,6 @@ void CTextUI::Update()
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	
-	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
-	
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 4.2f, transform->GetPosition().z));
 }
 
@@ -446,6 +437,8 @@ CIcon::CIcon(CObject* owner, string str)
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
 	material->m_shaders.push_back(BilboardShader);
 	m_materials.push_back(material);
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(XMFLOAT3(-1, -1, 1));
 }
 
 void CIcon::Update()
@@ -454,13 +447,31 @@ void CIcon::Update()
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 
-	CTransform* cameraTransform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	uitransform->LookTo(Vector3::Subtract(uitransform->GetPosition(), cameraTransform->GetPosition()));
-
 	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, 
 		transform->GetPosition().y + 6.5f,
 		transform->GetPosition().z));
 
 	XMFLOAT3 add = Vector3::TransformCoord(XMFLOAT3(centerX, centerY, 0), Matrix4x4::Rotation(uitransform->GetRotation()));
 	uitransform->SetPosition(Vector3::Add(add, uitransform->GetPosition()));
+}
+
+CDropedIcon::CDropedIcon(string str)
+{
+	CreateComponent(COMPONENT_TYPE::TRANSFORM);
+	m_isActive = true;
+	CMaterial* material = new CMaterial();
+	material->SetStateNum(0);
+	CRectMesh* mesh = new CRectMesh(1, 1);
+	SetMesh(mesh);
+	material->SetTexture(CAssetManager::GetInstance()->GetTexture(str));
+	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
+	material->m_shaders.push_back(BilboardShader);
+	m_materials.push_back(material);
+	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
+	uitransform->LookTo(XMFLOAT3(-1, -1, 1));
+}
+
+void CDropedIcon::Update()
+{
+	CObject::Update();
 }

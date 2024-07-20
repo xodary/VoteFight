@@ -13,6 +13,7 @@ public:
 
 	static void Load(const string& fileName);
 	static void LoadTerrain(const string& fileName);
+	static bool can_see(XMFLOAT3 a, XMFLOAT3 b, float range);
 	static float OnGetHeight(float fx, float fz);
 	static void NPCInitialize();
 
