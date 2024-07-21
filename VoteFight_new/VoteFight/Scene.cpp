@@ -3,6 +3,7 @@
 #include "GameFramework.h"
 #include "AssetManager.h"
 #include "CameraManager.h"
+#include "SceneManager.h"
 #include "Player.h"
 #include "Animator.h"
 #include "UI.h"
@@ -91,7 +92,9 @@ void CScene::Load(const string& fileName)
 					transform->Update();
 					transform->Update();
 					object->Init();
-
+					cout << object->GetName() << endl;
+					if (object->GetName() == "Ocean")
+						CSceneManager::GetInstance()->GetGameScene()->m_Ocean = object;
 					AddObject(groupType, object);
 				}
 				break;

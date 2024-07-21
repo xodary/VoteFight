@@ -21,7 +21,7 @@ private:
 
 	CObject*			   m_towerLight;
 	float				   m_towerLightAngle;
-
+	bool					m_miniMap = false;
 	//INIT_GAME_DATA		   m_InitGameData{};
 
 public:
@@ -51,4 +51,10 @@ public:
 	virtual void PreRender();
 	virtual void Render();
 	virtual void RenderImGui();
+
+	virtual void Sea_level_rise(float newPhaseHeight);
+
+	bool is_OceanRise = false;
+	float m_fOceanRiseTime = 0.f;
+	CObject* m_Ocean = nullptr;
 };

@@ -100,7 +100,7 @@ public:
 	virtual void RenderBilboard(CCamera* camera);
 
 	virtual const XMFLOAT3& GetPosition() ;
-	virtual void SetPostion(const XMFLOAT3& rVector);
+	virtual void SetPosition(const XMFLOAT3& rVector);
 
 	virtual const XMFLOAT3& GetRotate();
 	virtual void SetRotate(const XMFLOAT3& rRotate);

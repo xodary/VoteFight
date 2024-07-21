@@ -27,6 +27,7 @@
 #include "Box.h"
 #include "Bullet.h"
 #include "Monster.h"
+#include "GameScene.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -402,6 +403,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CTimeManager::GetInstance()->m_phaseTime = seconds_as_float;
 		CTimeManager::GetInstance()->m_lastTime = seconds_as_float;
 		CTimeManager::GetInstance()->m_phase = recv_packet->m_phase;
+		CSceneManager::GetInstance()->GetGameScene()->m_fOceanRiseTime = 10;
 		cout << "Phase " << recv_packet->m_phase << endl;
 	}
 	break;

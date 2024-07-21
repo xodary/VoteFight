@@ -218,6 +218,18 @@ void CAssetManager::LoadTextures(const string& fileName)
 		m_textures.emplace(ex->GetName(), ex);
 		m_IconTextures[str] = ex;
 	}
+
+	string MiniMapIconNames[] = { "MinimapIcons/GrayNPC",  "MinimapIcons/RadPlayer",
+		"MinimapIcons/WeaponIcon" , "MinimapIcons/ItemIcon" , "MinimapIcons/ItemIcon" ,
+	"MinimapIcons/MonsterIcon" , "MinimapIcons/MiniMap" };
+
+	for (auto str : MiniMapIconNames)
+	{
+		CTexture* ex = new CTexture();
+		ex->Load(str, TEXTURE_TYPE::ALBEDO_MAP);
+		m_IconTextures[str] = ex;
+	}
+
 }
 
 void CAssetManager::LoadShaders()

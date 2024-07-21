@@ -93,7 +93,7 @@ void CSelectScene::Init()
 	for (size_t i = 0; i < 3; i++)
 	{
 		m_WaitCharacters[i] = objects[i];
-		m_WaitCharacters[i]->SetPostion(XMFLOAT3(4 + i * 2, 1, 0.3));
+		m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, 1, 0.3));
 		//m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
 		cout << m_WaitCharacters[i]->GetName() << endl;
 	}
@@ -135,11 +135,11 @@ void CSelectScene::SelectCharacter(UINT number)
 	{
 		if (number != i)
 		{
-			m_WaitCharacters[i]->SetPostion(XMFLOAT3(4 + i * 2, 1, 0.3));
+			m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, 1, 0.3));
 		}
 		else
 		{
-			m_WaitCharacters[i]->SetPostion(XMFLOAT3(0, 1, 0.3));
+			m_WaitCharacters[i]->SetPosition(XMFLOAT3(0, 1, 0.3));
 		}
 	}
 }

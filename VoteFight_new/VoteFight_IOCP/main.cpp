@@ -48,7 +48,6 @@ int main(int argc, char* argv[])
 	CGameScene::LoadTerrain("HeightMap.bin");
 	CGameScene::Load("ServerScene.bin");
 	CGameScene::Load("GameScene.bin");
-
 	CGameScene::NPCInitialize();
 	CGameScene::LoadSkinningAnimations();
 
@@ -836,8 +835,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			bullet->m_lastTime = chrono::system_clock::now();
 			bullet->m_id = bullet_id++;
 			CGameScene::m_objects[(int)GROUP_TYPE::BULLET][bullet->m_id] = Bullet;
-
-			SC_ADD_PACKET send_packet;
+			
+ 			SC_ADD_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = P_SC_ADD_PACKET;
 			send_packet.m_id = bullet->m_id;

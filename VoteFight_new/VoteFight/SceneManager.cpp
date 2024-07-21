@@ -32,9 +32,9 @@ CScene* CSceneManager::GetCurrentScene()
 	return m_currentScene;
 }
 
-CScene* CSceneManager::GetGameScene()
+CGameScene* CSceneManager::GetGameScene()
 {
-	return m_scenes[static_cast<int>(SCENE_TYPE::GAME)];
+	return static_cast<CGameScene*>(m_scenes[static_cast<int>(SCENE_TYPE::GAME)]);
 }
 
 void CSceneManager::Init()

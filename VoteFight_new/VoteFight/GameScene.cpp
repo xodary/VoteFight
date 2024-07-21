@@ -215,6 +215,12 @@ void CGameScene::Update()
 	CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
 	m_mappedGameScene->m_lights[0].m_position = Vector3::Add(object->GetPosition(), XMFLOAT3(-25.f, 0, -25.f));
 	m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
+
+	if (KEY_TAP(KEY::Q))
+		if (m_miniMap)m_miniMap = false;
+		else m_miniMap = true;
+
+	Sea_level_rise(1);
 	CScene::Update();
 }
 
@@ -371,6 +377,7 @@ void CGameScene::Render()
 
 	if (KEY_HOLD(KEY::SPACE))
 	{
+		;/*
 		// [Debug] Render DepthTexture
 		const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
 		D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
@@ -384,6 +391,7 @@ void CGameScene::Render()
 		commandList->RSSetScissorRects(1, &d3d12ScissorRect);
 		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 		commandList->DrawInstanced(6, 1, 0, 0);
+		*/
 	}
 
 	RenderImGui();
@@ -417,9 +425,17 @@ void CGameScene::RenderImGui()
 	if (inven) {
 		static bool hovered[3][6] = { false };
 		const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
+		ImVec2 resolution = ImVec2(framework->GetResolution().x, framework->GetResolution().y); // 윈도우 해상도
 
 		ImVec2 windowSize(framework->GetResolution().x * 3/5, framework->GetResolution().y * 2/3);
 		ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y) / 2);
+
+		// 배경색 설정 (검은색 반투명)
+		ImU32 backgroundColor = IM_COL32(0, 0, 0, 128); // RGBA (0, 0, 0, 128) - 반투명 검은색
+
+		// 배경 그리기
+		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(0, 0), resolution, backgroundColor);
+		DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
 
 		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
@@ -439,7 +455,7 @@ void CGameScene::RenderImGui()
 		ImGui::SetCursorPosY(startY);
 
 		for (int i = 0; i < rows; ++i)
-		{
+		{ 
 			ImGui::SetCursorPosX(startX);
 
 			for (int j = 0; j < cols; ++j)
@@ -546,10 +562,99 @@ void CGameScene::RenderImGui()
 
 	}
 
-	{
-		int rows = 3;
-		static bool selected[3] = { false };
-		const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
+
+	if (m_miniMap) {
+		// 화면 해상도 가져오기
+		ImVec2 resolution = ImVec2(framework->GetResolution().x, framework->GetResolution().y);
+
+		// 윈도우 사이즈 및 위치 설정
+		ImVec2 windowSize(600, 600);
+		ImVec2 windowPos((resolution.x - windowSize.x) / 2, (resolution.y - windowSize.y) / 2);
+
+		// 배경색 설정 (검은색 반투명)
+		ImU32 backgroundColor = IM_COL32(0, 0, 0, 128); // RGBA (0, 0, 0, 128) - 반투명 검은색
+
+		// 배경 그리기
+		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(0, 0), resolution, backgroundColor);
+
+		// 윈도우 플래그 설정
+		DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+
+		// 다음 윈도우의 크기와 위치 설정
+		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+		// 윈도우 시작
+		ImGui::Begin("Mini Map Window", nullptr, window_flags);
+
+		// 미니맵 이미지 렌더링
+		auto& minimapHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MiniMap"]->m_IconGPUHandle;
+		ImGui::Image((void*)minimapHandle.ptr, ImVec2(windowSize.x, windowSize.y));
+
+		// NPC 이미지 크기 설정
+		ImVec2 npcSize = ImVec2(20, 15); // NPC 아이콘 크기
+
+		// 미니맵 중심점 설정
+		ImVec2 centerPos = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
+		for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::GROUND_ITEM); ++i) {
+			{
+				const unordered_map<int, CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
+
+				for (const auto& objectsPair : objects) {
+					CObject* object = objectsPair.second;
+					XMFLOAT3 npcPos3D = object->GetPosition();
+
+					// 3D 좌표를 2D 미니맵 좌표로 변환 (0, 0을 중심으로 -45도 회전)
+					float mapX = (npcPos3D.x-  200.f ) / 600.0f * windowSize.x;
+					float mapY = (npcPos3D.z - 200.f) / 600.0f * windowSize.y; // Y축 반전
+					float rotatedX = (mapX + mapY) * 0.7071f; // cos(-45°) = 0.7071, sin(-45°) = -0.7071
+					float rotatedY = (mapY - mapX) * 0.7071f;
+
+					ImVec2 npcPos = ImVec2(centerPos.x + rotatedX, centerPos.y - rotatedY); // Y축 반전 후 적용
+					D3D12_GPU_DESCRIPTOR_HANDLE npcHandle;
+
+
+					switch (static_cast<GROUP_TYPE>(i))
+					{
+					case GROUP_TYPE::STRUCTURE:
+						continue;
+						break;
+					case GROUP_TYPE::PLAYER:
+						npcSize = ImVec2(20, 20);
+						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/RadPlayer"]->m_IconGPUHandle;
+						break;
+					case GROUP_TYPE::NPC:
+						npcSize = ImVec2(15, 25);
+						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/GrayNPC"]->m_IconGPUHandle;
+						break;
+					case GROUP_TYPE::MONSTER:
+						npcSize = ImVec2(20, 20);
+						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MonsterIcon"]->m_IconGPUHandle;
+						break;
+					case GROUP_TYPE::BILBOARD:
+						continue;
+						break;
+					case GROUP_TYPE::GROUND_ITEM:
+						npcSize = ImVec2(20, 20);
+						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/ItemIcon"]->m_IconGPUHandle;
+						break;
+
+					}
+
+					ImGui::SetCursorPos(ImVec2(npcPos.x - windowPos.x - npcSize.x / 2, npcPos.y - windowPos.y - npcSize.y / 2));
+					ImGui::Image((void*)npcHandle.ptr, npcSize);
+				}
+			}
+
+		}
+		// 윈도우 끝
+		ImGui::End();
+	}
+
+
+	 rows = 3;
+	static bool selected[3] = { false };
+	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
 
 		ImVec2 windowSize(framework->GetResolution().x * 1 / 4, framework->GetResolution().x * 1 / 4 / 3);
 		ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y));
@@ -560,9 +665,9 @@ void CGameScene::RenderImGui()
 
 
 		// 아이템 크기 계산
-		const float itemSize = windowSize.y * 5 / 6;
+		const float InventoryItemSize = windowSize.y * 5 / 6;
 
-		ImGui::SetCursorPosX(itemSize / 5);
+		ImGui::SetCursorPosX(InventoryItemSize / 5);
 		for (int i = 0; i < rows; ++i)
 		{
 			ImGui::PushID(i + 1000);
@@ -576,7 +681,7 @@ void CGameScene::RenderImGui()
 			ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
 			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 
-			ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i + 1000)), ImVec2(itemSize, itemSize));
+			ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i + 1000)), ImVec2(InventoryItemSize, InventoryItemSize));
 			{
 				ImGui::Text("%d", i + 1);
 				if (!player->myItems[i].empty()) {
@@ -584,7 +689,7 @@ void CGameScene::RenderImGui()
 					if (item != 0) {
 						ImGui::SameLine();
 						auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i]]->m_IconGPUHandle;
-						ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
+						ImGui::Image((void*)handle.ptr, ImVec2(InventoryItemSize * 2 / 3, InventoryItemSize * 2 / 3));
 					}
 				}
 				ImGui::Text(player->myItems[i].c_str());
@@ -631,6 +736,69 @@ void CGameScene::RenderImGui()
 
 		ImGui::Render();
 
-		ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
-	}
+	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }
+
+#include <iostream>
+#include <cmath> // for sin function
+
+void CGameScene::Sea_level_rise(float a)
+{
+	if (m_Ocean == nullptr) {
+		std::cout << "바다 없음!" << std::endl;
+		return;
+	}
+
+	float newHeight = 1 * CTimeManager::GetInstance()->m_phase;
+	double durationSlow = 8.0; // 천천히 올라가는 시간
+	double durationFast = 2.0; // 빠르게 올라가는 시간
+	double totalTime = durationSlow + durationFast; // 총 시간
+
+	// 초기 위치와 목표 위치 설정
+	double startY = m_Ocean->GetPosition().y;
+	double endY = newHeight;
+	double totalDistance = endY - startY; // 전체 이동 거리
+
+	auto deltaTime = CTimeManager::GetInstance()->GetDeltaTime();
+	XMFLOAT3 newPosition = m_Ocean->GetPosition();
+
+	// 시간 감소
+	m_fOceanRiseTime -= deltaTime;
+	float t = totalTime - m_fOceanRiseTime; // 남은 시간 대신 경과된 시간 사용
+
+	// 종료 조건 확인
+	if (m_fOceanRiseTime <= 0.0f) {
+		// 목표 위치에 도달하면 정확히 설정
+		newPosition.y = endY;
+		m_Ocean->SetPosition(newPosition);
+		return;
+	}
+
+	int phase = CTimeManager::GetInstance()->m_phase;
+
+	// phase가 0 또는 1일 때도 짝수처럼 동작
+	if (phase % 2 == 0 || phase == 0 || phase == 1) {
+		// 짝수일 때 위아래로 흔들흔들 움직이기
+		float oscillationAmplitude = 0.01f; // 진폭
+		float oscillationFrequency = 2.0f; // 주기 (초당 진동 횟수)
+		newPosition.y = startY + oscillationAmplitude * sin(oscillationFrequency * t);
+	}
+	else {
+		// 홀수일 때 올라가기
+		if (t <= durationSlow) {
+			// 첫 8초 동안 천천히 선형적으로 올라감
+			newPosition.y = startY + (totalDistance * (t / totalTime));
+		}
+		else {
+			// 마지막 2초 동안 가속운동
+			double t_remaining = t - durationSlow;
+			double initial_position = startY + (totalDistance * (durationSlow / totalTime));
+			double acceleration = 2 * (totalDistance - (initial_position - startY)) / (durationFast * durationFast);
+			newPosition.y = initial_position + 0.5 * acceleration * t_remaining * t_remaining;
+		}
+	}
+
+	// 위치 설정
+	m_Ocean->SetPosition(newPosition);
+}
+
