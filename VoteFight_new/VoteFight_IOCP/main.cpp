@@ -452,7 +452,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			return;
 		}
 
-		if (RemoteClient::m_remoteClients.size() == 3) {
+		if (RemoteClient::m_remoteClients.size() == 4) {
 			SC_LOGIN_FAIL_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_LOGIN_FAIL_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_FAIL_PACKET;
