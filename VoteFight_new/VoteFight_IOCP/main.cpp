@@ -452,6 +452,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			return;
 		}
 
+		// 자신을 포함하여 4명
 		if (RemoteClient::m_remoteClients.size() == 4) {
 			SC_LOGIN_FAIL_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_LOGIN_FAIL_PACKET);

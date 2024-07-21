@@ -428,6 +428,12 @@
     <ClInclude Include="DropItem.h">
       <Filter>헤더 파일\05. Object\05-06. Otherobject</Filter>
     </ClInclude>
+    <ClInclude Include="ImGUI\implot.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGUI\implot_internal.h">
+      <Filter>ImGUI</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -681,6 +687,15 @@
     </ClCompile>
     <ClCompile Include="DropItem.cpp">
       <Filter>소스 파일\05. Object\05-06. OtherObject</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\implot.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\implot_demo.cpp">
+      <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGUI\implot_items.cpp">
+      <Filter>ImGUI</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
