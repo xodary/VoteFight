@@ -57,16 +57,37 @@ void CPlayerIdleState::Update(CObject* object)
 		stateMachine->ChangeState(CPlayerWalkState::GetInstance());
 		return;
 	}
-
+	if (KEY_TAP(KEY::NUM1)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM2)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM3)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::F)) {
+		CS_PICKUP_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_PICKUP_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
 	if (KEY_TAP(KEY::LBUTTON))
 	{
 		player->Attack();
-		//CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		//if(player->m_Weapon == WEAPON_TYPE::PUNCH) animator->Play("Punch", false);
-		//else if(player->m_Weapon == WEAPON_TYPE::PISTOL) animator->Play("Pistol_shoot", false);
-		//else if (player->m_Weapon == WEAPON_TYPE::AXE) animator->Play("Attack_onehand", false);
 	}
-
 	if (KEY_TAP(KEY::RBUTTON))
 	{
 		stateMachine->ChangeState(CPlayerFocusIdleState::GetInstance());
@@ -167,37 +188,37 @@ void CPlayerWalkState::Update(CObject* object)
 
 		PacketQueue::AddSendPacket(&p);
 	}
-
-	if (KEY_HOLD(KEY::RBUTTON) || KEY_TAP(KEY::RBUTTON))
-	{
-
-
-		//player->SetClickAngle(angle);
-		//float look = transform->GetRotation().y;
-		//if (look > 180) look -= 360;
-		//float diff = angle - look;
-		//if (diff > 180) diff -= 360;
-		//if (diff < -180) diff += 360;
-		//if (-45 > diff)
-		//{
-		//	if (-90 - 45 > diff)
-		//		player->SetTurnAngle(look - 180.f);
-		//	else
-		//		player->SetTurnAngle(look - 90.f);
-		//	stateMachine->ChangeState(CPlayerLeftTurn::GetInstance());
-		//}
-		//else if (45 < diff)
-		//{
-		//	if (45 + 90 < diff)
-		//		player->SetTurnAngle(look + 180.f);
-		//	else
-		//		player->SetTurnAngle(look + 90.f);
-
-		//	stateMachine->ChangeState(CPlayerRightTurn::GetInstance());
-		//}
-		//player->SetSpineAngle(angle - look);
+	if (KEY_TAP(KEY::NUM1)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
+		PacketQueue::AddSendPacket(&send_packet);
 	}
-
+	if (KEY_TAP(KEY::NUM2)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM3)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::F)) {
+		CS_PICKUP_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_PICKUP_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::LBUTTON))
+	{
+		player->Attack();
+	}
 }
 
 CPlayerFocusIdleState::CPlayerFocusIdleState()
@@ -275,6 +296,37 @@ void CPlayerFocusIdleState::Update(CObject* object)
 		p.m_angle = angle;
 		PacketQueue::AddSendPacket(&p);
 	}
+	if (KEY_TAP(KEY::NUM1)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM2)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM3)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::F)) {
+		CS_PICKUP_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_PICKUP_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::LBUTTON))
+	{
+		player->Attack();
+	}
 }
 
 CPlayerFocusWalkState::CPlayerFocusWalkState()
@@ -335,6 +387,37 @@ void CPlayerFocusWalkState::Update(CObject* object)
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	
+	if (KEY_TAP(KEY::NUM1)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM2)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM3)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::F)) {
+		CS_PICKUP_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_PICKUP_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::LBUTTON))
+	{
+		player->Attack();
+	}
 	if (KEY_AWAY(KEY::RBUTTON))
 	{
 		stateMachine->ChangeState(CPlayerIdleState::GetInstance());

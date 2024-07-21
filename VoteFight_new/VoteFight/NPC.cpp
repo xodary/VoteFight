@@ -33,6 +33,8 @@ string CNPC::GetSpineName()
 void CNPC::Init()
 {	
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
+	animator->SetAnimateBone(FindFrame("mixamorig:Hips"), ANIMATION_BONE::ROOT);
+	animator->SetWeight("idle", ANIMATION_BONE::ROOT, 1.0f);
 	animator->Play("idle", true);
 
 	m_bilboardUI.push_back(new CSpeechBubbleUI(this));

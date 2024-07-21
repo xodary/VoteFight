@@ -41,6 +41,8 @@ void CMonster::SetSpineAngle(float angle)
 void CMonster::Init()
 {
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
+	animator->SetAnimateBone(FindFrame("mixamorig:Hips"), ANIMATION_BONE::ROOT);
+	animator->SetWeight("idle", ANIMATION_BONE::ROOT, 1.0f);
 	animator->Play("idle", true);
 }
 

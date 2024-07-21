@@ -309,7 +309,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_upAnimation, 2);
+		//if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_animations, 2);
 		if(recv_packet->m_look != -1) 
 			static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_look;
 		transform->SetPosition(recv_packet->m_pos);
@@ -349,7 +349,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->Play(recv_packet->m_key, recv_packet->m_loop);
+		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone);
 	}
 	break;
 

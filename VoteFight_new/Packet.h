@@ -90,6 +90,7 @@ struct SC_ANIMATION_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
+	unsigned int		m_bone;
 	unsigned int		m_grouptype;
 	char				m_key[NAME_SIZE];
 	bool				m_loop;

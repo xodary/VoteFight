@@ -37,10 +37,14 @@ CPlayer::~CPlayer()
 void CPlayer::Init()
 {
 	CAnimator* animator = reinterpret_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-	//animator->SetWeight("Idle", 1.0f);
-	//animator->Play("Idle", true);
-	animator->SetWeight("Pistol_slowwalk", 1.0f);
-	animator->Play("Pistol_slowwalk", true);
+	animator->SetAnimateBone(FindFrame("mixamorig:Hips"), ANIMATION_BONE::LOWER);
+	animator->SetAnimateBone(FindFrame("mixamorig:LeftUpLeg"), ANIMATION_BONE::LOWER);
+	animator->SetAnimateBone(FindFrame("mixamorig:RightUpLeg"), ANIMATION_BONE::LOWER);
+	animator->SetMaskBone(FindFrame("mixamorig:Spine"), ANIMATION_BONE::LOWER);
+	animator->SetAnimateBone(FindFrame("mixamorig:Spine"), ANIMATION_BONE::UPPER);
+	animator->SetWeight("Idle", ANIMATION_BONE::LOWER, 1.0f);
+	animator->SetWeight("Idle", ANIMATION_BONE::UPPER, 1.0f);
+	animator->Play("Idle", true);
 
 	m_Inventory = new CInventory();
 
@@ -121,34 +125,6 @@ void CPlayer::Punch()
 void CPlayer::Update()
 {
 	CCharacter::Update();
-
-	if (KEY_TAP(KEY::NUM1)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM2)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM3)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::F)) {
-		CS_PICKUP_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_PICKUP_PACKET;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)

@@ -1,28 +1,19 @@
 #include "pch.h"
 #include "Animator.h"
-
 #include "GameFramework.h"
-
 #include "TimeManager.h"
 #include "AssetManager.h"
-
 #include "Object.h"
-
 #include "SkinnedMesh.h"
 #include "Material.h"
 #include "Animation.h"
-
 #include "Transform.h"
 #include "Player.h"
 
 CAnimator::CAnimator() :
-	m_isLoop(),
-	m_isFinished(),
 	m_animations(),
-	m_playingAnimations(),
-	m_frameIndices(),
-	m_elapsedTime(),
-	m_bBlending(true)
+	m_isAnimationMasked(false),
+	m_animationMask()
 {
 }
 
@@ -30,93 +21,57 @@ CAnimator::~CAnimator()
 {
 }
 
-bool CAnimator::IsFinished()
+bool CAnimator::IsFinished(const string& key, const ANIMATION_BONE& type)
 {
-	return m_isFinished;
+	if (m_animationMask[type].m_playingAnimations.find(key) == m_animationMask[type].m_playingAnimations.end())
+		return true;
+	return m_animationMask[type].m_isFinished[key];
 }
 
-void CAnimator::SetFrameIndex(int frameIndex, const string& key)
+void CAnimator::SetWeight(const string& key, const ANIMATION_BONE& type, float fWeight)
 {
-	if ((frameIndex < 0) || (frameIndex >= m_playingAnimations[key]->GetFrameCount()))
-	{
+	m_animationMask[type].m_weights[key] = fWeight;
+}
+
+void CAnimator::SetAnimateBone(CObject* bone, const ANIMATION_BONE& type)
+{
+	m_animationMask[type].m_animationBones.push_back(bone);
+}
+
+void CAnimator::SetMaskBone(CObject* bone, const ANIMATION_BONE& type)
+{
+	m_animationMask[type].m_maskBones.push_back(bone);
+}
+
+int CAnimator::GetFrameIndex(const string& key, const ANIMATION_BONE& type)
+{
+	return m_animationMask[type].m_frameIndices[key];
+}
+
+void CAnimator::Play(const string& key, bool isLoop, const ANIMATION_BONE& type, bool duplicatable)
+{
+	// Player는 Root를 가지지 않음. 그래도 불렀다면 둘다 하고 싶은거임.
+	if (m_owner->GetGroupType() == (int)GROUP_TYPE::PLAYER && type == ANIMATION_BONE::ROOT) {
+		Play(key, isLoop, UPPER, duplicatable);
+		Play(key, isLoop, LOWER, duplicatable);
 		return;
 	}
-
-	m_frameIndices[key] = frameIndex;
-}
-
-int CAnimator::GetFrameIndex(const string& key)
-{
-	return m_frameIndices[key];
-}
-
-void CAnimator::SetWeight(const string& key, float fWeight)
-{
-	m_weights[key] = fWeight;
-	//m_animations[key]->SetWeight(fWeight);
-}
-
-void CAnimator::Play(const string& key, bool isLoop, bool duplicatable)
-{
+	
 	// 중복을 허용했다면, 동일 애니메이션으로 전이할 수 있다.
-	if ((m_animations.find(key) == m_animations.end()) || ((!duplicatable) && (m_animations[key] == m_playingAnimations[key])))
+	if ((m_animations.find(key) == m_animations.end()) || ((!duplicatable) && (m_animations[key] == m_animationMask[type].m_playingAnimations[key])))
 	{
 		return;
 	}
 
-	m_isLoop = isLoop;
-	m_isFinished = false;
-	m_bBlending = true;
+	m_animationMask[type].m_isLoop = isLoop;
+	m_animationMask[type].m_isFinished[key] = false;
+	m_animationMask[type].m_bBlending = true;
 	//memcpy(&m_playingAnimations[key], &m_animations[key], sizeof(CAnimation*));
-	m_playingAnimations[key] = m_animations[key];
+	m_animationMask[type].m_playingAnimations[key] = m_animations[key];
 	m_speed[key] = 1.0f;
-	m_upAnimation = key;
-	m_frameIndices[key] = 0;
+	m_animationMask[type].m_upAnimation = key;
+	m_animationMask[type].m_frameIndices[key] = 0;
 }
-
-void CAnimator::BlendAnimation()
-{
-	if (m_bBlending)
-	{
-		// m_nUpState은 비중이 높아지고 있는 애니메이션의 인덱스이다. m_fStates[]는 각 애니메이션의 가중치이다.
-		// 함수가 호출될 수록 m_nUpState에 해당하는 가중치는 0에서 1로 향하고, 나머지는 1에서 0으로 향한다.
-		// 1에서 0으로 향하는 나머지들과 0에서 1로 향하는 모든 가중치는 합해서 1.0이 되어야 한다.
-
-		float fUp = 1.0f - m_weights[m_upAnimation];		// 비중이 낮아지는 애니메이션의 가중치를 모두 합한 값
-		float newUpWeight = m_weights[m_upAnimation] + 5.f * DT;
-
-		// 비중이 완전히 기울면 블렌딩을 멈춘다.
-		if (newUpWeight >= 1.0f)
-		{
-			auto it = m_playingAnimations.begin();
-			while (it != m_playingAnimations.end()) {
-				if (it->first != m_upAnimation) {
-					m_weights[it->first] = 0.0f;
-					// it->second->SetWeight(0.0f);
-					it = m_playingAnimations.erase(it); 
-				}
-				else {
-					++it; 
-				}
-			}
-			m_bBlending = false;
-			m_weights[m_upAnimation] = 1.0f;
-			return;
-		}
-
-		// 비중이 완전히 기울지 않았으면 블렌딩을 한다.
-		m_weights[m_upAnimation] = newUpWeight;
-		for (auto selected : m_playingAnimations)
-		{
-			// 모든 가중치의 합은 1.0이 되어야 한다.
-			// 그러므로 비중이 낮아지는 애니메이션의 감소 비율을 맞추어야 한다.
-			if (selected.first == m_upAnimation) continue;
-			float newWeight = (m_weights[selected.first] / fUp) * (1 - newUpWeight);
-			m_weights[selected.first] = newWeight;
-		}
-	}
-}
-
 //=========================================================================================================================
 
 CSkinningAnimator::CSkinningAnimator() :
@@ -170,6 +125,7 @@ void CSkinningAnimator::Load(ifstream& in)
 
 				File::ReadStringFromFile(in, str);
 				m_skinnedMeshCache[i] = static_cast<CSkinnedMesh*>(CAssetManager::GetInstance()->GetMesh(str));
+				if (m_skinnedMeshCache[i] == nullptr) cout << str << " : Skinned Mesh를 찾을 수 없음." << endl;
 
 				// <Bones>
 				File::ReadStringFromFile(in, str);
@@ -190,6 +146,7 @@ void CSkinningAnimator::Load(ifstream& in)
 
 					m_boneFrameCaches[i][j] = boneFrameCache[str];
 				}
+
 			}
 
 			m_d3d12BoneTransformMatrixes.resize(skinnedMeshCount);
@@ -236,81 +193,124 @@ XMFLOAT3 QuaternionToEuler(XMFLOAT4 q) {
 	return euler;
 }
 
+void CAnimator::BlendAnimation()
+{
+	for (auto& animation : m_animationMask)
+	{
+		if (!animation.second.m_bBlending) continue;
+
+		string upAni = animation.second.m_upAnimation;
+
+		float fUp = 1.0f - animation.second.m_weights[upAni];		// 비중이 낮아지는 애니메이션의 가중치를 모두 합한 값
+		float newUpWeight = animation.second.m_weights[upAni] + 5.f * DT;
+
+		// 비중이 완전히 기울면 블렌딩을 멈춘다.
+		if (newUpWeight >= 1.0f)
+		{
+			auto it = animation.second.m_playingAnimations.begin();
+			while (it != animation.second.m_playingAnimations.end()) {
+				if (it->first != upAni) {
+					animation.second.m_weights[it->first] = 0.0f;
+					it = animation.second.m_playingAnimations.erase(it);
+				}
+				else {
+					++it;
+				}
+			}
+			animation.second.m_bBlending = false;
+			animation.second.m_weights[upAni] = 1.0f;
+			continue;
+		}
+
+		// 비중이 완전히 기울지 않았으면 블렌딩을 한다.
+		animation.second.m_weights[upAni] = newUpWeight;
+		for (auto selected : animation.second.m_playingAnimations)
+		{
+			// 모든 가중치의 합은 1.0이 되어야 한다.
+			// 그러므로 비중이 낮아지는 애니메이션의 감소 비율을 맞추어야 한다.
+			if (selected.first == upAni) continue;
+			float newWeight = (animation.second.m_weights[selected.first] / fUp) * (1 - newUpWeight);
+			animation.second.m_weights[selected.first] = newWeight;
+		}
+	}
+}
+
 void CSkinningAnimator::Update()
 {
 	BlendAnimation();
 
-	if ((m_isEnabled) && (!m_isFinished))
-	{
-		for (int i = 0; i < m_skinnedMeshCache.size(); ++i)
-		{
-			for (int j = 0; j < m_boneFrameCaches[i].size(); ++j)
-			{
-				CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[i][j]->GetComponent(COMPONENT_TYPE::TRANSFORM));
-				transform->SetLocalPosition(XMFLOAT3(0, 0, 0));
-				transform->SetLocalRotation(XMFLOAT3(0, 0, 0));
-				transform->SetLocalScale(XMFLOAT3(0, 0, 0));
-			}
+	for (int i = 0; i < m_skinnedMeshCache.size(); ++i) {
+		for (int j = 0; j < m_boneFrameCaches[i].size(); ++j) {
+			CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[i][j]->GetComponent(COMPONENT_TYPE::TRANSFORM));
+			transform->SetLocalPosition(XMFLOAT3(0, 0, 0));
+			transform->SetLocalRotation(XMFLOAT3(0, 0, 0));
+			transform->SetLocalScale(XMFLOAT3(0, 0, 0));
 		}
+	}
 
-		for (auto selectedAnimation : m_playingAnimations)
+	for (auto& animation : m_animationMask)
+	{
+		for (auto& selectedAnimation : animation.second.m_playingAnimations)
 		{
-			if (selectedAnimation.second != nullptr)
+			if (selectedAnimation.second == nullptr) continue;
+
+			animation.second.m_elapsedTime[selectedAnimation.first] += DT;
+			float duration = 1.0f / selectedAnimation.second->GetFrameRate() / m_speed[selectedAnimation.first];
+
+			while (animation.second.m_elapsedTime[selectedAnimation.first] >= duration)
 			{
-				m_elapsedTime += DT;
+				animation.second.m_elapsedTime[selectedAnimation.first] -= duration;
 
-				float duration = 1.0f / selectedAnimation.second->GetFrameRate() / m_speed[selectedAnimation.first];
+				++animation.second.m_frameIndices[selectedAnimation.first];
 
-				while (m_elapsedTime >= duration)
+				if (animation.second.m_frameIndices[selectedAnimation.first] >= selectedAnimation.second->GetFrameCount())
 				{
-					// 축적된 시간이 애니메이션의 한 프레임 지속시간을 넘어서는 경우를 대비하여 0.0f으로 만드는 것이 아니라, 두 값의 차이로 설정한다.
-					m_elapsedTime -= duration;
-
-					++m_frameIndices[selectedAnimation.first];
-
-					if (m_frameIndices[selectedAnimation.first] >= selectedAnimation.second->GetFrameCount())
+					if (animation.second.m_isLoop)
 					{
-						if (m_isLoop)
-						{
-							m_frameIndices[selectedAnimation.first] = 0;
-						}
-						else
-						{
-							--m_frameIndices[selectedAnimation.first];
-							m_isFinished = true;
-							break;
-						}
+						animation.second.m_frameIndices[selectedAnimation.first] = 0;
+					}
+					else
+					{
+						--animation.second.m_frameIndices[selectedAnimation.first];
+						animation.second.m_isFinished[selectedAnimation.first] = true;
+						break;
 					}
 				}
+			}
 
-				// 이번 프레임의 애니메이션 변환 행렬을 각 뼈 프레임에 변환 행렬로 설정한다.
-				CSkinningAnimation* playingAnimation = static_cast<CSkinningAnimation*>(selectedAnimation.second);
-				const vector<vector<vector<XMFLOAT3>>>& bonePositions = playingAnimation->GetPositions();
-				const vector<vector<vector<XMFLOAT3>>>& boneRotations = playingAnimation->GetRotations();
-				const vector<vector<vector<XMFLOAT3>>>& boneScales = playingAnimation->GetScales();
+			// 이번 프레임의 애니메이션 변환 행렬을 각 뼈 프레임에 변환 행렬로 설정한다.
+			CSkinningAnimation* playingAnimation = static_cast<CSkinningAnimation*>(selectedAnimation.second);
+			const vector<vector<vector<XMFLOAT3>>>& bonePositions = playingAnimation->GetPositions();
+			const vector<vector<vector<XMFLOAT3>>>& boneRotations = playingAnimation->GetRotations();
+			const vector<vector<vector<XMFLOAT3>>>& boneScales = playingAnimation->GetScales();
 
-
-				for (int i = 0; i < m_skinnedMeshCache.size(); ++i)
+			for (int i = 0; i < m_skinnedMeshCache.size(); ++i)
+			{
+				for (int j = 0; j < m_boneFrameCaches[i].size(); ++j)
 				{
-					for (int j = 0; j < m_boneFrameCaches[i].size(); ++j)
-					{
-						CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[i][j]->GetComponent(COMPONENT_TYPE::TRANSFORM));
-
-						transform->SetLocalPosition(Vector3::Add(transform->GetLocalPosition(), Vector3::ScalarProduct(bonePositions[i][j][m_frameIndices[selectedAnimation.first]], m_weights[selectedAnimation.first])));
-						XMFLOAT3 Rotation = boneRotations[i][j][m_frameIndices[selectedAnimation.first]];
-						
-						// 상체 회전 (spine 기준)
-						// if (m_boneFrameCaches[i][j]->GetName() == static_cast<CPlayer*>(m_owner)->GetSpineName())
-						// {
-						// 	Rotation.y += static_cast<CPlayer*>(m_owner)->GetSpineAngle();
-						// }
-
-						if (Rotation.x - transform->GetLocalRotation().x > 180) Rotation.x -= 360;
-						if (Rotation.y - transform->GetLocalRotation().y > 180) Rotation.y -= 360;
-						if (Rotation.z - transform->GetLocalRotation().z > 180) Rotation.z -= 360; 
-						transform->SetLocalRotation(Vector3::Add(transform->GetLocalRotation(), Vector3::ScalarProduct(Rotation, m_weights[selectedAnimation.first])));
-						transform->SetLocalScale(Vector3::Add(transform->GetLocalScale(), Vector3::ScalarProduct(boneScales[i][j][m_frameIndices[selectedAnimation.first]], m_weights[selectedAnimation.first])));
+					bool maskBone = false;
+					for (auto m : animation.second.m_maskBones) {
+						if (m->isChild(m_boneFrameCaches[i][j]->GetName())) maskBone = true;
 					}
+					if (maskBone) continue;
+					bool aniBone = false;
+					for (auto n : animation.second.m_animationBones) {
+						if (n->isChild(m_boneFrameCaches[i][j]->GetName())) aniBone = true;
+					}
+					if (!aniBone) continue;
+					CTransform* transform = static_cast<CTransform*>(m_boneFrameCaches[i][j]->GetComponent(COMPONENT_TYPE::TRANSFORM));
+					XMFLOAT3 Postion = bonePositions[i][j][animation.second.m_frameIndices[selectedAnimation.first]];
+					XMFLOAT3 Rotation = boneRotations[i][j][animation.second.m_frameIndices[selectedAnimation.first]];
+					XMFLOAT3 Scale = boneScales[i][j][animation.second.m_frameIndices[selectedAnimation.first]];
+
+					if (Rotation.x - transform->GetLocalRotation().x > 180) Rotation.x -= 360;
+					if (Rotation.y - transform->GetLocalRotation().y > 180) Rotation.y -= 360;
+					if (Rotation.z - transform->GetLocalRotation().z > 180) Rotation.z -= 360;
+
+					float weight = animation.second.m_weights[selectedAnimation.first];
+					transform->SetLocalPosition(Vector3::Add(transform->GetLocalPosition(), Vector3::ScalarProduct(Postion, weight)));
+					transform->SetLocalRotation(Vector3::Add(transform->GetLocalRotation(), Vector3::ScalarProduct(Rotation, weight)));
+					transform->SetLocalScale(Vector3::Add(transform->GetLocalScale(), Vector3::ScalarProduct(Scale, weight)));
 				}
 			}
 		}
