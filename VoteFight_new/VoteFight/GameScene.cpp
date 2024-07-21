@@ -559,8 +559,8 @@ void CGameScene::RenderImGui()
 					XMFLOAT3 npcPos3D = object->GetPosition();
 
 					// 3D 좌표를 2D 미니맵 좌표로 변환 (0, 0을 중심으로 -45도 회전)
-					float mapX = (npcPos3D.x - 100.0f) / 300.0f * windowSize.x;
-					float mapY = (npcPos3D.z - 100.0f) / 300.0f * windowSize.y; // Y축 반전
+					float mapX = (npcPos3D.x-  200.f ) / 600.0f * windowSize.x;
+					float mapY = (npcPos3D.z - 200.f) / 600.0f * windowSize.y; // Y축 반전
 					float rotatedX = (mapX + mapY) * 0.7071f; // cos(-45°) = 0.7071, sin(-45°) = -0.7071
 					float rotatedY = (mapY - mapX) * 0.7071f;
 
@@ -574,18 +574,22 @@ void CGameScene::RenderImGui()
 						continue;
 						break;
 					case GROUP_TYPE::PLAYER:
+						npcSize = ImVec2(20, 20);
 						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/RadPlayer"]->m_IconGPUHandle;
 						break;
 					case GROUP_TYPE::NPC:
+						npcSize = ImVec2(15, 25);
 						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/GrayNPC"]->m_IconGPUHandle;
 						break;
 					case GROUP_TYPE::MONSTER:
+						npcSize = ImVec2(20, 20);
 						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MonsterIcon"]->m_IconGPUHandle;
 						break;
 					case GROUP_TYPE::BILBOARD:
 						continue;
 						break;
 					case GROUP_TYPE::GROUND_ITEM:
+						npcSize = ImVec2(20, 20);
 						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/ItemIcon"]->m_IconGPUHandle;
 						break;
 
