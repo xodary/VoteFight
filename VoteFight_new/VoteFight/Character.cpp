@@ -19,7 +19,8 @@ CCharacter::~CCharacter()
 
 void CCharacter::SetHealth(int health)
 {
-    m_health = clamp(health, 0, 100);
+    //m_health = clamp(health, 0, 100);
+    m_health = health;
 }
 
 int CCharacter::GetHealth()

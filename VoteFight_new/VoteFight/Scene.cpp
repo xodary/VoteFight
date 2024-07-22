@@ -262,7 +262,7 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 
 	CObject* myPlayer = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
 	newlist.insert(myPlayer);
-	newlist.insert(CSceneManager::GetInstance()->GetGameScene()->m_Ocean);
+	if(stateNum == 0) newlist.insert(CSceneManager::GetInstance()->GetGameScene()->m_Ocean);
 	
 	CTransform* transform = reinterpret_cast<CTransform*>(myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
 

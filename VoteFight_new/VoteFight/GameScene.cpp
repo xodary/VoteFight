@@ -104,28 +104,6 @@ void CGameScene::Init()
 	CObject* object = new CSkyBox(1000, 200);
 	AddObject(GROUP_TYPE::SKYBOX, object, 0);
 
-	//CObject* playerObject = CObject::Load("hugo_idle");
-
-	//{
-	//	CObject* gun = CObject::Load("Gun");
-	//	CTransform* transform = reinterpret_cast<CTransform*>(gun->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	//	transform->SetPosition(XMFLOAT3(10, 3.0f, 10));
-	//	AddObject(GROUP_TYPE::GROUND_ITEM, gun);
-	//}
-
-	//CTransform* transform = reinterpret_cast<CTransform*>(playerObject->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	//transform->SetPosition(XMFLOAT3(20, 2.37f, 20));
-	//AddObject(GROUP_TYPE::PLAYER, playerObject);
-	//CPlayer* player = reinterpret_cast<CPlayer*>(playerObject);
-	//player->Init();
-
-	//object = CObject::Load("Marge_Police");
-	//transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	//transform->SetPosition(XMFLOAT3(30, 2.37f, 30));
-	//AddObject(GROUP_TYPE::NPC, object);
-	//CNPC* npc = reinterpret_cast<CNPC*>(object);
-	//npc->Init();
-
 	// Collision Check
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::STRUCTURE);
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::NPC);
