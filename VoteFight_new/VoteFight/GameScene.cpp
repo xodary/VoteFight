@@ -718,7 +718,7 @@ void CGameScene::RenderImGui()
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 1.f));
 	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 
-	ImGui::Begin("White Background Window", nullptr, window_flags);
+	ImGui::Begin("Phase Timer", nullptr, window_flags);
 	{
 		ImVec2 center = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
 
@@ -729,12 +729,53 @@ void CGameScene::RenderImGui()
 		// 사각형 그리기
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
 		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(0, 0, 0, 255));
-
 	}
 
 	ImGui::PopStyleVar();
 	ImGui::PopStyleColor();
 	ImGui::End();
+
+	windowSize.x = framework->GetResolution().x / 3;
+	windowSize.y = framework->GetResolution().y / 6;
+	windowPos.x = 10;
+	windowPos.y = framework->GetResolution().y - windowSize.y - 10;
+
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+
+	{
+		ImGui::Begin("State", nullptr, window_flags);
+		ImGui::GetFont()->Scale = 3.0f;
+		ImGui::PushFont(ImGui::GetFont());
+		ImGui::Text(player->m_name.c_str());
+		ImGui::PopFont();
+
+		ImGui::GetFont()->Scale = 2.0f;
+		ImGui::PushFont(ImGui::GetFont());
+		ImGui::Text("HP: %d", player->GetHealth());
+
+		float rate = player->GetHealth() / 100;
+		ImVec2 size = ImVec2(windowSize.x * 2/3, windowSize.y / 4);
+		ImVec2 top_left = ImVec2(windowPos.x + 120, windowPos.y + 50);
+		ImVec2 bottom_right = ImVec2(top_left.x + size.x * rate, top_left.y + size.y);
+
+		// 사각형 그리기
+		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(255, 50, 50, 255));
+
+		auto& handle = CAssetManager::GetInstance()->m_IconTextures["election_ticket"]->m_IconGPUHandle;
+		ImGui::Image((void*)handle.ptr, ImVec2(windowSize.y / 4, windowSize.y / 4));
+		ImGui::SameLine(); 
+		ImGui::Text("X %d", count(player->myItems.begin(), player->myItems.end(), "election_ticket"));
+
+		ImGui::PopFont();
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor();
+		ImGui::End();
+	}
 
 	if (!inven) {
 		// ImPlot 창 시작
@@ -746,6 +787,8 @@ void CGameScene::RenderImGui()
 
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
 		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
+		ImGui::GetFont()->Scale = 1.0f;
+		ImGui::PushFont(ImGui::GetFont());
 
 		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
 		ImGui::Begin("Chard", nullptr, window_flags);
@@ -781,6 +824,7 @@ void CGameScene::RenderImGui()
 				ImPlot::EndPlot();
 			}
 		}
+		ImGui::PopFont();
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
 		ImGui::End();

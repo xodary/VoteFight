@@ -245,6 +245,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			if (selectScene->m_selected_id[i] != -1) {
 				objects[i] = CObject::Load(modelname[i]);
 				objects[i]->m_id = selectScene->m_selected_id[i];
+				objects[i]->m_name = selectScene->m_nicknames[i];
 			}
 		}
 
@@ -437,6 +438,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_id);
 
 		CCharacter* character = reinterpret_cast<CCharacter*>(object);
+		character->m_bilboardUI.clear();
+		character->m_bilboardUI.push_back(new CTextUI(character, to_string(recv_packet->m_health - character->GetHealth())));
 		character->SetHealth(recv_packet->m_health);
 		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
 	}

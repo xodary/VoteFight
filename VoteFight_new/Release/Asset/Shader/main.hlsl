@@ -431,7 +431,6 @@ float4 PS_BilboardText(VS_BILBOARD_OUTPUT input) : SV_TARGET
 {
     float4 textureColor = gvColor;
 	
-    // �� �ؽ�ó ��ǥ ��ġ���� ���÷��� ����Ͽ�?�ؽ�ó���� �ȼ� ������ ���ø��մϴ�.
     if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
     {
         textureColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
@@ -442,7 +441,7 @@ float4 PS_BilboardText(VS_BILBOARD_OUTPUT input) : SV_TARGET
         }
         else
         {
-            textureColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
+            textureColor = float4(1.0f, 0.3f, 0.3f, 1.0f);
         }
     }
 

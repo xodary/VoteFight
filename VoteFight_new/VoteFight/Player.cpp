@@ -26,7 +26,6 @@
 CPlayer::CPlayer() : m_spineName("mixamorig:Spine")
 {
 	SetName("Player");
-	m_Inventory = new CInventory();
 	SetGroupType((UINT)GROUP_TYPE::PLAYER);
 }
 
@@ -46,10 +45,8 @@ void CPlayer::Init()
 	animator->SetWeight("Idle", ANIMATION_BONE::UPPER, 1.0f);
 	animator->Play("Idle", true);
 
-	m_Inventory = new CInventory();
-
-	m_bilboardUI.emplace_back(new CHPbarUI(this));
-	m_bilboardUI.push_back(new CTextUI(this));
+	//m_bilboardUI.emplace_back(new CHPbarUI(this));
+	//m_bilboardUI.push_back(new CTextUI(this));
 }
 
 void CPlayer::Attack()
@@ -120,6 +117,9 @@ void CPlayer::Punch()
 void CPlayer::Update()
 {
 	CCharacter::Update();
+
+	if (m_bilboardUI.size() > 0 && (chrono::system_clock::now() - m_bilboardUI[0]->maketime) > 1s)
+		m_bilboardUI.clear();
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
@@ -403,34 +403,4 @@ void CPlayer::GetItem(string item)
 			return;
 		}
 	}
-}
-
-CInventory::CInventory()
-{
-}
-
-CInventory::~CInventory()
-{
-}
-bool CInventory::exchangeItem(const string& itemName, int quantity, const string& newItemName, int newQuantity)
-{
-	// ������ �˻�
-	auto it = find_if(items.begin(), items.end(), [&](const pair<string, int>& item) {
-		return item.first == itemName;
-		});
-
-	// �������� �������� �ʰų� ��û�� �������� ���� ���?��ȯ ����
-	if (it == items.end() || it->second < quantity) {
-		// cout << "��ȯ ����" << endl;
-		displayInventory();
-		return false;
-	}
-
-	deleteItem(itemName, quantity);
-
-	addItem(newItemName, newQuantity);
-
-	// cout << "��ȯ ����" << endl;
-	displayInventory();
-	return true;
 }
