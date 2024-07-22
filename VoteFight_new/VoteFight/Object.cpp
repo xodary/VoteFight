@@ -80,6 +80,7 @@ CObject* CObject::Load(const string& fileName)
 		animator->Load(in);
 	}
 
+	object->SetChildrenName();
 	return object;
 }
 
@@ -372,6 +373,24 @@ void CObject::AddChild(CObject* object)
 const vector<CObject*>& CObject::GetChildren()
 {
 	return m_children;
+}
+
+bool CObject::isChild(const string& name)
+{
+	auto it = std::find(m_childrenNames.begin(), m_childrenNames.end(), name);
+	return it != m_childrenNames.end();
+}
+
+void CObject::SetChildrenName()
+{
+	for (CObject* children : m_children) {
+		children->SetChildrenName();
+		for (string& name : children->m_childrenNames) {
+			m_childrenNames.push_back(name);
+		}
+		m_childrenNames.push_back(children->m_name);
+	}
+	m_childrenNames.push_back(m_name);
 }
 
 void CObject::Init()

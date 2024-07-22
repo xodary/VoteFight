@@ -219,7 +219,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 
 			reinterpret_cast<CPlayer*>(object)->myItems.resize(18);
-			reinterpret_cast<CPlayer*>(object)->myItems[0] = "wood";
+			reinterpret_cast<CPlayer*>(object)->myItems[0] = "axe";
+			reinterpret_cast<CPlayer*>(object)->myItems[1] = "gun";
 		}
 		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -244,6 +245,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			if (selectScene->m_selected_id[i] != -1) {
 				objects[i] = CObject::Load(modelname[i]);
 				objects[i]->m_id = selectScene->m_selected_id[i];
+				objects[i]->m_name = selectScene->m_nicknames[i];
 			}
 		}
 
@@ -309,7 +311,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_upAnimation, 2);
+		if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 2);
 		if(recv_packet->m_look != -1) 
 			static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_look;
 		transform->SetPosition(recv_packet->m_pos);
@@ -349,7 +351,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->Play(recv_packet->m_key, recv_packet->m_loop);
+		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone);
 	}
 	break;
 
@@ -436,6 +438,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_id);
 
 		CCharacter* character = reinterpret_cast<CCharacter*>(object);
+		character->m_bilboardUI.clear();
+		character->m_bilboardUI.push_back(new CTextUI(character, to_string(recv_packet->m_health - character->GetHealth())));
 		character->SetHealth(recv_packet->m_health);
 		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
 	}

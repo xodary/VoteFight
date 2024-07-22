@@ -31,15 +31,12 @@ unordered_map<string, unordered_map<string, std::chrono::system_clock::duration>
 int	CTimer::phase;
 int bullet_id = 0;
 int item_id = 0;
-chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
 
 // Client 종료 처리 함수
 void	ProcessClientLeave(shared_ptr<RemoteClient> _remoteClient);
 void	ProcessAccept();
 void	PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet);
 void	WorkerThread();
-void	UpdatePos(OVERLAPPED_ENTRY& readEvent);
-void	UpdatePhase(OVERLAPPED_ENTRY& readEvent);
 void	CloseServer();
 
 // 서버 프로그램 진입점
@@ -127,42 +124,6 @@ void WorkerThread()
 
 				}
 
-				if (IO_TYPE::IO_UPDATE == p_readOverlapped->m_ioType) {
-					//cout << "Update" << endl;
-					UpdatePos(readEvent);
-					continue;
-				}
-
-				if (IO_TYPE::IO_PHASE == p_readOverlapped->m_ioType) {
-					//cout << "Update" << endl;
-					UpdatePhase(readEvent);
-					continue;
-				}
-
-				if (IO_TYPE::IO_ANIMATION == p_readOverlapped->m_ioType) {
-					auto now = chrono::system_clock::now();
-					auto last = CGameScene::m_objects[(int)GROUP_TYPE::MONSTER][(int)readEvent.lpCompletionKey]->m_AnilastTime;
-					if (now - last > CGameScene::m_animations["FishMon"][CGameScene::m_objects[(int)GROUP_TYPE::MONSTER][(int)readEvent.lpCompletionKey]->m_upAnimation]) {
-						cout << "ANIMATION DONE" << endl;  
-
-						SC_ANIMATION_PACKET send_packet;
-						send_packet.m_size = sizeof(send_packet);
-						send_packet.m_type = P_SC_ANIMATION_PACKET;
-						send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
-						send_packet.m_id = (int)readEvent.lpCompletionKey;
-						send_packet.m_loop = true;
-						strcpy_s(send_packet.m_key, "idle");
-
-						for (auto& rc : RemoteClient::m_remoteClients)
-						{
-							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-							cout << " >> send ) SC_ANIMATION_PACKET" << endl;
-						}
-
-					}
-					continue;
-				}
-
 				if (readEvent.lpCompletionKey == (ULONG_PTR)listenSocket.get()) {    // Listetn socket
 					ProcessAccept(); // Client Accept
 				}
@@ -231,167 +192,6 @@ void WorkerThread()
 	}
 }
 
-void UpdatePos(OVERLAPPED_ENTRY& readEvent)
-{
-	// 총알 위치 업데이트
-	vector<int>	deleteBullet;
-	for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::BULLET]) {
-		if (object.second == nullptr) continue;
-		CBullet* bullet = reinterpret_cast<CBullet*>(object.second);
-		auto duration = chrono::system_clock::now() - bullet->m_lastTime;
-		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
-		XMFLOAT3 shift = Vector3::ScalarProduct(bullet->m_Vec, 0.1 * bullet->m_Velocity);
-		bullet->m_Pos = Vector3::Add(bullet->m_Pos, shift);
-		if (bullet->m_Pos.x > 400 || bullet->m_Pos.x < 0 ||
-			bullet->m_Pos.z > 400 || bullet->m_Pos.z < 0)
-		{
-			deleteBullet.push_back(bullet->m_id);
-			SC_DELETE_PACKET send_packet;
-			send_packet.m_size = sizeof(send_packet);
-			send_packet.m_type = P_SC_DELETE_PACKET;
-			send_packet.m_itemID = bullet->m_id;
-			send_packet.m_groupType = (int)GROUP_TYPE::BULLET;
-			for (auto& rc : RemoteClient::m_remoteClients) {
-				if (!rc.second->m_ingame) continue;
-				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			}
-			continue;
-		}
-		bullet->m_lastTime = chrono::system_clock::now();
-
-		XMFLOAT4X4 matrix = Matrix4x4::Identity();
-		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(client.second->m_player->m_Sca));
-		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(client.second->m_player->m_Rota));
-		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object.second->m_Pos));
-		object.second->m_origin.Transform(object.second->m_boundingBox, XMLoadFloat4x4(&matrix));
-
-		for (auto& monsterobject : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
-			if (monsterobject.second->m_boundingBox.Intersects(object.second->m_boundingBox)) {
-				cout << "Collide !" << endl;
-				deleteBullet.push_back(bullet->m_id);
-				CMonster* monster = reinterpret_cast<CMonster*>(monsterobject.second);
-				if (monster->m_dead) continue;
-				monster->m_Health -= 25 * 3;
-
-				SC_ANIMATION_PACKET send_packet;
-				send_packet.m_size = sizeof(send_packet);
-				send_packet.m_type = P_SC_ANIMATION_PACKET;
-				send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
-				send_packet.m_id = monster->m_id;
-				send_packet.m_loop = false;
-
-				if (monster->m_Health <= 0) {
-					// Monster 사망
-					monster->m_dead = true;
-					strcpy_s(send_packet.m_key, "Dead");
-				}
-				else
-				{
-					strcpy_s(send_packet.m_key, "Gethit");
-					monster->m_AnilastTime = chrono::system_clock::now();
-					TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, 0 };
-					CTimer::timer_queue.push(ev);
-				}
-
-				monster->m_upAnimation = send_packet.m_key;
-				for (auto& rc : RemoteClient::m_remoteClients) {
-					if (!rc.second->m_ingame) continue;
-					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
-				}
-
-				{
-					SC_HEALTH_CHANGE_PACKET send_packet;
-					send_packet.m_size = sizeof(send_packet);
-					send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
-					send_packet.m_id = monster->m_id;
-					send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
-					send_packet.m_health = monster->m_Health;
-					for (auto& rc : RemoteClient::m_remoteClients) {
-						if (!rc.second->m_ingame) continue;
-						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-						cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
-					}
-				}
-			}
-		}
-
-		SC_POS_PACKET send_packet;
-		send_packet.m_size = sizeof(SC_POS_PACKET);
-		send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
-		send_packet.m_grouptype = (int)GROUP_TYPE::BULLET;
-		send_packet.m_id = object.second->m_id;
-		send_packet.m_pos = object.second->m_Pos;
-
-		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (!rc.second->m_ingame) continue;
-			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-		}
-	}
-
-	for (auto id : deleteBullet) {
-		CGameScene::m_objects[(int)GROUP_TYPE::BULLET].erase(id);
-	}
-
-	for (auto& client : RemoteClient::m_remoteClients) {
-		if (client.second == nullptr || !client.second->m_ingame) continue;
-		auto duration = chrono::system_clock::now() - client.second->m_lastTime;
-		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
-		XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
-		client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
-		client.second->m_player->m_Pos.y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
-		client.second->m_lastTime = chrono::system_clock::now();
-		
-		XMFLOAT4X4 matrix = Matrix4x4::Identity();
-		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(client.second->m_player->m_Sca));
-		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(client.second->m_player->m_Rota));
-		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(client.second->m_player->m_Pos));
-		client.second->m_player->m_origin.Transform(client.second->m_player->m_boundingBox, XMLoadFloat4x4(&matrix));
-		
-		for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
-			if (i == (int)GROUP_TYPE::PLAYER) continue;
-			for (auto& object : CGameScene::m_objects[i]) {
-				if (!client.second->m_player->m_collider) continue;
-				if (!object.second->m_collider) continue;
-				if (client.second->m_player->m_boundingBox.Intersects(object.second->m_boundingBox)) {
-					client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
-					cout << "Collide !" << endl;
-				}
-			}
-		}
-
-		for (auto& rc : RemoteClient::m_remoteClients) {
-			if (!rc.second->m_ingame) continue;
-			SC_POS_PACKET send_packet;
-			send_packet.m_size = sizeof(SC_POS_PACKET);
-			send_packet.m_type = PACKET_TYPE::P_SC_POS_PACKET;
-			send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
-			send_packet.m_id = client.second->m_id;
-			send_packet.m_pos = client.second->m_player->m_Pos;
-			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-		}
-	}
-	TIMER_EVENT ev{ (RemoteClient*)readEvent.lpCompletionKey, chrono::system_clock::now() + 100ms, EV_UPDATE, 0 };
-	CTimer::timer_queue.push(ev);
-}
-
-void UpdatePhase(OVERLAPPED_ENTRY& readEvent)
-{
-	for (auto& client : RemoteClient::m_remoteClients) {
-		if (!client.second->m_ingame) continue;
-		SC_UPDATE_PHASE_PACKET send_packet;
-		send_packet.m_size = sizeof(SC_UPDATE_PHASE_PACKET);
-		send_packet.m_type = PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET;
-		send_packet.m_phase = CTimer::phase;
-		send_packet.m_time = phase_time[CTimer::phase];
-		client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-
-		cout << "Phase " << CTimer::phase << endl;
-	}
-	TIMER_EVENT ev{ (RemoteClient*)readEvent.lpCompletionKey, chrono::system_clock::now() + phase_time[CTimer::phase++], EV_PHASE, 0 };
-	CTimer::timer_queue.push(ev);
-}
-
 void ProcessAccept()
 {
 	lock_guard<recursive_mutex> lock_accept(mx_accept);
@@ -452,7 +252,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			return;
 		}
 
-		if (RemoteClient::m_remoteClients.size() == 3) {
+		// 자신을 포함하여 4명
+		if (RemoteClient::m_remoteClients.size() == 4) {
 			SC_LOGIN_FAIL_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_LOGIN_FAIL_PACKET);
 			send_packet.m_type = PACKET_TYPE::P_SC_LOGIN_FAIL_PACKET;
@@ -501,13 +302,15 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CS_STATE_ENTER_PACKET* recv_packet = reinterpret_cast<CS_STATE_ENTER_PACKET*>(_Packet);
 		cout << "P_CS_STATE_ENTER_PACKET" << endl;
 
+		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
+		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
+		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
+		_Client->m_lastTime = chrono::system_clock::now();
+
 		if (recv_packet->m_state == 0 || recv_packet->m_state == 2)
 		{
 			_Client->m_player->m_Velocity = 0;
-			auto duration = chrono::system_clock::now() - _Client->m_lastTime;
-			auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
-			cout << seconds << endl;
-			_Client->m_lastTime = chrono::system_clock::now();
 
 			SC_VELOCITY_CHANGE_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
@@ -532,8 +335,9 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_grouptype = _Client->m_player->m_grouptype;
 		send_packet.m_id = _Client->m_id;
 		send_packet.m_loop = true;
+		send_packet.m_bone = 0;	// Lower
 
-		switch (recv_packet->m_weapon)
+		switch (_Client->m_player->m_Weapon)
 		{
 		case 0:	// Punch
 			switch (recv_packet->m_state)
@@ -584,6 +388,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			break;
 
 		}
+		_Client->m_player->m_upAnimation = send_packet.m_key;
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -596,7 +401,10 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_VELOCITY_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_VELOCITY_CHANGE_PACKET*>(_Packet);
 
-		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
+		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
+		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
+		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
 
 		if (recv_packet->m_Rbutton) _Client->m_player->m_Velocity = 5;
 		else {
@@ -604,11 +412,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			else _Client->m_player->m_Velocity = 10;
 		}
 
-		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
-		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
+		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		cout << seconds << endl;
-		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
-		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
 		_Client->m_lastTime = chrono::system_clock::now();
 		_Client->m_player->m_Vec = vector;
 		_Client->m_player->m_Angle = recv_packet->m_angle;
@@ -677,6 +482,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
+			CGameScene::m_objects[(int)GROUP_TYPE::PLAYER][rc.second->m_id] = rc.second->m_player.get();
 			int i = 0;
 			for (auto& rc2 : RemoteClient::m_remoteClients) {	// other players
 				if (!rc2.second->m_ingame) continue;
@@ -695,6 +501,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
 				if (i == (int)GROUP_TYPE::STRUCTURE) continue;
 				if (i == (int)GROUP_TYPE::BULLET) continue;
+				if (i == (int)GROUP_TYPE::PLAYER) continue;
 				for (auto& object : CGameScene::m_objects[i]) {
 					SC_ADD_PACKET send_packet;
 					send_packet.m_size = sizeof(SC_ADD_PACKET);
@@ -779,44 +586,54 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		EXP_OVER* exover = new EXP_OVER;
-		exover->m_ioType = IO_TYPE::IO_PHASE;
-		PostQueuedCompletionStatus(Iocp::iocp.m_hIocp, 1, 0, &exover->m_wsa_over);
+		TIMER_EVENT ev{ (RemoteClient*)_Client->m_id, chrono::system_clock::now(), EV_PHASE };
+		CTimer::timer_queue.push(ev); 
 
-		exover = new EXP_OVER;
-		exover->m_ioType = IO_TYPE::IO_UPDATE;
-		PostQueuedCompletionStatus(Iocp::iocp.m_hIocp, 1, 0, &exover->m_wsa_over);
-	}
+		ev.event_id = EV_UPDATE;
+		CTimer::timer_queue.push(ev);
+}
 	break;
 
 	case PACKET_TYPE::P_CS_ATTACK_PACKET:
 	{
 		CS_ATTACK_PACKET* recv_packet = reinterpret_cast<CS_ATTACK_PACKET*>(_Packet);
 		int demage = 0;
+		if (_Client->m_player->m_upAnimation != "Pistol_focus" && _Client->m_player->m_upAnimation != "Pistol_slowwalk")
 		{
+			// Attack 애니메이션 전송
 			SC_ANIMATION_PACKET send_packet;
 			send_packet.m_size = sizeof(send_packet);
 			send_packet.m_type = P_SC_ANIMATION_PACKET;
 			send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
 			send_packet.m_id = _Client->m_id;
 			send_packet.m_loop = false;
+			send_packet.m_bone = 1;	// Upper
 
-			switch (recv_packet->m_weapon)
+			TIMER_EVENT ev;
+			ev.obj_id = (RemoteClient*)_Client->m_id;
+			ev.event_id = EV_ANIMATION;
+			ev.target_id = _Client->m_id;
+			ev.grouptype = (int)GROUP_TYPE::PLAYER;
+			switch (_Client->m_player->m_Weapon)
 			{
 			case 0:
 				strcpy_s(send_packet.m_key, "Punch");
+				ev.aniamtion = "Idle";
 				demage = 5;
 				break;
 			case 1:
-				if (!recv_packet->m_Rbutton)
-					strcpy_s(send_packet.m_key, "Pistol_shoot");
+				strcpy_s(send_packet.m_key, "Pistol_shoot");
+				ev.aniamtion = "Pistol_idle";
 				break;
 			case 2:
 				strcpy_s(send_packet.m_key, "Attack_onehand");
+				ev.aniamtion = "Pistol_idle";
 				demage = 10;
 				break;
 			}
-
+			ev.wakeup_time = chrono::system_clock::now() + CGameScene::m_animations["hugo_idle"][string(send_packet.m_key)];
+			ev.bone = 1;
+			CTimer::timer_queue.push(ev);
 			for (auto& rc : RemoteClient::m_remoteClients) {
 				if (!rc.second->m_ingame) continue;
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -824,7 +641,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		if (recv_packet->m_weapon == 1)
+		// Pistol 일때 Bullet 생성
+		if (_Client->m_player->m_Weapon == 1)
 		{
 			CObject* Bullet = CObject::Load("Bullet");
 			Bullet->m_Pos = recv_packet->m_pos;
@@ -852,6 +670,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
+		// Axe 일때 나무에 부딪히면 wood 반환
 		BoundingBox bounding;
 		bounding.Center = XMFLOAT3(0, 3, 0);
 		bounding.Extents = XMFLOAT3(3, 3, 3);
@@ -861,7 +680,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(attack));
 		bounding.Transform(bounding, XMLoadFloat4x4(&matrix));
 
-		if (recv_packet->m_weapon == 2) {
+		if (_Client->m_player->m_Weapon == 2) {
 			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::STRUCTURE]) {
 				if (object.second->m_modelname != "PP_Tree_02" && object.second->m_modelname != "dead_tree_a") continue;
 				if (bounding.Intersects(object.second->m_boundingBox))
@@ -876,12 +695,12 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		vector<int> deleteMonsters;
+		// 몬스터에 닿았을 때 몬스터 체력 변화
 		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
 			if (bounding.Intersects(object.second->m_boundingBox))
 			{
 				CMonster* monster = reinterpret_cast<CMonster*>(object.second);
-				if (monster->m_dead && recv_packet->m_weapon != 1) {
+				if (monster->m_dead && _Client->m_player->m_Weapon != 1) {
 					if (monster->m_meet-- > 0) {
 						SC_PICKUP_PACKET send_packet;
 						send_packet.m_size = sizeof(send_packet);
@@ -899,6 +718,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
 				send_packet.m_id = monster->m_id;
 				send_packet.m_loop = false;
+				send_packet.m_bone = 0;			// Root
 
 				if (monster->m_Health <= 0) {
 					// Monster 사망
@@ -909,17 +729,15 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				{
 					strcpy_s(send_packet.m_key, "Gethit");
 					monster->m_AnilastTime = chrono::system_clock::now();
-					TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, 0 };
+					TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, monster->m_id,(int)GROUP_TYPE::MONSTER,"idle",0 };
 					CTimer::timer_queue.push(ev);
 				}
 
-				monster->m_upAnimation = send_packet.m_key;
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 				}
-
 
 				{
 					SC_HEALTH_CHANGE_PACKET send_packet;
@@ -937,11 +755,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		for (auto id : deleteMonsters)
-		{
-			CGameScene::m_objects[(int)GROUP_TYPE::MONSTER].erase(id);
-		}
-
+		// Player와 닿았을 때
 		for (auto& object : RemoteClient::m_remoteClients) {
 			if (!object.second->m_ingame) continue;
 			if (object.second->m_id == _Client->m_id) continue;
@@ -959,12 +773,10 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 				}
 			}
 		}
-
-
 	}
 	break;
 
@@ -1041,10 +853,11 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_WEAPON_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_WEAPON_CHANGE_PACKET*>(_Packet);
 
+		_Client->m_player->m_Weapon = recv_packet->m_weapon;
 		SC_WEAPON_CHANGE_PACKET send_packet;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_SC_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = recv_packet->m_weapon;
+		send_packet.m_weapon = _Client->m_player->m_Weapon;
 		send_packet.m_id = _Client->m_id;
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;

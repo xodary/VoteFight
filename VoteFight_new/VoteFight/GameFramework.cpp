@@ -21,6 +21,7 @@
 #include "ImGUI/imgui_impl_dx12.h"
 #include "ImGUI/imgui_internal.h"
 #include "Player.h"
+#include "ImGUI/implot.h"
 
 CGameFramework::CGameFramework() :
 	m_hWnd(),
@@ -200,6 +201,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
+	ImPlot::CreateContext();
 	ImGui_ImplWin32_Init(m_hWnd);
 	ImGuiIO& io = ImGui::GetIO(); (void)io;
 	io.Fonts->AddFontDefault();
