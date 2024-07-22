@@ -22,7 +22,7 @@ public:
 	static bool can_see(XMFLOAT3 from, XMFLOAT3 to, int range)
 	{
 		if (abs(from.x - to.x) > range) return false;
-		return abs(from.z - from.z) <= range;
+		return abs(from.z - to.z) <= range;
 	}
 
 };

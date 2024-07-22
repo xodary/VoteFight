@@ -7,6 +7,7 @@
 #include "../Packet.h"
 #include "Monster.h"
 #include "RemoteClient.h"
+#include "StateMachine.h"
 
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 Iocp Iocp::iocp;
@@ -29,7 +30,14 @@ void CTimer::do_timer()
 			switch (ev.event_id) {
 			case EV_UPDATE:
 			{
-				// 총알 위치 업데이트
+				// Monster Update
+				for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
+					CMonster* monster = reinterpret_cast<CMonster*>(object.second);
+					if (monster->m_dead) continue;
+					monster->m_stateMachine->Update();
+				}
+
+				// Bullet Position Update
 				vector<int>	deleteBullet;
 				for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::BULLET]) {
 					if (object.second == nullptr) continue;

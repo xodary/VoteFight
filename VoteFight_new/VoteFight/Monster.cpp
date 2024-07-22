@@ -9,34 +9,14 @@
 #include "Transform.h"
 #include "UI.h"
 
-CMonster::CMonster() :
-	m_spineName("mixamorig:Spine"),
-	m_spineAngle(),
-	m_turnAngle()
+CMonster::CMonster()
 {
 	SetName("Monster");
 	SetGroupType((UINT)GROUP_TYPE::MONSTER);
-	
 }
 
 CMonster::~CMonster()
 {
-}
-
-
-string CMonster::GetSpineName()
-{
-	return m_spineName;
-}
-
-float CMonster::GetSpineAngle()
-{
-	return m_spineAngle;
-}
-
-void CMonster::SetSpineAngle(float angle)
-{
-	m_spineAngle = angle;
 }
 
 void CMonster::Init()
@@ -50,8 +30,6 @@ void CMonster::Init()
 void CMonster::Update()
 {
 	CObject::Update();
-
-	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
 	if (m_bilboardUI.size() > 0 && (chrono::system_clock::now() - m_bilboardUI[0]->maketime) > 1s)
 		m_bilboardUI.clear();

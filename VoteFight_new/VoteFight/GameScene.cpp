@@ -144,21 +144,9 @@ void CGameScene::InitLight()
 
 }
 
-float Lerp(float A, float B, float Alpha)
-{
-	A = (int)A % 360;
-	B = (int)B % 360;
-	if ((A - B) > 180) B += 360;
-	else if ((B - A) > 180) A += 360;
-	float result = A * (1 - Alpha) + B * Alpha;
-	return result;
-}
-
 void CGameScene::Update()
 {
-	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-
-	for (auto& object : objects) {
+	for (auto& object : GetGroupObject(GROUP_TYPE::PLAYER)) {
 		CTransform* p_tf = static_cast<CTransform*>(object.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 		float rotation = Lerp(p_tf->GetRotation().y, reinterpret_cast<CPlayer*>(object.second)->goal_rota, DT * 8);
@@ -169,15 +157,15 @@ void CGameScene::Update()
 			p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 	}
 
-	unordered_map<int, CObject*> items = GetGroupObject(GROUP_TYPE::GROUND_ITEM);
-	for (auto& item : items) {
-		CTransform* i_tf = static_cast<CTransform*>(item.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		i_tf->Rotate(XMFLOAT3(0, DT * 100.f, 0));
-		XMFLOAT3 p = i_tf->GetPosition();
-		if (0 <= (int)p.x && (int)p.x < 400 && 0 <= (int)p.z && (int)p.z < 400) {
-			float h = cos(CGameFramework::GetInstance()->m_mappedGameFramework->m_totalTime) * 0.3f;
-			i_tf->SetPosition(XMFLOAT3(p.x, GetTerrainHeight(p.x, p.z) + 1.2f + h, p.z));
-		}
+	for (auto& object : GetGroupObject(GROUP_TYPE::MONSTER)) {
+		CTransform* p_tf = static_cast<CTransform*>(object.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+		float rotation = Lerp(p_tf->GetRotation().y, reinterpret_cast<CMonster*>(object.second)->goal_rota, DT * 8);
+		p_tf->SetRotation(XMFLOAT3(0, rotation, 0));
+
+		XMFLOAT3 pos = p_tf->GetPosition();
+		if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400)
+			p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 	}
 
 	CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
@@ -642,7 +630,7 @@ void CGameScene::RenderImGui()
 		ImGui::Text("HP: %d", player->GetHealth());
 
 		// Health Bar
-		float rate = player->GetHealth() / 100;
+		float rate = (float)player->GetHealth() / 100;
 		ImVec2 size = ImVec2(windowSize.x * 2/3, windowSize.y / 4);
 		ImVec2 top_left = ImVec2(windowPos.x + 120, windowPos.y + 50);
 		ImVec2 bottom_right = ImVec2(top_left.x + size.x * rate, top_left.y + size.y);
@@ -871,12 +859,12 @@ void CGameScene::ImGuiRenderMiniMap()
 				npcSize = ImVec2(20, 20);
 				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MonsterIcon"]->m_IconGPUHandle;
 				break;
-			case GROUP_TYPE::BILBOARD:
-				continue;
 			case GROUP_TYPE::GROUND_ITEM:
 				npcSize = ImVec2(20, 20);
 				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/ItemIcon"]->m_IconGPUHandle;
 				break;
+			default:
+				continue;
 			}
 
 			ImGui::SetCursorPos(ImVec2(npcPos.x - windowPos.x - npcSize.x / 2, npcPos.y - windowPos.y - npcSize.y / 2));

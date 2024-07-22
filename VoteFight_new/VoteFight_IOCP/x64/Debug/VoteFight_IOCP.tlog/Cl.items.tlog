@@ -18,5 +18,7 @@ C:\directX_work\VoteFight_new\VoteFight_IOCP\NPC.cpp;C:\directX_work\VoteFight_n
 C:\directX_work\VoteFight_new\VoteFight_IOCP\Object.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\Object.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\pch.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\pch.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\RemoteClient.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\RemoteClient.obj
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\State.obj
+C:\directX_work\VoteFight_new\VoteFight_IOCP\StateMachine.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\StateMachine.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\Timer.obj
 C:\directX_work\VoteFight_new\VoteFight_IOCP\udt.cpp;C:\directX_work\VoteFight_new\VoteFight_IOCP\x64\Debug\udt.obj

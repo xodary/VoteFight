@@ -97,27 +97,10 @@ void CPlayer::Punch()
 {
 }
 
-//void CPlayer::Shoot(CScene& currScene)
-//{
-//	if (currScene.GetName() == "GameScene")
-//	{
-//		cout << "in GameScene" << endl;
-//		CBullet* Bullet = reinterpret_cast<CBullet*>(Load("Bullet"));
-//		if (Bullet) {
-//			CObject* pos = FindFrame("Gun");
-//			XMFLOAT3 currPostion(pos->GetPosition());
-//			Bullet->SetPostion(currPostion);
-//			Bullet->SetRotate(GetRotate());
-//			currScene.AddObject(GROUP_TYPE::BULLET, Bullet, 0);
-//			Bullet->Shoot();
-//		}
-//	}
-//}
-
 void CPlayer::Update()
 {
 	CCharacter::Update();
-
+	
 	if (m_bilboardUI.size() > 0 && (chrono::system_clock::now() - m_bilboardUI[0]->maketime) > 1s)
 		m_bilboardUI.clear();
 }

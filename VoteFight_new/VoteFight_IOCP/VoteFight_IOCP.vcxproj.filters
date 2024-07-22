@@ -42,7 +42,6 @@
       <Filter>03. Object</Filter>
     </ClCompile>
     <ClCompile Include="Timer.cpp" />
-    <ClCompile Include="StateMachine.cpp" />
     <ClCompile Include="Object.cpp">
       <Filter>03. Object</Filter>
     </ClCompile>
@@ -64,6 +63,12 @@
     <ClCompile Include="Bullet.cpp">
       <Filter>03. Object</Filter>
     </ClCompile>
+    <ClCompile Include="StateMachine.cpp">
+      <Filter>04. State</Filter>
+    </ClCompile>
+    <ClCompile Include="State.cpp">
+      <Filter>04. State</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="01. Dependency">
@@ -80,6 +85,9 @@
     </Filter>
     <Filter Include="04. Scene">
       <UniqueIdentifier>{bbf9d4b4-7563-41e3-880c-391a3263cdd8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="04. State">
+      <UniqueIdentifier>{95c2b7f0-f975-4d6d-9267-e48afea93e3c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -138,7 +146,6 @@
       <Filter>03. Object</Filter>
     </ClInclude>
     <ClInclude Include="Timer.h" />
-    <ClInclude Include="StateMachine.h" />
     <ClInclude Include="Object.h">
       <Filter>03. Object</Filter>
     </ClInclude>
@@ -159,6 +166,12 @@
     </ClInclude>
     <ClInclude Include="Bullet.h">
       <Filter>03. Object</Filter>
+    </ClInclude>
+    <ClInclude Include="StateMachine.h">
+      <Filter>04. State</Filter>
+    </ClInclude>
+    <ClInclude Include="State.h">
+      <Filter>04. State</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

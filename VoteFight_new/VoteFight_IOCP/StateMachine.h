@@ -1,21 +1,22 @@
 #pragma once
 
 class CState;
+class CObject;
 
 class CStateMachine
 {
-private:
+public:
 	CState* m_previousState;
 	CState* m_currentState;
 
-public:
+	CObject* m_owner;
+
 	CStateMachine();
 	virtual ~CStateMachine();
 
 	CState* GetPreviousState();
 
 	void SetCurrentState(CState* state);
-	void SetCurrentState(STATE_ENUM n);
 	CState* GetCurrentState();
 
 	void ChangeState(CState* state);
