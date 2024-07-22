@@ -26,6 +26,7 @@
 CPlayer::CPlayer() : m_spineName("mixamorig:Spine")
 {
 	SetName("Player");
+	m_Inventory = new CInventory();
 	SetGroupType((UINT)GROUP_TYPE::PLAYER);
 }
 
@@ -36,29 +37,32 @@ CPlayer::~CPlayer()
 void CPlayer::Init()
 {
 	CAnimator* animator = reinterpret_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->SetAnimateBone(FindFrame("mixamorig:Hips"), ANIMATION_BONE::LOWER);
-	animator->SetAnimateBone(FindFrame("mixamorig:LeftUpLeg"), ANIMATION_BONE::LOWER);
-	animator->SetAnimateBone(FindFrame("mixamorig:RightUpLeg"), ANIMATION_BONE::LOWER);
-	animator->SetMaskBone(FindFrame("mixamorig:Spine"), ANIMATION_BONE::LOWER);
-	animator->SetAnimateBone(FindFrame("mixamorig:Spine"), ANIMATION_BONE::UPPER);
-	animator->SetWeight("Idle", ANIMATION_BONE::LOWER, 1.0f);
-	animator->SetWeight("Idle", ANIMATION_BONE::UPPER, 1.0f);
-	animator->Play("Idle", true);
+	//animator->SetWeight("Idle", 1.0f);
+	//animator->Play("Idle", true);
+	animator->SetWeight("Pistol_slowwalk", 1.0f);
+	animator->Play("Pistol_slowwalk", true);
 
-	//m_bilboardUI.emplace_back(new CHPbarUI(this));
-	//m_bilboardUI.push_back(new CTextUI(this));
+	m_Inventory = new CInventory();
+
+	m_bilboardUI.emplace_back(new CHPbarUI(this));
+	m_bilboardUI.push_back(new CTextUI(this));
 }
 
 void CPlayer::Attack()
 {
+	//m_Weapon->Attack(this);
+
 	if (CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene")
 	{
 		CS_ATTACK_PACKET p;
 		p.m_size = sizeof(p);
 		p.m_type = P_CS_ATTACK_PACKET;
+		p.m_weapon = (int)m_Weapon;
 		p.m_angle = GetRotate().y;
 		p.m_pos = FindFrame("GunPos")->GetPosition();
 		p.m_pos.y = FindFrame("GunPos")->GetPosition().y - 1.f;
+		p.m_Rbutton = KEY_HOLD(KEY::RBUTTON);
+		//p.m_pos = GetPosition();
 
 		PacketQueue::AddSendPacket(&p);
 	}
@@ -118,8 +122,33 @@ void CPlayer::Update()
 {
 	CCharacter::Update();
 
-	if (m_bilboardUI.size() > 0 && (chrono::system_clock::now() - m_bilboardUI[0]->maketime) > 1s)
-		m_bilboardUI.clear();
+	if (KEY_TAP(KEY::NUM1)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM2)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::NUM3)) {
+		CS_WEAPON_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
+		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::F)) {
+		CS_PICKUP_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_PICKUP_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
 }
 
 void CPlayer::OnCollisionEnter(CObject* collidedObject)
@@ -403,4 +432,34 @@ void CPlayer::GetItem(string item)
 			return;
 		}
 	}
+}
+
+CInventory::CInventory()
+{
+}
+
+CInventory::~CInventory()
+{
+}
+bool CInventory::exchangeItem(const string& itemName, int quantity, const string& newItemName, int newQuantity)
+{
+	// ������ �˻�
+	auto it = find_if(items.begin(), items.end(), [&](const pair<string, int>& item) {
+		return item.first == itemName;
+		});
+
+	// �������� �������� �ʰų� ��û�� �������� ���� ���?��ȯ ����
+	if (it == items.end() || it->second < quantity) {
+		// cout << "��ȯ ����" << endl;
+		displayInventory();
+		return false;
+	}
+
+	deleteItem(itemName, quantity);
+
+	addItem(newItemName, newQuantity);
+
+	// cout << "��ȯ ����" << endl;
+	displayInventory();
+	return true;
 }

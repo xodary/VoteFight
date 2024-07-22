@@ -7,7 +7,6 @@
 #include "Animator.h"
 #include "StateMachine.h"
 #include "Transform.h"
-#include "UI.h"
 
 CMonster::CMonster() :
 	m_spineName("mixamorig:Spine"),
@@ -42,8 +41,6 @@ void CMonster::SetSpineAngle(float angle)
 void CMonster::Init()
 {
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
-	animator->SetAnimateBone(FindFrame("mixamorig:Hips"), ANIMATION_BONE::ROOT);
-	animator->SetWeight("idle", ANIMATION_BONE::ROOT, 1.0f);
 	animator->Play("idle", true);
 }
 
@@ -53,8 +50,36 @@ void CMonster::Update()
 
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
 
-	if (m_bilboardUI.size() > 0 && (chrono::system_clock::now() - m_bilboardUI[0]->maketime) > 1s)
-		m_bilboardUI.clear();
+	//if (m_dead) {
+	//	CAnimator* animator = reinterpret_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
+	//	if (animator->IsFinished())		// 죽는 몬스터 애니메이션 끝나면 삭제
+	//	{
+	//		CSceneManager::GetInstance()->GetCurrentScene()->DeleteObject(GROUP_TYPE::MONSTER, m_id);
+	//	}
+	//	
+	//	return;
+	//}
+
+	//if (AimObejct)
+	//{
+	//	XMFLOAT3 MyPostion = GetPosition();
+	//	XMFLOAT3 TargetPostion = AimObejct->GetPosition();
+	//	double dx = TargetPostion.x - MyPostion.x;
+	//	double dz = TargetPostion.z - MyPostion.z;
+	//	float angle = atan2(dz, dx); // 또는 M_PI
+
+	//	MyPostion.x += m_fSpeed * cos(angle);
+	//	MyPostion.z += m_fSpeed * sin(angle);
+
+	//	SetPostion(MyPostion);
+
+	//	XMFLOAT3 direction;
+	//	direction.x = 0;
+	//	direction.y = -angle * (180.0 / 3.14) + 90;
+	//	direction.z = 0;
+
+	//	SetRotate(direction);
+	//}
 }
 
 void CMonster::PlayerDiscovery(CObject* player)

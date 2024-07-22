@@ -6,7 +6,7 @@
 #include "Box.h"
 #include "Bullet.h"
 
-CObject::CObject() : m_Health(100), m_dead(false)
+CObject::CObject()
 {
 }
 

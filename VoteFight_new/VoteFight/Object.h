@@ -34,7 +34,6 @@ public:
 
 	CObject*		    m_parent;
 	vector<CObject*>    m_children;
-	vector<string>		m_childrenNames;
 
 	vector<CBilboardUI*> m_bilboardUI;
 
@@ -77,9 +76,6 @@ public:
 
 	void AddChild(CObject* object);
 	const vector<CObject*>& GetChildren();
-
-	bool isChild(const string& name);
-	void SetChildrenName();
 
 	virtual void Init();
 

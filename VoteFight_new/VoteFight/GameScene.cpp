@@ -25,8 +25,6 @@
 #include "DropItem.h"
 #include "NPC.h"
 #include "Texture.h"
-#include "ImGUI/implot.h"
-#include "ImGUI/implot_internal.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -417,11 +415,11 @@ void CGameScene::RenderImGui()
 		const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
 		ImVec2 resolution = ImVec2(framework->GetResolution().x, framework->GetResolution().y); // 윈도우 해상도
 
-		ImVec2 windowSize(framework->GetResolution().x * 3 / 5, framework->GetResolution().y * 2 / 3);
+		ImVec2 windowSize(framework->GetResolution().x * 3/5, framework->GetResolution().y * 2/3);
 		ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y) / 2);
 
 		// 배경색 설정 (검은색 반투명)
-		ImU32 backgroundColor = IM_COL32(0, 0, 0, 128);
+		ImU32 backgroundColor = IM_COL32(0, 0, 0, 128); // RGBA (0, 0, 0, 128) - 반투명 검은색
 
 		// 배경 그리기
 		ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(0, 0), resolution, backgroundColor);
@@ -445,7 +443,7 @@ void CGameScene::RenderImGui()
 		ImGui::SetCursorPosY(startY);
 
 		for (int i = 0; i < rows; ++i)
-		{
+		{ 
 			ImGui::SetCursorPosX(startX);
 
 			for (int j = 0; j < cols; ++j)
@@ -554,248 +552,89 @@ void CGameScene::RenderImGui()
 
 	ImGuiRenderMiniMap();
 
-		// 윈도우 시작
-		ImGui::Begin("Mini Map Window", nullptr, window_flags);
-
-		// 미니맵 이미지 렌더링
-		auto& minimapHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MiniMap"]->m_IconGPUHandle;
-		ImGui::Image((void*)minimapHandle.ptr, ImVec2(windowSize.x, windowSize.y));
-
-		// NPC 이미지 크기 설정
-		ImVec2 npcSize = ImVec2(20, 15); // NPC 아이콘 크기
-
-		// 미니맵 중심점 설정
-		ImVec2 centerPos = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
-		for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::GROUND_ITEM); ++i) {
-			{
-				const unordered_map<int, CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
-
-				for (const auto& objectsPair : objects) {
-					CObject* object = objectsPair.second;
-					XMFLOAT3 npcPos3D = object->GetPosition();
-
-					// 3D 좌표를 2D 미니맵 좌표로 변환 (0, 0을 중심으로 -45도 회전)
-					float mapX = (npcPos3D.x - 200.f) / 600.0f * windowSize.x;
-					float mapY = (npcPos3D.z - 200.f) / 600.0f * windowSize.y; // Y축 반전
-					float rotatedX = (mapX + mapY) * 0.7071f; // cos(-45°) = 0.7071, sin(-45°) = -0.7071
-					float rotatedY = (mapY - mapX) * 0.7071f;
-
-					ImVec2 npcPos = ImVec2(centerPos.x + rotatedX, centerPos.y - rotatedY); // Y축 반전 후 적용
-					D3D12_GPU_DESCRIPTOR_HANDLE npcHandle;
-
-
-					switch (static_cast<GROUP_TYPE>(i))
-					{
-					case GROUP_TYPE::STRUCTURE:
-						continue;
-						break;
-					case GROUP_TYPE::PLAYER:
-						npcSize = ImVec2(20, 20);
-						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/RadPlayer"]->m_IconGPUHandle;
-						break;
-					case GROUP_TYPE::NPC:
-						npcSize = ImVec2(15, 25);
-						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/GrayNPC"]->m_IconGPUHandle;
-						break;
-					case GROUP_TYPE::MONSTER:
-						npcSize = ImVec2(20, 20);
-						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MonsterIcon"]->m_IconGPUHandle;
-						break;
-					case GROUP_TYPE::BILBOARD:
-						continue;
-						break;
-					case GROUP_TYPE::GROUND_ITEM:
-						npcSize = ImVec2(20, 20);
-						npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/ItemIcon"]->m_IconGPUHandle;
-						break;
-
-					}
-
-					ImGui::SetCursorPos(ImVec2(npcPos.x - windowPos.x - npcSize.x / 2, npcPos.y - windowPos.y - npcSize.y / 2));
-					ImGui::Image((void*)npcHandle.ptr, npcSize);
-				}
-			}
-
-		}
-		// 윈도우 끝
-		ImGui::End();
-	}
-
-
-	rows = 3;
+	 rows = 3;
 	static bool selected[3] = { false };
 	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
 
-	ImVec2 windowSize(framework->GetResolution().x * 1 / 4, framework->GetResolution().x * 1 / 4 / 3);
-	ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y));
+		ImVec2 windowSize(framework->GetResolution().x * 1 / 4, framework->GetResolution().x * 1 / 4 / 3);
+		ImVec2 windowPos((framework->GetResolution().x - windowSize.x) / 2, (framework->GetResolution().y - windowSize.y));
 
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-	ImGui::Begin("Window", nullptr, window_flags);
+		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+		ImGui::Begin("Window", nullptr, window_flags);
 
 
-	// 아이템 크기 계산
-	const float InventoryItemSize = windowSize.y * 5 / 6;
+		// 아이템 크기 계산
+		const float InventoryItemSize = windowSize.y * 5 / 6;
 
-	ImGui::SetCursorPosX(InventoryItemSize / 5);
-	for (int i = 0; i < rows; ++i)
-	{
-		ImGui::PushID(i + 1000);
+		ImGui::SetCursorPosX(InventoryItemSize / 5);
+		for (int i = 0; i < rows; ++i)
+		{
+			ImGui::PushID(i + 1000);
 
-		// 외곽선 색상 설정
-		ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-		if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+			// 외곽선 색상 설정
+			ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
+			if (selected[i]) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-		ImGui::GetFont()->Scale = 1.0f;
-		ImGui::PushFont(ImGui::GetFont());
-		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+			ImGui::GetFont()->Scale = 1.0f;
+			ImGui::PushFont(ImGui::GetFont());
+			ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
+			ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
+
+			ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i + 1000)), ImVec2(InventoryItemSize, InventoryItemSize));
+			{
+				ImGui::Text("%d", i + 1);
+				if (!player->myItems[i].empty()) {
+					int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i]);
+					if (item != 0) {
+						ImGui::SameLine();
+						auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i]]->m_IconGPUHandle;
+						ImGui::Image((void*)handle.ptr, ImVec2(InventoryItemSize * 2 / 3, InventoryItemSize * 2 / 3));
+					}
+				}
+				ImGui::Text(player->myItems[i].c_str());
+				ImGui::EndChildFrame();
+			}
+			ImGui::SameLine();
+
+			ImGui::PopStyleVar();
+			ImGui::PopStyleColor();
+			ImGui::PopFont();
+
+			ImGui::PopID();
+		}
+		ImGui::End();
+
+		windowSize.x = framework->GetResolution().x / 5;
+		windowSize.y = framework->GetResolution().y / 15;
+		windowPos.x = framework->GetResolution().x - windowSize.x - 10;
+		windowPos.y = 10;
+
+		ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 1.f));
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 1.0f);
 
-		ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i + 1000)), ImVec2(InventoryItemSize, InventoryItemSize));
+		ImGui::Begin("White Background Window", nullptr, window_flags);
 		{
-			ImGui::Text("%d", i + 1);
-			if (!player->myItems[i].empty()) {
-				int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i]);
-				if (item != 0) {
-					ImGui::SameLine();
-					auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i]]->m_IconGPUHandle;
-					ImGui::Image((void*)handle.ptr, ImVec2(InventoryItemSize * 2 / 3, InventoryItemSize * 2 / 3));
-				}
-			}
-			ImGui::Text(player->myItems[i].c_str());
-			ImGui::EndChildFrame();
+			ImVec2 center = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
+
+			float rate = CTimeManager::GetInstance()->m_lastTime / CTimeManager::GetInstance()->m_phaseTime;
+			ImVec2 top_left = ImVec2(center.x - windowSize.x / 2, center.y - windowSize.y / 2);
+			ImVec2 bottom_right = ImVec2((center.x - windowSize.x / 2) + windowSize.x * rate, center.y + windowSize.y / 2);
+
+			// 사각형 그리기
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+			draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(0, 0, 0, 255));
+
 		}
-		ImGui::SameLine();
 
 		ImGui::PopStyleVar();
 		ImGui::PopStyleColor();
-		ImGui::PopFont();
-
-		ImGui::PopID();
-	}
-	ImGui::End();
-
-	windowSize.x = framework->GetResolution().x / 3;
-	windowSize.y = framework->GetResolution().y / 15;
-	windowPos.x = framework->GetResolution().x / 2 - windowSize.x/2;
-	windowPos.y = 10;
-
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
-	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
-	ImGui::GetFont()->Scale = 2.0f;
-	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(50, 50, 50, 255)); // RGBA
-	ImGui::PushFont(ImGui::GetFont());
-
-	ImGui::Begin("Phase Timer", nullptr, window_flags);
-	{
-		ImGui::Text("Phase %d | Next Phase : %ds", CTimeManager::GetInstance()->m_phase, (int)CTimeManager::GetInstance()->m_lastTime);
-	}
-
-	ImGui::PopFont();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
-	ImGui::PopStyleColor();
-	ImGui::End();
-
-	windowSize.x = framework->GetResolution().x / 3;
-	windowSize.y = framework->GetResolution().y / 6;
-	windowPos.x = 10;
-	windowPos.y = framework->GetResolution().y - windowSize.y - 10;
-
-	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-
-	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
-	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
-
-	{
-		ImGui::Begin("State", nullptr, window_flags);
-		ImGui::GetFont()->Scale = 3.0f;
-		ImGui::PushFont(ImGui::GetFont());
-		ImGui::Text(player->m_name.c_str());
-		ImGui::PopFont();
-
-		ImGui::GetFont()->Scale = 2.0f;
-		ImGui::PushFont(ImGui::GetFont());
-		ImGui::Text("HP: %d", player->GetHealth());
-
-		// Health Bar
-		float rate = player->GetHealth() / 100;
-		ImVec2 size = ImVec2(windowSize.x * 2/3, windowSize.y / 4);
-		ImVec2 top_left = ImVec2(windowPos.x + 120, windowPos.y + 50);
-		ImVec2 bottom_right = ImVec2(top_left.x + size.x * rate, top_left.y + size.y);
-
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(255, 50, 50, 255));
-
-		auto& handle = CAssetManager::GetInstance()->m_IconTextures["election_ticket"]->m_IconGPUHandle;
-		ImGui::Image((void*)handle.ptr, ImVec2(windowSize.y / 4, windowSize.y / 4));
-		ImGui::SameLine(); 
-		ImGui::Text("X %d", count(player->myItems.begin(), player->myItems.end(), "election_ticket"));
-		
-		ImGui::PopFont();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
 		ImGui::End();
-	}
 
-	if (!inven) {
-		// ImPlot 창 시작
-		static ImPlotPieChartFlags flags = true;
-		ImGui::SetNextItemWidth(250);
-
-		static const char* labels[] = { "Mario","Sonic","Hugo" };
-		static int data[] = { 1,1,2 };
-
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
-		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
-		ImGui::GetFont()->Scale = 1.0f;
-		ImGui::PushFont(ImGui::GetFont());
-
-		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
-		ImGui::Begin("Chard", nullptr, window_flags);
-		{
-			ImGui::Text("The Approval Rating");
-			ImPlotStyle& style = ImPlot::GetStyle();
-			style.Colors[ImPlotCol_PlotBg] = ImVec4(1, 1, 1, 1);
-			style.Colors[ImPlotCol_FrameBg] = ImVec4(0, 0, 0, 0);
-			style.Colors[ImPlotCol_PlotBorder] = ImVec4(0, 0, 0, 1);
-
-			ImGui::SetCursorPos(ImVec2(0, 15));
-
-			ImU32 colors[3] = {
-			IM_COL32(217, 46, 46, 255),    // Red
-			IM_COL32(52, 86, 237, 255),    // Blue
-			IM_COL32(237, 227, 28, 255)   // Yellow
-			};
-
-			static ImPlotColormap Liars = ImPlot::AddColormap("Liars", colors, 3);
-			ImPlot::PushColormap(Liars);
-			if (ImPlot::BeginPlot("##Pie2", ImVec2(250, 250), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
-				ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
-				ImPlot::SetupAxesLimits(0, 1, 0, 1);
-
-				ImPlot::PlotPieChart(labels, data, 3, 0.5, 0.5, 0.4, "%.0f", 0, flags);
-
-				// 가운데 구멍을 채우기 위해 원을 그립니다
-				ImDrawList* draw_list = ImPlot::GetPlotDrawList();
-				ImVec2 center = ImPlot::PlotToPixels(ImPlotPoint(0.5f, 0.5f));
-				float radius = ImPlot::GetCurrentPlot()->PlotRect.GetWidth() * 0.4f * 0.5f;
-				draw_list->AddCircleFilled(center, radius * 0.7f, IM_COL32(255, 255, 255, 255));
-
-				ImPlot::EndPlot();
-			}
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::End();
-	}
-
-	ImGui::Render();
+		ImGui::Render();
 
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }

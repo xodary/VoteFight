@@ -184,8 +184,8 @@ void CScene::DeleteGroupObject(GROUP_TYPE groupType)
 
 void CScene::DeleteObject(GROUP_TYPE groupType, UINT id)
 {
-	CObject* object = GetIDObject(groupType, id);
-	if (!object) return;
+	CObject* object = m_objects[static_cast<int>(groupType)][id];
+
 	CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	XMFLOAT3 pos = transform->GetPosition();
 	int xNewCell = clamp((int)(pos.x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);

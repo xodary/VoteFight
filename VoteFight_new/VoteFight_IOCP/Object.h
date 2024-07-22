@@ -24,9 +24,6 @@ public:
 	bool alive = true;
 	bool ingame = false;
 
-	int			m_Health;
-	bool		m_dead;
-
 	CObject();
 	~CObject() {}
 

@@ -367,7 +367,7 @@ void CHPbarUI::Update()
 	CObject::Update();
 }
 
-CTextUI::CTextUI(CObject* owner, string str)
+CTextUI::CTextUI(CObject* owner)
 {
 	CreateComponent(COMPONENT_TYPE::TRANSFORM);
 	m_owner = owner;
@@ -375,7 +375,7 @@ CTextUI::CTextUI(CObject* owner, string str)
 	SetName("Namebar");
 	CMaterial* textMaterial = new CMaterial();
 	textMaterial->SetStateNum(1);
-	CTextMesh* mesh = new CTextMesh(CGameFramework::GetInstance()->m_FontData, str.c_str(), 0, 0, 0.2f, 0.6f);
+	CTextMesh* mesh = new CTextMesh(CGameFramework::GetInstance()->m_FontData, owner->m_name.c_str(), 0, 0, 0.1f, 0.3f);
 	SetMesh(mesh);
 	textMaterial->SetTexture(CAssetManager::GetInstance()->GetTexture("text"));
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");
@@ -383,8 +383,6 @@ CTextUI::CTextUI(CObject* owner, string str)
 	m_materials.push_back(textMaterial);
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	uitransform->LookTo(XMFLOAT3(-1, -1, 1));
-
-	maketime = chrono::system_clock::now();
 }
 
 void CTextUI::Render(CCamera* camera)
@@ -423,7 +421,7 @@ void CTextUI::Update()
 	CTransform* transform = reinterpret_cast<CTransform*>(m_owner->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	CTransform* uitransform = reinterpret_cast<CTransform*>(GetComponent(COMPONENT_TYPE::TRANSFORM));
 	
-	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x + 1.5f, transform->GetPosition().y + 3.0f, transform->GetPosition().z));
+	uitransform->SetPosition(XMFLOAT3(transform->GetPosition().x, transform->GetPosition().y + 4.2f, transform->GetPosition().z));
 }
 
 CIcon::CIcon(CObject* owner, string str)
