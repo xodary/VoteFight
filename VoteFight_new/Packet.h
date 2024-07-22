@@ -245,7 +245,6 @@ struct CS_STATE_ENTER_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_state;
-	unsigned int		m_weapon;
 	XMFLOAT3			m_pos;
 };
 
@@ -258,10 +257,8 @@ struct CS_SELECT_PACKET {
 struct CS_ATTACK_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
-	unsigned int		m_weapon;
 	float				m_angle;
 	XMFLOAT3			m_pos;
-	bool				m_Rbutton;
 };
 
 struct CS_EXCHANGE_DONE_PACKET {

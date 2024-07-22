@@ -35,7 +35,6 @@ void CPlayerIdleState::Enter(CObject* object)
 	p.m_type = P_CS_STATE_ENTER_PACKET;
 	p.m_pos = transform->GetPosition();
 	p.m_state = (int)StateEnum::Idle;
-	p.m_weapon = (int)player->m_Weapon;
 
 	PacketQueue::AddSendPacket(&p);
 
@@ -57,25 +56,24 @@ void CPlayerIdleState::Update(CObject* object)
 		stateMachine->ChangeState(CPlayerWalkState::GetInstance());
 		return;
 	}
-	if (KEY_TAP(KEY::NUM1)) {
+	if (KEY_TAP(KEY::NUM1) || KEY_TAP(KEY::NUM2) || KEY_TAP(KEY::NUM3))
+	{
+		string item;
 		CS_WEAPON_CHANGE_PACKET send_packet;
+		if (KEY_TAP(KEY::NUM1)) {
+			item = player->myItems[0];
+		}
+		if (KEY_TAP(KEY::NUM2)) {
+			item = player->myItems[1];
+		}
+		if (KEY_TAP(KEY::NUM3)) {
+			item = player->myItems[2];
+		}
+		if (item == "gun") send_packet.m_weapon = 1;
+		else if (item == "axe") send_packet.m_weapon = 2;
+		else send_packet.m_weapon = 0;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM2)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM3)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
 	if (KEY_TAP(KEY::F)) {
@@ -113,7 +111,6 @@ void CPlayerWalkState::Enter(CObject* object)
 	p.m_type = P_CS_STATE_ENTER_PACKET;
 	p.m_pos = transform->GetPosition();
 	p.m_state = (int)StateEnum::Walk;
-	p.m_weapon = (int)player->m_Weapon;
 
 	PacketQueue::AddSendPacket(&p);
 
@@ -188,25 +185,24 @@ void CPlayerWalkState::Update(CObject* object)
 
 		PacketQueue::AddSendPacket(&p);
 	}
-	if (KEY_TAP(KEY::NUM1)) {
+	if (KEY_TAP(KEY::NUM1) || KEY_TAP(KEY::NUM2) || KEY_TAP(KEY::NUM3))
+	{
+		string item;
 		CS_WEAPON_CHANGE_PACKET send_packet;
+		if (KEY_TAP(KEY::NUM1)) {
+			item = player->myItems[0];
+		}
+		if (KEY_TAP(KEY::NUM2)) {
+			item = player->myItems[1];
+		}
+		if (KEY_TAP(KEY::NUM3)) {
+			item = player->myItems[2];
+		}
+		if (item == "gun") send_packet.m_weapon = 1;
+		else if (item == "axe") send_packet.m_weapon = 2;
+		else send_packet.m_weapon = 0;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM2)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM3)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
 	if (KEY_TAP(KEY::F)) {
@@ -239,7 +235,6 @@ void CPlayerFocusIdleState::Enter(CObject* object)
 	p.m_type = P_CS_STATE_ENTER_PACKET;
 	p.m_pos = transform->GetPosition();
 	p.m_state = (int)StateEnum::FocusIdle;
-	p.m_weapon = (int)player->m_Weapon;
 
 	PacketQueue::AddSendPacket(&p);
 }
@@ -266,15 +261,6 @@ void CPlayerFocusIdleState::Update(CObject* object)
 		return;
 	}
 
-	if (KEY_TAP(KEY::LBUTTON))
-	{
-		//player->Attack();
-		CAnimator* animator = static_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		if (player->m_Weapon == WEAPON_TYPE::PUNCH) animator->Play("Punch", false);
-		else if (player->m_Weapon == WEAPON_TYPE::PISTOL) animator->Play("Pistol_shoot", false);
-		else if (player->m_Weapon == WEAPON_TYPE::AXE) animator->Play("Attack_onehand", false);
-	}
-
 	RECT rect;
 	GetClientRect(CGameFramework::GetInstance()->GetHwnd(), &rect);
 	XMFLOAT2 cursor = CURSOR;
@@ -296,25 +282,24 @@ void CPlayerFocusIdleState::Update(CObject* object)
 		p.m_angle = angle;
 		PacketQueue::AddSendPacket(&p);
 	}
-	if (KEY_TAP(KEY::NUM1)) {
+	if (KEY_TAP(KEY::NUM1) || KEY_TAP(KEY::NUM2) || KEY_TAP(KEY::NUM3))
+	{
+		string item;
 		CS_WEAPON_CHANGE_PACKET send_packet;
+		if (KEY_TAP(KEY::NUM1)) {
+			item = player->myItems[0];
+		}
+		if (KEY_TAP(KEY::NUM2)) {
+			item = player->myItems[1];
+		}
+		if (KEY_TAP(KEY::NUM3)) {
+			item = player->myItems[2];
+		}
+		if (item == "gun") send_packet.m_weapon = 1;
+		else if (item == "axe") send_packet.m_weapon = 2;
+		else send_packet.m_weapon = 0;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM2)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM3)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
 	if (KEY_TAP(KEY::F)) {
@@ -347,7 +332,6 @@ void CPlayerFocusWalkState::Enter(CObject* object)
 	p.m_type = P_CS_STATE_ENTER_PACKET;
 	p.m_pos = transform->GetPosition();
 	p.m_state = (int)StateEnum::FocusWalk;
-	p.m_weapon = (int)player->m_Weapon;
 
 	PacketQueue::AddSendPacket(&p);
 
@@ -387,25 +371,24 @@ void CPlayerFocusWalkState::Update(CObject* object)
 	CStateMachine* stateMachine = static_cast<CStateMachine*>(player->GetComponent(COMPONENT_TYPE::STATE_MACHINE));
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	
-	if (KEY_TAP(KEY::NUM1)) {
+	if (KEY_TAP(KEY::NUM1) || KEY_TAP(KEY::NUM2) || KEY_TAP(KEY::NUM3))
+	{
+		string item;
 		CS_WEAPON_CHANGE_PACKET send_packet;
+		if (KEY_TAP(KEY::NUM1)) {
+			item = player->myItems[0];
+		}
+		if (KEY_TAP(KEY::NUM2)) {
+			item = player->myItems[1];
+		}
+		if (KEY_TAP(KEY::NUM3)) {
+			item = player->myItems[2];
+		}
+		if (item == "gun") send_packet.m_weapon = 1;
+		else if (item == "axe") send_packet.m_weapon = 2;
+		else send_packet.m_weapon = 0;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PISTOL;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM2)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::AXE;
-		PacketQueue::AddSendPacket(&send_packet);
-	}
-	if (KEY_TAP(KEY::NUM3)) {
-		CS_WEAPON_CHANGE_PACKET send_packet;
-		send_packet.m_size = sizeof(send_packet);
-		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = (int)WEAPON_TYPE::PUNCH;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
 	if (KEY_TAP(KEY::F)) {

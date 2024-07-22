@@ -3,6 +3,7 @@
 
 CMonster::CMonster() : m_meet(1)
 {
+	m_upAnimation = "idle";
 }
 
 CMonster::~CMonster()

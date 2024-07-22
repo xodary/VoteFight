@@ -337,7 +337,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		send_packet.m_loop = true;
 		send_packet.m_bone = 0;	// Lower
 
-		switch (recv_packet->m_weapon)
+		switch (_Client->m_player->m_Weapon)
 		{
 		case 0:	// Punch
 			switch (recv_packet->m_state)
@@ -388,6 +388,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			break;
 
 		}
+		_Client->m_player->m_upAnimation = send_packet.m_key;
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -597,7 +598,9 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_ATTACK_PACKET* recv_packet = reinterpret_cast<CS_ATTACK_PACKET*>(_Packet);
 		int demage = 0;
+		if (_Client->m_player->m_upAnimation != "Pistol_focus" && _Client->m_player->m_upAnimation != "Pistol_slowwalk")
 		{
+			// Attack 애니메이션 전송
 			SC_ANIMATION_PACKET send_packet;
 			send_packet.m_size = sizeof(send_packet);
 			send_packet.m_type = P_SC_ANIMATION_PACKET;
@@ -611,7 +614,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			ev.event_id = EV_ANIMATION;
 			ev.target_id = _Client->m_id;
 			ev.grouptype = (int)GROUP_TYPE::PLAYER;
-			switch (recv_packet->m_weapon)
+			switch (_Client->m_player->m_Weapon)
 			{
 			case 0:
 				strcpy_s(send_packet.m_key, "Punch");
@@ -619,8 +622,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				demage = 5;
 				break;
 			case 1:
-				if (!recv_packet->m_Rbutton)
-					strcpy_s(send_packet.m_key, "Pistol_shoot");
+				strcpy_s(send_packet.m_key, "Pistol_shoot");
 				ev.aniamtion = "Pistol_idle";
 				break;
 			case 2:
@@ -639,7 +641,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		if (recv_packet->m_weapon == 1)
+		// Pistol 일때 Bullet 생성
+		if (_Client->m_player->m_Weapon == 1)
 		{
 			CObject* Bullet = CObject::Load("Bullet");
 			Bullet->m_Pos = recv_packet->m_pos;
@@ -667,6 +670,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
+		// Axe 일때 나무에 부딪히면 wood 반환
 		BoundingBox bounding;
 		bounding.Center = XMFLOAT3(0, 3, 0);
 		bounding.Extents = XMFLOAT3(3, 3, 3);
@@ -676,7 +680,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(attack));
 		bounding.Transform(bounding, XMLoadFloat4x4(&matrix));
 
-		if (recv_packet->m_weapon == 2) {
+		if (_Client->m_player->m_Weapon == 2) {
 			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::STRUCTURE]) {
 				if (object.second->m_modelname != "PP_Tree_02" && object.second->m_modelname != "dead_tree_a") continue;
 				if (bounding.Intersects(object.second->m_boundingBox))
@@ -691,12 +695,12 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		vector<int> deleteMonsters;
+		// 몬스터에 닿았을 때 몬스터 체력 변화
 		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
 			if (bounding.Intersects(object.second->m_boundingBox))
 			{
 				CMonster* monster = reinterpret_cast<CMonster*>(object.second);
-				if (monster->m_dead && recv_packet->m_weapon != 1) {
+				if (monster->m_dead && _Client->m_player->m_Weapon != 1) {
 					if (monster->m_meet-- > 0) {
 						SC_PICKUP_PACKET send_packet;
 						send_packet.m_size = sizeof(send_packet);
@@ -729,7 +733,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					CTimer::timer_queue.push(ev);
 				}
 
-				monster->m_upAnimation = send_packet.m_key;
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -752,11 +755,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		for (auto id : deleteMonsters)
-		{
-			CGameScene::m_objects[(int)GROUP_TYPE::MONSTER].erase(id);
-		}
-
+		// Player와 닿았을 때
 		for (auto& object : RemoteClient::m_remoteClients) {
 			if (!object.second->m_ingame) continue;
 			if (object.second->m_id == _Client->m_id) continue;
@@ -778,8 +777,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				}
 			}
 		}
-
-
 	}
 	break;
 
@@ -856,10 +853,11 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		CS_WEAPON_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_WEAPON_CHANGE_PACKET*>(_Packet);
 
+		_Client->m_player->m_Weapon = recv_packet->m_weapon;
 		SC_WEAPON_CHANGE_PACKET send_packet;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_SC_WEAPON_CHANGE_PACKET;
-		send_packet.m_weapon = recv_packet->m_weapon;
+		send_packet.m_weapon = _Client->m_player->m_Weapon;
 		send_packet.m_id = _Client->m_id;
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;

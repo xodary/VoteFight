@@ -54,19 +54,14 @@ void CPlayer::Init()
 
 void CPlayer::Attack()
 {
-	//m_Weapon->Attack(this);
-
 	if (CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene")
 	{
 		CS_ATTACK_PACKET p;
 		p.m_size = sizeof(p);
 		p.m_type = P_CS_ATTACK_PACKET;
-		p.m_weapon = (int)m_Weapon;
 		p.m_angle = GetRotate().y;
 		p.m_pos = FindFrame("GunPos")->GetPosition();
 		p.m_pos.y = FindFrame("GunPos")->GetPosition().y - 1.f;
-		p.m_Rbutton = KEY_HOLD(KEY::RBUTTON);
-		//p.m_pos = GetPosition();
 
 		PacketQueue::AddSendPacket(&p);
 	}
