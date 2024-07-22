@@ -262,11 +262,12 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 
 	CObject* myPlayer = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
 	newlist.insert(myPlayer);
+	newlist.insert(CSceneManager::GetInstance()->GetGameScene()->m_Ocean);
+	
 	CTransform* transform = reinterpret_cast<CTransform*>(myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 	int xNewCell = clamp((int)(transform->GetPosition().x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
 	int zNewCell = clamp((int)(transform->GetPosition().z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);
-
 	switch (stateNum)
 	{
 	case 0:		//	Main
@@ -277,7 +278,7 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 			short xSearchCell = clamp(xNewCell + searchDirection_[i][0], 0, SECTOR_RANGE_COL - 1);
 			short zSearchCell = clamp(zNewCell + searchDirection_[i][1], 0, SECTOR_RANGE_ROW - 1);
 			for (auto& object : ObjectListSector[zSearchCell * SECTOR_RANGE_ROW + xSearchCell]) {
-				if (object->GetGroupType() != (int)GROUP_TYPE::UI) newlist.insert(object);
+				if (object->GetGroupType() != (int)GROUP_TYPE::UI && object->GetName() != "Ocean") newlist.insert(object);
 			}
 		}
 	}
@@ -289,7 +290,7 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 			short xSearchCell = clamp(xNewCell + searchDirection_[i][0], 0, SECTOR_RANGE_COL - 1);
 			short zSearchCell = clamp(zNewCell + searchDirection_[i][1], 0, SECTOR_RANGE_ROW - 1);
 			for (auto& object : ObjectListSector[zSearchCell * SECTOR_RANGE_ROW + xSearchCell]) {
-				if (object->GetGroupType() != (int)GROUP_TYPE::UI) newlist.insert(object);
+				if (object->GetGroupType() != (int)GROUP_TYPE::UI && object->GetName() != "Ocean") newlist.insert(object);
 			}
 		}
 	}

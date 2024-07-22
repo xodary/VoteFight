@@ -236,7 +236,7 @@ void CAssetManager::LoadShaders()
 {
 	CShader* shader = new CObjectShader();
 	shader->SetName("Object");
-	shader->CreatePipelineStates(2);
+	shader->CreatePipelineStates(3);
 	m_shaders.emplace(shader->GetName(), shader);
 
 	shader = new CSkyboxShader();
