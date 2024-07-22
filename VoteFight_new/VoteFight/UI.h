@@ -43,6 +43,7 @@ class CBilboardUI : public CUI
 {
 public:
 	CObject* m_owner;
+	chrono::system_clock::time_point maketime;
 
 	CBilboardUI();
 	~CBilboardUI();
@@ -73,7 +74,7 @@ class CTextUI : public CBilboardUI
 {
 public:
 
-	CTextUI(CObject* owner);
+	CTextUI(CObject* owner, string str);
 	~CTextUI() {
 		cout << "deleted" << endl; }
 
