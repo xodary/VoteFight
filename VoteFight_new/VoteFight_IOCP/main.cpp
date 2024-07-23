@@ -299,6 +299,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 	case PACKET_TYPE::P_CS_STATE_ENTER_PACKET:
 	{
+		if (_Client->m_player->m_dead) return;
 		CS_STATE_ENTER_PACKET* recv_packet = reinterpret_cast<CS_STATE_ENTER_PACKET*>(_Packet);
 		cout << "P_CS_STATE_ENTER_PACKET" << endl;
 
@@ -398,6 +399,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 	case PACKET_TYPE::P_CS_VELOCITY_CHANGE_PACKET:
 	{
+		if (_Client->m_player->m_dead) return;
 		CS_VELOCITY_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_VELOCITY_CHANGE_PACKET*>(_Packet);
 
 		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
@@ -478,7 +480,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		}
 		cout << " >> send ) SC_GAMESTART_PACKET" << endl;
 
-		XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
+		//XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
+		XMFLOAT3 pos[3]{ {10, 0, 10},{20, 0, 10},{30, 0, 10} };
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			CGameScene::m_objects[(int)GROUP_TYPE::PLAYER][rc.second->m_id] = rc.second->m_player.get();
@@ -595,6 +598,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 	case PACKET_TYPE::P_CS_ATTACK_PACKET:
 	{
+		if (_Client->m_player->m_dead) return;
 		CS_ATTACK_PACKET* recv_packet = reinterpret_cast<CS_ATTACK_PACKET*>(_Packet);
 		int demage = 0;
 		if (_Client->m_player->m_upAnimation != "Pistol_focus" && _Client->m_player->m_upAnimation != "Pistol_slowwalk")
@@ -697,6 +701,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		// 몬스터에 닿았을 때 몬스터 체력 변화
 		vector<int> deleteMonsters;
 		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
+			if (object.second->m_dead) continue;
 			if (bounding.Intersects(object.second->m_boundingBox))
 			{
 				CMonster* monster = reinterpret_cast<CMonster*>(object.second);
@@ -789,6 +794,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		// Player와 닿았을 때
 		for (auto& object : RemoteClient::m_remoteClients) {
+			if (object.second->m_player->m_dead) continue;
 			if (!object.second->m_ingame) continue;
 			if (object.second->m_id == _Client->m_id) continue;
 			if (bounding.Intersects(object.second->m_player->m_boundingBox))
@@ -806,6 +812,22 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+				}
+				if (object.second->m_player->m_Health <= 0) {
+					SC_ANIMATION_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_ANIMATION_PACKET;
+					send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+					send_packet.m_id = object.second->m_id;
+					send_packet.m_loop = false;
+					send_packet.m_bone = 0;	// Root
+					strcpy_s(send_packet.m_key, "Death");
+					for (auto& rc : RemoteClient::m_remoteClients) {
+						if (!rc.second->m_ingame) continue;
+						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+						cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+					}
+					object.second->m_player->m_dead = true;
 				}
 			}
 		}
@@ -832,6 +854,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 	case PACKET_TYPE::P_CS_PLAYER_RBUTTON_PACKET:
 	{
+		if (_Client->m_player->m_dead) return;
 		CS_PLAYER_RBUTTON_PACKET* recv_packet = reinterpret_cast<CS_PLAYER_RBUTTON_PACKET*>(_Packet);
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -883,6 +906,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 	case PACKET_TYPE::P_CS_WEAPON_CHANGE_PACKET:
 	{
+		if (_Client->m_player->m_dead) return;
 		CS_WEAPON_CHANGE_PACKET* recv_packet = reinterpret_cast<CS_WEAPON_CHANGE_PACKET*>(_Packet);
 
 		_Client->m_player->m_Weapon = recv_packet->m_weapon;
@@ -925,6 +949,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 	case PACKET_TYPE::P_CS_PICKUP_PACKET:
 	{
+		if (_Client->m_player->m_dead) return;
 		vector<int> deleteID;
 		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::UI]) {
 			if (CGameScene::can_see(_Client->m_player->m_Pos, object.second->m_Pos, 3)) {

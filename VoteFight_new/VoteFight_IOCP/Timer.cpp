@@ -70,6 +70,7 @@ void CTimer::do_timer()
 					object.second->m_origin.Transform(object.second->m_boundingBox, XMLoadFloat4x4(&matrix));
 
 					for (auto& monsterobject : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
+						if (monsterobject.second->m_dead) continue;
 						if (monsterobject.second->m_boundingBox.Intersects(object.second->m_boundingBox)) {
 							cout << "Collide !" << endl;
 							deleteBullet.push_back(bullet->m_id);
@@ -120,8 +121,13 @@ void CTimer::do_timer()
 						}
 					}
 
+					for (auto id : deleteBullet) {
+						CGameScene::m_objects[(int)GROUP_TYPE::BULLET].erase(id);
+					}
+
 					// Player¿Í ´ê¾ÒÀ» ¶§
 					for (auto& player : RemoteClient::m_remoteClients) {
+						if (player.second->m_player->m_dead) continue;
 						if (!player.second->m_ingame) continue;
 						if (player.second->m_player->m_boundingBox.Intersects(object.second->m_boundingBox))
 						{
@@ -139,6 +145,23 @@ void CTimer::do_timer()
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 								cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 							}
+
+							if (player.second->m_player->m_Health <= 0) {
+								player.second->m_player->m_dead = true;
+								SC_ANIMATION_PACKET send_packet;
+								send_packet.m_size = sizeof(send_packet);
+								send_packet.m_type = P_SC_ANIMATION_PACKET;
+								send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+								send_packet.m_id = player.second->m_id;
+								send_packet.m_loop = false;
+								send_packet.m_bone = 0;	// Root
+								strcpy_s(send_packet.m_key, "Death");
+								for (auto& rc : RemoteClient::m_remoteClients) {
+									if (!rc.second->m_ingame) continue;
+									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+									cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+								}
+							}
 						}
 					}
 
@@ -155,9 +178,6 @@ void CTimer::do_timer()
 					}
 				}
 
-				for (auto id : deleteBullet) {
-					CGameScene::m_objects[(int)GROUP_TYPE::BULLET].erase(id);
-				}
 
 				for (auto& client : RemoteClient::m_remoteClients) {
 					if (client.second == nullptr || !client.second->m_ingame) continue;

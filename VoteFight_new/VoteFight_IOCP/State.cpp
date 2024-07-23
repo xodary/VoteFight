@@ -72,6 +72,7 @@ void CMonsterIdleState::Update(CObject* object)
 	
 	for (auto& rc : RemoteClient::m_remoteClients) {
 		if (CGameScene::can_see(object->m_Pos, rc.second->m_player->m_Pos, 10)) {
+			if (rc.second->m_player->m_dead) continue;
 			monster->m_target = rc.second.get();
 			monster->m_stateMachine->ChangeState(CMonsterChaseState::GetInstance());
 			return;
@@ -150,6 +151,7 @@ void CMonsterWalkState::Update(CObject* object)
 	object->m_origin.Transform(object->m_boundingBox, XMLoadFloat4x4(&matrix));
 
 	for (auto& rc : RemoteClient::m_remoteClients) {
+		if (rc.second->m_player->m_dead) continue;
 		if (CGameScene::can_see(object->m_Pos, rc.second->m_player->m_Pos, 10)) {
 			monster->m_target = rc.second.get();
 			monster->m_stateMachine->ChangeState(CMonsterChaseState::GetInstance());
@@ -371,6 +373,23 @@ void CMonsterAttackState::Update(CObject* object)
 				}
 			}
 			enterTime = chrono::system_clock::now();
+			if (monster->m_target->m_player->m_Health <= 0) {
+				SC_ANIMATION_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_ANIMATION_PACKET;
+				send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+				send_packet.m_id = monster->m_target->m_id;
+				send_packet.m_loop = false;
+				send_packet.m_bone = 0;	// Root
+				strcpy_s(send_packet.m_key, "Death");
+				for (auto& rc : RemoteClient::m_remoteClients) {
+					if (!rc.second->m_ingame) continue;
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+				}
+				monster->m_target->m_player->m_dead = true;
+				monster->m_stateMachine->ChangeState(CMonsterWalkState::GetInstance());
+			}
 		}
 		else
 			monster->m_stateMachine->ChangeState(CMonsterChaseState::GetInstance());

@@ -5,12 +5,10 @@ class CBilboardUI;
 
 class CCharacter : public CObject
 {
-private:
-	int      m_health;
-
-	CObject* m_weapon;
-
 public:
+	int      m_health;
+	bool	 m_dead;
+
 	
 	CCharacter();
 	virtual ~CCharacter();

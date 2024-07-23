@@ -7,7 +7,7 @@
 
 CCharacter::CCharacter() :
     m_health(100),
-    m_weapon()
+    m_dead(false)
 {
     CreateComponent(COMPONENT_TYPE::STATE_MACHINE);
     CreateComponent(COMPONENT_TYPE::RIGIDBODY);
@@ -21,21 +21,12 @@ void CCharacter::SetHealth(int health)
 {
     //m_health = clamp(health, 0, 100);
     m_health = health;
+    if (m_health <= 0) m_dead = true;
 }
 
 int CCharacter::GetHealth()
 {
     return m_health;
-}
-
-void CCharacter::SetWeapon(CObject* object)
-{
-    m_weapon = object;
-}
-
-CObject* CCharacter::GetWeapon()
-{
-    return m_weapon;
 }
 
 bool CCharacter::IsEquippedWeapon()

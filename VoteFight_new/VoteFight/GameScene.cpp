@@ -331,32 +331,7 @@ void CGameScene::Render()
 		object->RenderBilboard(camera);
 	}
 
-	if (KEY_HOLD(KEY::SPACE))
-	{
-		;/*
-		// [Debug] Render DepthTexture
-		const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
-		D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
-		D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
-		CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-		CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
-
-		texture->UpdateShaderVariable();
-		shader->SetPipelineState(2);
-		commandList->RSSetViewports(1, &d3d12Viewport);
-		commandList->RSSetScissorRects(1, &d3d12ScissorRect);
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		commandList->DrawInstanced(6, 1, 0, 0);
-		*/
-	}
-
 	RenderImGui();
-
-	// for (auto object : m_objects_id) {
-	// 	if (object.second != nullptr)
-	// 		object.second->RenderUI(camera);
-	// }
-	// RenderChatUI();
 }
 
 void CGameScene::RenderImGui()
@@ -627,7 +602,7 @@ void CGameScene::RenderImGui()
 
 		ImGui::GetFont()->Scale = 2.0f;
 		ImGui::PushFont(ImGui::GetFont());
-		ImGui::Text("HP: %d", player->GetHealth());
+		ImGui::Text("HP: %d", clamp(player->GetHealth(), 0, 100));
 
 		// Health Bar
 		float rate = (float)player->GetHealth() / 100;
@@ -700,6 +675,27 @@ void CGameScene::RenderImGui()
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
 		ImGui::End();
+
+		if (player->m_dead) {
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
+			ImGui::GetFont()->Scale = 2.0f;
+			ImGui::PushFont(ImGui::GetFont());
+
+			ImGui::SetNextWindowSize(ImVec2(200, 200));
+			ImGui::SetNextWindowPos(ImVec2(framework->GetResolution().x/2- 100, framework->GetResolution().y/2- 100), ImGuiCond_Always);
+			ImGui::Begin("Exit", nullptr, window_flags);
+			{
+				ImGui::Text("You Dead");
+				if (ImGui::Button("Exit", ImVec2(200, 100))) {
+					PostQuitMessage(0);
+				}
+			}
+			ImGui::PopFont();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+			ImGui::End();
+		}
 	}
 
 	ImGui::Render();

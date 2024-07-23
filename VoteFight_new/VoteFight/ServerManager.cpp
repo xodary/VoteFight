@@ -444,7 +444,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CCharacter* character = reinterpret_cast<CCharacter*>(object);
 		character->m_bilboardUI.clear();
 		character->m_bilboardUI.push_back(new CTextUI(character, to_string(recv_packet->m_health - character->GetHealth())));
-		character->SetHealth(recv_packet->m_health);
+		character->SetHealth(recv_packet->m_health); 
 		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
 	}
 	break;
