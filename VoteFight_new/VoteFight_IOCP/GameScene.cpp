@@ -107,7 +107,7 @@ void CGameScene::Load(const string& fileName)
 					object->m_grouptype = (int)groupType;
 					object->m_modelname = modelFileName;
 					object->m_Pos = transforms[3 * i];
-					//object->m_Pos.y = CGameScene::OnGetHeight(object->m_Pos.x, object->m_Pos.z);
+					object->m_Pos.y = CGameScene::OnGetHeight(object->m_Pos.x, object->m_Pos.z);
 					object->m_Rota = transforms[3 * i + 1];
 					object->m_Sca = transforms[3 * i + 2];
 					object->m_id = m_objects[static_cast<int>(groupType)].size();

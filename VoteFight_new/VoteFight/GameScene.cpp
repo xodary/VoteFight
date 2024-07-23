@@ -625,10 +625,10 @@ void CGameScene::RenderImGui()
 	}
 
 	
-	windowSize.x = framework->GetResolution().x / 3;
-	windowSize.y = framework->GetResolution().y / 6;
-	windowPos.x = framework->GetResolution().x - windowSize.x - 10;
-	windowPos.y = framework->GetResolution().y - windowSize.y - 10;
+	windowSize.x = framework->GetResolution().x / 5;
+	windowSize.y = framework->GetResolution().y / 3;
+	windowPos.x = framework->GetResolution().x - windowSize.x;
+	windowPos.y = framework->GetResolution().y - windowSize.y;
 
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
@@ -637,19 +637,29 @@ void CGameScene::RenderImGui()
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
 
 	{
-		ImGui::Begin("State", nullptr, window_flags);
-		ImGui::GetFont()->Scale = 3.0f;
+		ImGui::Begin("Key Info", nullptr, window_flags);
+		ImGui::GetFont()->Scale = 1.0f;
 		ImGui::PushFont(ImGui::GetFont());
 
-		auto& spacehandle = CAssetManager::GetInstance()->m_IconTextures["space"]->m_IconGPUHandle;
-		ImGui::Image((void*)spacehandle.ptr, ImVec2(windowSize.y / 2, windowSize.y / 2));
+		auto& shandle = CAssetManager::GetInstance()->m_IconTextures["space"]->m_IconGPUHandle;
+		ImGui::Image((void*)shandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
 		ImGui::SameLine();
-		ImGui::Text("아이템 꺼내기, 교환");
+		ImGui::Text("Item Take Out, Exchange");
 
 		auto& fhandle = CAssetManager::GetInstance()->m_IconTextures["letter_f"]->m_IconGPUHandle;
-		ImGui::Image((void*)fhandle.ptr, ImVec2(windowSize.y / 2, windowSize.y / 2));
+		ImGui::Image((void*)fhandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
 		ImGui::SameLine();
-		ImGui::Text("아이템 줍기");
+		ImGui::Text("Item Pick Up");
+
+		auto& ehandle = CAssetManager::GetInstance()->m_IconTextures["letter_e"]->m_IconGPUHandle;
+		ImGui::Image((void*)ehandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::SameLine();
+		ImGui::Text("Inventory");
+
+		auto& qhandle = CAssetManager::GetInstance()->m_IconTextures["letter_q"]->m_IconGPUHandle;
+		ImGui::Image((void*)qhandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::SameLine();
+		ImGui::Text("Map");
 
 		ImGui::PopFont();
 		ImGui::PopStyleColor();

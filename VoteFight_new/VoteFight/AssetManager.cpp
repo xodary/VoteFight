@@ -208,7 +208,8 @@ void CAssetManager::LoadTextures(const string& fileName)
 	// Icons
 	string itemName[] = { "axe", "wood", "punch", "money",
 		"election_ticket", "fish_meet", "potato", "trash",
-		"icecream", "carrot", "drug", "gun", "flower", "arrow", "space", "letter_f"};
+		"icecream", "carrot", "drug", "gun", "flower", 
+		"arrow", "space", "letter_f", "letter_e", "letter_q" };
 
 	for (auto str : itemName)
 	{
