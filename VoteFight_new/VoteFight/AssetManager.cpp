@@ -8,7 +8,7 @@
 #include "WireFrameShader.h"
 #include "SkyboxShader.h"
 #include "UIShader.h"
-#include "TerrainShader.h"
+#include "OceanShader.h"
 #include "BilboardShader.h"
 #include "Material.h"
 #include "Animation.h"
@@ -255,13 +255,8 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CTerrainShader();
-	shader->SetName("Terrain1");
-	shader->CreatePipelineStates(1);
-	m_shaders.emplace(shader->GetName(), shader);
-
-	shader = new CTerrainShader();
-	shader->SetName("Terrain2");
+	shader = new COceanShader();
+	shader->SetName("Ocean");
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 

@@ -100,7 +100,6 @@ void CGameScene::Init()
 	Load("GameScene.bin");
 	Load("GameScene2.bin");
 
-
 	CObject* object = new CSkyBox(1000, 200);
 	AddObject(GROUP_TYPE::SKYBOX, object, 0);
 
@@ -751,7 +750,7 @@ void CGameScene::RenderImGui()
 void CGameScene::Sea_level_rise(float a)
 {
 	if (m_Ocean == nullptr) {
-		std::cout << "바다 없음!" << std::endl;
+		//std::cout << "바다 없음!" << std::endl;
 		return;
 	}
 
