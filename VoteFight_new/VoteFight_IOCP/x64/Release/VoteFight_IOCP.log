@@ -1,43 +1,8 @@
-﻿  Box.cpp
-  Bullet.cpp
-  CPlayer.cpp
-  GameScene.cpp
-D:\directX_work\VoteFight_new\VoteFight_IOCP\GameScene.cpp(113,64): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  Iocp.cpp
-  PacketQueue.cpp
-  Socket.cpp
-  Item.cpp
-  Monster.cpp
-  NPC.cpp
-  Object.cpp
-  RemoteClient.cpp
-  Timer.cpp
-D:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp(39,65): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp(89,25): warning C4312: '형식 캐스트': 'int'에서 더 큰 'RemoteClient *'(으)로의 변환입니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp(89,154): warning C4838: 'int'에서 'UINT'(으)로의 변환에는 축소 변환이 필요합니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp(126,40): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp(187,39): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-  main.cpp
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(97,40): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(279,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(290,32): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(318,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(336,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(424,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(452,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(485,60): warning C4244: '인수': 'unsigned __int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(494,34): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(608,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(615,26): warning C4244: '=': 'unsigned __int64'에서 'UINT'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(732,22): warning C4312: '형식 캐스트': 'int'에서 더 큰 'RemoteClient *'(으)로의 변환입니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(732,151): warning C4838: 'int'에서 'UINT'(으)로의 변환에는 축소 변환이 필요합니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(770,37): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(787,30): warning C4244: '=': 'unsigned __int64'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(810,30): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
-D:\directX_work\VoteFight_new\VoteFight_IOCP\main.cpp(861,29): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+﻿  GameScene.cpp
+C:\directX_work\VoteFight_new\VoteFight_IOCP\GameScene.cpp(113,64): warning C4267: '=': 'size_t'에서 'int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
   코드를 생성하고 있습니다.
-  459 of 1697 functions (27.0%) were compiled, the rest were copied from previous compilation.
-    6 functions were new in current compilation
-    134 functions had inline decision re-evaluated but remain unchanged
+  2 of 1785 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    5 functions had inline decision re-evaluated but remain unchanged
   코드를 생성했습니다.
-  VoteFight_IOCP.vcxproj -> D:\directX_work\VoteFight_new\x64\Release\VoteFight_IOCP.exe
+  VoteFight_IOCP.vcxproj -> C:\directX_work\VoteFight_new\x64\Release\VoteFight_IOCP.exe

@@ -121,16 +121,13 @@ void CTimer::do_timer()
 						}
 					}
 
-					for (auto id : deleteBullet) {
-						CGameScene::m_objects[(int)GROUP_TYPE::BULLET].erase(id);
-					}
-
 					// Player¿Í ´ê¾ÒÀ» ¶§
 					for (auto& player : RemoteClient::m_remoteClients) {
 						if (player.second->m_player->m_dead) continue;
 						if (!player.second->m_ingame) continue;
 						if (player.second->m_player->m_boundingBox.Intersects(object.second->m_boundingBox))
 						{
+							deleteBullet.push_back(bullet->m_id);
 							player.second->m_player->m_Health -= 25;
 							cout << player.first << " : Health " << player.second->m_player->m_Health << endl;
 
@@ -178,6 +175,9 @@ void CTimer::do_timer()
 					}
 				}
 
+				for (auto id : deleteBullet) {
+					CGameScene::m_objects[(int)GROUP_TYPE::BULLET].erase(id);
+				}
 
 				for (auto& client : RemoteClient::m_remoteClients) {
 					if (client.second == nullptr || !client.second->m_ingame) continue;
@@ -185,6 +185,11 @@ void CTimer::do_timer()
 					auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
 					XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
 					client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
+					if (client.second->m_player->m_Pos.x < 0 || client.second->m_player->m_Pos.x >= 400 ||
+						client.second->m_player->m_Pos.z < 0 || client.second->m_player->m_Pos.z >= 400) {
+						client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
+					}
+
 					client.second->m_player->m_Pos.y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
 					client.second->m_lastTime = chrono::system_clock::now();
 

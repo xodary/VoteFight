@@ -383,8 +383,8 @@ void CSelectScene::RenderImGui()
 
 		ImGui::Begin(m_character_names[i].c_str(), nullptr, window_flags);
 
-		if (ImGui::IsWindowHovered()) {
-			if (m_selected_id[i] == -1 && !m_ready) {
+		if (ImGui::IsWindowHovered() && !m_ready) {
+			if (m_selected_id[i] == -1) {
 				if (ImGui::GetIO().MouseClicked[0]) {
 					SelectCharacter(i);
 					m_button = "Ready";
@@ -418,7 +418,7 @@ void CSelectScene::RenderImGui()
 
 	ImGui::Begin("Button", nullptr, window_flags);
 	{
-		if (ImGui::Button(m_button.c_str(), ImVec2(framework->GetResolution().x / 5, framework->GetResolution().y / 7))) {
+		if (ImGui::Button(m_button.c_str(), ImVec2(framework->GetResolution().x / 5, framework->GetResolution().y / 7)) && !m_ready) {
 			if (m_selected_model >= 0 && m_selected_id[m_selected_model] == -1) {
 				CS_SELECT_PACKET p;
 				p.m_size = sizeof(p);
@@ -426,6 +426,7 @@ void CSelectScene::RenderImGui()
 				p.m_char = m_selected_model;
 				PacketQueue::AddSendPacket(&p);
 				m_button = "Wait...";
+				m_ready = true;
 			}
 			else {
 				m_button = "Already choosen\nCharacter.";

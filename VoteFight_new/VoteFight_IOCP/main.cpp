@@ -701,7 +701,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		// 몬스터에 닿았을 때 몬스터 체력 변화
 		vector<int> deleteMonsters;
 		for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
-			if (object.second->m_dead) continue;
 			if (bounding.Intersects(object.second->m_boundingBox))
 			{
 				CMonster* monster = reinterpret_cast<CMonster*>(object.second);

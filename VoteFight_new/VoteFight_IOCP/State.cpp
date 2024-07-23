@@ -145,6 +145,10 @@ void CMonsterWalkState::Update(CObject* object)
 
 	XMFLOAT3 shift = Vector3::ScalarProduct(object->m_Vec, 0.1 * object->m_Velocity);
 	object->m_Pos = Vector3::Add(object->m_Pos, shift);
+	if (object->m_Pos.x < 0 || object->m_Pos.x >= 400 ||
+		object->m_Pos.z < 0 || object->m_Pos.z >= 400) {
+		object->m_Pos = Vector3::Subtract(object->m_Pos, shift);
+	}
 	object->m_Pos.y = CGameScene::OnGetHeight(object->m_Pos.x, object->m_Pos.z);
 	XMFLOAT4X4 matrix = Matrix4x4::Identity();
 	matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object->m_Pos));
@@ -216,6 +220,10 @@ void CMonsterChaseState::Update(CObject* object)
 
 	XMFLOAT3 shift = Vector3::ScalarProduct(object->m_Vec, 0.1 * object->m_Velocity);
 	object->m_Pos = Vector3::Add(object->m_Pos, shift);
+	if (object->m_Pos.x < 0 || object->m_Pos.x >= 400 ||
+		object->m_Pos.z < 0 || object->m_Pos.z >= 400) {
+		object->m_Pos = Vector3::Subtract(object->m_Pos, shift);
+	}
 	object->m_Pos.y = CGameScene::OnGetHeight(object->m_Pos.x, object->m_Pos.z);
 	XMFLOAT4X4 matrix = Matrix4x4::Identity();
 	matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object->m_Pos));
