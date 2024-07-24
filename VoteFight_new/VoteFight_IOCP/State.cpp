@@ -396,6 +396,7 @@ void CMonsterAttackState::Update(CObject* object)
 					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 				}
 				monster->m_target->m_player->m_dead = true;
+				CGameScene::m_Rank[CGameScene::m_nowRank--] = monster->m_target->m_id;
 				monster->m_stateMachine->ChangeState(CMonsterWalkState::GetInstance());
 			}
 		}

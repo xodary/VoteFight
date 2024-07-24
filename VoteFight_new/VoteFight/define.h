@@ -80,6 +80,7 @@ enum class SCENE_TYPE
 	SELECT,
 	LOGIN,
 	GAME,
+	END,
 
 	COUNT
 };

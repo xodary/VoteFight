@@ -470,6 +470,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		cout << " GameStart" << endl;
 		{
+			CGameScene::m_nowRank = 2;
 			//GameStart = true;
 			SC_GAMESTART_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_GAMESTART_PACKET);
@@ -816,6 +817,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 						cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 					}
 					object.second->m_player->m_dead = true;
+					CGameScene::m_Rank[CGameScene::m_nowRank--] = object.second->m_id;
 				}
 			}
 		}

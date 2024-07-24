@@ -13,8 +13,8 @@
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
-chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
-//chrono::seconds phase_time[8] = { 5s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
+//chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
+chrono::seconds phase_time[8] = { 5s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
 float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()
@@ -159,6 +159,7 @@ void CTimer::do_timer()
 									if (!rc.second->m_ingame) continue;
 									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
 								}
+								CGameScene::m_Rank[CGameScene::m_nowRank--] = object.second->m_id;
 							}
 						}
 					}
@@ -237,6 +238,7 @@ void CTimer::do_timer()
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 								cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 							}
+							CGameScene::m_Rank[CGameScene::m_nowRank--] = client.second->m_id;
 						}
 
 					}
@@ -272,12 +274,39 @@ void CTimer::do_timer()
 						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					}
 				}
+
+				if (CGameScene::m_nowRank < 0) {
+					SC_GAMEEND_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_GAMEEND_PACKET;
+					send_packet.m_1st = CGameScene::m_Rank[0];
+					send_packet.m_2nd = CGameScene::m_Rank[1];
+					send_packet.m_3rd = CGameScene::m_Rank[2];
+					for (auto& client : RemoteClient::m_remoteClients) {
+						if (!client.second->m_ingame) continue;
+						client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					}
+				}
+
 				ev.wakeup_time = chrono::system_clock::now() + 100ms;
 				CTimer::timer_queue.push(ev);
 			}
 			break;
 			case EV_PHASE:
 			{
+				if (CTimer::phase >= 8) {
+					SC_GAMEEND_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_GAMEEND_PACKET;
+					send_packet.m_1st = CGameScene::m_Rank[0];
+					send_packet.m_2nd = CGameScene::m_Rank[1];
+					send_packet.m_3rd = CGameScene::m_Rank[2];
+					for (auto& client : RemoteClient::m_remoteClients) {
+						if (!client.second->m_ingame) continue;
+						client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					}
+					break;
+				}
 				for (auto& client : RemoteClient::m_remoteClients) {
 					if (!client.second->m_ingame) continue;
 					SC_UPDATE_PHASE_PACKET send_packet;

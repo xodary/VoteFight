@@ -497,6 +497,14 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
+	case PACKET_TYPE::P_SC_GAMEEND_PACKET:
+	{
+		// Game End
+		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::END);
+
+	}
+	break;
+
 	default:
 		break;
 	}

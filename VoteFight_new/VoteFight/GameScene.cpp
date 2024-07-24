@@ -116,18 +116,18 @@ void CGameScene::InitLight()
 {
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
-	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// ������ ���θ� ���ִ� ����. ������ ������ ��ü�� �����Ű��?�ʴ´�.
+	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);	
 	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player ����ٴ�?
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
 	m_mappedGameScene->m_lights[0].m_range = 100.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
-	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// ��ü�� ������ ���������?
+	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);	
 	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(1.f, 1.f, 1.f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.13f, 0.13f, 0.13f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
@@ -136,13 +136,20 @@ void CGameScene::InitLight()
 	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 100.f;
-
-	//CCameraManager::GetInstance()->GetMainCamera()->SetTarget(player);
-
 }
 
 void CGameScene::Update()
 {
+	if (CTimeManager::GetInstance()->m_phase % 2 == 1) {
+		m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+		m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+		m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+	else {
+		m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+		m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(1.f, 1.f, 1.f, 1.0f);
+		m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.13f, 0.13f, 0.13f, 1.0f);
+	}
 	for (auto& object : GetGroupObject(GROUP_TYPE::PLAYER)) {
 		CTransform* p_tf = static_cast<CTransform*>(object.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
