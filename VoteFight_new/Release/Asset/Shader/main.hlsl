@@ -362,7 +362,34 @@ PSOutput PS_GBuffer(VS_STANDARD_OUTPUT input) : SV_TARGET
     }
     output.worldpos = float4(input.positionW, 1.0f);
     
-  // output.color = franelOuterLine(output.worldpos, output.normal, output.color);
+    output.color = franelOuterLine(output.worldpos, output.normal, output.color);
+    return output;
+}
+
+PSOutput PS_OCEAN_GBuffer(VS_STANDARD_OUTPUT input) : SV_TARGET
+{
+    PSOutput output = (PSOutput) 0;
+	
+    output.color = gvColor;
+    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
+        output.color = gtxtAlbedoTexture.Sample(samplerState, input.uv);
+    output.normal = float4(input.normalW, 1);
+    
+    if (gnTexturesMask & MATERIAL_NORMAL_MAP)
+    {
+        output.normal = gtxtNormalTexture.Sample(samplerState, input.uv);
+        float3x3 TBN = float3x3(normalize(input.tangentW), normalize(input.bitangentW), normalize(input.normalW));
+        float3 vNormal = normalize(output.normal.rgb * 2.0f - 1.0f);
+        output.normal = float4(normalize(mul(vNormal, TBN)), 1.0f);
+    }
+    else
+    {
+        output.normal = output.normal;
+
+    }
+    output.normal.w = 0;
+    output.worldpos = float4(input.positionW, 1.0f);
+    
     return output;
 }
 
@@ -400,9 +427,12 @@ float4 PS_Main(PSInput input) : SV_TARGET
 
     float3 viewDir = normalize(gvCameraPosition.xyz - worldPos.xyz);
     
-    float4 cIllumination = Lighting(worldPos.xyz, normal, mul(worldPos, m_lights[SHADOWMAP_LIGHT].m_toTexCoord), OBJECT);
-    albedo *= cIllumination;
-    albedo = franelOuterLine(worldPos.xyz, normal, albedo);
+    if (normalBuffer[inPos].a == 1)
+    {
+        float4 cIllumination = Lighting(worldPos.xyz, normal, mul(worldPos, m_lights[SHADOWMAP_LIGHT].m_toTexCoord), OBJECT);
+        albedo *= cIllumination;
+        albedo = franelOuterLine(worldPos.xyz, normal, albedo);
+    }
     return albedo;
 }
 
@@ -639,52 +669,6 @@ PS_DEPTH_OUTPUT PS_DepthWrite(VS_POSITION_OUTPUT input)
     return (output);
 }
 
-// ======== TERRAIN =========
-struct VS_TERRAIN_INPUT
-{
-    float3 position : POSITION;
-    float2 uv : TEXCOORD;
-    float3 normal : NORMAL;
-};
-
-struct VS_TERRAIN_OUTPUT
-{
-    float4 position : SV_POSITION;
-    float2 uv : TEXCOORD0;
-    float3 normal : NORMAL;
-    
-    float4 uvs : TEXCOORD1;
-};
-
-VS_TERRAIN_OUTPUT VS_Terrain(VS_TERRAIN_INPUT input)
-{
-    VS_TERRAIN_OUTPUT output;
-    
-    float4 pW = mul(float4(input.position, 1.0f), gmtxGameObject);
-    output.position = mul(mul(pW, gmtxView), gmtxProjection);
-    output.normal = mul(input.normal, (float3x3) gmtxGameObject);
-	
-    output.uv = input.uv;
-    
-    output.uvs = mul(pW, m_lights[SHADOWMAP_LIGHT].m_toTexCoord);
-    return (output);
-}
-
-float4 PS_Terrain(VS_TERRAIN_OUTPUT input) : SV_TARGET
-{
-    float4 cBaseTexColor = gtxtAlbedoTexture.Sample(samplerState, input.uv);
-    float4 cColor = cBaseTexColor;
-    float3 normal = normalize(input.normal);
-    float4 cIllumination = Lighting(input.position.xyz, normal, input.uvs, TERRAIN);
-    cColor = lerp(cColor , cIllumination,0.3f);
-    
-    cColor = franelOuterLine(input.position, normal, cColor);
-    return cColor;
-    //return cColor * cIllumination;
-
-}
-
-
 //======= Outer Eage===================
 struct VS_EAGE_STANDARD_INPUT
 {
@@ -721,98 +705,4 @@ float4 PS_EAGE_Main(VS_EAGE_STANDARD_OUTPUT input) : SV_TARGET
     float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
   
     return cColor;
-}
-
-// ======== VIEW PORT =========
-struct VS_TEXTURED_OUTPUT
-{
-    float4 position : SV_POSITION;
-    float2 uv : TEXCOORD;
-};
-
-VS_TEXTURED_OUTPUT VS_ViewPort(uint nVertexID : SV_VertexID)
-{
-    VS_TEXTURED_OUTPUT output = (VS_TEXTURED_OUTPUT) 0;
-
-    if (nVertexID == 0)
-    {
-        output.position = float4(-1.0f, +1.0f, 0.0f, 1.0f);
-        output.uv = float2(0.0f, 0.0f);
-    }
-    if (nVertexID == 1)
-    {
-        output.position = float4(+1.0f, +1.0f, 0.0f, 1.0f);
-        output.uv = float2(1.0f, 0.0f);
-    }
-    if (nVertexID == 2)
-    {
-        output.position = float4(+1.0f, -1.0f, 0.0f, 1.0f);
-        output.uv = float2(1.0f, 1.0f);
-    }
-    if (nVertexID == 3)
-    {
-        output.position = float4(-1.0f, +1.0f, 0.0f, 1.0f);
-        output.uv = float2(0.0f, 0.0f);
-    }
-    if (nVertexID == 4)
-    {
-        output.position = float4(+1.0f, -1.0f, 0.0f, 1.0f);
-        output.uv = float2(1.0f, 1.0f);
-    }
-    if (nVertexID == 5)
-    {
-        output.position = float4(-1.0f, -1.0f, 0.0f, 1.0f);
-        output.uv = float2(0.0f, 1.0f);
-    }
-
-    return (output);
-}
-
-float4 GetColorFromDepth(float fDepth)
-{
-    float4 cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-
-    if (fDepth < 0.00625f)
-        cColor = float4(1.0f, 0.0f, 0.0f, 1.0f);
-    else if (fDepth < 0.0125f)
-        cColor = float4(0.0f, 1.0f, 0.0f, 1.0f);
-    else if (fDepth < 0.025f)
-        cColor = float4(0.0f, 0.0f, 1.0f, 1.0f);
-    else if (fDepth < 0.05f)
-        cColor = float4(1.0f, 1.0f, 0.0f, 1.0f);
-    else if (fDepth < 0.075f)
-        cColor = float4(0.0f, 1.0f, 1.0f, 1.0f);
-    else if (fDepth < 0.1f)
-        cColor = float4(1.0f, 0.5f, 0.5f, 1.0f);
-    else if (fDepth < 0.4f)
-        cColor = float4(0.5f, 1.0f, 1.0f, 1.0f);
-    else if (fDepth < 0.6f)
-        cColor = float4(1.0f, 0.0f, 1.0f, 1.0f);
-    else if (fDepth < 0.8f)
-        cColor = float4(0.5f, 0.5f, 1.0f, 1.0f);
-    else if (fDepth < 0.9f)
-        cColor = float4(0.5f, 1.0f, 0.5f, 1.0f);
-    else if (fDepth < 0.95f)
-        cColor = float4(0.5f, 0.0f, 0.5f, 1.0f);
-    else if (fDepth < 0.99f)
-        cColor = float4(1.0f, 1.0f, 1.0f, 1.0f);
-    else if (fDepth < 0.999f)
-        cColor = float4(1.0f, 0.0f, 1.0f, 1.0f);
-    else if (fDepth == 1.0f)
-        cColor = float4(0.5f, 0.5f, 0.5f, 1.0f);
-    else if (fDepth > 1.0f)
-        cColor = float4(0.0f, 0.0f, 0.5f, 1.0f);
-    else
-        cColor = float4(0.0f, 0.0f, 0.0f, 1.0f);
-
-    return (cColor);
-}
-
-SamplerState gssBorder : register(s3);
-
-float4 PS_ViewPort(VS_TEXTURED_OUTPUT input) : SV_Target
-{
-    float fDepthFromLight0 = gtxtDepthTextures.SampleLevel(gssBorder, input.uv, 0).r;
-
-    return ((float4) (fDepthFromLight0 * 0.8f));
 }

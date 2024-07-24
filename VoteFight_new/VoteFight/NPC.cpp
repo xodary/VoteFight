@@ -38,6 +38,9 @@ void CNPC::Init()
 	animator->Play("idle", true);
 
 	m_bilboardUI.push_back(new CSpeechBubbleUI(this));
+
+	CIcon* ui = new CIcon(this, "arrow");
+	m_bilboardUI.push_back(ui);
 	// m_bilboardUI.push_back(new CIcon(this));
 }
 
@@ -66,12 +69,12 @@ void CNPC::Update()
 						b->m_isActive = true;
 
 					for (int i = 0; i < m_needs.size(); ++i) {
-						reinterpret_cast<CIcon*>(m_bilboardUI[1 + i])->centerX = (float)-BUBBLE_WIDTH + ((float)BUBBLE_WIDTH*2 / m_needs.size()) * i + ((float)BUBBLE_WIDTH*2 / m_needs.size()) / 2;
-						reinterpret_cast<CIcon*>(m_bilboardUI[1 + i])->centerY = (float)2/3;
+						reinterpret_cast<CIcon*>(m_bilboardUI[2 + i])->centerX = (float)-BUBBLE_WIDTH + ((float)BUBBLE_WIDTH*2 / m_needs.size()) * i + ((float)BUBBLE_WIDTH*2 / m_needs.size()) / 2;
+						reinterpret_cast<CIcon*>(m_bilboardUI[2 + i])->centerY = 0.8f;
 					}
 					for (int i = 0; i < m_outputs.size(); ++i) {
-						reinterpret_cast<CIcon*>(m_bilboardUI[1 + m_needs.size() + i])->centerX = (float)-BUBBLE_WIDTH + ((float)BUBBLE_WIDTH*2 / m_outputs.size()) * i + ((float)BUBBLE_WIDTH*2 / m_outputs.size()) / 2;
-						reinterpret_cast<CIcon*>(m_bilboardUI[1 + m_needs.size() + i])->centerY = (float)-1 / 2;
+						reinterpret_cast<CIcon*>(m_bilboardUI[2 + m_needs.size() + i])->centerX = (float)-BUBBLE_WIDTH + ((float)BUBBLE_WIDTH*2 / m_outputs.size()) * i + ((float)BUBBLE_WIDTH*2 / m_outputs.size()) / 2;
+						reinterpret_cast<CIcon*>(m_bilboardUI[2 + m_needs.size() + i])->centerY = -0.7f;
 					}
 
 				}

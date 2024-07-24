@@ -25,7 +25,7 @@ public:
 	int		m_selected_model;
 	string	m_character_names[3] = { "Sonic", "Mario", "Hugo" };
 	string	m_nicknames[3] = { "", "", "" };
-	string	m_button;
+	string	m_button = "Select Your Character";
 	bool	m_ready;
 	int		m_selected_id[3] = { -1, -1, -1 };
 private:

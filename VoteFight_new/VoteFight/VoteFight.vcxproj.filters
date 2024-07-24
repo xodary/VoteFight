@@ -257,9 +257,6 @@
     <ClInclude Include="SkyboxShader.h">
       <Filter>헤더 파일\06. Asset\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="TerrainShader.h">
-      <Filter>헤더 파일\06. Asset\Shader</Filter>
-    </ClInclude>
     <ClInclude Include="Terrain.h">
       <Filter>헤더 파일\05. Object\05-04. Terrain</Filter>
     </ClInclude>
@@ -540,9 +537,6 @@
     </ClCompile>
     <ClCompile Include="Skybox.cpp">
       <Filter>소스 파일\05. Object\05-03. Skybox</Filter>
-    </ClCompile>
-    <ClCompile Include="TerrainShader.cpp">
-      <Filter>소스 파일\06. Asset\Shader</Filter>
     </ClCompile>
     <ClCompile Include="Terrain.cpp">
       <Filter>소스 파일\05. Object\05-04. Terrain</Filter>

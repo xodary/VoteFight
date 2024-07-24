@@ -311,9 +311,13 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		if (abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 2);
-		if(recv_packet->m_look != -1) 
-			static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_look;
+		if (recv_packet->m_grouptype == (int)GROUP_TYPE::PLAYER && abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 2);
+		if (recv_packet->m_look != -1) {
+			if (recv_packet->m_grouptype == (int)GROUP_TYPE::MONSTER)
+				static_cast<CMonster*>(object)->goal_rota = recv_packet->m_look;
+			if(recv_packet->m_grouptype == (int)GROUP_TYPE::PLAYER)
+				static_cast<CPlayer*>(object)->goal_rota = recv_packet->m_look;
+		}
 		transform->SetPosition(recv_packet->m_pos);
 	}
 	break;
@@ -405,8 +409,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CTimeManager::GetInstance()->m_phaseTime = seconds_as_float;
 		CTimeManager::GetInstance()->m_lastTime = seconds_as_float;
 		CTimeManager::GetInstance()->m_phase = recv_packet->m_phase;
-		CSceneManager::GetInstance()->GetGameScene()->m_fOceanRiseTime = 10;
-		CSceneManager::GetInstance()->GetGameScene()->SetLightVersion(CTimeManager::GetInstance()->m_phase);
+		CSceneManager::GetInstance()->GetGameScene()->m_fOceanHeight = recv_packet->m_oceanHeight;
+		//CSceneManager::GetInstance()->GetGameScene()->m_fOceanRiseTime = 1;
 		cout << "Phase " << recv_packet->m_phase << endl;
 	}
 	break;
@@ -441,7 +445,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CCharacter* character = reinterpret_cast<CCharacter*>(object);
 		character->m_bilboardUI.clear();
 		character->m_bilboardUI.push_back(new CTextUI(character, to_string(recv_packet->m_health - character->GetHealth())));
-		character->SetHealth(recv_packet->m_health);
+		character->SetHealth(recv_packet->m_health); 
 		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
 	}
 	break;
@@ -490,6 +494,14 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		reinterpret_cast<CTransform*>(bilboard->GetComponent(COMPONENT_TYPE::TRANSFORM))->SetPosition(recv_packet->m_pos);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		scene->AddObject(GROUP_TYPE::UI, bilboard, recv_packet->m_itemID);
+	}
+	break;
+
+	case PACKET_TYPE::P_SC_GAMEEND_PACKET:
+	{
+		// Game End
+		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::END);
+
 	}
 	break;
 

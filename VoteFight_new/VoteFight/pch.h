@@ -151,3 +151,13 @@ static std::wstring GetLatestWinPixGpuCapturerPath_Cpp17()
 
     return pixInstallationPath / newestVersionFound / L"WinPixGpuCapturer.dll";
 }
+
+static float Lerp(float A, float B, float Alpha)
+{
+	A = (int)A % 360;
+	B = (int)B % 360;
+	if ((A - B) > 180) B += 360;
+	else if ((B - A) > 180) A += 360;
+	float result = A * (1 - Alpha) + B * Alpha;
+	return result;
+}

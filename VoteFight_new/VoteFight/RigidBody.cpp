@@ -100,13 +100,8 @@ void CRigidBody::MovePosition()
     XMFLOAT3 shift = Vector3::ScalarProduct(m_velocity, DT);
     XMFLOAT3 newPosition(1, 1, 1);
 
-    if (isMovable)
-    {
-        newPosition = Vector3::Add(position, shift);
-        transform->SetPosition(newPosition);
-    }
-
-        
+    newPosition = Vector3::Add(position, shift);
+    if (0 <= (int)newPosition.x && (int)newPosition.x < 400 && 0 <= (int)newPosition.z && (int)newPosition.z < 400)transform->SetPosition(newPosition);
 }
 
 XMFLOAT3 CRigidBody::GetAfterMovePosition()

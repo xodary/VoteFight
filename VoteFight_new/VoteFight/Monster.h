@@ -3,25 +3,16 @@
 
 class CMonster : public CCharacter
 {
-private:
-    string	 m_spineName;
-    float	 m_spineAngle;
-    float    m_turnAngle;
-
+public:
     bool	 m_isAiming;
     CObject* AimObejct;
-    float m_fSpeed = 0.01f;
 
-public:
+    float goal_rota;
 
     bool m_dead;
 
     CMonster();
     virtual ~CMonster();
-
-    string GetSpineName();
-    float GetSpineAngle();
-    void SetSpineAngle(float angle);
 
     virtual void Init();
     virtual void Update();

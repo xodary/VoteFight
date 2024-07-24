@@ -7,12 +7,15 @@
 #include "../Packet.h"
 #include "Monster.h"
 #include "RemoteClient.h"
+#include "State.h"
+#include "StateMachine.h"
 
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
-chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
-
+//chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
+chrono::seconds phase_time[8] = { 5s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
+float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()
 {
@@ -29,7 +32,14 @@ void CTimer::do_timer()
 			switch (ev.event_id) {
 			case EV_UPDATE:
 			{
-				// 총알 위치 업데이트
+				// Monster Update
+				for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
+					CMonster* monster = reinterpret_cast<CMonster*>(object.second);
+					if (monster->m_dead) continue;
+					monster->m_stateMachine->Update();
+				}
+
+				// Bullet Position Update
 				vector<int>	deleteBullet;
 				for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::BULLET]) {
 					if (object.second == nullptr) continue;
@@ -62,6 +72,7 @@ void CTimer::do_timer()
 					object.second->m_origin.Transform(object.second->m_boundingBox, XMLoadFloat4x4(&matrix));
 
 					for (auto& monsterobject : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
+						if (monsterobject.second->m_dead) continue;
 						if (monsterobject.second->m_boundingBox.Intersects(object.second->m_boundingBox)) {
 							cout << "Collide !" << endl;
 							deleteBullet.push_back(bullet->m_id);
@@ -84,10 +95,7 @@ void CTimer::do_timer()
 							}
 							else
 							{
-								strcpy_s(send_packet.m_key, "Gethit");
-								monster->m_AnilastTime = chrono::system_clock::now();
-								TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, monster->m_id,(int)GROUP_TYPE::MONSTER,"idle",0 };
-								CTimer::timer_queue.push(ev);
+								monster->m_stateMachine->ChangeState(CMonsterAttackedState::GetInstance());
 							}
 
 							for (auto& rc : RemoteClient::m_remoteClients) {
@@ -95,28 +103,16 @@ void CTimer::do_timer()
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 								cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 							}
-
-							{
-								SC_HEALTH_CHANGE_PACKET send_packet;
-								send_packet.m_size = sizeof(send_packet);
-								send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
-								send_packet.m_id = monster->m_id;
-								send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
-								send_packet.m_health = monster->m_Health;
-								for (auto& rc : RemoteClient::m_remoteClients) {
-									if (!rc.second->m_ingame) continue;
-									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-									cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
-								}
-							}
 						}
 					}
 
 					// Player와 닿았을 때
 					for (auto& player : RemoteClient::m_remoteClients) {
+						if (player.second->m_player->m_dead) continue;
 						if (!player.second->m_ingame) continue;
 						if (player.second->m_player->m_boundingBox.Intersects(object.second->m_boundingBox))
 						{
+							deleteBullet.push_back(bullet->m_id);
 							player.second->m_player->m_Health -= 25;
 							cout << player.first << " : Health " << player.second->m_player->m_Health << endl;
 
@@ -130,6 +126,40 @@ void CTimer::do_timer()
 								if (!rc.second->m_ingame) continue;
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 								cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+							}
+
+							if (player.second->m_player->m_Health <= 0) {
+								player.second->m_player->m_dead = true;
+								SC_ANIMATION_PACKET send_packet;
+								send_packet.m_size = sizeof(send_packet);
+								send_packet.m_type = P_SC_ANIMATION_PACKET;
+								send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+								send_packet.m_id = player.second->m_id;
+								send_packet.m_loop = false;
+								send_packet.m_bone = 0;	// Root
+								strcpy_s(send_packet.m_key, "Death");
+								for (auto& rc : RemoteClient::m_remoteClients) {
+									if (!rc.second->m_ingame) continue;
+									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+									cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+								}
+
+								player.second->m_player->m_Velocity = 0;
+								SC_VELOCITY_CHANGE_PACKET v_send_packet;
+								v_send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+								v_send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+								v_send_packet.m_id = player.second->m_id;
+								v_send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+								v_send_packet.m_vel = player.second->m_player->m_Velocity;
+								v_send_packet.m_pos = player.second->m_player->m_Pos;
+								v_send_packet.m_look = player.second->m_player->m_Angle;
+								cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
+
+								for (auto& rc : RemoteClient::m_remoteClients) {
+									if (!rc.second->m_ingame) continue;
+									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
+								}
+								CGameScene::m_Rank[CGameScene::m_nowRank--] = object.second->m_id;
 							}
 						}
 					}
@@ -157,7 +187,61 @@ void CTimer::do_timer()
 					auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
 					XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
 					client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
+					if (client.second->m_player->m_Pos.x < 0 || client.second->m_player->m_Pos.x >= 400 ||
+						client.second->m_player->m_Pos.z < 0 || client.second->m_player->m_Pos.z >= 400) {
+						client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
+					}
+
 					client.second->m_player->m_Pos.y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
+					if (client.second->m_player->m_Pos.y < phase_height[CTimer::phase - 1]) {
+						client.second->m_player->m_Health -= 1;
+						SC_HEALTH_CHANGE_PACKET send_packet;
+						send_packet.m_size = sizeof(send_packet);
+						send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
+						send_packet.m_id = client.second->m_id;
+						send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
+						send_packet.m_health = client.second->m_player->m_Health;
+						for (auto& rc : RemoteClient::m_remoteClients) {
+							if (!rc.second->m_ingame) continue;
+							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+							cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+						}
+						if (client.second->m_player->m_Health <= 0) {
+							client.second->m_player->m_dead = true;
+
+							client.second->m_player->m_Velocity = 0;
+							SC_VELOCITY_CHANGE_PACKET v_send_packet;
+							v_send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+							v_send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+							v_send_packet.m_id = client.second->m_id;
+							v_send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+							v_send_packet.m_vel = client.second->m_player->m_Velocity;
+							v_send_packet.m_pos = client.second->m_player->m_Pos;
+							v_send_packet.m_look = client.second->m_player->m_Angle;
+							cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
+
+							for (auto& rc : RemoteClient::m_remoteClients) {
+								if (!rc.second->m_ingame) continue;
+								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
+							}
+
+							SC_ANIMATION_PACKET send_packet;
+							send_packet.m_size = sizeof(send_packet);
+							send_packet.m_type = P_SC_ANIMATION_PACKET;
+							send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+							send_packet.m_id = client.second->m_id;
+							send_packet.m_loop = false;
+							send_packet.m_bone = 0;	// Root
+							strcpy_s(send_packet.m_key, "Death");
+							for (auto& rc : RemoteClient::m_remoteClients) {
+								if (!rc.second->m_ingame) continue;
+								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+								cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+							}
+							CGameScene::m_Rank[CGameScene::m_nowRank--] = client.second->m_id;
+						}
+
+					}
 					client.second->m_lastTime = chrono::system_clock::now();
 
 					XMFLOAT4X4 matrix = Matrix4x4::Identity();
@@ -168,6 +252,7 @@ void CTimer::do_timer()
 
 					for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
 						if (i == (int)GROUP_TYPE::PLAYER) continue;
+						if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
 						for (auto& object : CGameScene::m_objects[i]) {
 							if (!client.second->m_player->m_collider) continue;
 							if (!object.second->m_collider) continue;
@@ -189,12 +274,39 @@ void CTimer::do_timer()
 						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					}
 				}
+
+				if (CGameScene::m_nowRank < 0) {
+					SC_GAMEEND_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_GAMEEND_PACKET;
+					send_packet.m_1st = CGameScene::m_Rank[0];
+					send_packet.m_2nd = CGameScene::m_Rank[1];
+					send_packet.m_3rd = CGameScene::m_Rank[2];
+					for (auto& client : RemoteClient::m_remoteClients) {
+						if (!client.second->m_ingame) continue;
+						client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					}
+				}
+
 				ev.wakeup_time = chrono::system_clock::now() + 100ms;
 				CTimer::timer_queue.push(ev);
 			}
 			break;
 			case EV_PHASE:
 			{
+				if (CTimer::phase >= 8) {
+					SC_GAMEEND_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_GAMEEND_PACKET;
+					send_packet.m_1st = CGameScene::m_Rank[0];
+					send_packet.m_2nd = CGameScene::m_Rank[1];
+					send_packet.m_3rd = CGameScene::m_Rank[2];
+					for (auto& client : RemoteClient::m_remoteClients) {
+						if (!client.second->m_ingame) continue;
+						client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					}
+					break;
+				}
 				for (auto& client : RemoteClient::m_remoteClients) {
 					if (!client.second->m_ingame) continue;
 					SC_UPDATE_PHASE_PACKET send_packet;
@@ -202,6 +314,7 @@ void CTimer::do_timer()
 					send_packet.m_type = PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET;
 					send_packet.m_phase = CTimer::phase;
 					send_packet.m_time = phase_time[CTimer::phase];
+					send_packet.m_oceanHeight = phase_height[CTimer::phase];
 					client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 
 					cout << "Phase " << CTimer::phase << endl;

@@ -36,7 +36,7 @@ void CScene::Load(const string& fileName)
 		return;
 	}
 
-		string str, modelFileName;
+	string str, modelFileName;
 	GROUP_TYPE groupType = {};
 
 	while (true)
@@ -90,10 +90,9 @@ void CScene::Load(const string& fileName)
 					transform->SetScale(transforms[3 * i + 2]);
 
 					transform->Update();
-					transform->Update();
 					object->Init();
 					cout << object->GetName() << endl;
-					if (object->GetName() == "Ocean")
+					if (object->GetName() == "Ocean") 
 						CSceneManager::GetInstance()->GetGameScene()->m_Ocean = object;
 					AddObject(groupType, object);
 				}
@@ -210,7 +209,7 @@ void CScene::Update()
 {
 	for (auto& object : GetViewList(0))
 	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
+		if (object && (object->IsActive()) && (!object->IsDeleted()))
 		{
 			object->Update();
 		}
@@ -262,9 +261,11 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 
 	CObject* myPlayer = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
 	newlist.insert(myPlayer);
-	if(stateNum == 0) newlist.insert(CSceneManager::GetInstance()->GetGameScene()->m_Ocean);
+	auto& ocean = CSceneManager::GetInstance()->GetGameScene()->m_Ocean;
+	if(stateNum == 0 && ocean) 
+		newlist.insert(ocean);
 	
-	CTransform* transform = reinterpret_cast<CTransform*>(myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CTransform* transform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 	int xNewCell = clamp((int)(transform->GetPosition().x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
 	int zNewCell = clamp((int)(transform->GetPosition().z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);

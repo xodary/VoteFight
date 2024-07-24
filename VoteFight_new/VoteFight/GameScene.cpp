@@ -27,6 +27,7 @@
 #include "Texture.h"
 #include "ImGUI/implot.h"
 #include "ImGUI/implot_internal.h"
+#include "SceneManager.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -85,7 +86,6 @@ void CGameScene::Enter()
 	//CCameraManager::GetInstance()->GetMainCamera()->SetTarget(static_cast<CPlayer*>(objects[0]));
 	// CSoundManager::GetInstance()->Play(SOUND_TYPE_INGAME_BGM_1, 0.3f, false);
 
-	InitLight();
 }
 
 void CGameScene::Exit()
@@ -96,10 +96,7 @@ void CGameScene::Init()
 {
 	m_terrain = CTerrainObject::Load("HeightMap");
 
-	//SceneLoad();
 	Load("GameScene.bin");
-	Load("GameScene2.bin");
-
 
 	CObject* object = new CSkyBox(1000, 200);
 	AddObject(GROUP_TYPE::SKYBOX, object, 0);
@@ -113,24 +110,26 @@ void CGameScene::Init()
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::GROUND_ITEM);
 
 	CreateShaderVariables();
+
+	InitLight();
 }
 
 void CGameScene::InitLight()
 {
 	const vector<CCamera*>& cameras = CCameraManager::GetInstance()->GetCameras();
 
-	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);		// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î¸ï¿½ ï¿½ï¿½ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½. ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Å°ï¿½ï¿?ï¿½Ê´Â´ï¿½.
+	m_mappedGameScene->m_lights[0].m_xmf4Ambient = XMFLOAT4(0.8f, 0.8f, 0.8f, 1.0f);	
 	m_mappedGameScene->m_lights[0].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.2f, 1.0f);
 	m_mappedGameScene->m_lights[0].m_xmf4Specular = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player ï¿½ï¿½ï¿½ï¿½Ù´ï¿?
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
 	m_mappedGameScene->m_lights[0].m_range = 100.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
 
-	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);		// ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿?
+	m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);	
 	m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(1.f, 1.f, 1.f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.13f, 0.13f, 0.13f, 1.0f);
 	m_mappedGameScene->m_lights[1].m_isActive = true;
@@ -139,26 +138,21 @@ void CGameScene::InitLight()
 	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 100.f;
-
-	//CCameraManager::GetInstance()->GetMainCamera()->SetTarget(player);
-
-}
-
-float Lerp(float A, float B, float Alpha)
-{
-	A = (int)A % 360;
-	B = (int)B % 360;
-	if ((A - B) > 180) B += 360;
-	else if ((B - A) > 180) A += 360;
-	float result = A * (1 - Alpha) + B * Alpha;
-	return result;
 }
 
 void CGameScene::Update()
 {
-	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-
-	for (auto& object : objects) {
+	if (CTimeManager::GetInstance()->m_phase % 2 == 1) {
+		m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+		m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+		m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
+	}
+	else {
+		m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.4f, 0.4f, 0.4f, 1.0f);
+		m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(1.f, 1.f, 1.f, 1.0f);
+		m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.13f, 0.13f, 0.13f, 1.0f);
+	}
+	for (auto& object : GetGroupObject(GROUP_TYPE::PLAYER)) {
 		CTransform* p_tf = static_cast<CTransform*>(object.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 		float rotation = Lerp(p_tf->GetRotation().y, reinterpret_cast<CPlayer*>(object.second)->goal_rota, DT * 8);
@@ -169,26 +163,28 @@ void CGameScene::Update()
 			p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 	}
 
-	unordered_map<int, CObject*> items = GetGroupObject(GROUP_TYPE::GROUND_ITEM);
-	for (auto& item : items) {
-		CTransform* i_tf = static_cast<CTransform*>(item.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
-		i_tf->Rotate(XMFLOAT3(0, DT * 100.f, 0));
-		XMFLOAT3 p = i_tf->GetPosition();
-		if (0 <= (int)p.x && (int)p.x < 400 && 0 <= (int)p.z && (int)p.z < 400) {
-			float h = cos(CGameFramework::GetInstance()->m_mappedGameFramework->m_totalTime) * 0.3f;
-			i_tf->SetPosition(XMFLOAT3(p.x, GetTerrainHeight(p.x, p.z) + 1.2f + h, p.z));
-		}
+	for (auto& object : GetGroupObject(GROUP_TYPE::MONSTER)) {
+		CTransform* p_tf = static_cast<CTransform*>(object.second->GetComponent(COMPONENT_TYPE::TRANSFORM));
+
+		float rotation = Lerp(p_tf->GetRotation().y, reinterpret_cast<CMonster*>(object.second)->goal_rota, DT * 8);
+		p_tf->SetRotation(XMFLOAT3(0, rotation, 0));
+
+		XMFLOAT3 pos = p_tf->GetPosition();
+		if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400)
+			p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 	}
 
-	CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
-	m_mappedGameScene->m_lights[0].m_position = Vector3::Add(object->GetPosition(), XMFLOAT3(-25.f, 0, -25.f));
-	m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
-
+	//CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
+	CObject* object = CCameraManager::GetInstance()->GetMainCamera();
+	if (object) {
+		m_mappedGameScene->m_lights[0].m_position = Vector3::Add(object->GetPosition(), XMFLOAT3(-25.f, 0, -25.f));
+		m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
+	}
 	if (KEY_TAP(KEY::Q))
 		if (m_miniMap)m_miniMap = false;
 		else m_miniMap = true;
 
-	Sea_level_rise(1);
+	Sea_level_rise(1); 
 	CScene::Update();
 }
 
@@ -247,7 +243,7 @@ void CGameScene::PreRender()
 
 				for (auto& object : GetViewList(1))
 				{
-					if ((object->IsActive()) && (!object->IsDeleted()))
+					if (object && (object->IsActive()) && (!object->IsDeleted()))
 					{
 						object->PreRender(camera);
 					}
@@ -298,9 +294,11 @@ void CGameScene::PreRender()
 
 	for (auto& object : GetViewList(0))
 	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
-		{
-			object->Render(camera);
+		if (object && (object->m_name == "Ocean" || object->IsVisible(camera))) {
+			if ((object->IsActive()) && (!object->IsDeleted()))
+			{
+				object->Render(camera);
+			}
 		}
 	}
 
@@ -337,38 +335,16 @@ void CGameScene::Render()
 	{
 		object.second->Render(camera);
 	}
-	
+
 	for (auto& object : GetViewList(0))
 	{
-		object->RenderBilboard(camera);
+		if (object && object->IsVisible(camera)) 
+		{
+			object->RenderBilboard(camera);
+		}
 	}
 
-	if (KEY_HOLD(KEY::SPACE))
-	{
-		;/*
-		// [Debug] Render DepthTexture
-		const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
-		D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
-		D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
-		CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-		CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
-
-		texture->UpdateShaderVariable();
-		shader->SetPipelineState(2);
-		commandList->RSSetViewports(1, &d3d12Viewport);
-		commandList->RSSetScissorRects(1, &d3d12ScissorRect);
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		commandList->DrawInstanced(6, 1, 0, 0);
-		*/
-	}
-
-	RenderImGui();
-
-	// for (auto object : m_objects_id) {
-	// 	if (object.second != nullptr)
-	// 		object.second->RenderUI(camera);
-	// }
-	// RenderChatUI();
+	if(CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene") RenderImGui();
 }
 
 void CGameScene::RenderImGui()
@@ -639,10 +615,10 @@ void CGameScene::RenderImGui()
 
 		ImGui::GetFont()->Scale = 2.0f;
 		ImGui::PushFont(ImGui::GetFont());
-		ImGui::Text("HP: %d", player->GetHealth());
+		ImGui::Text("HP: %d", clamp(player->GetHealth(), 0, 100));
 
 		// Health Bar
-		float rate = player->GetHealth() / 100;
+		float rate = (float)player->GetHealth() / 100;
 		ImVec2 size = ImVec2(windowSize.x * 2/3, windowSize.y / 4);
 		ImVec2 top_left = ImVec2(windowPos.x + 120, windowPos.y + 50);
 		ImVec2 bottom_right = ImVec2(top_left.x + size.x * rate, top_left.y + size.y);
@@ -655,6 +631,49 @@ void CGameScene::RenderImGui()
 		ImGui::SameLine(); 
 		ImGui::Text("X %d", count(player->myItems.begin(), player->myItems.end(), "election_ticket"));
 		
+		ImGui::PopFont();
+		ImGui::PopStyleColor();
+		ImGui::PopStyleColor();
+		ImGui::End();
+	}
+
+	
+	windowSize.x = framework->GetResolution().x / 5;
+	windowSize.y = framework->GetResolution().y / 3;
+	windowPos.x = framework->GetResolution().x - windowSize.x;
+	windowPos.y = framework->GetResolution().y - windowSize.y;
+
+	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
+
+	{
+		ImGui::Begin("Key Info", nullptr, window_flags);
+		ImGui::GetFont()->Scale = 1.0f;
+		ImGui::PushFont(ImGui::GetFont());
+
+		auto& shandle = CAssetManager::GetInstance()->m_IconTextures["space"]->m_IconGPUHandle;
+		ImGui::Image((void*)shandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::SameLine();
+		ImGui::Text("Item Take Out, Exchange");
+
+		auto& fhandle = CAssetManager::GetInstance()->m_IconTextures["letter_f"]->m_IconGPUHandle;
+		ImGui::Image((void*)fhandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::SameLine();
+		ImGui::Text("Item Pick Up");
+
+		auto& ehandle = CAssetManager::GetInstance()->m_IconTextures["letter_e"]->m_IconGPUHandle;
+		ImGui::Image((void*)ehandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::SameLine();
+		ImGui::Text("Inventory");
+
+		auto& qhandle = CAssetManager::GetInstance()->m_IconTextures["letter_q"]->m_IconGPUHandle;
+		ImGui::Image((void*)qhandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::SameLine();
+		ImGui::Text("Map");
+
 		ImGui::PopFont();
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
@@ -712,6 +731,27 @@ void CGameScene::RenderImGui()
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
 		ImGui::End();
+
+		if (player->m_dead) {
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
+			ImGui::GetFont()->Scale = 2.0f;
+			ImGui::PushFont(ImGui::GetFont());
+
+			ImGui::SetNextWindowSize(ImVec2(200, 200));
+			ImGui::SetNextWindowPos(ImVec2(framework->GetResolution().x/2- 100, framework->GetResolution().y/2- 100), ImGuiCond_Always);
+			ImGui::Begin("Exit", nullptr, window_flags);
+			{
+				ImGui::Text("You Dead");
+				if (ImGui::Button("Exit", ImVec2(200, 100))) {
+					PostQuitMessage(0);
+				}
+			}
+			ImGui::PopFont();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+			ImGui::End();
+		}
 	}
 
 	ImGui::Render();
@@ -724,61 +764,15 @@ void CGameScene::RenderImGui()
 void CGameScene::Sea_level_rise(float a)
 {
 	if (m_Ocean == nullptr) {
-		std::cout << "¹Ù´Ù ¾øÀ½!" << std::endl;
+		//std::cout << "¹Ù´Ù ¾øÀ½!" << std::endl;
 		return;
 	}
 
-	float newHeight = 1 * CTimeManager::GetInstance()->m_phase;
-	double durationSlow = 8.0; // ÃµÃµÈ÷ ¿Ã¶ó°¡´Â ½Ã°£
-	double durationFast = 2.0; // ºü¸£°Ô ¿Ã¶ó°¡´Â ½Ã°£
-	double totalTime = durationSlow + durationFast; // ÃÑ ½Ã°£
+	CTransform* transform = reinterpret_cast<CTransform*>(m_Ocean->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	XMFLOAT3 nowPos = transform->GetPosition();
+	if (m_fOceanHeight <= nowPos.y) return;
 
-	// ÃÊ±â À§Ä¡¿Í ¸ñÇ¥ À§Ä¡ ¼³Á¤
-	double startY = m_Ocean->GetPosition().y;
-	double endY = newHeight;
-	double totalDistance = endY - startY; // ÀüÃ¼ ÀÌµ¿ °Å¸®
-
-	auto deltaTime = CTimeManager::GetInstance()->GetDeltaTime();
-	XMFLOAT3 newPosition = m_Ocean->GetPosition();
-
-	// ½Ã°£ °¨¼Ò
-	m_fOceanRiseTime -= deltaTime;
-	float t = totalTime - m_fOceanRiseTime; // ³²Àº ½Ã°£ ´ë½Å °æ°úµÈ ½Ã°£ »ç¿ë
-
-	// Á¾·á Á¶°Ç È®ÀÎ
-	if (m_fOceanRiseTime <= 0.0f) {
-		// ¸ñÇ¥ À§Ä¡¿¡ µµ´ÞÇÏ¸é Á¤È®È÷ ¼³Á¤
-		newPosition.y = endY;
-		m_Ocean->SetPosition(newPosition);
-		return;
-	}
-
-	int phase = CTimeManager::GetInstance()->m_phase;
-
-	// phase°¡ 0 ¶Ç´Â 1ÀÏ ¶§µµ Â¦¼öÃ³·³ µ¿ÀÛ
-	if (phase % 2 == 0 || phase == 0 || phase == 1) {
-		// Â¦¼öÀÏ ¶§ À§¾Æ·¡·Î ÈçµéÈçµé ¿òÁ÷ÀÌ±â
-		float oscillationAmplitude = 0.01f; // ÁøÆø
-		float oscillationFrequency = 2.0f; // ÁÖ±â (ÃÊ´ç Áøµ¿ È½¼ö)
-		newPosition.y = startY + oscillationAmplitude * sin(oscillationFrequency * t);
-	}
-	else {
-		// È¦¼öÀÏ ¶§ ¿Ã¶ó°¡±â
-		if (t <= durationSlow) {
-			// Ã¹ 8ÃÊ µ¿¾È ÃµÃµÈ÷ ¼±ÇüÀûÀ¸·Î ¿Ã¶ó°¨
-			newPosition.y = startY + (totalDistance * (t / totalTime));
-		}
-		else {
-			// ¸¶Áö¸· 2ÃÊ µ¿¾È °¡¼Ó¿îµ¿
-			double t_remaining = t - durationSlow;
-			double initial_position = startY + (totalDistance * (durationSlow / totalTime));
-			double acceleration = 2 * (totalDistance - (initial_position - startY)) / (durationFast * durationFast);
-			newPosition.y = initial_position + 0.5 * acceleration * t_remaining * t_remaining;
-		}
-	}
-
-	// À§Ä¡ ¼³Á¤
-	m_Ocean->SetPosition(newPosition);
+	transform->SetPosition(XMFLOAT3(nowPos.x, nowPos.y + 10 * DT, nowPos.z));
 }
 
 void CGameScene::ImGuiRenderMiniMap()
@@ -871,12 +865,12 @@ void CGameScene::ImGuiRenderMiniMap()
 				npcSize = ImVec2(20, 20);
 				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MonsterIcon"]->m_IconGPUHandle;
 				break;
-			case GROUP_TYPE::BILBOARD:
-				continue;
 			case GROUP_TYPE::GROUND_ITEM:
 				npcSize = ImVec2(20, 20);
 				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/ItemIcon"]->m_IconGPUHandle;
 				break;
+			default:
+				continue;
 			}
 
 			ImGui::SetCursorPos(ImVec2(npcPos.x - windowPos.x - npcSize.x / 2, npcPos.y - windowPos.y - npcSize.y / 2));

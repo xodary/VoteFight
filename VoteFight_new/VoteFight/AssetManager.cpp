@@ -8,7 +8,6 @@
 #include "WireFrameShader.h"
 #include "SkyboxShader.h"
 #include "UIShader.h"
-#include "TerrainShader.h"
 #include "BilboardShader.h"
 #include "Material.h"
 #include "Animation.h"
@@ -208,7 +207,8 @@ void CAssetManager::LoadTextures(const string& fileName)
 	// Icons
 	string itemName[] = { "axe", "wood", "punch", "money",
 		"election_ticket", "fish_meet", "potato", "trash",
-		"icecream", "carrot", "drug", "gun", "flower" };
+		"icecream", "carrot", "drug", "gun", "flower", 
+		"arrow", "space", "letter_f", "letter_e", "letter_q" };
 
 	for (auto str : itemName)
 	{
@@ -254,16 +254,6 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new CTerrainShader();
-	shader->SetName("Terrain1");
-	shader->CreatePipelineStates(1);
-	m_shaders.emplace(shader->GetName(), shader);
-
-	shader = new CTerrainShader();
-	shader->SetName("Terrain2");
-	shader->CreatePipelineStates(1);
-	m_shaders.emplace(shader->GetName(), shader);
-
 	shader = new CBilboardShader();
 	shader->SetName("Bilboard");
 	shader->CreatePipelineStates(2);
@@ -276,7 +266,7 @@ void CAssetManager::LoadShaders()
 
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
-	shader->CreatePipelineStates(3);
+	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 
 }
@@ -636,7 +626,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("Meshes.bin");
 	LoadMeshes("WeaponMeshes.bin");
 	LoadMeshes("PlayerMeshes.bin");
-	LoadMeshes("Meshes2.bin");
+	LoadMeshes("OceanMeshes.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
@@ -644,7 +634,7 @@ void CAssetManager::SceneLoadMaterials()
 	LoadMaterials("Materials.bin");
 	LoadMaterials("WeaponMaterials.bin");
 	LoadMaterials("PlayerMaterials.bin");
-	LoadMaterials("Materials2.bin");
+	LoadMaterials("OceanMaterials.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
@@ -652,5 +642,5 @@ void CAssetManager::SceneLoadTextures()
 	LoadTextures("Textures.bin");
 	LoadTextures("WeaponTextures.bin");
 	LoadTextures("PlayerTextures.bin");
-	LoadTextures("Textures2.bin");
+	LoadTextures("OceanTextures.bin");
 }

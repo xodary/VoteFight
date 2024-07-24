@@ -49,6 +49,7 @@ enum PACKET_TYPE {
 	P_SC_WEAPON_CHANGE_PACKET,
 	P_SC_DROPED_ITEM,
 	P_SC_PICKUP_PACKET,
+	P_SC_GAMEEND_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -162,6 +163,7 @@ struct SC_UPDATE_PHASE_PACKET {
 	unsigned char		m_type;
 	int					m_phase;
 	chrono::seconds		m_time;
+	float				m_oceanHeight;
 };
 
 struct SC_EXCHANGE_DONE_PACKET {
@@ -209,6 +211,14 @@ struct SC_PICKUP_PACKET{
 	unsigned char		m_size;
 	unsigned char		m_type;
 	char				m_itemName[NAME_SIZE];
+};
+
+struct SC_GAMEEND_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_1st;
+	unsigned int		m_2nd;
+	unsigned int		m_3rd;
 };
 
 // Packet(Clinet->Server)

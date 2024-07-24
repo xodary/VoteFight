@@ -433,7 +433,7 @@ CIcon::CIcon(CObject* owner, string str)
 	m_isActive = true;
 	CMaterial* material = new CMaterial();
 	material->SetStateNum(0);
-	CRectMesh* mesh = new CRectMesh(0.5, 0.5);
+	CRectMesh* mesh = new CRectMesh(0.4, 0.4);
 	SetMesh(mesh);
 	material->SetTexture(CAssetManager::GetInstance()->GetTexture(str));
 	CShader* BilboardShader = CAssetManager::GetInstance()->GetShader("Bilboard");

@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "StateMachine.h"
+#include "State.h"
 
 CStateMachine::CStateMachine() :
 	m_previousState(),
@@ -44,7 +45,7 @@ void CStateMachine::ChangeState(CState* state)
 
 void CStateMachine::Update()
 {
-	if (m_isEnabled && m_currentState != nullptr)
+	if (m_owner != nullptr && m_currentState != nullptr)
 	{
 		m_currentState->Update(m_owner);
 	}

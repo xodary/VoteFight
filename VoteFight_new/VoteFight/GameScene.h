@@ -56,6 +56,7 @@ public:
 
 	bool is_OceanRise = false;
 	float m_fOceanRiseTime = 0.f;
+	float m_fOceanHeight = 0.f;
 	CObject* m_Ocean = nullptr;
 
 	// 미니맵 관련 함수

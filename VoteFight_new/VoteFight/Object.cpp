@@ -102,7 +102,6 @@ CObject* CObject::LoadFrame(ifstream& in)
 			switch (classType)
 			{
 			// Obejct
-			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
 			case 2: object = new CNPC(); break;
 			case 3: object = new CMonster(); break;
@@ -111,6 +110,7 @@ CObject* CObject::LoadFrame(ifstream& in)
 			case 6: object = new CSword(); break;
 			case 7: object = new CBox(); break;
 			case 8: object = new COnceItem(); break;
+			default: object = new CObject(); break;
 			}
 		}
 		else if (str == "<Name>")
@@ -446,9 +446,12 @@ bool CObject::IsVisible(CCamera* camera)
 {
 	CCollider* collider = static_cast<CCollider*>(m_components[static_cast<int>(COMPONENT_TYPE::COLLIDER)]);
 
-	if ((camera != nullptr) && (collider != nullptr) && (collider->m_meshcollider))
+	if ((camera != nullptr) && (collider != nullptr))
 	{
-		return camera->IsInBoundingFrustum(collider->GetMeshBoundingBox());
+		if(collider->m_meshcollider)
+			return camera->IsInBoundingFrustum(collider->GetMeshBoundingBox());
+		else if(collider->m_boxcollider)
+			return camera->IsInBoundingFrustum(collider->GetMeshBoundingBox());
 	}
 
 	return false;

@@ -6,6 +6,10 @@
 #include "ServerManager.h"
 #include "../Packet.h"
 #include "ImaysNet/PacketQueue.h"
+#include "CameraManager.h"
+#include "Transform.h"
+#include "Camera.h"
+#include "TimeManager.h"
 #include "SoundManager.h"
 
 CLoginScene::CLoginScene()
@@ -37,6 +41,12 @@ void CLoginScene::ReleaseShaderVariables()
 
 void CLoginScene::Init()
 {
+    CCameraManager::GetInstance()->SetGameSceneMainCamera();
+
+    m_focus = new CObject();
+    CTransform* targetTransform = static_cast<CTransform*>(m_focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
+    targetTransform->SetPosition(XMFLOAT3(50, 10, 50));
+    CCameraManager::GetInstance()->GetMainCamera()->SetTarget(m_focus);
 }
 
 void CLoginScene::InitUI()
@@ -45,15 +55,11 @@ void CLoginScene::InitUI()
 
 void CLoginScene::Update()
 {
-    if (!startSong) // 씬 매니저가 사운드 매니저 보다 먼저 Enter해서인지 모르겠어서 나중에 실행
-    {
-        startSong = true;
-        CSoundManager::GetInstance()->Play(SOUND_TYPE::TITLE_BGM, 1.0f, false); 
-    }
 }
 
 void CLoginScene::PreRender()
 {
+    CSceneManager::GetInstance()->GetGameScene()->PreRender();
 }
 
 void CLoginScene::Render() {
@@ -66,6 +72,8 @@ void CLoginScene::Render() {
 
 void CLoginScene::RenderImGui()
 {
+    CSceneManager::GetInstance()->GetGameScene()->Render();
+
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -75,10 +83,8 @@ void CLoginScene::RenderImGui()
     CGameFramework* framework = CGameFramework::GetInstance();
     framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
-    // 화면 크기를 얻어와서 윈도우 크기 설정
-    ImVec2 window_size{ io.DisplaySize.x / 2.0f, io.DisplaySize.y / 3.0f };
-
-    // 마우스 위치를 설정하는 부분은 이전과 동일
+    ImVec2 window_size{ (float)io.DisplaySize.x, (float)io.DisplaySize.y };
+    
     POINT mousePoint;
     GetCursorPos(&mousePoint);
     ScreenToClient(framework->GetHwnd(), &mousePoint);
@@ -88,13 +94,12 @@ void CLoginScene::RenderImGui()
 
     // 윈도우 위치 설정
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    ImVec2 window_pos = ImVec2(io.DisplaySize.x - window_size.x - 600,  // 오른쪽 끝에서 600 픽셀 떨어진 위치
-        main_viewport->WorkPos.y + (io.DisplaySize.y - window_size.y) / 2.0f);
-    ImGui::SetNextWindowPos(window_pos, ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 50, main_viewport->WorkPos.y + 50), ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(window_size, ImGuiCond_FirstUseEver);
 
     DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
 
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 0.5f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(40, 40));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, window_size);
     ImGui::GetFont()->Scale = 3.0f;
@@ -121,6 +126,7 @@ void CLoginScene::RenderImGui()
     ImGui::PopFont();
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
     ImGui::End();
 
     ImGui::Render();

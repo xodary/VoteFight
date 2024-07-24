@@ -18,6 +18,7 @@ D3D12_INPUT_LAYOUT_DESC CObjectShader::CreateInputLayout(int stateNum)
 	switch (stateNum)
 	{
 	case 0: // Standard
+	case 2:
 		inputElementCount = 5;
 		d3d12InputElementDescs = new D3D12_INPUT_ELEMENT_DESC[inputElementCount];
 		d3d12InputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
@@ -37,16 +38,6 @@ D3D12_INPUT_LAYOUT_DESC CObjectShader::CreateInputLayout(int stateNum)
 		d3d12InputElementDescs[4] = { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 4, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 		d3d12InputElementDescs[5] = { "BONEINDEX", 0, DXGI_FORMAT_R32G32B32A32_SINT, 5, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 		d3d12InputElementDescs[6] = { "BONEWEIGHT", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 6, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-		break;
-
-	case 2: // Ocean
-		inputElementCount = 5;
-		d3d12InputElementDescs = new D3D12_INPUT_ELEMENT_DESC[inputElementCount];
-		d3d12InputElementDescs[0] = { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-		d3d12InputElementDescs[1] = { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 1, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-		d3d12InputElementDescs[2] = { "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 2, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-		d3d12InputElementDescs[3] = { "TANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 3, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
-		d3d12InputElementDescs[4] = { "BITANGENT", 0, DXGI_FORMAT_R32G32B32_FLOAT, 4, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 };
 		break;
 	}
 
@@ -86,7 +77,8 @@ D3D12_SHADER_BYTECODE CObjectShader::CreatePixelShader(ID3DBlob* d3d12ShaderBlob
 {
 	switch (stateNum)
 	{
-	
+	case 2: // Standard
+		return Compile("main.hlsl", "PS_OCEAN_GBuffer", "ps_5_1", d3d12ShaderBlob);
 	default:
 		return Compile("main.hlsl", "PS_GBuffer", "ps_5_1", d3d12ShaderBlob);
 	}

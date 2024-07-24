@@ -6,6 +6,12 @@ class CLoginScene : public CScene
 public:
 	friend class CSceneManager;
 
+	CObject* m_focus;
+
+	XMFLOAT3	m_fcamera[4] = { XMFLOAT3(50, 10, 50), XMFLOAT3(75, 60, 335), XMFLOAT3(366, 10, 344), XMFLOAT3(366, 10, 50) };
+	float		time = 1;
+	int			m_ncamera = 0;
+
 	char login_state[255] = "Enter User Name";
 	char server_addr[255] = "127.0.0.1";
 	char user_name[255] = "";
