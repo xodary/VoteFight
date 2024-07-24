@@ -95,11 +95,8 @@ void CGameScene::Exit()
 void CGameScene::Init()
 {
 	m_terrain = CTerrainObject::Load("HeightMap");
-	m_Ocean = CObject::Load("Ocean");
 
-	//SceneLoad();
 	Load("GameScene.bin");
-	Load("GameScene2.bin");
 
 	CObject* object = new CSkyBox(1000, 200);
 	AddObject(GROUP_TYPE::SKYBOX, object, 0);
@@ -760,57 +757,11 @@ void CGameScene::Sea_level_rise(float a)
 		return;
 	}
 
-	float newHeight = 1 * CTimeManager::GetInstance()->m_phase;
-	double durationSlow = 8.0; // 천천히 올라가는 시간
-	double durationFast = 2.0; // 빠르게 올라가는 시간
-	double totalTime = durationSlow + durationFast; // 총 시간
+	CTransform* transform = reinterpret_cast<CTransform*>(m_Ocean->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	XMFLOAT3 nowPos = transform->GetPosition();
+	if (m_fOceanHeight <= nowPos.y) return;
 
-	// 초기 위치와 목표 위치 설정
-	double startY = m_Ocean->GetPosition().y;
-	double endY = newHeight;
-	double totalDistance = endY - startY; // 전체 이동 거리
-
-	auto deltaTime = CTimeManager::GetInstance()->GetDeltaTime();
-	XMFLOAT3 newPosition = m_Ocean->GetPosition();
-
-	// 시간 감소
-	m_fOceanRiseTime -= deltaTime;
-	float t = totalTime - m_fOceanRiseTime; // 남은 시간 대신 경과된 시간 사용
-
-	// 종료 조건 확인
-	if (m_fOceanRiseTime <= 0.0f) {
-		// 목표 위치에 도달하면 정확히 설정
-		newPosition.y = endY;
-		m_Ocean->SetPosition(newPosition);
-		return;
-	}
-
-	int phase = CTimeManager::GetInstance()->m_phase;
-
-	// phase가 0 또는 1일 때도 짝수처럼 동작
-	if (phase % 2 == 0 || phase == 0 || phase == 1) {
-		// 짝수일 때 위아래로 흔들흔들 움직이기
-		float oscillationAmplitude = 0.01f; // 진폭
-		float oscillationFrequency = 2.0f; // 주기 (초당 진동 횟수)
-		newPosition.y = startY + oscillationAmplitude * sin(oscillationFrequency * t);
-	}
-	else {
-		// 홀수일 때 올라가기
-		if (t <= durationSlow) {
-			// 첫 8초 동안 천천히 선형적으로 올라감
-			newPosition.y = startY + (totalDistance * (t / totalTime));
-		}
-		else {
-			// 마지막 2초 동안 가속운동
-			double t_remaining = t - durationSlow;
-			double initial_position = startY + (totalDistance * (durationSlow / totalTime));
-			double acceleration = 2 * (totalDistance - (initial_position - startY)) / (durationFast * durationFast);
-			newPosition.y = initial_position + 0.5 * acceleration * t_remaining * t_remaining;
-		}
-	}
-
-	// 위치 설정
-	m_Ocean->SetPosition(newPosition);
+	transform->SetPosition(XMFLOAT3(nowPos.x, nowPos.y + 10 * DT, nowPos.z));
 }
 
 void CGameScene::ImGuiRenderMiniMap()

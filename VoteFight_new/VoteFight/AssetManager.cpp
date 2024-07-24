@@ -626,7 +626,7 @@ void CAssetManager::SceneLoadMeshes()
 	LoadMeshes("Meshes.bin");
 	LoadMeshes("WeaponMeshes.bin");
 	LoadMeshes("PlayerMeshes.bin");
-	LoadMeshes("Meshes2.bin");
+	LoadMeshes("OceanMeshes.bin");
 }
 
 void CAssetManager::SceneLoadMaterials()
@@ -634,7 +634,7 @@ void CAssetManager::SceneLoadMaterials()
 	LoadMaterials("Materials.bin");
 	LoadMaterials("WeaponMaterials.bin");
 	LoadMaterials("PlayerMaterials.bin");
-	LoadMaterials("Materials2.bin");
+	LoadMaterials("OceanMaterials.bin");
 }
 
 void CAssetManager::SceneLoadTextures()
@@ -642,5 +642,5 @@ void CAssetManager::SceneLoadTextures()
 	LoadTextures("Textures.bin");
 	LoadTextures("WeaponTextures.bin");
 	LoadTextures("PlayerTextures.bin");
-	LoadTextures("Textures2.bin");
+	LoadTextures("OceanTextures.bin");
 }

@@ -8,7 +8,6 @@ public:
 	static const XMFLOAT3 m_worldUp;
 	static const XMFLOAT3 m_worldForward;
 
-protected:
 	XMFLOAT3              m_position;
 	XMFLOAT3              m_rotation;
 	XMFLOAT3              m_scale;

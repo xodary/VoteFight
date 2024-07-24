@@ -81,11 +81,6 @@ void CScene::Load(const string& fileName)
 				for (int i = 0; i < instanceCount; ++i)
 				{
 					CObject* object = CObject::Load(modelFileName);
-					if (object->GetName() == "Ocean") {
-						CSceneManager::GetInstance()->GetGameScene()->m_Ocean = object;
-						AddObject(groupType, object);
-						continue;
-					}
 					CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 					object->SetActive(isActives[i]);
@@ -97,6 +92,8 @@ void CScene::Load(const string& fileName)
 					transform->Update();
 					object->Init();
 					cout << object->GetName() << endl;
+					if (object->GetName() == "Ocean") 
+						CSceneManager::GetInstance()->GetGameScene()->m_Ocean = object;
 					AddObject(groupType, object);
 				}
 				break;

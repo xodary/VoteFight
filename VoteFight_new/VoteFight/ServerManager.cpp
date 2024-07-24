@@ -409,7 +409,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CTimeManager::GetInstance()->m_phaseTime = seconds_as_float;
 		CTimeManager::GetInstance()->m_lastTime = seconds_as_float;
 		CTimeManager::GetInstance()->m_phase = recv_packet->m_phase;
-		CSceneManager::GetInstance()->GetGameScene()->m_fOceanRiseTime = 10;
+		CSceneManager::GetInstance()->GetGameScene()->m_fOceanHeight = recv_packet->m_oceanHeight;
+		//CSceneManager::GetInstance()->GetGameScene()->m_fOceanRiseTime = 1;
 		cout << "Phase " << recv_packet->m_phase << endl;
 	}
 	break;

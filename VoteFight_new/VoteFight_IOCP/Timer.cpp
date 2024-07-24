@@ -14,7 +14,8 @@
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
 chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
-
+//chrono::seconds phase_time[8] = { 5s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
+float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()
 {
@@ -142,6 +143,22 @@ void CTimer::do_timer()
 									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 									cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 								}
+
+								player.second->m_player->m_Velocity = 0;
+								SC_VELOCITY_CHANGE_PACKET v_send_packet;
+								v_send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+								v_send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+								v_send_packet.m_id = player.second->m_id;
+								v_send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+								v_send_packet.m_vel = player.second->m_player->m_Velocity;
+								v_send_packet.m_pos = player.second->m_player->m_Pos;
+								v_send_packet.m_look = player.second->m_player->m_Angle;
+								cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
+
+								for (auto& rc : RemoteClient::m_remoteClients) {
+									if (!rc.second->m_ingame) continue;
+									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
+								}
 							}
 						}
 					}
@@ -175,6 +192,54 @@ void CTimer::do_timer()
 					}
 
 					client.second->m_player->m_Pos.y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
+					if (client.second->m_player->m_Pos.y < phase_height[CTimer::phase - 1]) {
+						client.second->m_player->m_Health -= 1;
+						SC_HEALTH_CHANGE_PACKET send_packet;
+						send_packet.m_size = sizeof(send_packet);
+						send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
+						send_packet.m_id = client.second->m_id;
+						send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
+						send_packet.m_health = client.second->m_player->m_Health;
+						for (auto& rc : RemoteClient::m_remoteClients) {
+							if (!rc.second->m_ingame) continue;
+							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+							cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+						}
+						if (client.second->m_player->m_Health <= 0) {
+							client.second->m_player->m_dead = true;
+
+							client.second->m_player->m_Velocity = 0;
+							SC_VELOCITY_CHANGE_PACKET v_send_packet;
+							v_send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+							v_send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+							v_send_packet.m_id = client.second->m_id;
+							v_send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+							v_send_packet.m_vel = client.second->m_player->m_Velocity;
+							v_send_packet.m_pos = client.second->m_player->m_Pos;
+							v_send_packet.m_look = client.second->m_player->m_Angle;
+							cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
+
+							for (auto& rc : RemoteClient::m_remoteClients) {
+								if (!rc.second->m_ingame) continue;
+								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
+							}
+
+							SC_ANIMATION_PACKET send_packet;
+							send_packet.m_size = sizeof(send_packet);
+							send_packet.m_type = P_SC_ANIMATION_PACKET;
+							send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+							send_packet.m_id = client.second->m_id;
+							send_packet.m_loop = false;
+							send_packet.m_bone = 0;	// Root
+							strcpy_s(send_packet.m_key, "Death");
+							for (auto& rc : RemoteClient::m_remoteClients) {
+								if (!rc.second->m_ingame) continue;
+								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+								cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+							}
+						}
+
+					}
 					client.second->m_lastTime = chrono::system_clock::now();
 
 					XMFLOAT4X4 matrix = Matrix4x4::Identity();
@@ -220,6 +285,7 @@ void CTimer::do_timer()
 					send_packet.m_type = PACKET_TYPE::P_SC_UPDATE_PHASE_PACKET;
 					send_packet.m_phase = CTimer::phase;
 					send_packet.m_time = phase_time[CTimer::phase];
+					send_packet.m_oceanHeight = phase_height[CTimer::phase];
 					client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 
 					cout << "Phase " << CTimer::phase << endl;

@@ -162,6 +162,7 @@ struct SC_UPDATE_PHASE_PACKET {
 	unsigned char		m_type;
 	int					m_phase;
 	chrono::seconds		m_time;
+	float				m_oceanHeight;
 };
 
 struct SC_EXCHANGE_DONE_PACKET {
