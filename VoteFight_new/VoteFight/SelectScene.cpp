@@ -73,13 +73,14 @@ void CSelectScene::Enter()
 	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	targetTransform->SetPosition(XMFLOAT3(4, 2, 0.3));
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(focus);
-	CSoundManager::GetInstance()->Play(SOUND_TYPE::TITLE_BGM, 1.0f, false);
+	CSoundManager::GetInstance()->Play(SOUND_TYPE::SELECT_BGM, 1.0f, false);
 
 	InitLight();
 }
 
 void CSelectScene::Exit()
 {
+	CSoundManager::GetInstance()->Stop(SOUND_TYPE::SELECT_BGM);
 }
 
 void CSelectScene::Init()
@@ -96,7 +97,6 @@ void CSelectScene::Init()
 	{
 		m_WaitCharacters[i] = objects[i];
 		m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, 1, 0.3));
-		//m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
 		cout << m_WaitCharacters[i]->GetName() << endl;
 	}
 

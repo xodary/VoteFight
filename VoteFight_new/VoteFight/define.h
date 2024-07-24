@@ -245,7 +245,7 @@ enum SOUND_TYPE
 {
 	// BGM
 	TITLE_BGM = 0,
-	INGAME_BGM_1 = 1,
+	SELECT_BGM = 1,
 	INGAME_BGM_2 = 2,
 	ENDING_BGM = 3,
 
