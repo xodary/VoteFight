@@ -78,14 +78,13 @@ CObject* CObject::LoadFrame(ifstream& in)
 
 			switch (classType)
 			{
-				// Obejct
-			case 0: object = new CObject(); break;
 			case 1: object = new CPlayer(); break;
 			case 2: object = new CNPC(); break;
 			case 3: object = new CMonster(); break;
 			case 4: object = new CBullet(); break;
 			case 7: object = new CBox(); break;
 			case 8: object = new COnceItem(); break;
+			default: object = new CObject(); break;
 			}
 		}
 		else if (str == "<Name>")

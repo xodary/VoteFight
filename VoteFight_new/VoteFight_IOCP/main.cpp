@@ -8,7 +8,9 @@
 #include "NPC.h"
 #include "Bullet.h"
 #include "Box.h"
+#include "State.h"
 #include "Monster.h"
+#include "StateMachine.h"
 
 volatile bool				stopServer = false;
 volatile bool				GameStart = false;
@@ -749,30 +751,17 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				}
 				else
 				{
-					strcpy_s(send_packet.m_key, "Gethit");
-					monster->m_AnilastTime = chrono::system_clock::now();
-					TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, monster->m_id,(int)GROUP_TYPE::MONSTER,"idle",0 };
-					CTimer::timer_queue.push(ev);
+					//strcpy_s(send_packet.m_key, "Gethit");
+					monster->m_stateMachine->ChangeState(CMonsterAttackedState::GetInstance());
+					//monster->m_AnilastTime = chrono::system_clock::now();
+					//TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, monster->m_id,(int)GROUP_TYPE::MONSTER,"idle",0 };
+					//CTimer::timer_queue.push(ev);
 				}
 
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
-				}
-
-				{
-					SC_HEALTH_CHANGE_PACKET send_packet;
-					send_packet.m_size = sizeof(send_packet);
-					send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
-					send_packet.m_id = object.first;
-					send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
-					send_packet.m_health = monster->m_Health;
-					for (auto& rc : RemoteClient::m_remoteClients) {
-						if (!rc.second->m_ingame) continue;
-						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-						cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
-					}
 				}
 			}
 		}

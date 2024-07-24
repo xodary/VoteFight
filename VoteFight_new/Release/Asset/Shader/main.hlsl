@@ -362,7 +362,34 @@ PSOutput PS_GBuffer(VS_STANDARD_OUTPUT input) : SV_TARGET
     }
     output.worldpos = float4(input.positionW, 1.0f);
     
-  // output.color = franelOuterLine(output.worldpos, output.normal, output.color);
+    output.color = franelOuterLine(output.worldpos, output.normal, output.color);
+    return output;
+}
+
+PSOutput PS_OCEAN_GBuffer(VS_STANDARD_OUTPUT input) : SV_TARGET
+{
+    PSOutput output = (PSOutput) 0;
+	
+    output.color = gvColor;
+    if (gnTexturesMask & MATERIAL_ALBEDO_MAP)
+        output.color = gtxtAlbedoTexture.Sample(samplerState, input.uv);
+    output.normal = float4(input.normalW, 1);
+    
+    if (gnTexturesMask & MATERIAL_NORMAL_MAP)
+    {
+        output.normal = gtxtNormalTexture.Sample(samplerState, input.uv);
+        float3x3 TBN = float3x3(normalize(input.tangentW), normalize(input.bitangentW), normalize(input.normalW));
+        float3 vNormal = normalize(output.normal.rgb * 2.0f - 1.0f);
+        output.normal = float4(normalize(mul(vNormal, TBN)), 1.0f);
+    }
+    else
+    {
+        output.normal = output.normal;
+
+    }
+    output.normal.w = 0;
+    output.worldpos = float4(input.positionW, 1.0f);
+    
     return output;
 }
 
@@ -400,9 +427,12 @@ float4 PS_Main(PSInput input) : SV_TARGET
 
     float3 viewDir = normalize(gvCameraPosition.xyz - worldPos.xyz);
     
-    float4 cIllumination = Lighting(worldPos.xyz, normal, mul(worldPos, m_lights[SHADOWMAP_LIGHT].m_toTexCoord), OBJECT);
-    albedo *= cIllumination;
-    albedo = franelOuterLine(worldPos.xyz, normal, albedo);
+    if (normalBuffer[inPos].a == 1)
+    {
+        float4 cIllumination = Lighting(worldPos.xyz, normal, mul(worldPos, m_lights[SHADOWMAP_LIGHT].m_toTexCoord), OBJECT);
+        albedo *= cIllumination;
+        albedo = franelOuterLine(worldPos.xyz, normal, albedo);
+    }
     return albedo;
 }
 
@@ -637,33 +667,6 @@ PS_DEPTH_OUTPUT PS_DepthWrite(VS_POSITION_OUTPUT input)
     output.fDepth = input.positionH.z;
     
     return (output);
-}
-
-// ======== TERRAIN =========
-struct VS_TERRAIN_INPUT
-{
-    float3 position : POSITION;
-    float2 uv : TEXCOORD;
-};
-
-struct VS_TERRAIN_OUTPUT
-{
-    float4 position : SV_POSITION;
-    float2 uv : TEXCOORD0;
-};
-
-VS_TERRAIN_OUTPUT VS_Ocean(VS_TERRAIN_INPUT input)
-{
-    VS_TERRAIN_OUTPUT output;
-    
-    output.position = mul(mul(mul(float4(input.position, 1.0f), gmtxGameObject), gmtxView), gmtxProjection);
-    output.uv = input.uv;
-    return (output);
-}
-
-float4 PS_Ocean(VS_TERRAIN_OUTPUT input) : SV_TARGET
-{
-    return gtxtAlbedoTexture.Sample(samplerState, input.uv);
 }
 
 //======= Outer Eage===================

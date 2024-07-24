@@ -81,6 +81,11 @@ void CScene::Load(const string& fileName)
 				for (int i = 0; i < instanceCount; ++i)
 				{
 					CObject* object = CObject::Load(modelFileName);
+					if (object->GetName() == "Ocean") {
+						CSceneManager::GetInstance()->GetGameScene()->m_Ocean = object;
+						AddObject(groupType, object);
+						continue;
+					}
 					CTransform* transform = static_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 					object->SetActive(isActives[i]);
@@ -90,13 +95,8 @@ void CScene::Load(const string& fileName)
 					transform->SetScale(transforms[3 * i + 2]);
 
 					transform->Update();
-					transform->Update();
 					object->Init();
 					cout << object->GetName() << endl;
-					if (object->GetName() == "Ocean") {
-						//CSceneManager::GetInstance()->GetGameScene()->m_Ocean = object;
-						continue;
-					}
 					AddObject(groupType, object);
 				}
 				break;
@@ -265,7 +265,8 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 	CObject* myPlayer = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
 	newlist.insert(myPlayer);
 	auto& ocean = CSceneManager::GetInstance()->GetGameScene()->m_Ocean;
-	if(stateNum == 0 && ocean) newlist.insert(ocean);
+	if(stateNum == 0 && ocean) 
+		newlist.insert(ocean);
 	
 	CTransform* transform = reinterpret_cast<CTransform*>(myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
 

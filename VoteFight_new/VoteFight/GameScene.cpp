@@ -95,6 +95,7 @@ void CGameScene::Exit()
 void CGameScene::Init()
 {
 	m_terrain = CTerrainObject::Load("HeightMap");
+	m_Ocean = CObject::Load("Ocean");
 
 	//SceneLoad();
 	Load("GameScene.bin");
@@ -175,7 +176,7 @@ void CGameScene::Update()
 		if (m_miniMap)m_miniMap = false;
 		else m_miniMap = true;
 
-	Sea_level_rise(1);
+	Sea_level_rise(1); 
 	CScene::Update();
 }
 
@@ -285,9 +286,11 @@ void CGameScene::PreRender()
 
 	for (auto& object : GetViewList(0))
 	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
-		{
-			object->Render(camera);
+		if (object->m_name == "Ocean" || object->IsVisible(camera)) {
+			if ((object->IsActive()) && (!object->IsDeleted()))
+			{
+				object->Render(camera);
+			}
 		}
 	}
 
@@ -324,10 +327,13 @@ void CGameScene::Render()
 	{
 		object.second->Render(camera);
 	}
-	
+
 	for (auto& object : GetViewList(0))
 	{
-		object->RenderBilboard(camera);
+		if (object->IsVisible(camera)) 
+		{
+			object->RenderBilboard(camera);
+		}
 	}
 
 	RenderImGui();

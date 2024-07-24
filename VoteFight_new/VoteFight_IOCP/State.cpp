@@ -405,3 +405,80 @@ void CMonsterAttackState::Update(CObject* object)
 	}
 }
 
+
+CMonsterAttackedState::CMonsterAttackedState()
+{
+}
+
+CMonsterAttackedState::~CMonsterAttackedState()
+{
+}
+
+void CMonsterAttackedState::Enter(CObject* object)
+{
+	enterTime = chrono::system_clock::now();
+	CMonster* monster = reinterpret_cast<CMonster*>(object);
+
+	{
+		SC_ANIMATION_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_SC_ANIMATION_PACKET;
+		send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
+		send_packet.m_id = object->m_id;
+		send_packet.m_loop = true;
+		send_packet.m_bone = 0;	// Root
+		strcpy_s(send_packet.m_key, "Gethit");
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+		}
+	}
+	
+	object->m_Velocity = 0;
+	{
+		SC_VELOCITY_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+		send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+		send_packet.m_id = object->m_id;
+		send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
+		send_packet.m_vel = object->m_Velocity;
+		send_packet.m_pos = object->m_Pos;
+		send_packet.m_look = object->m_Angle;
+		cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+	}
+
+	{
+		SC_HEALTH_CHANGE_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
+		send_packet.m_id = monster->m_id;
+		send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
+		send_packet.m_health = monster->m_Health;
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
+		}
+	}
+}
+
+void CMonsterAttackedState::Exit(CObject* object)
+{
+}
+
+void CMonsterAttackedState::Update(CObject* object)
+{
+	CMonster* monster = reinterpret_cast<CMonster*>(object);
+
+	if (chrono::system_clock::now() - enterTime > CGameScene::m_animations["FishMon"]["Gethit"]) {
+		monster->m_stateMachine->ChangeState(CMonsterIdleState::GetInstance());
+		return;
+	}
+}
+

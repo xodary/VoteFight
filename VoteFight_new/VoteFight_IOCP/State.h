@@ -76,3 +76,19 @@ public:
 
 	virtual void Update(CObject* object);
 };
+
+class CMonsterAttackedState : public CState, public CSingleton<CMonsterAttackedState>
+{
+	friend class CSingleton<CMonsterAttackedState>;
+
+private:
+	CMonsterAttackedState();
+	virtual ~CMonsterAttackedState();
+
+public:
+	virtual void Enter(CObject* object);
+	virtual void Exit(CObject* object);
+
+	virtual void Update(CObject* object);
+};
+

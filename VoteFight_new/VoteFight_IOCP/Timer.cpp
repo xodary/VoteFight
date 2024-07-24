@@ -7,6 +7,7 @@
 #include "../Packet.h"
 #include "Monster.h"
 #include "RemoteClient.h"
+#include "State.h"
 #include "StateMachine.h"
 
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
@@ -93,30 +94,13 @@ void CTimer::do_timer()
 							}
 							else
 							{
-								strcpy_s(send_packet.m_key, "Gethit");
-								monster->m_AnilastTime = chrono::system_clock::now();
-								TIMER_EVENT ev{ (RemoteClient*)monster->m_id, chrono::system_clock::now() + CGameScene::m_animations["FishMon"]["Gethit"] , EV_ANIMATION, monster->m_id,(int)GROUP_TYPE::MONSTER,"idle",0 };
-								CTimer::timer_queue.push(ev);
+								monster->m_stateMachine->ChangeState(CMonsterAttackedState::GetInstance());
 							}
 
 							for (auto& rc : RemoteClient::m_remoteClients) {
 								if (!rc.second->m_ingame) continue;
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 								cout << " >> send ) SC_ANIMATION_PACKET" << endl;
-							}
-
-							{
-								SC_HEALTH_CHANGE_PACKET send_packet;
-								send_packet.m_size = sizeof(send_packet);
-								send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
-								send_packet.m_id = monster->m_id;
-								send_packet.m_groupType = (int)GROUP_TYPE::MONSTER;
-								send_packet.m_health = monster->m_Health;
-								for (auto& rc : RemoteClient::m_remoteClients) {
-									if (!rc.second->m_ingame) continue;
-									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-									cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
-								}
 							}
 						}
 					}
@@ -201,6 +185,7 @@ void CTimer::do_timer()
 
 					for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
 						if (i == (int)GROUP_TYPE::PLAYER) continue;
+						if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
 						for (auto& object : CGameScene::m_objects[i]) {
 							if (!client.second->m_player->m_collider) continue;
 							if (!object.second->m_collider) continue;

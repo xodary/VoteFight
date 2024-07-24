@@ -8,7 +8,6 @@
 #include "WireFrameShader.h"
 #include "SkyboxShader.h"
 #include "UIShader.h"
-#include "OceanShader.h"
 #include "BilboardShader.h"
 #include "Material.h"
 #include "Animation.h"
@@ -255,11 +254,6 @@ void CAssetManager::LoadShaders()
 	shader->CreatePipelineStates(1);
 	m_shaders.emplace(shader->GetName(), shader);
 
-	shader = new COceanShader();
-	shader->SetName("Ocean");
-	shader->CreatePipelineStates(1);
-	m_shaders.emplace(shader->GetName(), shader);
-
 	shader = new CBilboardShader();
 	shader->SetName("Bilboard");
 	shader->CreatePipelineStates(2);
@@ -272,7 +266,7 @@ void CAssetManager::LoadShaders()
 
 	shader = new CDepthWriteShader();
 	shader->SetName("DepthWrite");
-	shader->CreatePipelineStates(3);
+	shader->CreatePipelineStates(2);
 	m_shaders.emplace(shader->GetName(), shader);
 
 }
