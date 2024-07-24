@@ -7,6 +7,8 @@
 #include "InputManager.h"
 #include "CameraManager.h"
 #include "SceneManager.h"
+#include "SoundManager.h"
+
 #include "DescriptorHeap.h"
 #include "VoxelConeTracing.h"
 #include "Texture.h"
@@ -183,6 +185,7 @@ void CGameFramework::Init(HWND hWnd, const XMFLOAT2& resolution)
 	CSceneManager::GetInstance()->Init();
 	CInputManager::GetInstance()->Init();
 	CTimeManager::GetInstance()->Init();
+	CSoundManager::GetInstance()->Init();
 
 	CreateFullscreenQuadBuffers();
 
@@ -559,6 +562,7 @@ void CGameFramework::MoveToNextFrame()
 	m_swapChainBufferIndex = m_dxgiSwapChain->GetCurrentBackBufferIndex();
 
 	WaitForGpuComplete();
+	CSoundManager::GetInstance()->Update();
 }
 
 void CGameFramework::PreRender()

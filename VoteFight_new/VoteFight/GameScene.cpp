@@ -888,4 +888,32 @@ void CGameScene::ImGuiRenderMiniMap()
 	ImGui::End();
 }
 
-
+void CGameScene::SetLightVersion(int value)
+{
+	// 낮 버전 설정
+	if (value % 2 != 0)
+	{
+		m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.6f, 0.6f, 0.6f, 1.0f); // 밝고 따뜻한 색상
+		m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(1.0f, 1.0f, 0.9f, 1.0f); // 강하고 선명한 흰색
+		m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.9f, 0.9f, 0.8f, 1.0f); // 높은 강도의 흰색
+		m_mappedGameScene->m_lights[1].m_isActive = true;
+		m_mappedGameScene->m_lights[1].m_shadowMapping = false;
+		m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
+		m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 100.0f, 0.0f); // 태양이 하늘에 있는 것처럼 위에서 아래로 비추는 방향
+		m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 0.0f));
+		m_mappedGameScene->m_lights[1].m_range = 1000.f;
+	}
+	// 밤 버전 설정
+	else
+	{
+		m_mappedGameScene->m_lights[1].m_xmf4Ambient = XMFLOAT4(0.1f, 0.1f, 0.2f, 1.0f); // 어둡고 차가운 색상
+		m_mappedGameScene->m_lights[1].m_xmf4Diffuse = XMFLOAT4(0.2f, 0.2f, 0.4f, 1.0f); // 약한 푸른빛
+		m_mappedGameScene->m_lights[1].m_xmf4Specular = XMFLOAT4(0.3f, 0.3f, 0.5f, 1.0f); // 낮은 강도의 흰색 또는 푸른색
+		m_mappedGameScene->m_lights[1].m_isActive = true;
+		m_mappedGameScene->m_lights[1].m_shadowMapping = false;
+		m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
+		m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 10.0f, -10.0f); // 달빛이나 도시 불빛을 반영하여 다양한 방향
+		m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 0.5f));
+		m_mappedGameScene->m_lights[1].m_range = 100.f;
+	}
+}

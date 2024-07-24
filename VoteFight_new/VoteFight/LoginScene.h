@@ -30,4 +30,6 @@ public:
 
 	virtual void PreRender();
 	virtual void Render();
+
+	bool startSong = false;
 };

@@ -60,4 +60,7 @@ public:
 
 	// 미니맵 관련 함수
 	void ImGuiRenderMiniMap();
+
+	// 라이트 설정 함수
+	void SetLightVersion(int value);
 };

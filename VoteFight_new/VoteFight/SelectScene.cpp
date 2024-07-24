@@ -5,6 +5,7 @@
 #include "InputManager.h"
 #include "AssetManager.h"
 #include "CameraManager.h"
+#include "SoundManager.h"
 #include "Texture.h"
 #include "UI.h"
 #include "Shader.h"
@@ -72,6 +73,7 @@ void CSelectScene::Enter()
 	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	targetTransform->SetPosition(XMFLOAT3(4, 2, 0.3));
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(focus);
+	CSoundManager::GetInstance()->Play(SOUND_TYPE::TITLE_BGM, 1.0f, false);
 
 	InitLight();
 }
@@ -136,10 +138,12 @@ void CSelectScene::SelectCharacter(UINT number)
 		if (number != i)
 		{
 			m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, 1, 0.3));
+			m_WaitCharacters[i]->SetScale(XMFLOAT3(1, 1, 1));
 		}
 		else
 		{
-			m_WaitCharacters[i]->SetPosition(XMFLOAT3(0, 1, 0.3));
+			m_WaitCharacters[i]->SetPosition(XMFLOAT3(0, 0, 0.3));
+			m_WaitCharacters[i]->SetScale(XMFLOAT3(2, 2, 2));
 		}
 	}
 }

@@ -371,9 +371,6 @@
     <ClInclude Include="MainShader.h">
       <Filter>헤더 파일\06. Asset\Shader</Filter>
     </ClInclude>
-    <ClInclude Include="LoginScene.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="ImGUI\imgui_impl_dx12.h">
       <Filter>ImGUI</Filter>
     </ClInclude>
@@ -433,6 +430,12 @@
     </ClInclude>
     <ClInclude Include="ImGUI\implot_internal.h">
       <Filter>ImGUI</Filter>
+    </ClInclude>
+    <ClInclude Include="SoundManager.h">
+      <Filter>헤더 파일\02. Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="LoginScene.h">
+      <Filter>헤더 파일\04. Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -696,6 +699,9 @@
     </ClCompile>
     <ClCompile Include="ImGUI\implot_items.cpp">
       <Filter>ImGUI</Filter>
+    </ClCompile>
+    <ClCompile Include="SoundManager.cpp">
+      <Filter>소스 파일\02. Manager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
