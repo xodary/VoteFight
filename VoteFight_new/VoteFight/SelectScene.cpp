@@ -70,7 +70,7 @@ void CSelectScene::Enter()
 	
 	CObject* focus = new CObject();
 	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	targetTransform->SetPosition(XMFLOAT3(4, 2, 0.3));
+	targetTransform->SetPosition(XMFLOAT3(4, -1.5, 0.3));
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(focus);
 
 	InitLight();
@@ -89,15 +89,18 @@ void CSelectScene::Init()
 	CreateShaderVariables();
 
 	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
+	unordered_map<int, CObject*> structers = GetGroupObject(GROUP_TYPE::STRUCTURE);
+	structers[0]->SetPosition(XMFLOAT3(0, -3.5, 0));
+	structers[0]->SetRotate(XMFLOAT3(-95, -90, 0));
+	structers[0]->SetScale(XMFLOAT3(1.6, 1.6, 1.6));
 
 	for (size_t i = 0; i < 3; i++)
 	{
 		m_WaitCharacters[i] = objects[i];
-		m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, 1, 0.3));
+		m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, -2.5, 0.3));
 		m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
 		cout << m_WaitCharacters[i]->GetName() << endl;
 	}
-
 }
 
 void CSelectScene::InitLight()
@@ -111,7 +114,7 @@ void CSelectScene::InitLight()
 	m_mappedGameScene->m_lights[0].m_isActive = true;
 	m_mappedGameScene->m_lights[0].m_shadowMapping = true;
 	m_mappedGameScene->m_lights[0].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, 1.0f, 1.0f);	// Player 따라다님.
+	m_mappedGameScene->m_lights[0].m_position = XMFLOAT3(0.0f, -1.f, 1.0f);	// Player 따라다님.
 	m_mappedGameScene->m_lights[0].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, -1.0f, 1.0f));
 	m_mappedGameScene->m_lights[0].m_range = 500.f;
 	cameras[2]->SetLight(&m_mappedGameScene->m_lights[0]);
@@ -122,7 +125,7 @@ void CSelectScene::InitLight()
 	m_mappedGameScene->m_lights[1].m_isActive = true;
 	m_mappedGameScene->m_lights[1].m_shadowMapping = false;
 	m_mappedGameScene->m_lights[1].m_type = static_cast<int>(LIGHT_TYPE::DIRECTIONAL);
-	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, 1.0f, -1.0f);
+	m_mappedGameScene->m_lights[1].m_position = XMFLOAT3(0.0f, -1.f, -1.0f);
 	m_mappedGameScene->m_lights[1].m_direction = Vector3::Normalize(XMFLOAT3(0.0f, 1.0f, -1.0f));
 	m_mappedGameScene->m_lights[1].m_range = 500.f;
 }
@@ -135,11 +138,11 @@ void CSelectScene::SelectCharacter(UINT number)
 	{
 		if (number != i)
 		{
-			m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, 1, 0.3));
+			m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, -2.5, 0.3));
 		}
 		else
 		{
-			m_WaitCharacters[i]->SetPosition(XMFLOAT3(0, 1, 0.3));
+			m_WaitCharacters[i]->SetPosition(XMFLOAT3(0, -2.5, 0.3));
 		}
 	}
 }
@@ -215,7 +218,7 @@ void CSelectScene::PreRender()
 
 					for (const auto& object : objects)
 					{
-						if ((object.second->IsActive()) && (!object.second->IsDeleted()))
+						if (object.second->GetName() != "Ocean" && (object.second->IsActive()) && (!object.second->IsDeleted()))
 						{
 							object.second->PreRender(camera);
 						}
@@ -311,23 +314,6 @@ void CSelectScene::Render()
 	}
 
 	RenderImGui();
-
-	if (KEY_HOLD(KEY::SPACE))
-	{
-		// [Debug] Render DepthTexture
-		const XMFLOAT2& resolution = CGameFramework::GetInstance()->GetResolution();
-		D3D12_VIEWPORT d3d12Viewport = { 0.0f, 0.0f, resolution.x * 0.4f, resolution.y * 0.4f, 0.0f, 1.0f };
-		D3D12_RECT d3d12ScissorRect = { 0, 0,(LONG)(resolution.x * 0.4f), (LONG)(resolution.y * 0.4f) };
-		CTexture* texture = CAssetManager::GetInstance()->GetTexture("DepthWrite");
-		CShader* shader = CAssetManager::GetInstance()->GetShader("DepthWrite");
-
-		texture->UpdateShaderVariable();
-		shader->SetPipelineState(2);
-		commandList->RSSetViewports(1, &d3d12Viewport);
-		commandList->RSSetScissorRects(1, &d3d12ScissorRect);
-		commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-		commandList->DrawInstanced(6, 1, 0, 0);
-	}
 }
 
 void CSelectScene::RenderImGui()
@@ -375,9 +361,9 @@ void CSelectScene::RenderImGui()
 		if (hovered[i]) borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
 		if (m_selected_id[i] != -1 || m_selected_model == i) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
 
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0, 0, 0, 0)); // 투명 배경
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f)); // 투명 배경
 		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
-		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 3.0f);
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f);
 		ImGui::GetFont()->Scale = 1.5;
 		ImGui::PushFont(ImGui::GetFont());
 

@@ -7,6 +7,9 @@
 #include "StateMachine.h"
 #include "GameScene.h"
 
+unsigned int CGameScene::m_nowRank;
+unsigned int CGameScene::m_Rank[3];
+
 CState::CState()
 {
 }

@@ -6,6 +6,10 @@
 #include "ServerManager.h"
 #include "../Packet.h"
 #include "ImaysNet/PacketQueue.h"
+#include "CameraManager.h"
+#include "Transform.h"
+#include "Camera.h"
+#include "TimeManager.h"
 
 CLoginScene::CLoginScene()
 {
@@ -34,6 +38,12 @@ void CLoginScene::ReleaseShaderVariables()
 
 void CLoginScene::Init()
 {
+    CCameraManager::GetInstance()->SetGameSceneMainCamera();
+
+    m_focus = new CObject();
+    CTransform* targetTransform = static_cast<CTransform*>(m_focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
+    targetTransform->SetPosition(XMFLOAT3(50, 10, 50));
+    CCameraManager::GetInstance()->GetMainCamera()->SetTarget(m_focus);
 }
 
 void CLoginScene::InitUI()
@@ -42,14 +52,26 @@ void CLoginScene::InitUI()
 
 void CLoginScene::Update()
 {
+    time -= DT * 0.03f;
+    if (time < 0.0f) {
+        time = 1.0f;
+        m_ncamera = (m_ncamera + 1) % 4;
+    }
+    CTransform* transform = reinterpret_cast<CTransform*>(m_focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
+    transform->SetPosition(Vector3::Add(Vector3::ScalarProduct(m_fcamera[(m_ncamera + 1) % 4], 1-time),
+        Vector3::ScalarProduct(m_fcamera[m_ncamera], time)));
+    CSceneManager::GetInstance()->GetGameScene()->Update();
 }
 
 void CLoginScene::PreRender()
 {
+    CSceneManager::GetInstance()->GetGameScene()->PreRender();
 }
 
 void CLoginScene::Render()
 {
+    CSceneManager::GetInstance()->GetGameScene()->Render();
+
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -59,7 +81,8 @@ void CLoginScene::Render()
     CGameFramework* framework = CGameFramework::GetInstance();
     framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
-    ImVec2 window_size{ (float)io.DisplaySize.x, (float)io.DisplaySize.y };
+    ImVec2 window_size{ CGameFramework::GetInstance()->GetResolution().x * 2 / 3, CGameFramework::GetInstance()->GetResolution().y * 2 / 3 };
+    ImVec2 window_pos{ CGameFramework::GetInstance()->GetResolution().x * 1 / 6, CGameFramework::GetInstance()->GetResolution().y * 1 / 6 };
     
     POINT mousePoint;
     GetCursorPos(&mousePoint);
@@ -69,11 +92,12 @@ void CLoginScene::Render()
     io.MousePos.y = mousePoint.y * (framework->GetResolution().y / io.DisplaySize.y);
 
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 50, main_viewport->WorkPos.y + 50), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(window_pos, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(window_size, ImGuiCond_FirstUseEver);
 
     DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
 
+    ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 0.5f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(40, 40));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, window_size);
     ImGui::GetFont()->Scale = 3.0f;
@@ -100,6 +124,7 @@ void CLoginScene::Render()
     ImGui::PopFont();
     ImGui::PopStyleVar();
     ImGui::PopStyleVar();
+    ImGui::PopStyleColor();
     ImGui::End();
 
     ImGui::Render();

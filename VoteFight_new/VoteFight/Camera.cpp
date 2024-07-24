@@ -211,7 +211,8 @@ void CCamera::Update()
 
 		transform->SetPosition(Vector3::Add(focusPosition, m_offset));
 		XMFLOAT3 originRotation = transform->GetRotation();
-		if(CSceneManager::GetInstance()->m_sceneType == SCENE_TYPE::GAME)
+		if(CSceneManager::GetInstance()->m_sceneType == SCENE_TYPE::GAME || 
+		   CSceneManager::GetInstance()->m_sceneType == SCENE_TYPE::LOGIN)
 			transform->SetRotation(XMFLOAT3(55, originRotation.y, originRotation.z));
 	}
 

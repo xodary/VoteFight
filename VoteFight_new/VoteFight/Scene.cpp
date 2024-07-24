@@ -209,7 +209,7 @@ void CScene::Update()
 {
 	for (auto& object : GetViewList(0))
 	{
-		if ((object->IsActive()) && (!object->IsDeleted()))
+		if (object && (object->IsActive()) && (!object->IsDeleted()))
 		{
 			object->Update();
 		}
@@ -265,7 +265,7 @@ unordered_set<CObject*> CScene::GetViewList(int stateNum)
 	if(stateNum == 0 && ocean) 
 		newlist.insert(ocean);
 	
-	CTransform* transform = reinterpret_cast<CTransform*>(myPlayer->GetComponent(COMPONENT_TYPE::TRANSFORM));
+	CTransform* transform = reinterpret_cast<CTransform*>(CCameraManager::GetInstance()->GetMainCamera()->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
 	int xNewCell = clamp((int)(transform->GetPosition().x / (W_WIDTH / SECTOR_RANGE_COL)), 0, SECTOR_RANGE_COL - 1);
 	int zNewCell = clamp((int)(transform->GetPosition().z / (W_HEIGHT / SECTOR_RANGE_ROW)), 0, SECTOR_RANGE_ROW - 1);

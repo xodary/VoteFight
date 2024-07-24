@@ -27,6 +27,7 @@
 #include "Texture.h"
 #include "ImGUI/implot.h"
 #include "ImGUI/implot_internal.h"
+#include "SceneManager.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -85,7 +86,6 @@ void CGameScene::Enter()
 	//CCameraManager::GetInstance()->GetMainCamera()->SetTarget(static_cast<CPlayer*>(objects[0]));
 	// CSoundManager::GetInstance()->Play(SOUND_TYPE_INGAME_BGM_1, 0.3f, false);
 
-	InitLight();
 }
 
 void CGameScene::Exit()
@@ -110,6 +110,8 @@ void CGameScene::Init()
 	CCollisionManager::GetInstance()->SetCollisionGroup(GROUP_TYPE::PLAYER, GROUP_TYPE::GROUND_ITEM);
 
 	CreateShaderVariables();
+
+	InitLight();
 }
 
 void CGameScene::InitLight()
@@ -172,10 +174,12 @@ void CGameScene::Update()
 			p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 	}
 
-	CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
-	m_mappedGameScene->m_lights[0].m_position = Vector3::Add(object->GetPosition(), XMFLOAT3(-25.f, 0, -25.f));
-	m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
-
+	//CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
+	CObject* object = CCameraManager::GetInstance()->GetMainCamera();
+	if (object) {
+		m_mappedGameScene->m_lights[0].m_position = Vector3::Add(object->GetPosition(), XMFLOAT3(-25.f, 0, -25.f));
+		m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
+	}
 	if (KEY_TAP(KEY::Q))
 		if (m_miniMap)m_miniMap = false;
 		else m_miniMap = true;
@@ -239,7 +243,7 @@ void CGameScene::PreRender()
 
 				for (auto& object : GetViewList(1))
 				{
-					if ((object->IsActive()) && (!object->IsDeleted()))
+					if (object && (object->IsActive()) && (!object->IsDeleted()))
 					{
 						object->PreRender(camera);
 					}
@@ -290,7 +294,7 @@ void CGameScene::PreRender()
 
 	for (auto& object : GetViewList(0))
 	{
-		if (object->m_name == "Ocean" || object->IsVisible(camera)) {
+		if (object && (object->m_name == "Ocean" || object->IsVisible(camera))) {
 			if ((object->IsActive()) && (!object->IsDeleted()))
 			{
 				object->Render(camera);
@@ -334,13 +338,13 @@ void CGameScene::Render()
 
 	for (auto& object : GetViewList(0))
 	{
-		if (object->IsVisible(camera)) 
+		if (object && object->IsVisible(camera)) 
 		{
 			object->RenderBilboard(camera);
 		}
 	}
 
-	RenderImGui();
+	if(CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene") RenderImGui();
 }
 
 void CGameScene::RenderImGui()
