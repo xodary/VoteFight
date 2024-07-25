@@ -24,7 +24,7 @@
 #include "../Packet.h"
 #include "ImaysNet/PacketQueue.h"
 
-CPlayer::CPlayer() : m_spineName("mixamorig:Spine"), reloading(false)
+CPlayer::CPlayer() : reloading(false)
 {
 	SetName("Player");
 	SetGroupType((UINT)GROUP_TYPE::PLAYER);

@@ -28,6 +28,8 @@
 #include "ImGUI/implot.h"
 #include "ImGUI/implot_internal.h"
 #include "SceneManager.h"
+#include "LoginScene.h"
+#include "SelectScene.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -685,8 +687,16 @@ void CGameScene::RenderImGui()
 		static ImPlotPieChartFlags flags = true;
 		ImGui::SetNextItemWidth(250);
 
-		static const char* labels[] = { "Mario","Sonic","Hugo" };
-		static int data[] = { 1,1,2 };
+		CSelectScene* selectscene = reinterpret_cast<CSelectScene*>(CSceneManager::GetInstance()->GetScene(SCENE_TYPE::SELECT));
+		
+		static const char* labels[3];
+		static int data[3];
+
+		for (int i = 0; i < 3; ++i) {
+			if (selectscene->m_selected_id[i] == -1) continue;
+			labels[i] = GetIDObject(GROUP_TYPE::PLAYER, selectscene->m_selected_id[i])->GetName().c_str();
+			data[i] = reinterpret_cast<CPlayer*>(GetIDObject(GROUP_TYPE::PLAYER, selectscene->m_selected_id[i]))->m_tickets;
+		}
 
 		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
 		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
@@ -705,8 +715,8 @@ void CGameScene::RenderImGui()
 			ImGui::SetCursorPos(ImVec2(0, 15));
 
 			ImU32 colors[3] = {
-			IM_COL32(217, 46, 46, 255),    // Red
 			IM_COL32(52, 86, 237, 255),    // Blue
+			IM_COL32(217, 46, 46, 255),    // Red
 			IM_COL32(237, 227, 28, 255)   // Yellow
 			};
 

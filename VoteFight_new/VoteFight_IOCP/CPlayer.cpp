@@ -11,6 +11,7 @@ CPlayer::CPlayer()
 	m_Health = 100;
 	m_dead = false;
 	m_Weapon = 0;
+	m_tickets = 0;
 }
 
 CPlayer::CPlayer(XMFLOAT3 _pos)
@@ -23,6 +24,7 @@ CPlayer::CPlayer(XMFLOAT3 _pos)
 	m_Health = 100;
 	m_dead = false;
 	m_Weapon = 0;
+	m_tickets = 0;
 }
 
 CPlayer::~CPlayer()

@@ -10,12 +10,11 @@ class CWeapon;
 
 class CPlayer : public CCharacter
 {
-private:
-	string	 m_spineName;
+public:
     CInventory* m_Inventory;
     vector<CUI*> m_UI;
+	int		m_tickets;
 
-public:
     vector<string> myItems;
 	bool			reloading;
 

@@ -52,6 +52,7 @@ enum PACKET_TYPE {
 	P_SC_PICKUP_PACKET,
 	P_SC_GAMEEND_PACKET,
 	P_SC_RELOAD_PACKET,
+	P_SC_TICKET_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -227,6 +228,14 @@ struct SC_RELOAD_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 };
+
+struct SC_TICKET_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+	unsigned int		m_id;
+	unsigned int		m_tickets;
+};
+
 
 // Packet(Clinet->Server)
 struct CS_LOGIN_PACKET {

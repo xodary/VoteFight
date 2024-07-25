@@ -20,6 +20,7 @@ public:
 	void ChangeScene(SCENE_TYPE sceneType);
 	CScene* GetCurrentScene();
 	CGameScene* GetGameScene();
+	CGameScene* GetScene(SCENE_TYPE type);
 
 
 	virtual void Init();

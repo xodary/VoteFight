@@ -554,7 +554,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				}
 			}
 
-
 			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::ONCE_ITEM]) {
 				COnceItem* item = reinterpret_cast<COnceItem*>(object.second);
 				for (auto name : item->items) {
@@ -832,6 +831,19 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			cout << " >> send ) SC_EXCHANGE_DONE_PACKET" << endl;
 		}
+		int tickets = count(npc->m_outputs.begin(), npc->m_outputs.end(), "election_ticket");
+		if (tickets > 0) {
+			_Client->m_player->m_tickets += tickets;
+			SC_TICKET_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_TICKET_PACKET;
+			send_packet.m_id = _Client->m_id;
+			send_packet.m_tickets = _Client->m_player->m_tickets;
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
+		}
 	}
 	break;
 
@@ -861,18 +873,18 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		CBox* box = reinterpret_cast<CBox*>(object);
 		box->items.clear();
+		int tickets = count(box->items.begin(), box->items.end(), "election_ticket");
 
 		if (recv_packet->m_groupType == (int)GROUP_TYPE::ONCE_ITEM)
 		{
+			SC_DELETE_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_DELETE_PACKET;
+			send_packet.m_groupType = recv_packet->m_groupType;
+			send_packet.m_itemID = recv_packet->m_itemID;
 			for (auto& rc : RemoteClient::m_remoteClients) {
 				if (!rc.second->m_ingame) continue;
-				SC_DELETE_PACKET send_packet;
-				send_packet.m_size = sizeof(send_packet);
-				send_packet.m_type = P_SC_DELETE_PACKET;
-				send_packet.m_groupType = recv_packet->m_groupType;
-				send_packet.m_itemID = recv_packet->m_itemID;
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-				cout << " >> send ) SC_DELETE_PACKET" << endl;
 			}
 		}
 		else if (recv_packet->m_groupType == (int)GROUP_TYPE::BOX)
@@ -881,8 +893,22 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			send_packet.m_size = sizeof(send_packet);
 			send_packet.m_type = P_SC_TAKEOUT_PACKET;
 			send_packet.m_itemID = recv_packet->m_itemID;
-			_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> send ) SC_TAKEOUT_PACKET" << endl;
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
+			if (tickets > 0) {
+				_Client->m_player->m_tickets += tickets;
+				SC_TICKET_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_TICKET_PACKET;
+				send_packet.m_id = _Client->m_id;
+				send_packet.m_tickets = _Client->m_player->m_tickets;
+				for (auto& rc : RemoteClient::m_remoteClients) {
+					if (!rc.second->m_ingame) continue;
+					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				}
+			}
 		}
 	}
 	break;
@@ -926,6 +952,18 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+		}
+		if (object->m_ItemName == "election_ticket") {
+			_Client->m_player->m_tickets -= 1;
+			SC_TICKET_PACKET send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_SC_TICKET_PACKET;
+			send_packet.m_id = _Client->m_id;
+			send_packet.m_tickets = _Client->m_player->m_tickets;
+			for (auto& rc : RemoteClient::m_remoteClients) {
+				if (!rc.second->m_ingame) continue;
+				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+			}
 		}
 	}
 	break;
@@ -976,6 +1014,20 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					cout << " >> send ) SC_PICKUP_PACKET" << endl;
 				}
+
+				if (reinterpret_cast<CItem*>(object.second)->m_ItemName == "election_ticket") {
+					_Client->m_player->m_tickets += 1;
+					SC_TICKET_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_TICKET_PACKET;
+					send_packet.m_id = _Client->m_id;
+					send_packet.m_tickets = _Client->m_player->m_tickets;
+					for (auto& rc : RemoteClient::m_remoteClients) {
+						if (!rc.second->m_ingame) continue;
+						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					}
+				}
+
 				deleteID.push_back(object.second->m_id);
 			}
 		}

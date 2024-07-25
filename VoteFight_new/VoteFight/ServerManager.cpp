@@ -514,6 +514,15 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
+	case PACKET_TYPE::P_SC_TICKET_PACKET:
+	{
+		SC_TICKET_PACKET* recv_packet = reinterpret_cast<SC_TICKET_PACKET*>(_Packet);
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id));
+		player->m_tickets = recv_packet->m_tickets;
+	}
+	break;
+
 	default:
 		break;
 	}

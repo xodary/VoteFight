@@ -37,6 +37,11 @@ CGameScene* CSceneManager::GetGameScene()
 	return static_cast<CGameScene*>(m_scenes[static_cast<int>(SCENE_TYPE::GAME)]);
 }
 
+CGameScene* CSceneManager::GetScene(SCENE_TYPE type)
+{
+	return static_cast<CGameScene*>(m_scenes[static_cast<int>(type)]);
+}
+
 void CSceneManager::Init()
 {
 	ID3D12Device* d3d12Device = CGameFramework::GetInstance()->GetDevice();

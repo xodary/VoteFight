@@ -27,7 +27,7 @@ public:
 	string	m_nicknames[3] = { "", "", "" };
 	string	m_button = "Select Your Character";
 	bool	m_ready;
-	int		m_selected_id[3] = { -1, -1, -1 };
+	int		m_selected_id[3] = { -1, -1, -1 };	// Sonic, Mario, Hugo
 private:
 	CSelectScene();
 

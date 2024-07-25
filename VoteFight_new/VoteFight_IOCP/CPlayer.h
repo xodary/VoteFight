@@ -6,7 +6,7 @@
 class CPlayer : public CObject 
 {
 public:
-
+	int		m_tickets;
 	int		m_Weapon;
 
 	CPlayer();
