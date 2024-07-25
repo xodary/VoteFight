@@ -96,6 +96,7 @@ void CSelectScene::Init()
 	structers[0]->SetPosition(XMFLOAT3(0, -3.5, 0));
 	structers[0]->SetRotate(XMFLOAT3(-95, -90, 0));
 	structers[0]->SetScale(XMFLOAT3(1.6, 1.6, 1.6));
+	structers[1]->SetPosition(XMFLOAT3(0, -1, 0));
 
 	for (size_t i = 0; i < 3; i++)
 	{
@@ -221,7 +222,7 @@ void CSelectScene::PreRender()
 
 					for (const auto& object : objects)
 					{
-						if (object.second->GetName() != "Ocean" && (object.second->IsActive()) && (!object.second->IsDeleted()))
+						if (object.second->GetName() != "SelectOcean" && (object.second->IsActive()) && (!object.second->IsDeleted()))
 						{
 							object.second->PreRender(camera);
 						}

@@ -6,6 +6,9 @@ class CLoginScene : public CScene
 public:
 	friend class CSceneManager;
 
+	ComPtr<ID3D12Resource> m_d3d12GameScene;
+	CB_GameScene* m_mappedGameScene;
+
 	CObject* m_focus;
 
 	XMFLOAT3	m_fcamera[4] = { XMFLOAT3(50, 10, 50), XMFLOAT3(75, 60, 335), XMFLOAT3(366, 10, 344), XMFLOAT3(366, 10, 50) };

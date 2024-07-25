@@ -2,7 +2,6 @@
 #include "Scene.h"
 #include "Player.h"
 
-
 struct CB_GameScene
 {
 	LIGHT m_lights[MAX_LIGHTS];
@@ -29,7 +28,6 @@ public:
 	vector<CPlayer*>		m_otherPlayers;
 	vector<vector<float>>	m_heights;
 
-private:
 	CGameScene();
 
 	virtual void Enter();
@@ -39,7 +37,6 @@ private:
 	virtual void UpdateShaderVariables();
 	virtual void ReleaseShaderVariables();
 
-public:
 	virtual ~CGameScene();
 
 	virtual void Init();

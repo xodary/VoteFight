@@ -33,9 +33,7 @@ CGameScene* CGameScene::m_CGameScene;
 
 CGameScene::CGameScene() :
 	m_d3d12GameScene(),
-	m_mappedGameScene(),
-	m_towerLight(),
-	m_towerLightAngle()
+	m_mappedGameScene()
 {
 	SetName("GameScene");
 }
@@ -76,16 +74,8 @@ void CGameScene::ReleaseShaderVariables()
 
 void CGameScene::Enter()
 {
-	// ShowCursor(false);
-
 	CCameraManager::GetInstance()->SetGameSceneMainCamera();
-
-	const unordered_map<int,CObject*>& objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	const unordered_map<int,CObject*>& Monsters = GetGroupObject(GROUP_TYPE::MONSTER);
-
-	//CCameraManager::GetInstance()->GetMainCamera()->SetTarget(static_cast<CPlayer*>(objects[0]));
-	// CSoundManager::GetInstance()->Play(SOUND_TYPE_INGAME_BGM_1, 0.3f, false);
-
+	InitLight();
 }
 
 void CGameScene::Exit()
@@ -173,9 +163,11 @@ void CGameScene::Update()
 		if (0 <= (int)pos.x && (int)pos.x < 400 && 0 <= (int)pos.z && (int)pos.z < 400)
 			p_tf->SetPosition(XMFLOAT3(pos.x, GetTerrainHeight(pos.x, pos.z), pos.z));
 	}
-
-	//CObject* object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
-	CObject* object = CCameraManager::GetInstance()->GetMainCamera();
+	CObject* object;
+	if(CSceneManager::GetInstance()->GetCurrentScene()->m_name == "GameScene")
+		object = GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id);
+	else
+		object = CCameraManager::GetInstance()->GetMainCamera();
 	if (object) {
 		m_mappedGameScene->m_lights[0].m_position = Vector3::Add(object->GetPosition(), XMFLOAT3(-25.f, 0, -25.f));
 		m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
