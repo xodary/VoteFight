@@ -55,6 +55,15 @@ void CLoginScene::InitUI()
 
 void CLoginScene::Update()
 {
+    time -= DT * 0.03f;
+    if (time < 0.0f) {
+        time = 1.0f;
+        m_ncamera = (m_ncamera + 1) % 4;
+    }
+    CTransform* transform = reinterpret_cast<CTransform*>(m_focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
+    transform->SetPosition(Vector3::Add(Vector3::ScalarProduct(m_fcamera[(m_ncamera + 1) % 4], 1 - time),
+        Vector3::ScalarProduct(m_fcamera[m_ncamera], time)));
+    CSceneManager::GetInstance()->GetGameScene()->Update();
 }
 
 void CLoginScene::PreRender()
@@ -62,10 +71,9 @@ void CLoginScene::PreRender()
     CSceneManager::GetInstance()->GetGameScene()->PreRender();
 }
 
-void CLoginScene::Render() {
-
-
-
+void CLoginScene::Render() 
+{
+    CSceneManager::GetInstance()->GetGameScene()->Render();
 
     RenderImGui();
 }
@@ -79,12 +87,13 @@ void CLoginScene::RenderImGui()
     ImGui::NewFrame();
 
     ImGuiIO& io = ImGui::GetIO();
-
-    CGameFramework* framework = CGameFramework::GetInstance();
+    
+    CGameFramework * framework = CGameFramework::GetInstance();
     framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
-    ImVec2 window_size{ (float)io.DisplaySize.x, (float)io.DisplaySize.y };
-    
+    ImVec2 window_size{ CGameFramework::GetInstance()->GetResolution().x * 2 / 3, CGameFramework::GetInstance()->GetResolution().y * 2 / 3 };
+    ImVec2 window_pos{ CGameFramework::GetInstance()->GetResolution().x * 1 / 6, CGameFramework::GetInstance()->GetResolution().y * 1 / 6 };
+
     POINT mousePoint;
     GetCursorPos(&mousePoint);
     ScreenToClient(framework->GetHwnd(), &mousePoint);
@@ -92,9 +101,8 @@ void CLoginScene::RenderImGui()
     io.MousePos.x = mousePoint.x * (framework->GetResolution().x / io.DisplaySize.x);
     io.MousePos.y = mousePoint.y * (framework->GetResolution().y / io.DisplaySize.y);
 
-    // 윈도우 위치 설정
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 50, main_viewport->WorkPos.y + 50), ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(window_pos, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(window_size, ImGuiCond_FirstUseEver);
 
     DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
@@ -103,8 +111,9 @@ void CLoginScene::RenderImGui()
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(40, 40));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, window_size);
     ImGui::GetFont()->Scale = 3.0f;
+
     ImGui::PushFont(ImGui::GetFont());
-    ImGui::Begin("Custom Sized Window", nullptr, window_flags);
+    ImGui::Begin("Full Screen Window", nullptr, window_flags);
     {
         ImGui::Text("Server Address :");
         ImGui::InputText("##ServrName", server_addr, IM_ARRAYSIZE(server_addr));
