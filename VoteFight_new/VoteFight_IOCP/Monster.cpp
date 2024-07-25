@@ -4,8 +4,9 @@
 #include "RemoteClient.h"
 #include "State.h"
 
-CMonster::CMonster() : m_meet(1)
+CMonster::CMonster() : CObject()
 {
+	m_meet = 1;
 	m_upAnimation = "idle";
 	m_stateMachine = new CStateMachine();
 	m_stateMachine->m_owner = this;

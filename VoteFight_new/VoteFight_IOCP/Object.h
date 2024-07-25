@@ -14,6 +14,7 @@ public:
 	int			m_grouptype;
 	std::string	m_modelname;
 	std::string	m_upAnimation;
+	std::string	lastAnimation;
 
 	bool		m_collider = false;
 	BoundingBox	m_origin;
@@ -23,6 +24,7 @@ public:
 
 	bool alive = true;
 	bool ingame = false;
+	bool upperAnimationFinished = true;
 
 	int			m_Health;
 	bool		m_dead;

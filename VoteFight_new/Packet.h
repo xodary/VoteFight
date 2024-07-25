@@ -26,6 +26,7 @@ enum PACKET_TYPE {
 	P_CS_WEAPON_CHANGE_PACKET,
 	P_CS_DROPED_ITEM,
 	P_CS_PICKUP_PACKET,
+	P_CS_RELOAD_PACKET,
 
 	// Server -> Client packet
 	P_SC_LOGIN_OK_PACKET,
@@ -50,6 +51,7 @@ enum PACKET_TYPE {
 	P_SC_DROPED_ITEM,
 	P_SC_PICKUP_PACKET,
 	P_SC_GAMEEND_PACKET,
+	P_SC_RELOAD_PACKET,
 };
 
 #pragma pack (push, 1)
@@ -221,6 +223,11 @@ struct SC_GAMEEND_PACKET {
 	unsigned int		m_3rd;
 };
 
+struct SC_RELOAD_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+};
+
 // Packet(Clinet->Server)
 struct CS_LOGIN_PACKET {
 	unsigned char		m_size;
@@ -303,6 +310,11 @@ struct CS_DROPED_ITEM {
 };
 
 struct CS_PICKUP_PACKET {
+	unsigned char		m_size;
+	unsigned char		m_type;
+};
+
+struct CS_RELOAD_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 };

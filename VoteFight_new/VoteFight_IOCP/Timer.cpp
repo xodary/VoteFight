@@ -13,8 +13,8 @@
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
-//chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
-chrono::seconds phase_time[8] = { 5s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
+chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
+//chrono::seconds phase_time[8] = { 5s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
 float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()
@@ -329,6 +329,7 @@ void CTimer::do_timer()
 				cout << "ANIMATION DONE" << endl;
 
 				if (CGameScene::m_objects[ev.grouptype][ev.target_id]->m_dead) continue;
+				if (CGameScene::m_objects[ev.grouptype][ev.target_id]->lastAnimation != ev.lastAnimation) continue;
 				SC_ANIMATION_PACKET send_packet;
 				send_packet.m_size = sizeof(send_packet);
 				send_packet.m_type = P_SC_ANIMATION_PACKET;
@@ -338,11 +339,22 @@ void CTimer::do_timer()
 				send_packet.m_bone = ev.bone;
 
 				strcpy_s(send_packet.m_key, CGameScene::m_objects[ev.grouptype][ev.target_id]->m_upAnimation.c_str());
+				CGameScene::m_objects[ev.grouptype][ev.target_id]->upperAnimationFinished = true;
 
 				for (auto& rc : RemoteClient::m_remoteClients)
 				{
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
+				}
+
+				if (ev.lastAnimation == "Reload") {
+					SC_RELOAD_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_RELOAD_PACKET;
+					for (auto& rc : RemoteClient::m_remoteClients) {
+						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+						cout << " >> send ) SC_RELOAD_PACKET" << endl;
+					}
 				}
 			}
 			break;

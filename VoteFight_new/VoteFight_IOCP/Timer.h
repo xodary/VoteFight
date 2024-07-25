@@ -6,13 +6,12 @@ class RemoteClient;
 enum EVENT_TYPE { EV_UPDATE, EV_PHASE, EV_ANIMATION };
 
 struct TIMER_EVENT {
-	RemoteClient* obj_id;
 	chrono::system_clock::time_point wakeup_time;
 	EVENT_TYPE event_id;
 	UINT target_id;
 	UINT grouptype;
-	string aniamtion;
 	UINT bone;
+	string lastAnimation;
 
 	constexpr bool operator < (const TIMER_EVENT& L) const { return (wakeup_time > L.wakeup_time); }
 };

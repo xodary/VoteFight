@@ -24,7 +24,7 @@
 #include "../Packet.h"
 #include "ImaysNet/PacketQueue.h"
 
-CPlayer::CPlayer() : m_spineName("mixamorig:Spine")
+CPlayer::CPlayer() : m_spineName("mixamorig:Spine"), reloading(false)
 {
 	SetName("Player");
 	SetGroupType((UINT)GROUP_TYPE::PLAYER);
@@ -54,6 +54,13 @@ void CPlayer::Attack()
 {
 	if (CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene")
 	{
+		if (m_Weapon == WEAPON_TYPE::PISTOL) {
+			if(m_bullets <= 0 || reloading)
+				return;
+			else
+				m_bullets -= 1;
+		}
+
 		CS_ATTACK_PACKET p;
 		p.m_size = sizeof(p);
 		p.m_type = P_CS_ATTACK_PACKET;

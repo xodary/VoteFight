@@ -82,6 +82,13 @@ void CPlayerIdleState::Update(CObject* object)
 		send_packet.m_type = P_CS_PICKUP_PACKET;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
+	if (KEY_TAP(KEY::R) && (player->m_Weapon == WEAPON_TYPE::PISTOL)) {
+		player->reloading = true;
+		CS_RELOAD_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_RELOAD_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
 	if (KEY_TAP(KEY::LBUTTON))
 	{
 		player->Attack();
@@ -211,6 +218,13 @@ void CPlayerWalkState::Update(CObject* object)
 		send_packet.m_type = P_CS_PICKUP_PACKET;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
+	if (KEY_TAP(KEY::R) && (player->m_Weapon == WEAPON_TYPE::PISTOL)) {
+		player->reloading = true;
+		CS_RELOAD_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_RELOAD_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
 	if (KEY_TAP(KEY::LBUTTON))
 	{
 		player->Attack();
@@ -308,6 +322,13 @@ void CPlayerFocusIdleState::Update(CObject* object)
 		send_packet.m_type = P_CS_PICKUP_PACKET;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
+	if (KEY_TAP(KEY::R) && (player->m_Weapon == WEAPON_TYPE::PISTOL)) {
+		player->reloading = true;
+		CS_RELOAD_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_RELOAD_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
 	if (KEY_TAP(KEY::LBUTTON))
 	{
 		player->Attack();
@@ -395,6 +416,13 @@ void CPlayerFocusWalkState::Update(CObject* object)
 		CS_PICKUP_PACKET send_packet;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_PICKUP_PACKET;
+		PacketQueue::AddSendPacket(&send_packet);
+	}
+	if (KEY_TAP(KEY::R) && (player->m_Weapon == WEAPON_TYPE::PISTOL)) {
+		player->reloading = true;
+		CS_RELOAD_PACKET send_packet;
+		send_packet.m_size = sizeof(send_packet);
+		send_packet.m_type = P_CS_RELOAD_PACKET;
 		PacketQueue::AddSendPacket(&send_packet);
 	}
 	if (KEY_TAP(KEY::LBUTTON))

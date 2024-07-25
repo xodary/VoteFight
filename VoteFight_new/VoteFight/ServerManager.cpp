@@ -505,6 +505,15 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	}
 	break;
 
+	case PACKET_TYPE::P_SC_RELOAD_PACKET:
+	{
+		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
+		player->m_bullets = player->m_FullBullets;
+		player->reloading = false;
+	}
+	break;
+
 	default:
 		break;
 	}

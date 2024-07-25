@@ -639,9 +639,9 @@ void CGameScene::RenderImGui()
 
 	
 	windowSize.x = framework->GetResolution().x / 5;
-	windowSize.y = framework->GetResolution().y / 3;
+	windowSize.y = framework->GetResolution().y / 2;
 	windowPos.x = framework->GetResolution().x - windowSize.x;
-	windowPos.y = framework->GetResolution().y - windowSize.y;
+	windowPos.y = framework->GetResolution().y / 3;
 
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
@@ -649,30 +649,38 @@ void CGameScene::RenderImGui()
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
 
+	const float imagesize = framework->GetResolution().y / 15;
 	{
 		ImGui::Begin("Key Info", nullptr, window_flags);
 		ImGui::GetFont()->Scale = 1.0f;
 		ImGui::PushFont(ImGui::GetFont());
 
 		auto& shandle = CAssetManager::GetInstance()->m_IconTextures["space"]->m_IconGPUHandle;
-		ImGui::Image((void*)shandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::Image((void*)shandle.ptr, ImVec2(imagesize, imagesize));
 		ImGui::SameLine();
 		ImGui::Text("Item Take Out, Exchange");
 
 		auto& fhandle = CAssetManager::GetInstance()->m_IconTextures["letter_f"]->m_IconGPUHandle;
-		ImGui::Image((void*)fhandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::Image((void*)fhandle.ptr, ImVec2(imagesize, imagesize));
 		ImGui::SameLine();
 		ImGui::Text("Item Pick Up");
 
 		auto& ehandle = CAssetManager::GetInstance()->m_IconTextures["letter_e"]->m_IconGPUHandle;
-		ImGui::Image((void*)ehandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::Image((void*)ehandle.ptr, ImVec2(imagesize, imagesize));
 		ImGui::SameLine();
 		ImGui::Text("Inventory");
 
 		auto& qhandle = CAssetManager::GetInstance()->m_IconTextures["letter_q"]->m_IconGPUHandle;
-		ImGui::Image((void*)qhandle.ptr, ImVec2(windowSize.y / 5, windowSize.y / 5));
+		ImGui::Image((void*)qhandle.ptr, ImVec2(imagesize, imagesize));
 		ImGui::SameLine();
 		ImGui::Text("Map");
+
+		if (player->m_Weapon == WEAPON_TYPE::PISTOL) {
+			auto& gunhandle = CAssetManager::GetInstance()->m_IconTextures["gun"]->m_IconGPUHandle;
+			ImGui::Image((void*)gunhandle.ptr, ImVec2(imagesize, imagesize));
+			ImGui::SameLine();
+			ImGui::Text("Bullets : %d / %d", player->m_bullets, player->m_FullBullets);
+		}
 
 		ImGui::PopFont();
 		ImGui::PopStyleColor();

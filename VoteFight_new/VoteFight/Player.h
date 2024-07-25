@@ -17,6 +17,7 @@ private:
 
 public:
     vector<string> myItems;
+	bool			reloading;
 
     float goal_rota;
 
@@ -35,13 +36,12 @@ public:
 	virtual void Update();
 
     WEAPON_TYPE m_Weapon;
+	int			m_FullBullets = 10;
+	int			m_bullets = 10;
 
 	virtual void OnCollisionEnter(CObject* collidedObject);
 	virtual void OnCollision(CObject* collidedObject);
 	virtual void OnCollisionExit(CObject* collidedObject);
-
-    void SetUI(CUI* ui);
-    void SetNumber_of_items_UI(const string& ItemName, int prevItemsNum, int NextItemsNum);
 
     void GetItem(string item);
 };
