@@ -26,7 +26,7 @@ CPlayerIdleState::~CPlayerIdleState()
 }
 
 void CPlayerIdleState::Enter(CObject* object)
-{
+{	
 	CPlayer* player = static_cast<CPlayer*>(object);
 	CTransform* transform = static_cast<CTransform*>(player->GetComponent(COMPONENT_TYPE::TRANSFORM));
 
@@ -121,13 +121,14 @@ void CPlayerWalkState::Enter(CObject* object)
 
 	PacketQueue::AddSendPacket(&p);
 
-	if (KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::W) || KEY_HOLD(KEY::D) || KEY_HOLD(KEY::SHIFT))
+	if (KEY_HOLD(KEY::S) || KEY_HOLD(KEY::A) || KEY_HOLD(KEY::W) || KEY_HOLD(KEY::D) || KEY_HOLD(KEY::SHIFT) ||
+		KEY_TAP(KEY::S) || KEY_TAP(KEY::A) || KEY_TAP(KEY::W) || KEY_TAP(KEY::D) || KEY_TAP(KEY::SHIFT))
 	{
 		XMFLOAT3 v(0, 0, 0);
-		if (KEY_HOLD(KEY::W)) v.z -= 1.0f;
-		if (KEY_HOLD(KEY::A)) v.x -= 1.0f;
-		if (KEY_HOLD(KEY::S)) v.z += 1.0f;
-		if (KEY_HOLD(KEY::D)) v.x += 1.0f;
+		if (KEY_HOLD(KEY::W) || KEY_TAP(KEY::W)) v.z -= 1.0f;
+		if (KEY_HOLD(KEY::A) || KEY_TAP(KEY::A)) v.x -= 1.0f;
+		if (KEY_HOLD(KEY::S) || KEY_TAP(KEY::S)) v.z += 1.0f;
+		if (KEY_HOLD(KEY::D) || KEY_TAP(KEY::D)) v.x += 1.0f;
 		if (Vector3::IsZero(v)) return;
 		v = Vector3::Normalize(v);
 		float vR = XMConvertToDegrees(atan2(v.z, v.x)) + 45;
@@ -137,8 +138,8 @@ void CPlayerWalkState::Enter(CObject* object)
 		p.m_size = sizeof(p);
 		p.m_type = P_CS_VELOCITY_CHANGE_PACKET;
 		p.m_angle = vR;
-		p.m_Rbutton = KEY_HOLD(KEY::RBUTTON);
-		p.m_shift = KEY_HOLD(KEY::SHIFT);
+		p.m_Rbutton = KEY_HOLD(KEY::RBUTTON) || KEY_TAP(KEY::RBUTTON);
+		p.m_shift = KEY_HOLD(KEY::SHIFT) || KEY_TAP(KEY::SHIFT);
 		p.m_pos = transform->GetPosition();
 
 		PacketQueue::AddSendPacket(&p);

@@ -44,7 +44,6 @@ void CMonsterIdleState::Enter(CObject* object)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 		}
 	}
 	{
@@ -56,7 +55,6 @@ void CMonsterIdleState::Enter(CObject* object)
 		send_packet.m_vel = object->m_Velocity;
 		send_packet.m_pos = object->m_Pos;
 		send_packet.m_look = object->m_Angle;
-		cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -112,7 +110,6 @@ void CMonsterWalkState::Enter(CObject* object)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 		}
 	}
 
@@ -129,7 +126,6 @@ void CMonsterWalkState::Enter(CObject* object)
 		send_packet.m_vel = object->m_Velocity;
 		send_packet.m_pos = object->m_Pos;
 		send_packet.m_look = look;
-		cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -208,7 +204,6 @@ void CMonsterChaseState::Enter(CObject* object)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 		}
 	}
 }
@@ -261,7 +256,6 @@ void CMonsterChaseState::Update(CObject* object)
 		send_packet.m_vel = object->m_Velocity;
 		send_packet.m_pos = object->m_Pos;
 		send_packet.m_look = look;
-		cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -306,7 +300,6 @@ void CMonsterAttackState::Enter(CObject* object)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 		}
 	}
 	
@@ -320,7 +313,6 @@ void CMonsterAttackState::Enter(CObject* object)
 		send_packet.m_vel = object->m_Velocity;
 		send_packet.m_pos = object->m_Pos;
 		send_packet.m_look = object->m_Angle;
-		cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -339,7 +331,6 @@ void CMonsterAttackState::Enter(CObject* object)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 		}
 	}
 }
@@ -366,7 +357,6 @@ void CMonsterAttackState::Update(CObject* object)
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 				}
 			}
 			monster->m_target->m_player->m_Health -= 10;
@@ -380,7 +370,6 @@ void CMonsterAttackState::Update(CObject* object)
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 				}
 			}
 			enterTime = chrono::system_clock::now();
@@ -396,7 +385,6 @@ void CMonsterAttackState::Update(CObject* object)
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 				}
 				monster->m_target->m_player->m_dead = true;
 				CGameScene::m_Rank[CGameScene::m_nowRank--] = monster->m_target->m_id;
@@ -435,7 +423,6 @@ void CMonsterAttackedState::Enter(CObject* object)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 		}
 	}
 	
@@ -449,7 +436,6 @@ void CMonsterAttackedState::Enter(CObject* object)
 		send_packet.m_vel = object->m_Velocity;
 		send_packet.m_pos = object->m_Pos;
 		send_packet.m_look = object->m_Angle;
-		cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
 
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -467,7 +453,6 @@ void CMonsterAttackedState::Enter(CObject* object)
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 		}
 	}
 }

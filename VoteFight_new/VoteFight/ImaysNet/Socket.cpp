@@ -8,7 +8,10 @@
 
 #include <algorithm>
 #include <sstream>
-
+#include "../GameFramework.h"
+#include "../SceneManager.h"
+#include "../LoginScene.h"
+#include "../Scene.h"
 #include "Socket.h"
 #include "Endpoint.h"
 #include "SocketInit.h"
@@ -87,11 +90,18 @@ void Socket::Bind(const Endpoint& endpoint)
 // endpoint가 가리키는 주소로의 접속을 합니다.
 void Socket::Connect(const Endpoint& endpoint)
 {
-	if (connect(m_fd, (sockaddr*)&endpoint.m_ipv4Endpoint, sizeof(endpoint.m_ipv4Endpoint)) < 0)
-	{
-		stringstream ss;
-		ss << "connect failed:" << GetLastErrorAsString();
-		throw Exception(ss.str().c_str());
+	try {
+		if (connect(m_fd, (sockaddr*)&endpoint.m_ipv4Endpoint, sizeof(endpoint.m_ipv4Endpoint)) < 0)
+		{
+			stringstream ss;
+			ss << "connect failed:" << GetLastErrorAsString();
+			throw Exception(ss.str().c_str());
+		}
+	}
+	catch(Exception ex){
+		CGameFramework::GetInstance()->m_connect_server = false;
+		CLoginScene* loginscene = reinterpret_cast<CLoginScene*>(CSceneManager::GetInstance()->GetScene(SCENE_TYPE::LOGIN));
+		strcpy_s(loginscene->login_state, ex.m_text.c_str());
 	}
 }
 
@@ -292,7 +302,6 @@ void Socket::SetNonblocking()
 // 출처: https://stackoverflow.com/questions/1387064/how-to-get-the-error-message-from-the-error-code-returned-by-getlasterror
 std::string GetLastErrorAsString()
 {
-#ifdef _WIN32
 	//Get the error message, if any.
 	DWORD errorMessageID = ::GetLastError();
 	if (errorMessageID == 0)
@@ -300,15 +309,12 @@ std::string GetLastErrorAsString()
 
 	LPSTR messageBuffer = nullptr;
 	size_t size = FormatMessageA(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL, errorMessageID, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), (LPSTR)&messageBuffer, 0, NULL);
+		NULL, errorMessageID, MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US), (LPSTR)&messageBuffer, 0, NULL);
 
 	std::string message(messageBuffer, size);
 
 	//Free the buffer.
 	LocalFree(messageBuffer);
 
-#else 
-	std::string message = strerror(errno);
-#endif
 	return message;
 }

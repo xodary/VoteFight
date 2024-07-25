@@ -73,7 +73,7 @@ void CSelectScene::Enter()
 	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	targetTransform->SetPosition(XMFLOAT3(4, -1.5, 0.3));
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(focus);
-	CSoundManager::GetInstance()->Play(SOUND_TYPE::SELECT_BGM, 1.0f, false);
+	CSoundManager::GetInstance()->Play(SOUND_TYPE::SELECT_BGM, 0.1f, false);
 
 	InitLight();
 }
@@ -362,10 +362,14 @@ void CSelectScene::RenderImGui()
 		ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
 
 		ImVec4 borderColor = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+		ImVec4 bgColor = ImVec4(0.f, 0.f, 0.f, 0.f);
 		if (hovered[i]) borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-		if (m_selected_id[i] != -1 || m_selected_model == i) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+		if (m_selected_id[i] != -1 || m_selected_model == i) {
+			borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+			if(m_selected_id[i] != -1) bgColor = ImVec4(1.0f, 0.0f, 0.0f, 0.3f);
+		}
 
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f)); // 투명 배경
+		ImGui::PushStyleColor(ImGuiCol_WindowBg, bgColor); // 투명 배경
 		ImGui::PushStyleColor(ImGuiCol_Border, borderColor);
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, 4.0f);
 		ImGui::GetFont()->Scale = 1.5;

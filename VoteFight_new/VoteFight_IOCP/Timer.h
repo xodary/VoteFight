@@ -26,5 +26,6 @@ public:
 	~CTimer() {}
 
 	static void do_timer();
+	static void Stop();
 };
 

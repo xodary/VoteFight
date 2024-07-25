@@ -117,17 +117,45 @@ void CLoginScene::RenderImGui()
     {
         ImGui::Text("Server Address :");
         ImGui::InputText("##ServrName", server_addr, IM_ARRAYSIZE(server_addr));
-        ImGui::Text(login_state);
+        const char* items[] = { "1", "2", "3" };
+        static int item_current_idx = 0; // 현재 선택된 항목의 인덱스
+        ImGui::Text("Players :");
+        if (ImGui::BeginCombo("##Combo", items[item_current_idx]))
+        {
+            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+            {
+                const bool is_selected = (item_current_idx == n);
+                if (ImGui::Selectable(items[n], is_selected))
+                    item_current_idx = n;
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+        ImGui::TextWrapped(login_state);
         ImGui::InputText("##ChatInput", user_name, IM_ARRAYSIZE(user_name));
-        ImGui::SameLine();
-        if (ImGui::Button("Login")) {
+        if (ImGui::Button("Host")) {
             CGameFramework::GetInstance()->m_connect_server = true;
-            CServerManager::GetInstance()->ConnectServer(server_addr);
             memset(login_state, 0, sizeof(login_state));
             strcpy(login_state, "Wait For Server Message ...");
+            CServerManager::GetInstance()->ConnectServer(server_addr);
             CS_LOGIN_PACKET send_packet;
             send_packet.m_size = sizeof(CS_LOGIN_PACKET);
             send_packet.m_type = P_CS_LOGIN_PACKET;
+            send_packet.m_players = item_current_idx;
+            strcpy_s(send_packet.m_name, user_name);
+            PacketQueue::AddSendPacket(&send_packet);
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Join")) {
+            CGameFramework::GetInstance()->m_connect_server = true;
+            memset(login_state, 0, sizeof(login_state));
+            strcpy(login_state, "Wait For Server Message ...");
+            CServerManager::GetInstance()->ConnectServer(server_addr);
+            CS_LOGIN_PACKET send_packet;
+            send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+            send_packet.m_type = P_CS_LOGIN_PACKET;
+            send_packet.m_players = -1;
             strcpy_s(send_packet.m_name, user_name);
             PacketQueue::AddSendPacket(&send_packet);
         }

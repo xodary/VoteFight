@@ -581,11 +581,6 @@ void CGameFramework::PostRender()
 
 void CGameFramework::PopulateCommandList()
 {
-	if (KEY_TAP(KEY::ESC))
-	{
-		PostQuitMessage(0);
-	}
-
 	ResetCommandAllocatorAndList();
 	UpdateShaderVariables();
 

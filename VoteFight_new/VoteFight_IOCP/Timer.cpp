@@ -74,7 +74,6 @@ void CTimer::do_timer()
 					for (auto& monsterobject : CGameScene::m_objects[(int)GROUP_TYPE::MONSTER]) {
 						if (monsterobject.second->m_dead) continue;
 						if (monsterobject.second->m_boundingBox.Intersects(object.second->m_boundingBox)) {
-							cout << "Collide !" << endl;
 							deleteBullet.push_back(bullet->m_id);
 							CMonster* monster = reinterpret_cast<CMonster*>(monsterobject.second);
 							if (monster->m_dead) continue;
@@ -101,7 +100,6 @@ void CTimer::do_timer()
 							for (auto& rc : RemoteClient::m_remoteClients) {
 								if (!rc.second->m_ingame) continue;
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-								cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 							}
 						}
 					}
@@ -114,7 +112,6 @@ void CTimer::do_timer()
 						{
 							deleteBullet.push_back(bullet->m_id);
 							player.second->m_player->m_Health -= 25;
-							cout << player.first << " : Health " << player.second->m_player->m_Health << endl;
 
 							SC_HEALTH_CHANGE_PACKET send_packet;
 							send_packet.m_size = sizeof(send_packet);
@@ -125,7 +122,6 @@ void CTimer::do_timer()
 							for (auto& rc : RemoteClient::m_remoteClients) {
 								if (!rc.second->m_ingame) continue;
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-								cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 							}
 
 							if (player.second->m_player->m_Health <= 0) {
@@ -141,7 +137,6 @@ void CTimer::do_timer()
 								for (auto& rc : RemoteClient::m_remoteClients) {
 									if (!rc.second->m_ingame) continue;
 									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-									cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 								}
 
 								player.second->m_player->m_Velocity = 0;
@@ -153,8 +148,6 @@ void CTimer::do_timer()
 								v_send_packet.m_vel = player.second->m_player->m_Velocity;
 								v_send_packet.m_pos = player.second->m_player->m_Pos;
 								v_send_packet.m_look = player.second->m_player->m_Angle;
-								cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
-
 								for (auto& rc : RemoteClient::m_remoteClients) {
 									if (!rc.second->m_ingame) continue;
 									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
@@ -204,7 +197,6 @@ void CTimer::do_timer()
 						for (auto& rc : RemoteClient::m_remoteClients) {
 							if (!rc.second->m_ingame) continue;
 							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-							cout << " >> send ) SC_HEALTH_CHANGE_PACKET" << endl;
 						}
 						if (client.second->m_player->m_Health <= 0) {
 							client.second->m_player->m_dead = true;
@@ -218,7 +210,6 @@ void CTimer::do_timer()
 							v_send_packet.m_vel = client.second->m_player->m_Velocity;
 							v_send_packet.m_pos = client.second->m_player->m_Pos;
 							v_send_packet.m_look = client.second->m_player->m_Angle;
-							cout << " >> send ) SC_VELOCITY_CHANGE_PACKET" << endl;
 
 							for (auto& rc : RemoteClient::m_remoteClients) {
 								if (!rc.second->m_ingame) continue;
@@ -236,7 +227,6 @@ void CTimer::do_timer()
 							for (auto& rc : RemoteClient::m_remoteClients) {
 								if (!rc.second->m_ingame) continue;
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-								cout << " >> send ) SC_ANIMATION_PACKET" << endl;
 							}
 							CGameScene::m_Rank[CGameScene::m_nowRank--] = client.second->m_id;
 						}
@@ -258,7 +248,6 @@ void CTimer::do_timer()
 							if (!object.second->m_collider) continue;
 							if (client.second->m_player->m_boundingBox.Intersects(object.second->m_boundingBox)) {
 								client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
-								cout << "Collide !" << endl;
 							}
 						}
 					}
@@ -316,8 +305,6 @@ void CTimer::do_timer()
 					send_packet.m_time = phase_time[CTimer::phase];
 					send_packet.m_oceanHeight = phase_height[CTimer::phase];
 					client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-
-					cout << "Phase " << CTimer::phase << endl;
 				}
 				ev.wakeup_time = chrono::system_clock::now() + phase_time[CTimer::phase++];
 				CTimer::timer_queue.push(ev);
@@ -326,8 +313,7 @@ void CTimer::do_timer()
 
 			case EV_ANIMATION:
 			{
-				cout << "ANIMATION DONE" << endl;
-
+				if (CGameScene::m_objects[ev.grouptype][ev.target_id] == NULL) continue;
 				if (CGameScene::m_objects[ev.grouptype][ev.target_id]->m_dead) continue;
 				if (CGameScene::m_objects[ev.grouptype][ev.target_id]->lastAnimation != ev.lastAnimation) continue;
 				SC_ANIMATION_PACKET send_packet;
@@ -342,19 +328,14 @@ void CTimer::do_timer()
 				CGameScene::m_objects[ev.grouptype][ev.target_id]->upperAnimationFinished = true;
 
 				for (auto& rc : RemoteClient::m_remoteClients)
-				{
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					cout << " >> send ) SC_ANIMATION_PACKET" << endl;
-				}
 
 				if (ev.lastAnimation == "Reload") {
 					SC_RELOAD_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
 					send_packet.m_type = P_SC_RELOAD_PACKET;
-					for (auto& rc : RemoteClient::m_remoteClients) {
+					for (auto& rc : RemoteClient::m_remoteClients) 
 						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-						cout << " >> send ) SC_RELOAD_PACKET" << endl;
-					}
 				}
 			}
 			break;
@@ -364,4 +345,10 @@ void CTimer::do_timer()
 		}
 		this_thread::sleep_for(1ms);   // timer_queue가 비어 있으니 잠시 기다렸다가 다시 시작
 	}
+}
+
+void CTimer::Stop()
+{
+	CTimer::timer_queue.clear();
+	CTimer::phase = 0;
 }

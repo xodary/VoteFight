@@ -184,6 +184,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		// ID 설정
 		CServerManager::m_id = recv_packet->m_id;
 		CGameFramework::GetInstance()->my_id = recv_packet->m_id;
+		CGameFramework::GetInstance()->m_players = recv_packet->m_players;
 
 		cout << "Clinet ID - " << recv_packet->m_id << endl;
 	}
@@ -196,6 +197,9 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		memset(loginscene->login_state, 0, sizeof(loginscene->login_state));
 		if(recv_packet->m_fail_type == 0) strcpy_s(loginscene->login_state, "Already Game Started.");
 		if(recv_packet->m_fail_type == 1) strcpy_s(loginscene->login_state, "Already 3 Player in Room.");
+		if(recv_packet->m_fail_type == 2) strcpy_s(loginscene->login_state, "You must Host Game.");
+		if(recv_packet->m_fail_type == 3) strcpy_s(loginscene->login_state, "You can only Join.");
+		if(recv_packet->m_fail_type == 4) strcpy_s(loginscene->login_state, "Already This name in Game.");
 
 		CGameFramework::GetInstance()->m_connect_server = false;
 	}
@@ -203,7 +207,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 	case PACKET_TYPE::P_SC_SPAWN_PACKET:	// Player
 	{
-		cout << "P_SC_SPAWN_PACKET" << endl;
 		SC_SPAWN_PACKET* recv_packet = reinterpret_cast<SC_SPAWN_PACKET*>(_Packet);
 
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
@@ -235,7 +238,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 	case PACKET_TYPE::P_SC_GAMESTART_PACKET:
 	{
-		cout << "P_SC_GAMESTART_PACKET" << endl;
+		cout << "GameStart" << endl;
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 		CSelectScene* selectScene = reinterpret_cast<CSelectScene*>(scene);
 
@@ -273,7 +276,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case PACKET_TYPE::P_SC_ADD_PACKET:	// NPC, Monster, Box
 	{
 		SC_ADD_PACKET* recv_packet = reinterpret_cast<SC_ADD_PACKET*>(_Packet);
-		cout << "SC_ADD_PLAYER" << endl;
 
 		// 오브젝트 로드
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
@@ -298,7 +300,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET:
 	{
 		SC_VELOCITY_CHANGE_PACKET* recv_packet = reinterpret_cast<SC_VELOCITY_CHANGE_PACKET*>(_Packet);
-		cout << "SC_VELOCITY_CHANGE_PACKET" << endl;
 
 		// 플레이어 객체를 얻어와야 함.
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
@@ -355,7 +356,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone);
+		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone, true);
 	}
 	break;
 
@@ -446,7 +447,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		character->m_bilboardUI.clear();
 		character->m_bilboardUI.push_back(new CTextUI(character, to_string(recv_packet->m_health - character->GetHealth())));
 		character->SetHealth(recv_packet->m_health); 
-		cout << recv_packet->m_id << " - " << character->GetHealth() << endl;
 	}
 	break;
 

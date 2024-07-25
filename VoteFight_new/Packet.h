@@ -62,6 +62,7 @@ struct SC_LOGIN_OK_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	unsigned int		m_id;
+	unsigned int		m_players;
 };
 
 struct SC_LOGIN_FAIL_PACKET {
@@ -242,6 +243,7 @@ struct CS_LOGIN_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	char				m_name[NAME_SIZE];
+	unsigned int		m_players;
 };
 
 struct CS_ANIMATION_PACKET {

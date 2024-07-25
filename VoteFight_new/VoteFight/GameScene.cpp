@@ -354,7 +354,14 @@ void CGameScene::RenderImGui()
 	static ImVec2 select = { -1, -1 };
 	const float itemSize = framework->GetResolution().x * 3 / 5 / 8;
 	static bool inven = false;
+	static bool option = false;
 	if (KEY_TAP(KEY::E)) inven = !inven;
+	if (KEY_TAP(KEY::ESC)) {
+		if (inven)
+			inven = false;
+		else
+			option = !option;
+	}
 
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
@@ -615,9 +622,13 @@ void CGameScene::RenderImGui()
 		float rate = (float)player->GetHealth() / 100;
 		ImVec2 size = ImVec2(windowSize.x * 2/3, windowSize.y / 4);
 		ImVec2 top_left = ImVec2(windowPos.x + 120, windowPos.y + 50);
-		ImVec2 bottom_right = ImVec2(top_left.x + size.x * rate, top_left.y + size.y);
+		ImVec2 bottom_right = ImVec2(top_left.x + size.x, top_left.y + size.y);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
+		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(255, 255, 255, 180));
+
+		bottom_right = ImVec2(top_left.x + size.x * rate, top_left.y + size.y);
+		draw_list = ImGui::GetWindowDrawList();
 		draw_list->AddRectFilled(top_left, bottom_right, IM_COL32(255, 50, 50, 255));
 
 		auto& handle = CAssetManager::GetInstance()->m_IconTextures["election_ticket"]->m_IconGPUHandle;
@@ -683,66 +694,77 @@ void CGameScene::RenderImGui()
 	}
 
 	if (!inven) {
-		// ImPlot 창 시작
-		static ImPlotPieChartFlags flags = true;
-		ImGui::SetNextItemWidth(250);
-
-		CSelectScene* selectscene = reinterpret_cast<CSelectScene*>(CSceneManager::GetInstance()->GetScene(SCENE_TYPE::SELECT));
-		
-		static const char* labels[3];
-		static int data[3];
-
-		for (int i = 0; i < 3; ++i) {
-			if (selectscene->m_selected_id[i] == -1) continue;
-			labels[i] = GetIDObject(GROUP_TYPE::PLAYER, selectscene->m_selected_id[i])->GetName().c_str();
-			data[i] = reinterpret_cast<CPlayer*>(GetIDObject(GROUP_TYPE::PLAYER, selectscene->m_selected_id[i]))->m_tickets;
-		}
-
-		ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
-		ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
-		ImGui::GetFont()->Scale = 1.0f;
-		ImGui::PushFont(ImGui::GetFont());
-
-		ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
-		ImGui::Begin("Chard", nullptr, window_flags);
+		if (framework->m_players > 1)
 		{
-			ImGui::Text("The Approval Rating");
-			ImPlotStyle& style = ImPlot::GetStyle();
-			style.Colors[ImPlotCol_PlotBg] = ImVec4(1, 1, 1, 1);
-			style.Colors[ImPlotCol_FrameBg] = ImVec4(0, 0, 0, 0);
-			style.Colors[ImPlotCol_PlotBorder] = ImVec4(0, 0, 0, 1);
+			// ImPlot 창 시작
+			static ImPlotPieChartFlags flags = true;
+			ImGui::SetNextItemWidth(250);
 
-			ImGui::SetCursorPos(ImVec2(0, 15));
+			CSelectScene* selectscene = reinterpret_cast<CSelectScene*>(CSceneManager::GetInstance()->GetScene(SCENE_TYPE::SELECT));
 
-			ImU32 colors[3] = {
-			IM_COL32(52, 86, 237, 255),    // Blue
-			IM_COL32(217, 46, 46, 255),    // Red
-			IM_COL32(237, 227, 28, 255)   // Yellow
-			};
+			static const char* labels[3];
+			static int data[3];
 
-			static ImPlotColormap Liars = ImPlot::AddColormap("Liars", colors, 3);
-			ImPlot::PushColormap(Liars);
-			if (ImPlot::BeginPlot("##Pie2", ImVec2(250, 250), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
-				ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
-				ImPlot::SetupAxesLimits(0, 1, 0, 1);
-
-				ImPlot::PlotPieChart(labels, data, 3, 0.5, 0.5, 0.4, "%.0f", 0, flags);
-
-				// 가운데 구멍을 채우기 위해 원을 그립니다
-				ImDrawList* draw_list = ImPlot::GetPlotDrawList();
-				ImVec2 center = ImPlot::PlotToPixels(ImPlotPoint(0.5f, 0.5f));
-				float radius = ImPlot::GetCurrentPlot()->PlotRect.GetWidth() * 0.4f * 0.5f;
-				draw_list->AddCircleFilled(center, radius * 0.7f, IM_COL32(255, 255, 255, 255));
-
-				ImPlot::EndPlot();
+			int j = 0;
+			for (int i = 0; i < 3; ++i) {
+				if (selectscene->m_selected_id[i] == -1) continue;
+				CObject* object = GetIDObject(GROUP_TYPE::PLAYER, selectscene->m_selected_id[i]);
+				if (object == NULL) { j += 1; continue; }
+				labels[j] = object->GetName().c_str();
+				data[j++] = reinterpret_cast<CPlayer*>(object)->m_tickets;
 			}
-		}
-		ImGui::PopFont();
-		ImGui::PopStyleColor();
-		ImGui::PopStyleColor();
-		ImGui::End();
 
-		if (player->m_dead) {
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
+			ImGui::GetFont()->Scale = 1.0f;
+			ImGui::PushFont(ImGui::GetFont());
+
+			ImGui::SetNextWindowPos(ImVec2(10, 10), ImGuiCond_Always);
+			ImGui::Begin("Chard", nullptr, window_flags);
+			{
+				ImGui::Text("The Approval Rating");
+				ImPlotStyle& style = ImPlot::GetStyle();
+				style.Colors[ImPlotCol_PlotBg] = ImVec4(1, 1, 1, 1);
+				style.Colors[ImPlotCol_FrameBg] = ImVec4(0, 0, 0, 0);
+				style.Colors[ImPlotCol_PlotBorder] = ImVec4(0, 0, 0, 1);
+
+				ImGui::SetCursorPos(ImVec2(0, 15));
+
+				ImU32 origin_colors[3] = {
+				IM_COL32(52, 86, 237, 255),    // Blue
+				IM_COL32(217, 46, 46, 255),    // Red
+				IM_COL32(237, 227, 28, 255)   // Yellow
+				};
+				ImU32 colors[3];
+				int j = 0;
+				for (int i = 0; i < 3; ++i) {
+					if (selectscene->m_selected_id[i] != -1)
+						colors[j++] = origin_colors[i];
+				}
+				static ImPlotColormap Liars = ImPlot::AddColormap("Liars", colors, framework->m_players);
+				ImPlot::PushColormap(Liars);
+				if (ImPlot::BeginPlot("##Pie2", ImVec2(250, 250), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
+					ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
+					ImPlot::SetupAxesLimits(0, 1, 0, 1);
+
+					ImPlot::PlotPieChart(labels, data, framework->m_players, 0.5, 0.5, 0.4, "%.0f", 0, flags);
+
+					// 가운데 구멍을 채우기 위해 원을 그립니다
+					ImDrawList* draw_list = ImPlot::GetPlotDrawList();
+					ImVec2 center = ImPlot::PlotToPixels(ImPlotPoint(0.5f, 0.5f));
+					float radius = ImPlot::GetCurrentPlot()->PlotRect.GetWidth() * 0.4f * 0.5f;
+					draw_list->AddCircleFilled(center, radius * 0.7f, IM_COL32(255, 255, 255, 255));
+
+					ImPlot::EndPlot();
+				}
+			}
+			ImGui::PopFont();
+			ImGui::PopStyleColor();
+			ImGui::PopStyleColor();
+			ImGui::End();
+		}
+
+		if (option || player->m_dead) {
 			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
 			ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 0));
 			ImGui::GetFont()->Scale = 2.0f;
@@ -752,7 +774,7 @@ void CGameScene::RenderImGui()
 			ImGui::SetNextWindowPos(ImVec2(framework->GetResolution().x/2- 100, framework->GetResolution().y/2- 100), ImGuiCond_Always);
 			ImGui::Begin("Exit", nullptr, window_flags);
 			{
-				ImGui::Text("You Dead");
+				if(player->m_dead) ImGui::Text("You Dead");
 				if (ImGui::Button("Exit", ImVec2(200, 100))) {
 					PostQuitMessage(0);
 				}

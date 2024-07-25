@@ -1,7 +1,6 @@
 #pragma once
 
 #define EPSILON				    0.01f
-#define	MAX_PLAYER				3
 
 enum class STATE_ENUM { CPlayerIdleState = 0, CPlayerWalkState, CPlayerRunState, CPlayerLeftTurn, CPlayerRightTurn, };
 
