@@ -179,13 +179,16 @@ void CTimer::do_timer()
 					auto duration = chrono::system_clock::now() - client.second->m_lastTime;
 					auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
 					XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
-					client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
-					if (client.second->m_player->m_Pos.x < 0 || client.second->m_player->m_Pos.x >= 400 ||
+					XMFLOAT3 origin_pos = client.second->m_player->m_Pos;
+					client.second->m_player->m_Pos = Vector3::Add(origin_pos, shift);
+					float y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
+					if (y - origin_pos.y > 1.f ||
+						client.second->m_player->m_Pos.x < 0 || client.second->m_player->m_Pos.x >= 400 ||
 						client.second->m_player->m_Pos.z < 0 || client.second->m_player->m_Pos.z >= 400) {
-						client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
+						client.second->m_player->m_Pos = origin_pos;
 					}
-
-					client.second->m_player->m_Pos.y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
+					else
+						client.second->m_player->m_Pos.y = y;
 					if (client.second->m_player->m_Pos.y < phase_height[CTimer::phase - 1]) {
 						client.second->m_player->m_Health -= 1;
 						SC_HEALTH_CHANGE_PACKET send_packet;

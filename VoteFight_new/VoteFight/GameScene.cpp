@@ -634,7 +634,7 @@ void CGameScene::RenderImGui()
 		auto& handle = CAssetManager::GetInstance()->m_IconTextures["election_ticket"]->m_IconGPUHandle;
 		ImGui::Image((void*)handle.ptr, ImVec2(windowSize.y / 4, windowSize.y / 4));
 		ImGui::SameLine(); 
-		ImGui::Text("X %d", count(player->myItems.begin(), player->myItems.end(), "election_ticket"));
+		ImGui::Text("X %d", player->m_tickets);
 		
 		ImGui::PopFont();
 		ImGui::PopStyleColor();

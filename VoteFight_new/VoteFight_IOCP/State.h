@@ -9,8 +9,6 @@ protected:
 	virtual ~CState();
 
 public:
-	chrono::system_clock::time_point enterTime;
-
 	virtual void Enter(CObject* object) = 0;
 	virtual void Exit(CObject* object) = 0;
 

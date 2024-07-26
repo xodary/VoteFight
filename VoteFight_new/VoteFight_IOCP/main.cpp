@@ -361,7 +361,35 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
 		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
 		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
-		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
+		XMFLOAT3 origin_pos = _Client->m_player->m_Pos;
+		_Client->m_player->m_Pos = Vector3::Add(origin_pos, shift);
+		float y = CGameScene::OnGetHeight(_Client->m_player->m_Pos.x, _Client->m_player->m_Pos.z);
+		if (y - origin_pos.y > 1.f ||
+			_Client->m_player->m_Pos.x < 0 || _Client->m_player->m_Pos.x >= 400 ||
+			_Client->m_player->m_Pos.z < 0 || _Client->m_player->m_Pos.z >= 400) {
+			_Client->m_player->m_Pos = origin_pos;
+		}
+		else
+			_Client->m_player->m_Pos.y = y;
+
+		XMFLOAT4X4 matrix = Matrix4x4::Identity();
+		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(client.second->m_player->m_Sca));
+		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(client.second->m_player->m_Rota));
+		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(_Client->m_player->m_Pos));
+		_Client->m_player->m_origin.Transform(_Client->m_player->m_boundingBox, XMLoadFloat4x4(&matrix));
+
+		for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
+			if (i == (int)GROUP_TYPE::PLAYER) continue;
+			if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
+			for (auto& object : CGameScene::m_objects[i]) {
+				if (!_Client->m_player->m_collider) continue;
+				if (!object.second->m_collider) continue;
+				if (_Client->m_player->m_boundingBox.Intersects(object.second->m_boundingBox)) {
+					_Client->m_player->m_Pos = origin_pos;
+				}
+			}
+		}
+
 		_Client->m_lastTime = chrono::system_clock::now();
 
 		if (recv_packet->m_state == 0 || recv_packet->m_state == 2)
@@ -461,7 +489,34 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		auto duration = chrono::system_clock::now() - _Client->m_lastTime;
 		auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
 		XMFLOAT3 shift = Vector3::ScalarProduct(_Client->m_player->m_Vec, seconds * _Client->m_player->m_Velocity);
-		_Client->m_player->m_Pos = Vector3::Add(_Client->m_player->m_Pos, shift);
+		XMFLOAT3 origin_pos = _Client->m_player->m_Pos;
+		_Client->m_player->m_Pos = Vector3::Add(origin_pos, shift);
+		float y = CGameScene::OnGetHeight(_Client->m_player->m_Pos.x, _Client->m_player->m_Pos.z);
+		if (y - origin_pos.y > 1.f ||
+			_Client->m_player->m_Pos.x < 0 || _Client->m_player->m_Pos.x >= 400 ||
+			_Client->m_player->m_Pos.z < 0 || _Client->m_player->m_Pos.z >= 400) {
+			_Client->m_player->m_Pos = origin_pos;
+		}
+		else
+			_Client->m_player->m_Pos.y = y;
+
+		XMFLOAT4X4 matrix = Matrix4x4::Identity();
+		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(client.second->m_player->m_Sca));
+		//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(client.second->m_player->m_Rota));
+		matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(_Client->m_player->m_Pos));
+		_Client->m_player->m_origin.Transform(_Client->m_player->m_boundingBox, XMLoadFloat4x4(&matrix));
+
+		for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
+			if (i == (int)GROUP_TYPE::PLAYER) continue;
+			if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
+			for (auto& object : CGameScene::m_objects[i]) {
+				if (!_Client->m_player->m_collider) continue;
+				if (!object.second->m_collider) continue;
+				if (_Client->m_player->m_boundingBox.Intersects(object.second->m_boundingBox)) {
+					_Client->m_player->m_Pos = origin_pos;
+				}
+			}
+		}
 
 		if (recv_packet->m_Rbutton) _Client->m_player->m_Velocity = 5;
 		else {
@@ -543,6 +598,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			for (auto& rc2 : RemoteClient::m_remoteClients) {	// other players
 				if (!rc2.second->m_ingame) continue;
 				rc2.second->m_player->m_Pos = pos[i++];
+				rc2.second->m_player->m_Pos.y = CGameScene::OnGetHeight(rc2.second->m_player->m_Pos.x, rc2.second->m_player->m_Pos.z);
 
 				SC_SPAWN_PACKET send_packet;
 				send_packet.m_size = sizeof(send_packet);

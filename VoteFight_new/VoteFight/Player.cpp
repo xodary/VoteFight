@@ -142,6 +142,7 @@ void CPlayer::OnCollisionExit(CObject* collidedObject)
 
 void CPlayer::GetItem(string item)
 {
+	if (item == "election_ticket") return;
 	for (int i = 0; i < 18; ++i) {
 		if (myItems[i].empty()) {
 			myItems[i] = item;
