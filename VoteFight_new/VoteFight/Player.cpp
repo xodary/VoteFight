@@ -140,12 +140,19 @@ void CPlayer::OnCollisionExit(CObject* collidedObject)
 {
 }
 
-void CPlayer::GetItem(string item)
+void CPlayer::GetItem(string name, int capacity)
 {
-	if (item == "election_ticket") return;
 	for (int i = 0; i < 18; ++i) {
-		if (myItems[i].empty()) {
-			myItems[i] = item;
+		if (myItems[i].m_name == name) {
+			myItems[i].m_capacity += capacity;
+			return;
+		}
+	}
+
+	for (int i = 0; i < 18; ++i) {
+		if (myItems[i].m_name.empty()) {
+			myItems[i].m_name = name;
+			myItems[i].m_capacity = capacity;
 			return;
 		}
 	}

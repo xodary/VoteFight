@@ -208,6 +208,7 @@ struct SC_DROPED_ITEM {
 	unsigned char		m_type;
 	XMFLOAT3			m_pos;
 	unsigned int		m_itemID;
+	unsigned int		m_capaticy;
 	char				m_itemName[NAME_SIZE];
 };
 
@@ -215,6 +216,7 @@ struct SC_PICKUP_PACKET{
 	unsigned char		m_size;
 	unsigned char		m_type;
 	char				m_itemName[NAME_SIZE];
+	unsigned int		m_capacity;
 };
 
 struct SC_GAMEEND_PACKET {
@@ -318,6 +320,7 @@ struct CS_DROPED_ITEM {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	char				m_itemName[NAME_SIZE];
+	unsigned int		m_capacity;
 };
 
 struct CS_PICKUP_PACKET {

@@ -630,12 +630,13 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 			// Drop Items
 			for (auto& object : CGameScene::m_objects[(int)GROUP_TYPE::UI]) {
-				string name = reinterpret_cast<CItem*>(object.second)->m_ItemName;
+				auto item = reinterpret_cast<CItem*>(object.second);
 				SC_DROPED_ITEM send_packet;
 				send_packet.m_size = sizeof(SC_ADD_PACKET);
 				send_packet.m_type = PACKET_TYPE::P_SC_DROPED_ITEM;
 				send_packet.m_pos = object.second->m_Pos;
-				strcpy_s(send_packet.m_itemName, name.c_str());
+				send_packet.m_capaticy = item->m_Capacity;
+				strcpy_s(send_packet.m_itemName, item->m_ItemName.c_str());
 
 				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 			}
@@ -784,6 +785,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					SC_PICKUP_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
 					send_packet.m_type = P_SC_PICKUP_PACKET;
+					send_packet.m_capacity = 1;
 					strcpy_s(send_packet.m_itemName, "wood");
 					_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				}
@@ -801,6 +803,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 						SC_PICKUP_PACKET send_packet;
 						send_packet.m_size = sizeof(send_packet);
 						send_packet.m_type = P_SC_PICKUP_PACKET;
+						send_packet.m_capacity = 1;
 						strcpy_s(send_packet.m_itemName, "fish_meet");
 						_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 						deleteMonsters.push_back(monster->m_id);
@@ -1027,6 +1030,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		object->m_Pos = _Client->m_player->m_Pos;
 		object->m_Pos.y = CGameScene::OnGetHeight(object->m_Pos.x, object->m_Pos.z);
 		object->m_ItemName = string(recv_packet->m_itemName);
+		object->m_Capacity = recv_packet->m_capacity;
 		CGameScene::m_objects[(int)GROUP_TYPE::UI][itemid] = object;
 
 		SC_DROPED_ITEM send_packet;
@@ -1095,6 +1099,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					SC_PICKUP_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
 					send_packet.m_type = P_SC_PICKUP_PACKET;
+					send_packet.m_capacity = reinterpret_cast<CItem*>(object.second)->m_Capacity;
 					strcpy_s(send_packet.m_itemName, reinterpret_cast<CItem*>(object.second)->m_ItemName.c_str());
 					_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				}

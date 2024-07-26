@@ -222,8 +222,10 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 
 			reinterpret_cast<CPlayer*>(object)->myItems.resize(18);
-			reinterpret_cast<CPlayer*>(object)->myItems[0] = "axe";
-			reinterpret_cast<CPlayer*>(object)->myItems[1] = "gun";
+			reinterpret_cast<CPlayer*>(object)->myItems[0].m_name = "axe";
+			reinterpret_cast<CPlayer*>(object)->myItems[0].m_capacity = 1;
+			reinterpret_cast<CPlayer*>(object)->myItems[1].m_name = "gun";
+			reinterpret_cast<CPlayer*>(object)->myItems[1].m_capacity = 1;
 		}
 		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -369,6 +371,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		{
 			CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_id);
 			CNPC* npc = reinterpret_cast<CNPC*>(object);
+
 			npc->m_needs.push_back(string(recv_packet->m_itemName));
 			npc->m_bilboardUI.push_back(new CIcon(npc, recv_packet->m_itemName));
 			break;
@@ -474,7 +477,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		SC_PICKUP_PACKET* recv_packet = reinterpret_cast<SC_PICKUP_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
-		player->GetItem(recv_packet->m_itemName);
+		player->GetItem(recv_packet->m_itemName, recv_packet->m_capacity);
 	}
 	break;
 
@@ -509,7 +512,20 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	{
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
-		player->m_bullets = player->m_FullBullets;
+		for (auto& items : player->myItems) {
+			if (player->m_bullets >= 10) break;
+			if (items.m_name == "bullets") {
+				int bullets = 10 - player->m_bullets;	// 필요한 bullets
+				if (items.m_capacity <= bullets) {
+					player->m_bullets += items.m_capacity;
+					items.m_name.clear();
+					items.m_capacity = 0;
+				}
+				else
+					player->m_bullets += bullets;
+					items.m_capacity -= bullets;
+			}
+		}
 		player->reloading = false;
 	}
 	break;

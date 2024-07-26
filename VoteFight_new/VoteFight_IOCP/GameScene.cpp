@@ -173,7 +173,7 @@ void CGameScene::NPCInitialize()
 	cout << "NPCInitialize()" << endl;
 
 	string needs_ex[] = {"fish_meet", "wood", "flower", "trash", "carrot", "icecream", "potato" };
-	string output_ex[] = { "gun", "election_ticket", "drug" };
+	string output_ex[] = { "gun", "election_ticket", "drug", "bullets"};
 	for (auto& object : m_objects[(int)GROUP_TYPE::NPC])
 	{
 		CNPC* npc = reinterpret_cast<CNPC*>(object.second);
@@ -184,8 +184,8 @@ void CGameScene::NPCInitialize()
 			npc->m_needs.push_back(needs_ex[rand() % size(needs_ex)]);
 		}
 
-		int o = rand() % size(output_ex) + 1;
-		for (int i = 0; i < o + 1; ++i)
+		int o = 4;
+		for (int i = 0; i < o; ++i)
 		{
 			npc->m_outputs.push_back(output_ex[rand() % size(output_ex)]);
 		}

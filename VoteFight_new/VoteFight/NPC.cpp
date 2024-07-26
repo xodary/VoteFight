@@ -24,12 +24,6 @@ CNPC::~CNPC()
 {
 }
 
-
-string CNPC::GetSpineName()
-{
-	return m_spineName;
-}
-
 void CNPC::Init()
 {	
 	CAnimator* animator = static_cast<CAnimator*>(GetComponent(COMPONENT_TYPE::ANIMATOR));
@@ -90,12 +84,15 @@ void CNPC::Update()
 				CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
 				bool allFound = true;
 
-				vector<string> new_item = player->myItems;
+				auto new_item = player->myItems;
 				for (const string& need : m_needs) {
-					auto it = find(new_item.rbegin(), new_item.rend(), need);
+					auto it = find_if(new_item.rbegin(), new_item.rend(), [&need](CItem a) {
+						return a.m_name == need;
+						});
 					if (it == new_item.rend()) allFound = false;
 					else {
-						it->clear();
+						it->m_name.clear();
+						it->m_capacity = 0;
 					}
 				}
 
@@ -105,7 +102,8 @@ void CNPC::Update()
 					}
 
 					for (const string& output : m_outputs) {
-						player->GetItem(output);
+						if(output == "bullets") player->GetItem(output, 10);
+						else player->GetItem(output, 1);
 					}
 					CS_EXCHANGE_DONE_PACKET p;
 					p.m_type = P_CS_EXCHANGE_DONE_PACKET;

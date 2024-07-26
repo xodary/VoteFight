@@ -16,8 +16,6 @@ public:
 
 	CNPC();
 	virtual ~CNPC();
-	
-	string GetSpineName();
 
 	virtual void Init();
 	virtual void Update();

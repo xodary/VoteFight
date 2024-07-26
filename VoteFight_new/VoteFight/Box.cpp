@@ -52,7 +52,8 @@ void CBox::Update()
 				CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 				CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
 				for (const string& item : m_items) {
-					player->GetItem(item);
+					if(item == "bullets") player->GetItem(item, 10);
+					else player->GetItem(item, 1);
 				}
 				CS_TAKEOUT_PACKET p;
 				p.m_type = P_CS_TAKEOUT_PACKET;
@@ -102,7 +103,8 @@ void COnceItem::Update()
 				CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 				CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
 				for (const string& item : m_items) {
-					player->GetItem(item);
+					if (item == "bullets") player->GetItem(item, 10);
+					else player->GetItem(item, 1);
 				}
 				CS_TAKEOUT_PACKET p;
 				p.m_type = P_CS_TAKEOUT_PACKET;
