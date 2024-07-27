@@ -28,6 +28,7 @@
 #include "Bullet.h"
 #include "Monster.h"
 #include "GameScene.h"
+#include "SoundManager.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -359,7 +360,20 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone, true);
-		CSoundManager::GetInstance()->Play((SOUND_TYPE)recv_packet->m_sound, 0.3f, false);
+
+		//CSoundManager::GetInstance()->Play((SOUND_TYPE)recv_packet->m_sound, 0.3f, true);
+
+		//if (string(recv_packet->m_key) == "Pistol_focusshoot" || 
+		//	string(recv_packet->m_key) == "Pistol_shoot") {
+		//	CSoundManager::GetInstance()->Play(SOUND_TYPE::PISTOL_SHOT, 0.3f, true);
+		//}
+		//if (recv_packet->m_sound == SOUND_TYPE::WALK) {
+		//	CSoundManager::GetInstance()->Play(SOUND_TYPE::WALK, 0.3f, true);
+		//}
+		//if (string(recv_packet->m_key) == "Idle" && recv_packet->m_bone == 0) {
+		//	CSoundManager::GetInstance()->Stop(SOUND_TYPE::WALK);
+		//	CSoundManager::GetInstance()->Stop(SOUND_TYPE::RUN);
+		//}
 	}
 	break;
 

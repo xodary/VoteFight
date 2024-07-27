@@ -79,27 +79,42 @@ void CTimer::do_timer()
 							if (monster->m_dead) continue;
 							monster->m_Health -= 25 * 3;
 
-							SC_ANIMATION_PACKET send_packet;
-							send_packet.m_size = sizeof(send_packet);
-							send_packet.m_type = P_SC_ANIMATION_PACKET;
-							send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
-							send_packet.m_id = monster->m_id;
-							send_packet.m_loop = false;
-							send_packet.m_bone = 0;	// Root
-
 							if (monster->m_Health <= 0) {
 								// Monster »ç¸Á
 								monster->m_dead = true;
+								SC_ANIMATION_PACKET send_packet;
+								send_packet.m_size = sizeof(send_packet);
+								send_packet.m_type = P_SC_ANIMATION_PACKET;
+								send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
+								send_packet.m_id = monster->m_id;
+								send_packet.m_loop = false;
+								send_packet.m_bone = 0;	// Root
 								strcpy_s(send_packet.m_key, "Dead");
+								for (auto& rc : RemoteClient::m_remoteClients) {
+									if (!rc.second->m_ingame) continue;
+									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+								}
+								monster->m_Velocity = 0;
+								{
+									SC_VELOCITY_CHANGE_PACKET send_packet;
+									send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+									send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+									send_packet.m_id = monster->m_id;
+									send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
+									send_packet.m_vel = monster->m_Velocity;
+									send_packet.m_pos = monster->m_Pos;
+									send_packet.m_look = monster->m_Angle;
+									send_packet.m_angle = monster->m_Angle;
+
+									for (auto& rc : RemoteClient::m_remoteClients) {
+										if (!rc.second->m_ingame) continue;
+										rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+									}
+								}
 							}
 							else
 							{
 								monster->m_stateMachine->ChangeState(CMonsterAttackedState::GetInstance());
-							}
-
-							for (auto& rc : RemoteClient::m_remoteClients) {
-								if (!rc.second->m_ingame) continue;
-								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 							}
 						}
 					}

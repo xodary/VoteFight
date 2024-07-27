@@ -41,6 +41,7 @@ void CMonsterIdleState::Enter(CObject* object)
 		send_packet.m_id = object->m_id;
 		send_packet.m_loop = true;
 		send_packet.m_bone = 0;	// Root
+		send_packet.m_sound = -1;
 		strcpy_s(send_packet.m_key, "idle");
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -109,6 +110,7 @@ void CMonsterWalkState::Enter(CObject* object)
 		send_packet.m_id = object->m_id;
 		send_packet.m_loop = true;
 		send_packet.m_bone = 0;	// Root
+		send_packet.m_sound = -1;
 		strcpy_s(send_packet.m_key, "Walk");
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -203,6 +205,7 @@ void CMonsterChaseState::Enter(CObject* object)
 		send_packet.m_id = object->m_id;
 		send_packet.m_loop = true;
 		send_packet.m_bone = 0;	// Root
+		send_packet.m_sound = -1;
 		strcpy_s(send_packet.m_key, "Run");
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -300,6 +303,7 @@ void CMonsterAttackState::Enter(CObject* object)
 		send_packet.m_id = object->m_id;
 		send_packet.m_loop = true;
 		send_packet.m_bone = 0;	// Root
+		send_packet.m_sound = -1;
 		strcpy_s(send_packet.m_key, "Attack");
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
@@ -358,6 +362,7 @@ void CMonsterAttackState::Update(CObject* object)
 				send_packet.m_id = object->m_id;
 				send_packet.m_loop = true;
 				send_packet.m_bone = 0;	// Root
+				send_packet.m_sound = -1;
 				strcpy_s(send_packet.m_key, "Attack");
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
@@ -386,6 +391,7 @@ void CMonsterAttackState::Update(CObject* object)
 				send_packet.m_id = monster->m_target->m_id;
 				send_packet.m_loop = false;
 				send_packet.m_bone = 0;	// Root
+				send_packet.m_sound = -1;
 				strcpy_s(send_packet.m_key, "Death");
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
@@ -424,6 +430,7 @@ void CMonsterAttackedState::Enter(CObject* object)
 		send_packet.m_id = object->m_id;
 		send_packet.m_loop = true;
 		send_packet.m_bone = 0;	// Root
+		send_packet.m_sound = -1;
 		strcpy_s(send_packet.m_key, "Gethit");
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;

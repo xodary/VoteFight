@@ -67,7 +67,6 @@ void CPlayer::Attack()
 		p.m_angle = GetRotate().y;
 		p.m_pos = FindFrame("GunPos")->GetPosition();
 		p.m_pos.y = FindFrame("GunPos")->GetPosition().y - 1.f;
-		CSoundManager::GetInstance()->Play(SOUND_TYPE::PISTOL_SHOT, 0.3f, true);
 		PacketQueue::AddSendPacket(&p);
 	}
 }

@@ -230,18 +230,6 @@ enum class TEXTURE_TYPE
 	COUNT
 };
 
-enum class POST_PROCESSING_TYPE
-{
-	NONE,
-	FADE_IN,
-	FADE_OUT,
-	G_COLOR,
-	G_NORMAL,
-	G_WORLDPOS,
-
-	COUNT
-};
-
 enum SOUND_TYPE
 {
 	// BGM
@@ -258,6 +246,5 @@ enum SOUND_TYPE
 	BUTTON_OVER,
 	GET_PISTOL,
 	PISTOL_SHOT,
-
 };
 
