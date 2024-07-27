@@ -8,6 +8,7 @@
 #include "InputManager.h"
 #include "ImaysNet/PacketQueue.h"
 #include "../Packet.h"
+#include "SoundManager.h"
 
 void CBox::Init()
 {
@@ -106,6 +107,7 @@ void COnceItem::Update()
 					if (item == "bullets") player->GetItem(item, 10);
 					else player->GetItem(item, 1);
 				}
+				CSoundManager::GetInstance()->Play(SOUND_TYPE::TAKEOUT, 0.3f, true);
 				CS_TAKEOUT_PACKET p;
 				p.m_type = P_CS_TAKEOUT_PACKET;
 				p.m_size = sizeof(p);

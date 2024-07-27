@@ -10,7 +10,7 @@ CMonster::CMonster() : CObject()
 	m_upAnimation = "idle";
 	m_stateMachine = new CStateMachine();
 	m_stateMachine->m_owner = this;
-	m_stateMachine->SetCurrentState(CMonsterIdleState::GetInstance());
+	m_stateMachine->SetCurrentState(CMonsterGoUpState::GetInstance());
 }
 
 CMonster::~CMonster()

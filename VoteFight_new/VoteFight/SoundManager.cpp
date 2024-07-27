@@ -38,7 +38,7 @@ void CSoundManager::Init()
     Result = m_System->createSound(GetSoundPath("AIbgm.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
     Result = m_System->createSound(GetSoundPath("AIbgm.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::SELECT_BGM]);
   
-    // 
+    // Walk
     Result = m_System->createSound(GetSoundPath("Walk.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::WALK]);
     Result = m_System->createSound(GetSoundPath("Run.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::RUN]);
 
@@ -46,6 +46,10 @@ void CSoundManager::Init()
     Result = m_System->createSound(GetSoundPath("GetPistol.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GET_PISTOL]);
     Result = m_System->createSound(GetSoundPath("PistolShot.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::PISTOL_SHOT]);
     Result = m_System->createSound(GetSoundPath("Tree.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::TREE]);
+    Result = m_System->createSound(GetSoundPath("Swing.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::SWING]);
+    Result = m_System->createSound(GetSoundPath("Punch.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::PUNCH]);
+    Result = m_System->createSound(GetSoundPath("takeout.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::TAKEOUT]);
+    Result = m_System->createSound(GetSoundPath("exchange.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::EXCHANGE]);
 }
 
 bool CSoundManager::IsPlaying(SOUND_TYPE SoundType)

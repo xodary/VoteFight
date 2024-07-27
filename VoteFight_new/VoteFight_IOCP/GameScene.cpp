@@ -14,7 +14,7 @@ bool CGameScene::can_see(XMFLOAT3 a, XMFLOAT3 b, float range)
 
 float CGameScene::OnGetHeight(float fx, float fz)
 {
-	if ((fx < 0.0f) || (fz < 0.0f) || (fx >= 400) || (fz >= 400)) return(0.0f);
+	if ((fx < 0.0f) || (fz < 0.0f) || (fx >= 400) || (fz >= 400)) return -6.f;
 
 	int x = (int)fx;
 	int z = (int)fz;
@@ -109,6 +109,7 @@ void CGameScene::Load(const string& fileName)
 					object->m_Pos = transforms[3 * i];
 					object->m_Pos.y = CGameScene::OnGetHeight(object->m_Pos.x, object->m_Pos.z);
 					object->m_Rota = transforms[3 * i + 1];
+					object->m_Angle = object->m_Rota.y;
 					object->m_Sca = transforms[3 * i + 2];
 					object->m_id = m_objects[static_cast<int>(groupType)].size();
 

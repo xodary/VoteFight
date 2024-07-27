@@ -135,26 +135,28 @@ void CLoginScene::RenderImGui()
             CGameFramework::GetInstance()->m_connect_server = true;
             memset(login_state, 0, sizeof(login_state));
             strcpy(login_state, "Wait For Server Message ...");
-            CServerManager::GetInstance()->ConnectServer(server_addr);
-            CS_LOGIN_PACKET send_packet;
-            send_packet.m_size = sizeof(CS_LOGIN_PACKET);
-            send_packet.m_type = P_CS_LOGIN_PACKET;
-            send_packet.m_players = item_current_idx;
-            strcpy_s(send_packet.m_name, user_name);
-            PacketQueue::AddSendPacket(&send_packet);
+            if (CServerManager::GetInstance()->ConnectServer(server_addr)) {
+                CS_LOGIN_PACKET send_packet;
+                send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+                send_packet.m_type = P_CS_LOGIN_PACKET;
+                send_packet.m_players = item_current_idx;
+                strcpy_s(send_packet.m_name, user_name);
+                PacketQueue::AddSendPacket(&send_packet);
+            }
         }
         ImGui::SameLine();
         if (ImGui::Button("Join")) {
             CGameFramework::GetInstance()->m_connect_server = true;
             memset(login_state, 0, sizeof(login_state));
             strcpy(login_state, "Wait For Server Message ...");
-            CServerManager::GetInstance()->ConnectServer(server_addr);
-            CS_LOGIN_PACKET send_packet;
-            send_packet.m_size = sizeof(CS_LOGIN_PACKET);
-            send_packet.m_type = P_CS_LOGIN_PACKET;
-            send_packet.m_players = -1;
-            strcpy_s(send_packet.m_name, user_name);
-            PacketQueue::AddSendPacket(&send_packet);
+            if (CServerManager::GetInstance()->ConnectServer(server_addr)) {
+                CS_LOGIN_PACKET send_packet;
+                send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+                send_packet.m_type = P_CS_LOGIN_PACKET;
+                send_packet.m_players = -1;
+                strcpy_s(send_packet.m_name, user_name);
+                PacketQueue::AddSendPacket(&send_packet);
+            }
         }
         //ImGui::SameLine();
         //if (ImGui::Button("How to Play")) {

@@ -6,6 +6,7 @@
 #include "Scene.h"
 #include "Animator.h"
 #include "InputManager.h"
+#include "SoundManager.h"
 #include "StateMachine.h"
 #include "Transform.h"
 #include "Player.h"
@@ -91,8 +92,10 @@ void CNPC::Update()
 						});
 					if (it == new_item.rend()) allFound = false;
 					else {
-						it->m_name.clear();
-						it->m_capacity = 0;
+						it->m_capacity -= 1;
+						if (it->m_capacity <= 0) {
+							it->m_name.clear();
+						}
 					}
 				}
 
@@ -105,6 +108,7 @@ void CNPC::Update()
 						if(output == "bullets") player->GetItem(output, 10);
 						else player->GetItem(output, 1);
 					}
+					CSoundManager::GetInstance()->Play(SOUND_TYPE::EXCHANGE, 0.3f, true);
 					CS_EXCHANGE_DONE_PACKET p;
 					p.m_type = P_CS_EXCHANGE_DONE_PACKET;
 					p.m_size = sizeof(p);

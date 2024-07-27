@@ -66,6 +66,12 @@ void CSelectScene::ReleaseShaderVariables()
 
 void CSelectScene::Enter()
 {
+	m_button = "Select Your Character";
+	for (int i = 0; i < 3; ++i) {
+		m_selected_id[i] = -1;	// Sonic, Mario, Hugo
+		m_nicknames[i] = "";
+	}
+
 	// 카메라의 타겟 설정
 	CCameraManager::GetInstance()->SetSelectSceneMainCamera();
 	
@@ -101,7 +107,7 @@ void CSelectScene::Init()
 	for (size_t i = 0; i < 3; i++)
 	{
 		m_WaitCharacters[i] = objects[i];
-		m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, -2.5, 0.3));
+		m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2.2, -2.5, 0.3));
 		m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
 		cout << m_WaitCharacters[i]->GetName() << endl;
 	}
@@ -142,11 +148,11 @@ void CSelectScene::SelectCharacter(UINT number)
 	{
 		if (number != i)
 		{
-			m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, -2.5, 0.3));
+			m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2.2, -2.5, 0.3));
 		}
 		else
 		{
-			m_WaitCharacters[i]->SetPosition(XMFLOAT3(0, -2.5, 0.3));
+			m_WaitCharacters[i]->SetPosition(XMFLOAT3(-0.5, -2.5, 0.3));
 		}
 	}
 }
@@ -353,6 +359,7 @@ void CSelectScene::RenderImGui()
 	ImGui::PopStyleColor();
 
 	static bool hovered[3] = { false };
+	string	character_names[3] = { "Sonic", "Mario", "Hugo" };
 
 	windowSize.x = windowSize.x / 1.3f;
 	for (int i = 0; i < 3; ++i)
@@ -375,7 +382,7 @@ void CSelectScene::RenderImGui()
 		ImGui::GetFont()->Scale = 1.5;
 		ImGui::PushFont(ImGui::GetFont());
 
-		ImGui::Begin(m_character_names[i].c_str(), nullptr, window_flags);
+		ImGui::Begin(character_names[i].c_str(), nullptr, window_flags);
 
 		if (ImGui::IsWindowHovered() && !m_ready) {
 			if (m_selected_id[i] == -1) {
@@ -391,7 +398,7 @@ void CSelectScene::RenderImGui()
 			hovered[i] = false;
 
 
-		ImGui::Text(m_character_names[i].c_str());
+		ImGui::Text(character_names[i].c_str());
 		ImGui::Text((": " + m_nicknames[i]).c_str());
 		ImGui::SameLine();
 		ImGui::End();

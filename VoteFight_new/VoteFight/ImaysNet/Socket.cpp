@@ -88,7 +88,7 @@ void Socket::Bind(const Endpoint& endpoint)
 }
 
 // endpoint가 가리키는 주소로의 접속을 합니다.
-void Socket::Connect(const Endpoint& endpoint)
+bool Socket::Connect(const Endpoint& endpoint)
 {
 	try {
 		if (connect(m_fd, (sockaddr*)&endpoint.m_ipv4Endpoint, sizeof(endpoint.m_ipv4Endpoint)) < 0)
@@ -102,7 +102,9 @@ void Socket::Connect(const Endpoint& endpoint)
 		CGameFramework::GetInstance()->m_connect_server = false;
 		CLoginScene* loginscene = reinterpret_cast<CLoginScene*>(CSceneManager::GetInstance()->GetScene(SCENE_TYPE::LOGIN));
 		strcpy_s(loginscene->login_state, ex.m_text.c_str());
+		return false;
 	}
+	return true;
 }
 
 // 송신을 합니다.

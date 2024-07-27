@@ -183,6 +183,7 @@ struct SC_HEALTH_CHANGE_PACKET {
 	unsigned int		m_id;
 	unsigned int		m_groupType;
 	int					m_health;
+	int					m_damage;
 };
 
 struct SC_TAKEOUT_PACKET {

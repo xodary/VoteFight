@@ -32,7 +32,6 @@ shared_ptr<Socket>			listenSocket;
 shared_ptr<RemoteClient>	remoteClientCandidate; 
 unordered_map<int, CObject*> CGameScene::m_objects[(int)GROUP_TYPE::COUNT];
 unordered_map<string, unordered_map<string, std::chrono::system_clock::duration>> CGameScene::m_animations;
-int	CTimer::phase;
 int bullet_id = 0;
 int item_id = 0;
 
@@ -710,7 +709,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	{
 		if (_Client->m_player->m_dead) return;
 		CS_ATTACK_PACKET* recv_packet = reinterpret_cast<CS_ATTACK_PACKET*>(_Packet);
-		int demage = 0;
+		int damage = 0;
 		if (!_Client->m_player->upperAnimationFinished) return;
 		// Attack 애니메이션 전송
 		SC_ANIMATION_PACKET ani_send_packet;
@@ -727,7 +726,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		{
 		case 0:
 			strcpy_s(ani_send_packet.m_key, "Punch");
-			demage = 5;
+			ani_send_packet.m_sound = SOUND_TYPE::PUNCH;
+			damage = 5;
 			break;
 		case 1:
 			if (_Client->m_player->m_upAnimation == "Pistol_focus" || _Client->m_player->m_upAnimation == "Pistol_slowwalk")
@@ -738,7 +738,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			break;
 		case 2:
 			strcpy_s(ani_send_packet.m_key, "Attack_onehand");
-			demage = 10;
+			ani_send_packet.m_sound = SOUND_TYPE::SWING;
+			damage = 10;
 			break;
 		}
 		_Client->m_player->lastAnimation = ani_send_packet.m_key;
@@ -839,7 +840,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
 				}
 
-				monster->m_Health -= demage * 3;
+				monster->m_Health -= damage * 3;
 
 				if (monster->m_Health <= 0) {
 					// Monster 사망
@@ -885,7 +886,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			if (object.second->m_id == _Client->m_id) continue;
 			if (bounding.Intersects(object.second->m_player->m_boundingBox))
 			{
-				object.second->m_player->m_Health -= demage;
+				object.second->m_player->m_Health -= damage;
 				cout << object.first << " : Health " << object.second->m_player->m_Health << endl;
 
 				SC_HEALTH_CHANGE_PACKET send_packet;
@@ -894,6 +895,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				send_packet.m_id = object.second->m_id;
 				send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
 				send_packet.m_health = object.second->m_player->m_Health;
+				send_packet.m_damage = damage;
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));

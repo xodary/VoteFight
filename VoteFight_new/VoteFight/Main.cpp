@@ -84,8 +84,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
     hInst = hInstance;
 
-    //HWND hWnd = CreateWindowW(L"WndClass", L"VOTEFIGHT", WS_OVERLAPPEDWINDOW, 0, 0, 1600, 900, nullptr, nullptr, hInstance, nullptr);
-    HWND hWnd = CreateWindowW(L"WndClass", L"VOTEFIGHT", WS_OVERLAPPEDWINDOW, 0, 0, 1800, 1000, nullptr, nullptr, hInstance, nullptr);
+    //HWND hWnd = CreateWindowW(L"WndClass", L"VOTE_FIGHT", WS_OVERLAPPEDWINDOW, 0, 0, 1600, 900, nullptr, nullptr, hInstance, nullptr);
+    HWND hWnd = CreateWindowW(L"WndClass", L"VOTE_FIGHT", WS_OVERLAPPEDWINDOW, 0, 0, 1800, 1000, nullptr, nullptr, hInstance, nullptr);
 
     if (hWnd == nullptr)
     {

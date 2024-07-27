@@ -55,10 +55,7 @@ void CPlayer::Attack()
 	if (CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene")
 	{
 		if (m_Weapon == WEAPON_TYPE::PISTOL) {
-			if(m_bullets <= 0 || reloading)
-				return;
-			else
-				m_bullets -= 1;
+			if(m_bullets <= 0 || reloading) return;
 		}
 
 		CS_ATTACK_PACKET p;

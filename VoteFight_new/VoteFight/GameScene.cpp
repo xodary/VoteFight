@@ -473,7 +473,7 @@ void CGameScene::RenderImGui()
 								if(player->myItems[i * cols + j].m_capacity == 1)
 									ImGui::Text("%s", player->myItems[i * cols + j].m_name.c_str());
 								else
-									ImGui::Text("%s x %d", player->myItems[i * cols + j].m_name.c_str(), player->myItems[i * cols + j].m_capacity);
+									ImGui::TextWrapped("%s x %d", player->myItems[i * cols + j].m_name.c_str(), player->myItems[i * cols + j].m_capacity);
 							}
 						}
 						ImGui::EndChildFrame();
@@ -528,7 +528,7 @@ void CGameScene::RenderImGui()
 						if (player->myItems[select.x * cols + select.y].m_capacity == 1)
 							ImGui::Text("%s", player->myItems[select.x * cols + select.y].m_name.c_str());
 						else
-							ImGui::Text("%s x %d", player->myItems[select.x * cols + select.y].m_name.c_str(), player->myItems[select.x * cols + select.y].m_capacity);
+							ImGui::TextWrapped("%s x %d", player->myItems[select.x * cols + select.y].m_name.c_str(), player->myItems[select.x * cols + select.y].m_capacity);
 					}
 					ImGui::End();
 				}
@@ -590,7 +590,7 @@ void CGameScene::RenderImGui()
 				if (player->myItems[i].m_capacity == 1)
 					ImGui::Text("%s", player->myItems[i].m_name.c_str());
 				else
-					ImGui::Text("%s x %d", player->myItems[i].m_name.c_str(), player->myItems[i].m_capacity);
+					ImGui::TextWrapped("%s x %d", player->myItems[i].m_name.c_str(), player->myItems[i].m_capacity);
 			}
 			ImGui::EndChildFrame();
 		}
@@ -614,7 +614,7 @@ void CGameScene::RenderImGui()
 
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
-	ImGui::GetFont()->Scale = 2.0f;
+	ImGui::GetFont()->Scale = 3.0f;
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(50, 50, 50, 255)); // RGBA
 	ImGui::PushFont(ImGui::GetFont());
 
@@ -647,14 +647,14 @@ void CGameScene::RenderImGui()
 		ImGui::Text(player->m_name.c_str());
 		ImGui::PopFont();
 
-		ImGui::GetFont()->Scale = 2.0f;
+		ImGui::GetFont()->Scale = 3.0f;
 		ImGui::PushFont(ImGui::GetFont());
 		ImGui::Text("HP: %d", clamp(player->GetHealth(), 0, 100));
 
 		// Health Bar
 		float rate = (float)player->GetHealth() / 100;
 		ImVec2 size = ImVec2(windowSize.x * 2/3, windowSize.y / 4);
-		ImVec2 top_left = ImVec2(windowPos.x + 120, windowPos.y + 50);
+		ImVec2 top_left = ImVec2(windowPos.x + 200, windowPos.y + 50);
 		ImVec2 bottom_right = ImVec2(top_left.x + size.x, top_left.y + size.y);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -679,7 +679,7 @@ void CGameScene::RenderImGui()
 	windowSize.x = framework->GetResolution().x / 5;
 	windowSize.y = framework->GetResolution().y / 2;
 	windowPos.x = framework->GetResolution().x - windowSize.x;
-	windowPos.y = framework->GetResolution().y / 3;
+	windowPos.y = framework->GetResolution().y * 9 / 10;
 
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
@@ -690,28 +690,6 @@ void CGameScene::RenderImGui()
 	const float imagesize = framework->GetResolution().y / 15;
 	{
 		ImGui::Begin("Key Info", nullptr, window_flags);
-		ImGui::GetFont()->Scale = 1.0f;
-		ImGui::PushFont(ImGui::GetFont());
-
-		auto& shandle = CAssetManager::GetInstance()->m_IconTextures["space"]->m_IconGPUHandle;
-		ImGui::Image((void*)shandle.ptr, ImVec2(imagesize, imagesize));
-		ImGui::SameLine();
-		ImGui::Text("Item Take Out, Exchange");
-
-		auto& fhandle = CAssetManager::GetInstance()->m_IconTextures["letter_f"]->m_IconGPUHandle;
-		ImGui::Image((void*)fhandle.ptr, ImVec2(imagesize, imagesize));
-		ImGui::SameLine();
-		ImGui::Text("Item Pick Up");
-
-		auto& ehandle = CAssetManager::GetInstance()->m_IconTextures["letter_e"]->m_IconGPUHandle;
-		ImGui::Image((void*)ehandle.ptr, ImVec2(imagesize, imagesize));
-		ImGui::SameLine();
-		ImGui::Text("Inventory");
-
-		auto& qhandle = CAssetManager::GetInstance()->m_IconTextures["letter_q"]->m_IconGPUHandle;
-		ImGui::Image((void*)qhandle.ptr, ImVec2(imagesize, imagesize));
-		ImGui::SameLine();
-		ImGui::Text("Map");
 
 		if (player->m_Weapon == WEAPON_TYPE::PISTOL) {
 			auto& gunhandle = CAssetManager::GetInstance()->m_IconTextures["gun"]->m_IconGPUHandle;
@@ -727,8 +705,6 @@ void CGameScene::RenderImGui()
 			ImGui::Text("Bullets : %d / %d", player->m_bullets, bullets);
 			ImGui::PopFont();
 		}
-
-		ImGui::PopFont();
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
 		ImGui::End();
