@@ -364,7 +364,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		XMFLOAT3 origin_pos = _Client->m_player->m_Pos;
 		_Client->m_player->m_Pos = Vector3::Add(origin_pos, shift);
 		float y = CGameScene::OnGetHeight(_Client->m_player->m_Pos.x, _Client->m_player->m_Pos.z);
-		if (y - origin_pos.y > 1.f ||
+		if (y - origin_pos.y > 1.5f ||
 			_Client->m_player->m_Pos.x < 0 || _Client->m_player->m_Pos.x >= 400 ||
 			_Client->m_player->m_Pos.z < 0 || _Client->m_player->m_Pos.z >= 400) {
 			_Client->m_player->m_Pos = origin_pos;
@@ -431,6 +431,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			case 0:		// idle
 			case 2:		// focusidle
 				strcpy_s(send_packet.m_key, "Idle");
+				send_packet.m_sound = (int)SOUND_TYPE::IDLE;
 				break;
 			case 1:		// walk
 				strcpy_s(send_packet.m_key, "Run");
@@ -446,6 +447,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			{
 			case 0:		// idle
 				strcpy_s(send_packet.m_key, "Pistol_idle");
+				send_packet.m_sound = (int)SOUND_TYPE::IDLE;
 				break;
 			case 1:		// walk
 				strcpy_s(send_packet.m_key, "Pistol_run");
@@ -453,6 +455,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				break;
 			case 2:		// focusidle
 				strcpy_s(send_packet.m_key, "Pistol_focus");
+				send_packet.m_sound = (int)SOUND_TYPE::IDLE;
 				break;
 			case 3:		// focuswalk
 				strcpy_s(send_packet.m_key, "Pistol_slowwalk");
@@ -465,6 +468,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			case 0:		// idle
 			case 2:		// focusidle
 				strcpy_s(send_packet.m_key, "Pistol_idle");
+				send_packet.m_sound = (int)SOUND_TYPE::IDLE;
 				break;
 			case 1:		// walk
 				strcpy_s(send_packet.m_key, "Pistol_run");
@@ -496,7 +500,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		XMFLOAT3 origin_pos = _Client->m_player->m_Pos;
 		_Client->m_player->m_Pos = Vector3::Add(origin_pos, shift);
 		float y = CGameScene::OnGetHeight(_Client->m_player->m_Pos.x, _Client->m_player->m_Pos.z);
-		if (y - origin_pos.y > 1.f ||
+		if (y - origin_pos.y > 1.5f ||
 			_Client->m_player->m_Pos.x < 0 || _Client->m_player->m_Pos.x >= 400 ||
 			_Client->m_player->m_Pos.z < 0 || _Client->m_player->m_Pos.z >= 400) {
 			_Client->m_player->m_Pos = origin_pos;
@@ -708,45 +712,39 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		CS_ATTACK_PACKET* recv_packet = reinterpret_cast<CS_ATTACK_PACKET*>(_Packet);
 		int demage = 0;
 		if (!_Client->m_player->upperAnimationFinished) return;
-		{
-			// Attack 애니메이션 전송
-			SC_ANIMATION_PACKET send_packet;
-			send_packet.m_size = sizeof(send_packet);
-			send_packet.m_type = P_SC_ANIMATION_PACKET;
-			send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
-			send_packet.m_id = _Client->m_id;
-			send_packet.m_loop = false;
-			send_packet.m_bone = 1;	// Upper
-			send_packet.m_sound = -1;
-			_Client->m_player->upperAnimationFinished = false;
+		// Attack 애니메이션 전송
+		SC_ANIMATION_PACKET ani_send_packet;
+		ani_send_packet.m_size = sizeof(ani_send_packet);
+		ani_send_packet.m_type = P_SC_ANIMATION_PACKET;
+		ani_send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+		ani_send_packet.m_id = _Client->m_id;
+		ani_send_packet.m_loop = false;
+		ani_send_packet.m_bone = 1;	// Upper
+		ani_send_packet.m_sound = -1;
+		_Client->m_player->upperAnimationFinished = false;
 
-			switch (_Client->m_player->m_Weapon)
-			{
-			case 0:
-				strcpy_s(send_packet.m_key, "Punch");
-				demage = 5;
-				break;
-			case 1:
-				if (_Client->m_player->m_upAnimation == "Pistol_focus" || _Client->m_player->m_upAnimation == "Pistol_slowwalk")
-					strcpy_s(send_packet.m_key, "Pistol_focusshoot");
-				else
-					strcpy_s(send_packet.m_key, "Pistol_shoot");
-				send_packet.m_sound = (int)SOUND_TYPE::PISTOL_SHOT;
-				break;
-			case 2:
-				strcpy_s(send_packet.m_key, "Attack_onehand");
-				demage = 10;
-				break;
-			}
-			_Client->m_player->lastAnimation = send_packet.m_key;
-			TIMER_EVENT ev{ chrono::system_clock::now() + CGameScene::m_animations["hugo_idle"][string(send_packet.m_key)],
-			EV_ANIMATION,_Client->m_id,(int)GROUP_TYPE::PLAYER, 1, send_packet.m_key };
-			CTimer::timer_queue.push(ev);
-			for (auto& rc : RemoteClient::m_remoteClients) {
-				if (!rc.second->m_ingame) continue;
-				rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-			}
+		switch (_Client->m_player->m_Weapon)
+		{
+		case 0:
+			strcpy_s(ani_send_packet.m_key, "Punch");
+			demage = 5;
+			break;
+		case 1:
+			if (_Client->m_player->m_upAnimation == "Pistol_focus" || _Client->m_player->m_upAnimation == "Pistol_slowwalk")
+				strcpy_s(ani_send_packet.m_key, "Pistol_focusshoot");
+			else
+				strcpy_s(ani_send_packet.m_key, "Pistol_shoot");
+			ani_send_packet.m_sound = (int)SOUND_TYPE::PISTOL_SHOT;
+			break;
+		case 2:
+			strcpy_s(ani_send_packet.m_key, "Attack_onehand");
+			demage = 10;
+			break;
 		}
+		_Client->m_player->lastAnimation = ani_send_packet.m_key;
+		TIMER_EVENT ev{ chrono::system_clock::now() + CGameScene::m_animations["hugo_idle"][string(ani_send_packet.m_key)],
+		EV_ANIMATION,_Client->m_id,(int)GROUP_TYPE::PLAYER, 1, ani_send_packet.m_key };
+		CTimer::timer_queue.push(ev);
 
 		// Pistol 일때 Bullet 생성
 		if (_Client->m_player->m_Weapon == 1)
@@ -760,8 +758,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			bullet->m_lastTime = chrono::system_clock::now();
 			bullet->m_id = bullet_id++;
 			CGameScene::m_objects[(int)GROUP_TYPE::BULLET][bullet->m_id] = Bullet;
-			
- 			SC_ADD_PACKET send_packet;
+
+			SC_ADD_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_ADD_PACKET);
 			send_packet.m_type = P_SC_ADD_PACKET;
 			send_packet.m_id = bullet->m_id;
@@ -791,6 +789,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				if (object.second->m_modelname != "PP_Tree_02" && object.second->m_modelname != "dead_tree_a") continue;
 				if (bounding.Intersects(object.second->m_boundingBox))
 				{
+					ani_send_packet.m_sound = SOUND_TYPE::TREE;
 					SC_PICKUP_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
 					send_packet.m_type = P_SC_PICKUP_PACKET;
@@ -799,6 +798,11 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					_Client->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				}
 			}
+		}
+
+		for (auto& rc : RemoteClient::m_remoteClients) {
+			if (!rc.second->m_ingame) continue;
+			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&ani_send_packet));
 		}
 
 		// 몬스터에 닿았을 때 몬스터 체력 변화

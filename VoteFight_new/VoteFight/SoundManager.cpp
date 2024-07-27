@@ -45,6 +45,7 @@ void CSoundManager::Init()
     // SFX
     Result = m_System->createSound(GetSoundPath("GetPistol.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GET_PISTOL]);
     Result = m_System->createSound(GetSoundPath("PistolShot.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::PISTOL_SHOT]);
+    Result = m_System->createSound(GetSoundPath("Tree.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::TREE]);
 }
 
 bool CSoundManager::IsPlaying(SOUND_TYPE SoundType)

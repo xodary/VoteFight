@@ -315,7 +315,20 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		if (recv_packet->m_grouptype == (int)GROUP_TYPE::PLAYER && abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 2);
+		if (recv_packet->m_grouptype == (int)GROUP_TYPE::PLAYER) {
+			if (abs(recv_packet->m_vel - 15) < EPSILON) {
+				CSoundManager::GetInstance()->Stop(WALK);
+				if (!CSoundManager::GetInstance()->IsPlaying(RUN))
+					CSoundManager::GetInstance()->Play(RUN, 0.2f, true);
+				animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 2);
+			}
+			if (abs(recv_packet->m_vel - 10) < EPSILON) {
+				CSoundManager::GetInstance()->Stop(RUN);
+				if(!CSoundManager::GetInstance()->IsPlaying(WALK))
+					CSoundManager::GetInstance()->Play(WALK, 0.2f, true);
+				animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 1);
+			}
+		}
 		if (recv_packet->m_look != -1) {
 			if (recv_packet->m_grouptype == (int)GROUP_TYPE::MONSTER)
 				static_cast<CMonster*>(object)->goal_rota = recv_packet->m_look;
@@ -361,19 +374,11 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone, true);
 
-		//CSoundManager::GetInstance()->Play((SOUND_TYPE)recv_packet->m_sound, 0.3f, true);
-
-		//if (string(recv_packet->m_key) == "Pistol_focusshoot" || 
-		//	string(recv_packet->m_key) == "Pistol_shoot") {
-		//	CSoundManager::GetInstance()->Play(SOUND_TYPE::PISTOL_SHOT, 0.3f, true);
-		//}
-		//if (recv_packet->m_sound == SOUND_TYPE::WALK) {
-		//	CSoundManager::GetInstance()->Play(SOUND_TYPE::WALK, 0.3f, true);
-		//}
-		//if (string(recv_packet->m_key) == "Idle" && recv_packet->m_bone == 0) {
-		//	CSoundManager::GetInstance()->Stop(SOUND_TYPE::WALK);
-		//	CSoundManager::GetInstance()->Stop(SOUND_TYPE::RUN);
-		//}
+		CSoundManager::GetInstance()->Play((SOUND_TYPE)recv_packet->m_sound, 0.2f, true);
+		if (recv_packet->m_sound == IDLE) {
+			CSoundManager::GetInstance()->Stop(WALK);
+			CSoundManager::GetInstance()->Stop(RUN);
+		}
 	}
 	break;
 

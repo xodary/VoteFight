@@ -89,6 +89,7 @@ void CTimer::do_timer()
 								send_packet.m_id = monster->m_id;
 								send_packet.m_loop = false;
 								send_packet.m_bone = 0;	// Root
+								send_packet.m_sound = -1;
 								strcpy_s(send_packet.m_key, "Dead");
 								for (auto& rc : RemoteClient::m_remoteClients) {
 									if (!rc.second->m_ingame) continue;
@@ -148,6 +149,7 @@ void CTimer::do_timer()
 								send_packet.m_id = player.second->m_id;
 								send_packet.m_loop = false;
 								send_packet.m_bone = 0;	// Root
+								send_packet.m_sound = -1;
 								strcpy_s(send_packet.m_key, "Death");
 								for (auto& rc : RemoteClient::m_remoteClients) {
 									if (!rc.second->m_ingame) continue;
@@ -197,7 +199,7 @@ void CTimer::do_timer()
 					XMFLOAT3 origin_pos = client.second->m_player->m_Pos;
 					client.second->m_player->m_Pos = Vector3::Add(origin_pos, shift);
 					float y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
-					if (y - origin_pos.y > 1.f ||
+					if (y - origin_pos.y > 1.5f ||
 						client.second->m_player->m_Pos.x < 0 || client.second->m_player->m_Pos.x >= 400 ||
 						client.second->m_player->m_Pos.z < 0 || client.second->m_player->m_Pos.z >= 400) {
 						client.second->m_player->m_Pos = origin_pos;
@@ -241,6 +243,7 @@ void CTimer::do_timer()
 							send_packet.m_id = client.second->m_id;
 							send_packet.m_loop = false;
 							send_packet.m_bone = 0;	// Root
+							send_packet.m_sound = -1;
 							strcpy_s(send_packet.m_key, "Death");
 							for (auto& rc : RemoteClient::m_remoteClients) {
 								if (!rc.second->m_ingame) continue;
@@ -341,6 +344,7 @@ void CTimer::do_timer()
 				send_packet.m_id = ev.target_id;
 				send_packet.m_loop = true;
 				send_packet.m_bone = ev.bone;
+				send_packet.m_sound = -1;
 
 				strcpy_s(send_packet.m_key, CGameScene::m_objects[ev.grouptype][ev.target_id]->m_upAnimation.c_str());
 				CGameScene::m_objects[ev.grouptype][ev.target_id]->upperAnimationFinished = true;
