@@ -99,6 +99,7 @@ struct SC_ANIMATION_PACKET {
 	unsigned int		m_grouptype;
 	char				m_key[NAME_SIZE];
 	bool				m_loop;
+	unsigned int		m_sound;
 };
 
 struct SC_ADD_PACKET {

@@ -2,7 +2,7 @@
 
 #include "./ImaysNet/ImaysNet.h"
 #include "./ImaysNet/PacketQueue.h"
-
+#include "SoundManager.h"
 #include "ServerManager.h"
 #include "SceneManager.h"
 #include "GameScene.h"
@@ -359,6 +359,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone, true);
+		CSoundManager::GetInstance()->Play((SOUND_TYPE)recv_packet->m_sound, 0.3f, false);
 	}
 	break;
 

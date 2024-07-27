@@ -11,6 +11,8 @@
 #include "Camera.h"
 #include "TimeManager.h"
 #include "SoundManager.h"
+#include "AssetManager.h"
+#include "Texture.h"
 
 CLoginScene::CLoginScene()
 {
@@ -91,15 +93,10 @@ void CLoginScene::RenderImGui()
     CGameFramework * framework = CGameFramework::GetInstance();
     framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
-    ImVec2 window_size{ CGameFramework::GetInstance()->GetResolution().x * 2 / 3, CGameFramework::GetInstance()->GetResolution().y * 2 / 3 };
-    ImVec2 window_pos{ CGameFramework::GetInstance()->GetResolution().x * 1 / 6, CGameFramework::GetInstance()->GetResolution().y * 1 / 6 };
+    XMFLOAT2 resolution = framework->GetResolution();
 
-    POINT mousePoint;
-    GetCursorPos(&mousePoint);
-    ScreenToClient(framework->GetHwnd(), &mousePoint);
-
-    io.MousePos.x = mousePoint.x * (framework->GetResolution().x / io.DisplaySize.x);
-    io.MousePos.y = mousePoint.y * (framework->GetResolution().y / io.DisplaySize.y);
+    ImVec2 window_size{ resolution.x * 2 / 3, resolution.y * 2 / 3 };
+    ImVec2 window_pos{ resolution.x * 1 / 6, resolution.y * 1 / 6 };
 
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_FirstUseEver);
@@ -108,8 +105,8 @@ void CLoginScene::RenderImGui()
     DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 0.5f));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(40, 40));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, window_size);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(40, 40));
     ImGui::GetFont()->Scale = 3.0f;
 
     ImGui::PushFont(ImGui::GetFont());
@@ -159,6 +156,12 @@ void CLoginScene::RenderImGui()
             strcpy_s(send_packet.m_name, user_name);
             PacketQueue::AddSendPacket(&send_packet);
         }
+        //ImGui::SameLine();
+        //if (ImGui::Button("How to Play")) {
+        //    CGameFramework::GetInstance()->m_connect_server = true;
+        //    auto& handle = CAssetManager::GetInstance()->m_IconTextures["HowToPlay"]->m_IconGPUHandle;
+        //    ImGui::Image((void*)handle.ptr, ImVec2(resolution.x * 2 / 3, resolution.y * 2 / 3));
+        //}
     }
     ImGui::PopFont();
     ImGui::PopStyleVar();
@@ -170,10 +173,7 @@ void CLoginScene::RenderImGui()
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }
 
-
-
-
 CLoginScene::~CLoginScene()
 {
-    //ReleaseShaderVariables();
+    CSceneManager::GetInstance()->GetGameScene()->ReleaseShaderVariables();
 }

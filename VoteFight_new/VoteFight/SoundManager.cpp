@@ -35,13 +35,15 @@ void CSoundManager::Init()
     }
 
     // BGM
-    Result = m_System->createSound(GetSoundPath("01_LoginBGM.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
-    Result = m_System->createSound(GetSoundPath("02_SelectBGM.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::SELECT_BGM]);
+    Result = m_System->createSound(GetSoundPath("AIbgm.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
+    Result = m_System->createSound(GetSoundPath("AIbgm.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::SELECT_BGM]);
   
+    // 
+    Result = m_System->createSound(GetSoundPath("Walk.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::WALK]);
+    Result = m_System->createSound(GetSoundPath("Run.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::RUN]);
+
     // SFX
     Result = m_System->createSound(GetSoundPath("GetPistol.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GET_PISTOL]);
-    Result = m_System->createSound(GetSoundPath("Grunt_1.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GRUNT_1]);
-    Result = m_System->createSound(GetSoundPath("Grunt_2.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GRUNT_2]);
     Result = m_System->createSound(GetSoundPath("PistolShot.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::PISTOL_SHOT]);
 }
 
