@@ -209,7 +209,7 @@ void CAssetManager::LoadTextures(const string& fileName)
 		"election_ticket", "fish_meet", "potato", "trash",
 		"icecream", "carrot", "drug", "gun", "flower", "bullets",
 		"arrow", "space", "letter_f", "letter_e", "letter_q",
-		"HowToPlay1", "HowToPlay2", "HowToPlay3" };
+		"HowToPlay1", "HowToPlay2", "HowToPlay3", "1st", "2nd", "3rd" };
 
 	for (auto str : itemName)
 	{

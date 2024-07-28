@@ -306,7 +306,7 @@ void CGameEndScene::RenderImGui()
 	CGameFramework* framework = CGameFramework::GetInstance();
 	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
-	ImVec2 windowSize(framework->GetResolution().x /2, framework->GetResolution().y * 4/5);
+	ImVec2 windowSize(framework->GetResolution().x /2, framework->GetResolution().y - 100);
 	ImVec2 windowPos(50, 50);
 
 	// ImPlot Ã¢ ½ÃÀÛ
@@ -374,7 +374,7 @@ void CGameEndScene::RenderImGui()
 		}
 		static ImPlotColormap Liars = ImPlot::AddColormap("Liars", colors, framework->m_players);
 		ImPlot::PushColormap(Liars);
-		if (ImPlot::BeginPlot("##Pie2", ImVec2(400, 400), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
+		if (ImPlot::BeginPlot("##Pie2", ImVec2(300, 300), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
 			ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
 			ImPlot::SetupAxesLimits(0, 1, 0, 1);
 
@@ -391,17 +391,21 @@ void CGameEndScene::RenderImGui()
 
 		ImGui::GetFont()->Scale = 3.0f;
 		ImGui::PushFont(ImGui::GetFont());
+		ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
 
-		string ment[3] = { "1ST : ", "2ND : ", "3RD : " };
+		string image[3] = { "1st", "2nd", "3rd" };
 		for (int i = 0; i < framework->m_players; ++i) {
-			ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i)), ImVec2(windowSize.x * 2/3, 100));
+			ImGui::BeginChild(ImGui::GetID((void*)(intptr_t)(i)), ImVec2(windowSize.x - 100, 150));
 			{
-				ImGui::Text((ment[i] + labels[i]).c_str());
-				ImGui::Text("Election Tickets : %d", data[i]);
+				auto& handle = CAssetManager::GetInstance()->m_IconTextures[image[i]]->m_IconGPUHandle;
+				ImGui::Image((void*)handle.ptr, ImVec2(186, 123));
+				ImGui::SameLine();
+				ImGui::Text("%s : %d votes", labels[i], data[i]);
 			}
-			ImGui::EndChildFrame();
+			ImGui::EndChild();
 		}
 
+		ImGui::PopStyleColor();
 		ImGui::PopFont();
 	}
 	ImGui::PopFont();
