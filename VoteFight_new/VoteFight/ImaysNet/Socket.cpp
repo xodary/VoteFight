@@ -323,7 +323,7 @@ void Socket::Disconnect()
 		{
 			ret = recv(m_fd, buffer, sizeof(buffer), 0);
 		} while (ret > 0);
-
+	
 		// 이제 소켓을 닫습니다.
 		Close();
 	}
