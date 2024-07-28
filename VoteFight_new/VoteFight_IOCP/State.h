@@ -9,12 +9,40 @@ protected:
 	virtual ~CState();
 
 public:
-	chrono::system_clock::time_point enterTime;
-
 	virtual void Enter(CObject* object) = 0;
 	virtual void Exit(CObject* object) = 0;
 
 	virtual void Update(CObject* object) = 0;
+};
+
+class CMonsterSleepState : public CState, public CSingleton<CMonsterSleepState>
+{
+	friend class CSingleton<CMonsterSleepState>;
+
+private:
+	CMonsterSleepState();
+	virtual ~CMonsterSleepState();
+
+public:
+	virtual void Enter(CObject* object);
+	virtual void Exit(CObject* object);
+
+	virtual void Update(CObject* object);
+};
+
+class CMonsterGoUpState : public CState, public CSingleton<CMonsterGoUpState>
+{
+	friend class CSingleton<CMonsterGoUpState>;
+
+private:
+	CMonsterGoUpState();
+	virtual ~CMonsterGoUpState();
+
+public:
+	virtual void Enter(CObject* object);
+	virtual void Exit(CObject* object);
+
+	virtual void Update(CObject* object);
 };
 
 class CMonsterIdleState : public CState, public CSingleton<CMonsterIdleState>

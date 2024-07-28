@@ -4,6 +4,9 @@
 class CItem : public CObject
 {
 public:
-	string m_ItemName;
+	string	m_ItemName;
+	int		m_Capacity;
+
+	CItem();
 };
 

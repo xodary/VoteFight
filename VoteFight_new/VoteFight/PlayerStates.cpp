@@ -58,7 +58,7 @@ void CPlayerIdleState::Update(CObject* object)
 	}
 	if (KEY_TAP(KEY::NUM1) || KEY_TAP(KEY::NUM2) || KEY_TAP(KEY::NUM3))
 	{
-		string item;
+		CItem item;
 		CS_WEAPON_CHANGE_PACKET send_packet;
 		if (KEY_TAP(KEY::NUM1)) {
 			item = player->myItems[0];
@@ -69,8 +69,8 @@ void CPlayerIdleState::Update(CObject* object)
 		if (KEY_TAP(KEY::NUM3)) {
 			item = player->myItems[2];
 		}
-		if (item == "gun") send_packet.m_weapon = 1;
-		else if (item == "axe") send_packet.m_weapon = 2;
+		if (item.m_name == "gun") send_packet.m_weapon = 1;
+		else if (item.m_name == "axe") send_packet.m_weapon = 2;
 		else send_packet.m_weapon = 0;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
@@ -195,7 +195,7 @@ void CPlayerWalkState::Update(CObject* object)
 	}
 	if (KEY_TAP(KEY::NUM1) || KEY_TAP(KEY::NUM2) || KEY_TAP(KEY::NUM3))
 	{
-		string item;
+		CItem item;
 		CS_WEAPON_CHANGE_PACKET send_packet;
 		if (KEY_TAP(KEY::NUM1)) {
 			item = player->myItems[0];
@@ -206,8 +206,8 @@ void CPlayerWalkState::Update(CObject* object)
 		if (KEY_TAP(KEY::NUM3)) {
 			item = player->myItems[2];
 		}
-		if (item == "gun") send_packet.m_weapon = 1;
-		else if (item == "axe") send_packet.m_weapon = 2;
+		if (item.m_name == "gun") send_packet.m_weapon = 1;
+		else if (item.m_name == "axe") send_packet.m_weapon = 2;
 		else send_packet.m_weapon = 0;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
@@ -299,7 +299,7 @@ void CPlayerFocusIdleState::Update(CObject* object)
 	}
 	if (KEY_TAP(KEY::NUM1) || KEY_TAP(KEY::NUM2) || KEY_TAP(KEY::NUM3))
 	{
-		string item;
+		CItem item;
 		CS_WEAPON_CHANGE_PACKET send_packet;
 		if (KEY_TAP(KEY::NUM1)) {
 			item = player->myItems[0];
@@ -310,8 +310,8 @@ void CPlayerFocusIdleState::Update(CObject* object)
 		if (KEY_TAP(KEY::NUM3)) {
 			item = player->myItems[2];
 		}
-		if (item == "gun") send_packet.m_weapon = 1;
-		else if (item == "axe") send_packet.m_weapon = 2;
+		if (item.m_name == "gun") send_packet.m_weapon = 1;
+		else if (item.m_name == "axe") send_packet.m_weapon = 2;
 		else send_packet.m_weapon = 0;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;
@@ -395,7 +395,7 @@ void CPlayerFocusWalkState::Update(CObject* object)
 	
 	if (KEY_TAP(KEY::NUM1) || KEY_TAP(KEY::NUM2) || KEY_TAP(KEY::NUM3))
 	{
-		string item;
+		CItem item;
 		CS_WEAPON_CHANGE_PACKET send_packet;
 		if (KEY_TAP(KEY::NUM1)) {
 			item = player->myItems[0];
@@ -406,8 +406,8 @@ void CPlayerFocusWalkState::Update(CObject* object)
 		if (KEY_TAP(KEY::NUM3)) {
 			item = player->myItems[2];
 		}
-		if (item == "gun") send_packet.m_weapon = 1;
-		else if (item == "axe") send_packet.m_weapon = 2;
+		if (item.m_name == "gun") send_packet.m_weapon = 1;
+		else if (item.m_name == "axe") send_packet.m_weapon = 2;
 		else send_packet.m_weapon = 0;
 		send_packet.m_size = sizeof(send_packet);
 		send_packet.m_type = P_CS_WEAPON_CHANGE_PACKET;

@@ -55,10 +55,7 @@ void CPlayer::Attack()
 	if (CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene")
 	{
 		if (m_Weapon == WEAPON_TYPE::PISTOL) {
-			if(m_bullets <= 0 || reloading)
-				return;
-			else
-				m_bullets -= 1;
+			if(m_bullets <= 0 || reloading) return;
 		}
 
 		CS_ATTACK_PACKET p;
@@ -67,7 +64,6 @@ void CPlayer::Attack()
 		p.m_angle = GetRotate().y;
 		p.m_pos = FindFrame("GunPos")->GetPosition();
 		p.m_pos.y = FindFrame("GunPos")->GetPosition().y - 1.f;
-		CSoundManager::GetInstance()->Play(SOUND_TYPE::PISTOL_SHOT, 0.3f, true);
 		PacketQueue::AddSendPacket(&p);
 	}
 }
@@ -140,11 +136,19 @@ void CPlayer::OnCollisionExit(CObject* collidedObject)
 {
 }
 
-void CPlayer::GetItem(string item)
+void CPlayer::GetItem(string name, int capacity)
 {
 	for (int i = 0; i < 18; ++i) {
-		if (myItems[i].empty()) {
-			myItems[i] = item;
+		if (myItems[i].m_name == name) {
+			myItems[i].m_capacity += capacity;
+			return;
+		}
+	}
+
+	for (int i = 0; i < 18; ++i) {
+		if (myItems[i].m_name.empty()) {
+			myItems[i].m_name = name;
+			myItems[i].m_capacity = capacity;
 			return;
 		}
 	}

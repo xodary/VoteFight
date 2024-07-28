@@ -353,6 +353,7 @@ void CGameScene::RenderImGui()
 	int rows = 3;
 	int cols = 6;
 	static ImVec2 select = { -1, -1 };
+	static string selectStr;
 	const float itemSize = framework->GetResolution().x * 3 / 5 / 8;
 	static bool inven = false;
 	static bool option = false;
@@ -413,8 +414,7 @@ void CGameScene::RenderImGui()
 
 					// 외곽선 색상 설정
 					ImVec4 borderColor = ImVec4(0.5f, 0.5f, 0.5f, 1.0f);
-					if (hovered[i][j]) borderColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f);
-					if (i == select.x && j == select.y) borderColor = ImVec4(1.0f, 0.0f, 0.0f, 1.0f);
+					if (hovered[i][j]) borderColor = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
 
 					ImGui::GetFont()->Scale = 1.0f;
 					ImGui::PushFont(ImGui::GetFont());
@@ -424,15 +424,38 @@ void CGameScene::RenderImGui()
 					ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i * cols + j)), ImVec2(itemSize, itemSize));
 					{
 						if (ImGui::IsWindowHovered(ImGuiHoveredFlags_AllowWhenBlockedByActiveItem)) {
-							if (ImGui::GetIO().MouseClicked[0] && !player->myItems[i * cols + j].empty()) {
+							if (ImGui::GetIO().MouseClicked[0] && !player->myItems[i * cols + j].m_name.empty()) {
 								select.x = i; select.y = j;
 							}
-							else if (KEY_AWAY(KEY::LBUTTON)) {
+							else if (KEY_TAP(KEY::RBUTTON) && !player->myItems[i * cols + j].m_name.empty()) {
+								player->myItems[i * cols + j].m_capacity -= 1;
+								for (int k = 0; k < 18; ++k) {
+									if (player->myItems[k].m_name.empty()) {
+										player->myItems[k].m_name = player->myItems[i * cols + j].m_name;
+										player->myItems[k].m_capacity = 1;
+										select.x = (int)k / cols; select.y = (int)k % cols;
+										break;
+									}
+								}
+								if (player->myItems[i * cols + j].m_capacity == 0) {
+									player->myItems[i * cols + j].m_name.clear();
+									player->myItems[i * cols + j].m_capacity = 0;
+								}
+							}
+							else if (KEY_AWAY(KEY::LBUTTON) || (KEY_AWAY(KEY::RBUTTON))) {
 								if (select.x != -1 || select.y != -1) {
-									string str = player->myItems[i * cols + j];
-									string item = player->myItems[select.x * cols + select.y];
-									player->myItems[i * cols + j] = item;
-									player->myItems[select.x * cols + select.y] = str;
+									auto str = player->myItems[i * cols + j];
+									auto item = player->myItems[select.x * cols + select.y];
+									if ((select.x != i || select.y != j) && str.m_name == item.m_name) {
+										player->myItems[i * cols + j].m_capacity += player->myItems[select.x * cols + select.y].m_capacity;
+										player->myItems[select.x * cols + select.y].m_name.clear();
+										player->myItems[select.x * cols + select.y].m_capacity = 0;
+									
+									}
+									else {
+										player->myItems[i * cols + j] = item;
+										player->myItems[select.x * cols + select.y] = str;
+									}
 								}
 							}
 							else
@@ -442,13 +465,16 @@ void CGameScene::RenderImGui()
 							hovered[i][j] = false;
 
 						if (i != select.x || j != select.y) {
-							if (!player->myItems[i * cols + j].empty()) {
-								int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i * cols + j]);
+							if (!player->myItems[i * cols + j].m_name.empty()) {
+								int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i * cols + j].m_name);
 								if (item != 0) {
-									auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i * cols + j]]->m_IconGPUHandle;
+									auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i * cols + j].m_name]->m_IconGPUHandle;
 									ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
 								}
-								ImGui::Text("%s", player->myItems[i * cols + j].c_str());
+								if(player->myItems[i * cols + j].m_capacity == 1)
+									ImGui::Text("%s", player->myItems[i * cols + j].m_name.c_str());
+								else
+									ImGui::TextWrapped("%s x %d", player->myItems[i * cols + j].m_name.c_str(), player->myItems[i * cols + j].m_capacity);
 							}
 						}
 						ImGui::EndChildFrame();
@@ -468,7 +494,7 @@ void CGameScene::RenderImGui()
 
 		if (select.x != -1 && select.y != -1)
 		{
-			if (KEY_AWAY(KEY::LBUTTON)) {
+			if (KEY_AWAY(KEY::LBUTTON) || KEY_AWAY(KEY::RBUTTON)) {
 				if ((CURSOR.x <= windowPos.x || windowPos.x + windowSize.x <= CURSOR.x) ||
 					(CURSOR.y <= windowPos.y || windowPos.x + windowSize.y <= CURSOR.y)) {
 					cout << "Drop Items" << endl;
@@ -476,10 +502,11 @@ void CGameScene::RenderImGui()
 					CS_DROPED_ITEM send_packet;
 					send_packet.m_size = sizeof(send_packet);
 					send_packet.m_type = P_CS_DROPED_ITEM;
-					strcpy_s(send_packet.m_itemName, (player->myItems[select.x * cols + select.y]).c_str());
+					send_packet.m_capacity = player->myItems[select.x * cols + select.y].m_capacity;
+					strcpy_s(send_packet.m_itemName, (player->myItems[select.x * cols + select.y]).m_name.c_str());
 					PacketQueue::AddSendPacket(&send_packet);
 
-					player->myItems[select.x * cols + select.y].clear();
+					player->myItems[select.x * cols + select.y].m_name.clear();
 				}
 				select.x = -1; select.y = -1;
 			}
@@ -493,13 +520,16 @@ void CGameScene::RenderImGui()
 				ImGui::SetNextWindowPos(mousepos, ImGuiCond_Always);
 				ImGui::Begin("cursor", nullptr, window_flags);
 				{
-					if (!player->myItems[select.x * cols + select.y].empty()) {
-						int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[select.x * cols + select.y]);
+					if (!player->myItems[select.x * cols + select.y].m_name.empty()) {
+						int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[select.x * cols + select.y].m_name);
 						if (item != 0) {
-							auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[select.x * cols + select.y]]->m_IconGPUHandle;
+							auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[select.x * cols + select.y].m_name]->m_IconGPUHandle;
 							ImGui::Image((void*)handle.ptr, ImVec2(itemSize * 2 / 3, itemSize * 2 / 3));
 						}
-						ImGui::Text("%s", player->myItems[select.x * cols + select.y].c_str());
+						if (player->myItems[select.x * cols + select.y].m_capacity == 1)
+							ImGui::Text("%s", player->myItems[select.x * cols + select.y].m_name.c_str());
+						else
+							ImGui::TextWrapped("%s x %d", player->myItems[select.x * cols + select.y].m_name.c_str(), player->myItems[select.x * cols + select.y].m_capacity);
 					}
 					ImGui::End();
 				}
@@ -542,15 +572,18 @@ void CGameScene::RenderImGui()
 		ImGui::BeginChildFrame(ImGui::GetID((void*)(intptr_t)(i + 1000)), ImVec2(InventoryItemSize, InventoryItemSize));
 		{
 			ImGui::Text("%d", i + 1);
-			if (!player->myItems[i].empty()) {
-				int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i]);
+			if (!player->myItems[i].m_name.empty()) {
+				int item = CAssetManager::GetInstance()->m_IconTextures.count(player->myItems[i].m_name);
 				if (item != 0) {
 					ImGui::SameLine();
-					auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i]]->m_IconGPUHandle;
+					auto& handle = CAssetManager::GetInstance()->m_IconTextures[player->myItems[i].m_name]->m_IconGPUHandle;
 					ImGui::Image((void*)handle.ptr, ImVec2(InventoryItemSize * 2 / 3, InventoryItemSize * 2 / 3));
 				}
+				if (player->myItems[i].m_capacity == 1)
+					ImGui::Text("%s", player->myItems[i].m_name.c_str());
+				else
+					ImGui::TextWrapped("%s x %d", player->myItems[i].m_name.c_str(), player->myItems[i].m_capacity);
 			}
-			ImGui::Text(player->myItems[i].c_str());
 			ImGui::EndChildFrame();
 		}
 		ImGui::SameLine();
@@ -573,7 +606,7 @@ void CGameScene::RenderImGui()
 
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
 	ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.f, 0.f, 0.f, 0.f));
-	ImGui::GetFont()->Scale = 2.0f;
+	ImGui::GetFont()->Scale = 3.0f;
 	ImGui::PushStyleColor(ImGuiCol_Text, IM_COL32(50, 50, 50, 255)); // RGBA
 	ImGui::PushFont(ImGui::GetFont());
 
@@ -606,14 +639,14 @@ void CGameScene::RenderImGui()
 		ImGui::Text(player->m_name.c_str());
 		ImGui::PopFont();
 
-		ImGui::GetFont()->Scale = 2.0f;
+		ImGui::GetFont()->Scale = 3.0f;
 		ImGui::PushFont(ImGui::GetFont());
 		ImGui::Text("HP: %d", clamp(player->GetHealth(), 0, 100));
 
 		// Health Bar
 		float rate = (float)player->GetHealth() / 100;
 		ImVec2 size = ImVec2(windowSize.x * 2/3, windowSize.y / 4);
-		ImVec2 top_left = ImVec2(windowPos.x + 120, windowPos.y + 50);
+		ImVec2 top_left = ImVec2(windowPos.x + 200, windowPos.y + 50);
 		ImVec2 bottom_right = ImVec2(top_left.x + size.x, top_left.y + size.y);
 
 		ImDrawList* draw_list = ImGui::GetWindowDrawList();
@@ -626,7 +659,7 @@ void CGameScene::RenderImGui()
 		auto& handle = CAssetManager::GetInstance()->m_IconTextures["election_ticket"]->m_IconGPUHandle;
 		ImGui::Image((void*)handle.ptr, ImVec2(windowSize.y / 4, windowSize.y / 4));
 		ImGui::SameLine(); 
-		ImGui::Text("X %d", count(player->myItems.begin(), player->myItems.end(), "election_ticket"));
+		ImGui::Text("X %d", player->m_tickets);
 		
 		ImGui::PopFont();
 		ImGui::PopStyleColor();
@@ -638,7 +671,7 @@ void CGameScene::RenderImGui()
 	windowSize.x = framework->GetResolution().x / 5;
 	windowSize.y = framework->GetResolution().y / 2;
 	windowPos.x = framework->GetResolution().x - windowSize.x;
-	windowPos.y = framework->GetResolution().y / 3;
+	windowPos.y = framework->GetResolution().y * 9 / 10;
 
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
@@ -649,37 +682,21 @@ void CGameScene::RenderImGui()
 	const float imagesize = framework->GetResolution().y / 15;
 	{
 		ImGui::Begin("Key Info", nullptr, window_flags);
-		ImGui::GetFont()->Scale = 1.0f;
-		ImGui::PushFont(ImGui::GetFont());
-
-		auto& shandle = CAssetManager::GetInstance()->m_IconTextures["space"]->m_IconGPUHandle;
-		ImGui::Image((void*)shandle.ptr, ImVec2(imagesize, imagesize));
-		ImGui::SameLine();
-		ImGui::Text("Item Take Out, Exchange");
-
-		auto& fhandle = CAssetManager::GetInstance()->m_IconTextures["letter_f"]->m_IconGPUHandle;
-		ImGui::Image((void*)fhandle.ptr, ImVec2(imagesize, imagesize));
-		ImGui::SameLine();
-		ImGui::Text("Item Pick Up");
-
-		auto& ehandle = CAssetManager::GetInstance()->m_IconTextures["letter_e"]->m_IconGPUHandle;
-		ImGui::Image((void*)ehandle.ptr, ImVec2(imagesize, imagesize));
-		ImGui::SameLine();
-		ImGui::Text("Inventory");
-
-		auto& qhandle = CAssetManager::GetInstance()->m_IconTextures["letter_q"]->m_IconGPUHandle;
-		ImGui::Image((void*)qhandle.ptr, ImVec2(imagesize, imagesize));
-		ImGui::SameLine();
-		ImGui::Text("Map");
 
 		if (player->m_Weapon == WEAPON_TYPE::PISTOL) {
 			auto& gunhandle = CAssetManager::GetInstance()->m_IconTextures["gun"]->m_IconGPUHandle;
 			ImGui::Image((void*)gunhandle.ptr, ImVec2(imagesize, imagesize));
 			ImGui::SameLine();
-			ImGui::Text("Bullets : %d / %d", player->m_bullets, player->m_FullBullets);
+			int bullets = 0;
+			for (auto items : player->myItems) {
+				if(items.m_name == "bullets")
+					bullets += items.m_capacity;
+			}
+			ImGui::GetFont()->Scale = 2.0f;
+			ImGui::PushFont(ImGui::GetFont());
+			ImGui::Text("Bullets : %d / %d", player->m_bullets, bullets);
+			ImGui::PopFont();
 		}
-
-		ImGui::PopFont();
 		ImGui::PopStyleColor();
 		ImGui::PopStyleColor();
 		ImGui::End();

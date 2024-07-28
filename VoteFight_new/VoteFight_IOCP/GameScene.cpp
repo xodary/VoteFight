@@ -14,7 +14,7 @@ bool CGameScene::can_see(XMFLOAT3 a, XMFLOAT3 b, float range)
 
 float CGameScene::OnGetHeight(float fx, float fz)
 {
-	if ((fx < 0.0f) || (fz < 0.0f) || (fx >= 400) || (fz >= 400)) return(0.0f);
+	if ((fx < 0.0f) || (fz < 0.0f) || (fx >= 400) || (fz >= 400)) return -6.f;
 
 	int x = (int)fx;
 	int z = (int)fz;
@@ -109,6 +109,7 @@ void CGameScene::Load(const string& fileName)
 					object->m_Pos = transforms[3 * i];
 					object->m_Pos.y = CGameScene::OnGetHeight(object->m_Pos.x, object->m_Pos.z);
 					object->m_Rota = transforms[3 * i + 1];
+					object->m_Angle = object->m_Rota.y;
 					object->m_Sca = transforms[3 * i + 2];
 					object->m_id = m_objects[static_cast<int>(groupType)].size();
 
@@ -173,7 +174,7 @@ void CGameScene::NPCInitialize()
 	cout << "NPCInitialize()" << endl;
 
 	string needs_ex[] = {"fish_meet", "wood", "flower", "trash", "carrot", "icecream", "potato" };
-	string output_ex[] = { "gun", "election_ticket", "drug" };
+	string output_ex[] = { "election_ticket", "drug", "bullets" };
 	for (auto& object : m_objects[(int)GROUP_TYPE::NPC])
 	{
 		CNPC* npc = reinterpret_cast<CNPC*>(object.second);
@@ -184,8 +185,8 @@ void CGameScene::NPCInitialize()
 			npc->m_needs.push_back(needs_ex[rand() % size(needs_ex)]);
 		}
 
-		int o = rand() % size(output_ex) + 1;
-		for (int i = 0; i < o + 1; ++i)
+		int o = rand() % 2 + 1;
+		for (int i = 0; i < o; ++i)
 		{
 			npc->m_outputs.push_back(output_ex[rand() % size(output_ex)]);
 		}

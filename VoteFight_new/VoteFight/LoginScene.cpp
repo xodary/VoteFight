@@ -101,15 +101,10 @@ void CLoginScene::RenderImGui()
     CGameFramework * framework = CGameFramework::GetInstance();
     framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
-    ImVec2 window_size{ CGameFramework::GetInstance()->GetResolution().x * 2 / 3, CGameFramework::GetInstance()->GetResolution().y * 2 / 3 };
-    ImVec2 window_pos{ CGameFramework::GetInstance()->GetResolution().x * 1 / 6, CGameFramework::GetInstance()->GetResolution().y * 1 / 6 };
+    XMFLOAT2 resolution = framework->GetResolution();
 
-    POINT mousePoint;
-    GetCursorPos(&mousePoint);
-    ScreenToClient(framework->GetHwnd(), &mousePoint);
-
-    io.MousePos.x = mousePoint.x * (framework->GetResolution().x / io.DisplaySize.x);
-    io.MousePos.y = mousePoint.y * (framework->GetResolution().y / io.DisplaySize.y);
+    ImVec2 window_size{ resolution.x * 2 / 3, resolution.y * 2 / 3 };
+    ImVec2 window_pos{ resolution.x * 1 / 6, resolution.y * 1 / 6 };
 
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_FirstUseEver);
@@ -118,8 +113,8 @@ void CLoginScene::RenderImGui()
     DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
 
     ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 0.5f));
-    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(40, 40));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowMinSize, window_size);
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(40, 40));
     ImGui::GetFont()->Scale = 3.0f;
 
     ImGui::PushFont(ImGui::GetFont());
@@ -148,27 +143,35 @@ void CLoginScene::RenderImGui()
             CGameFramework::GetInstance()->m_connect_server = true;
             memset(login_state, 0, sizeof(login_state));
             strcpy(login_state, "Wait For Server Message ...");
-            CServerManager::GetInstance()->ConnectServer(server_addr);
-            CS_LOGIN_PACKET send_packet;
-            send_packet.m_size = sizeof(CS_LOGIN_PACKET);
-            send_packet.m_type = P_CS_LOGIN_PACKET;
-            send_packet.m_players = item_current_idx;
-            strcpy_s(send_packet.m_name, user_name);
-            PacketQueue::AddSendPacket(&send_packet);
+            if (CServerManager::GetInstance()->ConnectServer(server_addr)) {
+                CS_LOGIN_PACKET send_packet;
+                send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+                send_packet.m_type = P_CS_LOGIN_PACKET;
+                send_packet.m_players = item_current_idx;
+                strcpy_s(send_packet.m_name, user_name);
+                PacketQueue::AddSendPacket(&send_packet);
+            }
         }
         ImGui::SameLine();
         if (ImGui::Button("Join")) {
             CGameFramework::GetInstance()->m_connect_server = true;
             memset(login_state, 0, sizeof(login_state));
             strcpy(login_state, "Wait For Server Message ...");
-            CServerManager::GetInstance()->ConnectServer(server_addr);
-            CS_LOGIN_PACKET send_packet;
-            send_packet.m_size = sizeof(CS_LOGIN_PACKET);
-            send_packet.m_type = P_CS_LOGIN_PACKET;
-            send_packet.m_players = -1;
-            strcpy_s(send_packet.m_name, user_name);
-            PacketQueue::AddSendPacket(&send_packet);
+            if (CServerManager::GetInstance()->ConnectServer(server_addr)) {
+                CS_LOGIN_PACKET send_packet;
+                send_packet.m_size = sizeof(CS_LOGIN_PACKET);
+                send_packet.m_type = P_CS_LOGIN_PACKET;
+                send_packet.m_players = -1;
+                strcpy_s(send_packet.m_name, user_name);
+                PacketQueue::AddSendPacket(&send_packet);
+            }
         }
+        //ImGui::SameLine();
+        //if (ImGui::Button("How to Play")) {
+        //    CGameFramework::GetInstance()->m_connect_server = true;
+        //    auto& handle = CAssetManager::GetInstance()->m_IconTextures["HowToPlay"]->m_IconGPUHandle;
+        //    ImGui::Image((void*)handle.ptr, ImVec2(resolution.x * 2 / 3, resolution.y * 2 / 3));
+        //}
     }
     ImGui::PopFont();
     ImGui::PopStyleVar();
@@ -180,45 +183,7 @@ void CLoginScene::RenderImGui()
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }
 
-void CLoginScene::RenderLogo()
-{
-    ImGui_ImplDX12_NewFrame();
-    ImGui_ImplWin32_NewFrame();
-    ImGui::NewFrame();
-    CGameFramework* framework = CGameFramework::GetInstance();
-    // 화면 해상도 가져오기
-    ImVec2 resolution = ImVec2(framework->GetResolution().x, framework->GetResolution().y);
-
-    // 윈도우 사이즈 및 위치 설정
-    ImVec2 windowSize = ImVec2(500,400);
-    ImVec2 windowPos = ImVec2(framework->GetResolution().x/2 - windowSize.x /2,40);
-
-
-    // 윈도우 플래그 설정
-    DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
-
-    // 다음 윈도우의 크기와 위치 설정
-    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
-    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
-
-    // 윈도우 시작
-    ImGui::Begin("Logo Window", nullptr, window_flags);
-
-    // 미니맵 이미지 렌더링
-    auto assetManager = CAssetManager::GetInstance();
-    auto& iconTextures = assetManager->m_IconTextures;
-    auto& minimapTexture = iconTextures["VoteFightLogo"];
-    auto& logoHandle = minimapTexture->m_IconGPUHandle;
-    ImGui::Image((void*)logoHandle.ptr, ImVec2(windowSize.x, windowSize.y));
-    // 윈도우 끝
-    ImGui::End();
-    ImGui::Render();
-    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
-}
-
-
-
 CLoginScene::~CLoginScene()
 {
-    //ReleaseShaderVariables();
+    CSceneManager::GetInstance()->GetGameScene()->ReleaseShaderVariables();
 }

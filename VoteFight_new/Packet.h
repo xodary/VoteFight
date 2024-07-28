@@ -99,6 +99,7 @@ struct SC_ANIMATION_PACKET {
 	unsigned int		m_grouptype;
 	char				m_key[NAME_SIZE];
 	bool				m_loop;
+	unsigned int		m_sound;
 };
 
 struct SC_ADD_PACKET {
@@ -183,6 +184,7 @@ struct SC_HEALTH_CHANGE_PACKET {
 	unsigned int		m_groupType;
 	unsigned int		m_DamageType;
 	int					m_health;
+	int					m_damage;
 };
 
 struct SC_TAKEOUT_PACKET {
@@ -209,6 +211,7 @@ struct SC_DROPED_ITEM {
 	unsigned char		m_type;
 	XMFLOAT3			m_pos;
 	unsigned int		m_itemID;
+	unsigned int		m_capaticy;
 	char				m_itemName[NAME_SIZE];
 };
 
@@ -216,6 +219,7 @@ struct SC_PICKUP_PACKET{
 	unsigned char		m_size;
 	unsigned char		m_type;
 	char				m_itemName[NAME_SIZE];
+	unsigned int		m_capacity;
 };
 
 struct SC_GAMEEND_PACKET {
@@ -319,6 +323,7 @@ struct CS_DROPED_ITEM {
 	unsigned char		m_size;
 	unsigned char		m_type;
 	char				m_itemName[NAME_SIZE];
+	unsigned int		m_capacity;
 };
 
 struct CS_PICKUP_PACKET {

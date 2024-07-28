@@ -13,8 +13,13 @@
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
+<<<<<<< HEAD
 // chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
 chrono::seconds phase_time[8] = { 5s, 5s,5s, 5s,2s, 5s,2s, 2s };	// Test
+=======
+chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
+//chrono::seconds phase_time[8] = { 5s, 20s,5s, 20s,5s, 20s,5s, 20s };	// Test
+>>>>>>> origin/main
 float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()
@@ -79,27 +84,43 @@ void CTimer::do_timer()
 							if (monster->m_dead) continue;
 							monster->m_Health -= 25 * 3;
 
-							SC_ANIMATION_PACKET send_packet;
-							send_packet.m_size = sizeof(send_packet);
-							send_packet.m_type = P_SC_ANIMATION_PACKET;
-							send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
-							send_packet.m_id = monster->m_id;
-							send_packet.m_loop = false;
-							send_packet.m_bone = 0;	// Root
-
 							if (monster->m_Health <= 0) {
 								// Monster »ç¸Á
 								monster->m_dead = true;
+								SC_ANIMATION_PACKET send_packet;
+								send_packet.m_size = sizeof(send_packet);
+								send_packet.m_type = P_SC_ANIMATION_PACKET;
+								send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
+								send_packet.m_id = monster->m_id;
+								send_packet.m_loop = false;
+								send_packet.m_bone = 0;	// Root
+								send_packet.m_sound = -1;
 								strcpy_s(send_packet.m_key, "Dead");
+								for (auto& rc : RemoteClient::m_remoteClients) {
+									if (!rc.second->m_ingame) continue;
+									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+								}
+								monster->m_Velocity = 0;
+								{
+									SC_VELOCITY_CHANGE_PACKET send_packet;
+									send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+									send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+									send_packet.m_id = monster->m_id;
+									send_packet.m_grouptype = (int)GROUP_TYPE::MONSTER;
+									send_packet.m_vel = monster->m_Velocity;
+									send_packet.m_pos = monster->m_Pos;
+									send_packet.m_look = monster->m_Angle;
+									send_packet.m_angle = monster->m_Angle;
+
+									for (auto& rc : RemoteClient::m_remoteClients) {
+										if (!rc.second->m_ingame) continue;
+										rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+									}
+								}
 							}
 							else
 							{
 								monster->m_stateMachine->ChangeState(CMonsterAttackedState::GetInstance());
-							}
-
-							for (auto& rc : RemoteClient::m_remoteClients) {
-								if (!rc.second->m_ingame) continue;
-								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 							}
 						}
 					}
@@ -119,6 +140,7 @@ void CTimer::do_timer()
 							send_packet.m_id = player.second->m_id;
 							send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
 							send_packet.m_health = player.second->m_player->m_Health;
+							send_packet.m_damage = 25;
 							for (auto& rc : RemoteClient::m_remoteClients) {
 								if (!rc.second->m_ingame) continue;
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -133,6 +155,7 @@ void CTimer::do_timer()
 								send_packet.m_id = player.second->m_id;
 								send_packet.m_loop = false;
 								send_packet.m_bone = 0;	// Root
+								send_packet.m_sound = -1;
 								strcpy_s(send_packet.m_key, "Death");
 								for (auto& rc : RemoteClient::m_remoteClients) {
 									if (!rc.second->m_ingame) continue;
@@ -179,13 +202,16 @@ void CTimer::do_timer()
 					auto duration = chrono::system_clock::now() - client.second->m_lastTime;
 					auto seconds = chrono::duration_cast<std::chrono::duration<float>>(duration).count();
 					XMFLOAT3 shift = Vector3::ScalarProduct(client.second->m_player->m_Vec, seconds * client.second->m_player->m_Velocity);
-					client.second->m_player->m_Pos = Vector3::Add(client.second->m_player->m_Pos, shift);
-					if (client.second->m_player->m_Pos.x < 0 || client.second->m_player->m_Pos.x >= 400 ||
+					XMFLOAT3 origin_pos = client.second->m_player->m_Pos;
+					client.second->m_player->m_Pos = Vector3::Add(origin_pos, shift);
+					float y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
+					if (y - origin_pos.y > 1.5f ||
+						client.second->m_player->m_Pos.x < 0 || client.second->m_player->m_Pos.x >= 400 ||
 						client.second->m_player->m_Pos.z < 0 || client.second->m_player->m_Pos.z >= 400) {
-						client.second->m_player->m_Pos = Vector3::Subtract(client.second->m_player->m_Pos, shift);
+						client.second->m_player->m_Pos = origin_pos;
 					}
-
-					client.second->m_player->m_Pos.y = CGameScene::OnGetHeight(client.second->m_player->m_Pos.x, client.second->m_player->m_Pos.z);
+					else
+						client.second->m_player->m_Pos.y = y;
 					if (client.second->m_player->m_Pos.y < phase_height[CTimer::phase - 1]) {
 						client.second->m_player->m_Health -= 1;
 						SC_HEALTH_CHANGE_PACKET send_packet;
@@ -195,6 +221,7 @@ void CTimer::do_timer()
 						send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
 						send_packet.m_DamageType = (int)DAMAGE_TYPE::DROWN_DAMAGE;
 						send_packet.m_health = client.second->m_player->m_Health;
+						send_packet.m_damage = 1;
 						for (auto& rc : RemoteClient::m_remoteClients) {
 							if (!rc.second->m_ingame) continue;
 							rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -224,6 +251,7 @@ void CTimer::do_timer()
 							send_packet.m_id = client.second->m_id;
 							send_packet.m_loop = false;
 							send_packet.m_bone = 0;	// Root
+							send_packet.m_sound = -1;
 							strcpy_s(send_packet.m_key, "Death");
 							for (auto& rc : RemoteClient::m_remoteClients) {
 								if (!rc.second->m_ingame) continue;
@@ -243,6 +271,7 @@ void CTimer::do_timer()
 
 					for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
 						if (i == (int)GROUP_TYPE::PLAYER) continue;
+						if (i == (int)GROUP_TYPE::MONSTER) continue;
 						if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
 						for (auto& object : CGameScene::m_objects[i]) {
 							if (!client.second->m_player->m_collider) continue;
@@ -324,6 +353,7 @@ void CTimer::do_timer()
 				send_packet.m_id = ev.target_id;
 				send_packet.m_loop = true;
 				send_packet.m_bone = ev.bone;
+				send_packet.m_sound = -1;
 
 				strcpy_s(send_packet.m_key, CGameScene::m_objects[ev.grouptype][ev.target_id]->m_upAnimation.c_str());
 				CGameScene::m_objects[ev.grouptype][ev.target_id]->upperAnimationFinished = true;

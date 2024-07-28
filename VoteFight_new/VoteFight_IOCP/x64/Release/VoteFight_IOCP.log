@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ﻿  Timer.cpp
 D:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp(49,65): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
 D:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp(119,40): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
@@ -12,5 +13,22 @@ D:\directX_work\VoteFight_new\VoteFight_IOCP\Timer.cpp(262,39): warning C4244: '
   0 of 1801 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     0 functions had inline decision re-evaluated but remain unchanged
+=======
+﻿  State.cpp
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(15,56): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(15,49): warning C4305: '인수': 'double'에서 'float'(으)로 잘립니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(94,62): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(216,13): warning C4244: '초기화 중': 'int'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(245,61): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(329,61): warning C4244: '인수': 'double'에서 'float'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(431,39): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(472,41): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(487,41): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+C:\directX_work\VoteFight_new\VoteFight_IOCP\State.cpp(497,68): warning C4244: '=': 'unsigned __int64'에서 'unsigned int'(으)로 변환하면서 데이터가 손실될 수 있습니다.
+  코드를 생성하고 있습니다.
+  3 of 1820 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    2 functions had inline decision re-evaluated but remain unchanged
+>>>>>>> origin/main
   코드를 생성했습니다.
   VoteFight_IOCP.vcxproj -> D:\directX_work\VoteFight_new\Release\VoteFight_IOCP.exe

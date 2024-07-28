@@ -6,6 +6,7 @@
 #include "Scene.h"
 #include "Animator.h"
 #include "InputManager.h"
+#include "SoundManager.h"
 #include "StateMachine.h"
 #include "Transform.h"
 #include "Player.h"
@@ -22,12 +23,6 @@ CNPC::CNPC() :
 
 CNPC::~CNPC()
 {
-}
-
-
-string CNPC::GetSpineName()
-{
-	return m_spineName;
 }
 
 void CNPC::Init()
@@ -90,12 +85,17 @@ void CNPC::Update()
 				CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
 				bool allFound = true;
 
-				vector<string> new_item = player->myItems;
+				auto new_item = player->myItems;
 				for (const string& need : m_needs) {
-					auto it = find(new_item.rbegin(), new_item.rend(), need);
+					auto it = find_if(new_item.rbegin(), new_item.rend(), [&need](CItem a) {
+						return a.m_name == need;
+						});
 					if (it == new_item.rend()) allFound = false;
 					else {
-						it->clear();
+						it->m_capacity -= 1;
+						if (it->m_capacity <= 0) {
+							it->m_name.clear();
+						}
 					}
 				}
 
@@ -105,8 +105,10 @@ void CNPC::Update()
 					}
 
 					for (const string& output : m_outputs) {
-						player->GetItem(output);
+						if(output == "bullets") player->GetItem(output, 10);
+						else player->GetItem(output, 1);
 					}
+					CSoundManager::GetInstance()->Play(SOUND_TYPE::EXCHANGE, 0.3f, true);
 					CS_EXCHANGE_DONE_PACKET p;
 					p.m_type = P_CS_EXCHANGE_DONE_PACKET;
 					p.m_size = sizeof(p);

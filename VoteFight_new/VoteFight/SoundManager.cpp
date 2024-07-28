@@ -35,14 +35,18 @@ void CSoundManager::Init()
     }
 
     // BGM
+   // BGM
     Result = m_System->createSound(GetSoundPath("01_TheSimpSon_OP.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
     Result = m_System->createSound(GetSoundPath("02_SelectBGM.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::SELECT_BGM]);
-  
+
     // SFX
     Result = m_System->createSound(GetSoundPath("GetPistol.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GET_PISTOL]);
-    Result = m_System->createSound(GetSoundPath("Grunt_1.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GRUNT_1]);
-    Result = m_System->createSound(GetSoundPath("Grunt_2.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GRUNT_2]);
     Result = m_System->createSound(GetSoundPath("PistolShot.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::PISTOL_SHOT]);
+    Result = m_System->createSound(GetSoundPath("Tree.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::TREE]);
+    Result = m_System->createSound(GetSoundPath("Swing.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::SWING]);
+    Result = m_System->createSound(GetSoundPath("Punch.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::PUNCH]);
+    Result = m_System->createSound(GetSoundPath("takeout.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::TAKEOUT]);
+    Result = m_System->createSound(GetSoundPath("exchange.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::EXCHANGE]);
 }
 
 bool CSoundManager::IsPlaying(SOUND_TYPE SoundType)

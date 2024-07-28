@@ -18,9 +18,9 @@ public:
 	static bool					m_isLogin;
 
 public:
-	static void					ConnectServer(string server_s);
+	static bool					ConnectServer(string server_s);
 	static void					Tick();
-	static void					Connetion();
+	static bool					Connetion();
 	static void					Do_Recv();
 	static void					Do_Send(const char* _buf, short _buf_size);
 	static void					PacketProcess(char* _Packet);

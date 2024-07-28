@@ -2,7 +2,7 @@
 
 #include "./ImaysNet/ImaysNet.h"
 #include "./ImaysNet/PacketQueue.h"
-
+#include "SoundManager.h"
 #include "ServerManager.h"
 #include "SceneManager.h"
 #include "GameScene.h"
@@ -28,6 +28,7 @@
 #include "Bullet.h"
 #include "Monster.h"
 #include "GameScene.h"
+#include "SoundManager.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -43,6 +44,12 @@ shared_ptr<Socket> CServerManager::m_tcpSocket;
 // 클라이언트 ID
 int		CServerManager::m_id{ -1 };
 bool	CServerManager::m_isLogin{ false };
+
+bool can_see(XMFLOAT3 a, XMFLOAT3 b, float range)
+{
+	if (abs(a.x - b.x) > range) return false;
+	return abs(a.z - b.z) <= range;
+}
 
 // 소켓 수신 콜백 함수
 void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_over, DWORD recv_flag)
@@ -91,7 +98,7 @@ void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_ove
 	memset(&CServerManager::m_tcpSocket->m_recvOverlapped.m_wsa_over, 0, sizeof(CServerManager::m_tcpSocket->m_recvOverlapped.m_wsa_over));
 
 	// 다음 데이터 수신
-	if(CGameFramework::GetInstance()->m_connect_server) CServerManager::Do_Recv();
+	CServerManager::Do_Recv();
 }
 
 // 송신 콜백 함수
@@ -102,7 +109,7 @@ void CALLBACK send_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED send_ove
 	delete reinterpret_cast<EXP_OVER*>(send_over);
 }
 
-void CServerManager::ConnectServer(string server_s)	// 서버 연결 함수
+bool CServerManager::ConnectServer(string server_s)	// 서버 연결 함수
 {
 	m_tcpSocket = make_shared<Socket>(SocketType::Tcp);
 	m_SERVERIP = new char[server_s.size() + 1];
@@ -110,9 +117,12 @@ void CServerManager::ConnectServer(string server_s)	// 서버 연결 함수
 	m_SERVERIP[server_s.size()] = '\0';
 
 	m_tcpSocket->Bind(Endpoint::Any);
-	CServerManager::Connetion();		// 연결
-
-	CServerManager::Do_Recv();			// 데이터 수신 시작
+	if (CServerManager::Connetion())		// 연결
+	{
+		CServerManager::Do_Recv();
+		return true; // 데이터 수신 시작
+	}
+	return false;
 }
 
 void CServerManager::Tick()				//주기적인 작업 실행 함수
@@ -138,9 +148,9 @@ void CServerManager::Tick()				//주기적인 작업 실행 함수
 	}
 }
 
-void CServerManager::Connetion()			// Connect 함수
+bool CServerManager::Connetion()			// Connect 함수
 {
-	m_tcpSocket->Connect(Endpoint(m_SERVERIP, SERVER_PORT));
+	return m_tcpSocket->Connect(Endpoint(m_SERVERIP, SERVER_PORT));
 }
 
 void CServerManager::Do_Recv()				// 데이터 수신 함수
@@ -187,6 +197,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CGameFramework::GetInstance()->m_players = recv_packet->m_players;
 
 		cout << "Clinet ID - " << recv_packet->m_id << endl;
+		CGameFramework::GetInstance()->m_connect_server = true;
 	}
 	break;
 
@@ -194,7 +205,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	{
 		SC_LOGIN_FAIL_PACKET* recv_packet = reinterpret_cast<SC_LOGIN_FAIL_PACKET*>(_Packet);
 		CLoginScene* loginscene = reinterpret_cast<CLoginScene*>(CSceneManager::GetInstance()->GetCurrentScene());
-		memset(loginscene->login_state, 0, sizeof(loginscene->login_state));
 		if(recv_packet->m_fail_type == 0) strcpy_s(loginscene->login_state, "Already Game Started.");
 		if(recv_packet->m_fail_type == 1) strcpy_s(loginscene->login_state, "Already 3 Player in Room.");
 		if(recv_packet->m_fail_type == 2) strcpy_s(loginscene->login_state, "You must Host Game.");
@@ -222,8 +232,10 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 
 			reinterpret_cast<CPlayer*>(object)->myItems.resize(18);
-			reinterpret_cast<CPlayer*>(object)->myItems[0] = "axe";
-			reinterpret_cast<CPlayer*>(object)->myItems[1] = "gun";
+			reinterpret_cast<CPlayer*>(object)->myItems[0].m_name = "axe";
+			reinterpret_cast<CPlayer*>(object)->myItems[0].m_capacity = 1;
+			reinterpret_cast<CPlayer*>(object)->myItems[1].m_name = "gun";
+			reinterpret_cast<CPlayer*>(object)->myItems[1].m_capacity = 1;
 		}
 		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -312,7 +324,24 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		XMFLOAT3 vector = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, recv_packet->m_angle, 0)));
 		rigidBody->m_velocity = Vector3::ScalarProduct(vector, recv_packet->m_vel);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
-		if (recv_packet->m_grouptype == (int)GROUP_TYPE::PLAYER && abs(recv_packet->m_vel - 15) < EPSILON) animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 2);
+		if (recv_packet->m_grouptype == (int)GROUP_TYPE::PLAYER) {
+			if (abs(recv_packet->m_vel - 15) < EPSILON) {
+				if (recv_packet->m_id == CGameFramework::GetInstance()->my_id) {
+					CSoundManager::GetInstance()->Stop(WALK);
+					if (!CSoundManager::GetInstance()->IsPlaying(RUN))
+						CSoundManager::GetInstance()->Play(RUN, 0.2f, true);
+				}
+				animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 2);
+			}
+			if (abs(recv_packet->m_vel - 10) < EPSILON) {
+				if (recv_packet->m_id == CGameFramework::GetInstance()->my_id) {
+					CSoundManager::GetInstance()->Stop(RUN);
+					if (!CSoundManager::GetInstance()->IsPlaying(WALK))
+						CSoundManager::GetInstance()->Play(WALK, 0.2f, true);
+				}
+				animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 1);
+			}
+		}
 		if (recv_packet->m_look != -1) {
 			if (recv_packet->m_grouptype == (int)GROUP_TYPE::MONSTER)
 				static_cast<CMonster*>(object)->goal_rota = recv_packet->m_look;
@@ -357,6 +386,15 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		CObject* object = scene->GetIDObject((GROUP_TYPE)recv_packet->m_grouptype, recv_packet->m_id);
 		CAnimator* animator = reinterpret_cast<CAnimator*>(object->GetComponent(COMPONENT_TYPE::ANIMATOR));
 		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone, true);
+		if(recv_packet->m_sound == SOUND_TYPE::PISTOL_SHOT) reinterpret_cast<CPlayer*>(object)->m_bullets -= 1;
+
+		if (recv_packet->m_id == CGameFramework::GetInstance()->my_id) {
+			CSoundManager::GetInstance()->Play((SOUND_TYPE)recv_packet->m_sound, 0.2f, true);
+			if (recv_packet->m_sound == IDLE) {
+				CSoundManager::GetInstance()->Stop(WALK);
+				CSoundManager::GetInstance()->Stop(RUN);
+			}
+		}
 	}
 	break;
 
@@ -369,6 +407,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		{
 			CObject* object = scene->GetIDObject(GROUP_TYPE::NPC, recv_packet->m_id);
 			CNPC* npc = reinterpret_cast<CNPC*>(object);
+
 			npc->m_needs.push_back(string(recv_packet->m_itemName));
 			npc->m_bilboardUI.push_back(new CIcon(npc, recv_packet->m_itemName));
 			break;
@@ -445,7 +484,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		CCharacter* character = reinterpret_cast<CCharacter*>(object);
 		character->m_bilboardUI.clear();
-		character->m_bilboardUI.push_back(new CTextUI(character, to_string(recv_packet->m_health - character->GetHealth())));
+		character->m_bilboardUI.push_back(new CTextUI(character, to_string(-recv_packet->m_damage)));
 		character->SetHealth(recv_packet->m_health); 
 		character->m_damageType = (int)recv_packet->m_DamageType;
 		
@@ -476,7 +515,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		SC_PICKUP_PACKET* recv_packet = reinterpret_cast<SC_PICKUP_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
-		player->GetItem(recv_packet->m_itemName);
+		player->GetItem(recv_packet->m_itemName, recv_packet->m_capacity);
 	}
 	break;
 
@@ -511,7 +550,20 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	{
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
 		CPlayer* player = reinterpret_cast<CPlayer*>(scene->GetIDObject(GROUP_TYPE::PLAYER, CGameFramework::GetInstance()->my_id));
-		player->m_bullets = player->m_FullBullets;
+		for (auto& items : player->myItems) {
+			if (player->m_bullets >= 10) break;
+			if (items.m_name == "bullets") {
+				int bullets = 10 - player->m_bullets;	// 필요한 bullets
+				if (items.m_capacity <= bullets) {
+					player->m_bullets += items.m_capacity;
+					items.m_name.clear();
+					items.m_capacity = 0;
+				}
+				else
+					player->m_bullets += bullets;
+					items.m_capacity -= bullets;
+			}
+		}
 		player->reloading = false;
 	}
 	break;

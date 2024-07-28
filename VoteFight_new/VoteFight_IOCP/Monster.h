@@ -11,6 +11,9 @@ public:
 	CStateMachine*		m_stateMachine;
 	RemoteClient*		m_target;
 
+	chrono::system_clock::time_point stateTime;
+	chrono::system_clock::time_point enterTime;
+
 	CMonster();
 	~CMonster();
 };

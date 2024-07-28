@@ -11,11 +11,11 @@ class CWeapon;
 class CPlayer : public CCharacter
 {
 public:
-    CInventory* m_Inventory;
-    vector<CUI*> m_UI;
-	int		m_tickets;
+    CInventory*		m_Inventory;
+    vector<CUI*>	m_UI;
+	int				m_tickets;
 
-    vector<string> myItems;
+    vector<CItem>	myItems;
 	bool			reloading;
 
     float goal_rota;
@@ -42,5 +42,12 @@ public:
 	virtual void OnCollision(CObject* collidedObject);
 	virtual void OnCollisionExit(CObject* collidedObject);
 
-    void GetItem(string item);
+    void GetItem(string name, int capacity);
+};
+
+class CItem
+{
+public:
+	string	m_name;
+	int		m_capacity;
 };

@@ -104,7 +104,7 @@ public:
 	~Socket();
 
 	void	Bind(const Endpoint& endpoint);
-	void	Connect(const Endpoint& endpoint);
+	bool	Connect(const Endpoint& endpoint);
 	int		Send(const char* data, int length);
 	void	Close();
 	void	Listen();
