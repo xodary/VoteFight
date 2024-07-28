@@ -99,7 +99,7 @@ void CALLBACK recv_callback(DWORD err, DWORD num_bytes, LPWSAOVERLAPPED recv_ove
 	memset(&CServerManager::m_tcpSocket->m_recvOverlapped.m_wsa_over, 0, sizeof(CServerManager::m_tcpSocket->m_recvOverlapped.m_wsa_over));
 
 	// 다음 데이터 수신
-	CServerManager::Do_Recv();
+	if(CGameFramework::GetInstance()->m_connect_server) CServerManager::Do_Recv();
 }
 
 // 송신 콜백 함수
@@ -222,6 +222,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 		CScene* scene = CSceneManager::GetInstance()->GetCurrentScene();
 		CObject* object = scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_id);
+		CPlayer* player = reinterpret_cast<CPlayer*>(object);
+		player->m_tickets = 1;
 
 		if (recv_packet->m_id == CGameFramework::GetInstance()->my_id) {
 			// State Machine 설정
@@ -232,11 +234,11 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 			scene->oldXCell = scene->oldZCell = -1;
 			CCameraManager::GetInstance()->GetMainCamera()->SetTarget(object);
 
-			reinterpret_cast<CPlayer*>(object)->myItems.resize(18);
-			reinterpret_cast<CPlayer*>(object)->myItems[0].m_name = "axe";
-			reinterpret_cast<CPlayer*>(object)->myItems[0].m_capacity = 1;
-			reinterpret_cast<CPlayer*>(object)->myItems[1].m_name = "gun";
-			reinterpret_cast<CPlayer*>(object)->myItems[1].m_capacity = 1;
+			player->myItems.resize(18);
+			player->myItems[0].m_name = "axe";
+			player->myItems[0].m_capacity = 1;
+			player->myItems[1].m_name = "election_ticket";
+			player->myItems[1].m_capacity = 1;
 		}
 		// 위치 설정
 		CTransform* transform = reinterpret_cast<CTransform*>(object->GetComponent(COMPONENT_TYPE::TRANSFORM));
@@ -505,6 +507,10 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	{
 		SC_DELETE_PACKET* recv_packet = reinterpret_cast<SC_DELETE_PACKET*>(_Packet);
 		CScene* scene = CSceneManager::GetInstance()->GetGameScene();
+		if (recv_packet->m_groupType == (int)GROUP_TYPE::PLAYER) {
+			scene->GetIDObject(GROUP_TYPE::PLAYER, recv_packet->m_itemID)->SetActive(false);
+			return;
+		}
 		scene->DeleteObject((GROUP_TYPE)recv_packet->m_groupType, recv_packet->m_itemID);
 	}
 	break;
@@ -542,12 +548,9 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		SC_GAMEEND_PACKET* recv_packet = reinterpret_cast<SC_GAMEEND_PACKET*>(_Packet);
 
 		// Game End
-		m_tcpSocket->Disconnect();
-		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::END);
+		CGameFramework::GetInstance()->m_connect_server = false;
 		CGameEndScene* scene = reinterpret_cast<CGameEndScene*>(CSceneManager::GetInstance()->GetScene(SCENE_TYPE::END));
-		scene->m_rank[0] = recv_packet->m_1st;
-		scene->m_rank[1] = recv_packet->m_2nd;
-		scene->m_rank[2] = recv_packet->m_3rd;
+		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::END);
 	}
 	break;
 

@@ -3,7 +3,7 @@
 
 class RemoteClient;
 
-enum EVENT_TYPE { EV_UPDATE, EV_PHASE, EV_ANIMATION };
+enum EVENT_TYPE { EV_UPDATE, EV_PHASE, EV_ANIMATION, EV_END };
 
 struct TIMER_EVENT {
 	chrono::system_clock::time_point wakeup_time;

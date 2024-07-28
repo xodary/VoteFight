@@ -23,7 +23,7 @@
 #include "SelectScene.h"
 
 CGameEndScene* CGameEndScene::m_CGameEndScene;
-#define TEST
+//#define TEST
 
 CGameEndScene::CGameEndScene() :
 	m_d3d12GameScene(),
@@ -345,28 +345,17 @@ void CGameEndScene::RenderImGui()
 	ImGui::SetNextItemWidth(250);
 
 	CSelectScene* selectscene = reinterpret_cast<CSelectScene*>(CSceneManager::GetInstance()->GetScene(SCENE_TYPE::SELECT));
-#ifdef TEST
-	static const char* labels[3] = { "Sonic", "Mario", "Hugo" };
-	static int data[3] = { 10, 20, 30 };
-	framework->m_players = 3;
-	selectscene->m_selected_id[0] = 0;
-	selectscene->m_selected_id[1] = 1;
-	selectscene->m_selected_id[2] = 2;
-#else
 	static const char* labels[3];
 	static int data[3];
-#endif
 
-#ifndef TEST
 	int j = 0;
 	for (int i = 0; i < 3; ++i) {
 		if (selectscene->m_selected_id[i] == -1) continue;
-		CObject* object = GetIDObject(GROUP_TYPE::PLAYER, selectscene->m_selected_id[i]);
+		CObject* object = CSceneManager::GetInstance()->GetGameScene()->GetIDObject(GROUP_TYPE::PLAYER, selectscene->m_selected_id[i]);
 		if (object == NULL) { j += 1; continue; }
 		labels[j] = object->GetName().c_str();
 		data[j++] = reinterpret_cast<CPlayer*>(object)->m_tickets;
 	}
-#endif
 
 	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 0.5f));
 	ImGui::PushStyleColor(ImGuiCol_Border, IM_COL32(0, 0, 0, 1));
@@ -396,14 +385,10 @@ void CGameEndScene::RenderImGui()
 		ImU32 colors[3];
 		int j = 0;
 		for (int i = 0; i < 3; ++i) {
-#ifdef TEST
-			colors[i] = origin_colors[i];
-#else
 			if (selectscene->m_selected_id[i] != -1)
 				colors[j++] = origin_colors[i];
-#endif
 		}
-		static ImPlotColormap Liars = ImPlot::AddColormap("Liars", colors, framework->m_players);
+		static ImPlotColormap Liars = ImPlot::AddColormap("Colors", colors, framework->m_players);
 		ImPlot::PushColormap(Liars);
 		if (ImPlot::BeginPlot("##Pie2", ImVec2(300, 300), ImPlotFlags_Equal | ImPlotFlags_NoMouseText)) {
 			ImPlot::SetupAxes(nullptr, nullptr, ImPlotAxisFlags_NoDecorations, ImPlotAxisFlags_NoDecorations);
@@ -425,13 +410,16 @@ void CGameEndScene::RenderImGui()
 		ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0, 0, 0, 0));
 
 		string image[3] = { "1st", "2nd", "3rd" };
+		
+		auto object = GetGroupObject(GROUP_TYPE::PLAYER);
 		for (int i = 0; i < framework->m_players; ++i) {
+			if (!object[i]) break;
 			ImGui::BeginChild(ImGui::GetID((void*)(intptr_t)(i)), ImVec2(windowSize.x - 100, 150));
 			{
 				auto& handle = CAssetManager::GetInstance()->m_IconTextures[image[i]]->m_IconGPUHandle;
 				ImGui::Image((void*)handle.ptr, ImVec2(186, 123));
 				ImGui::SameLine();
-				ImGui::Text("%s : %d votes", labels[i], data[i]);
+				ImGui::Text("%s : %d votes", object[i]->GetName().c_str(), reinterpret_cast<CPlayer*>(object[i])->m_tickets);
 			}
 			ImGui::EndChild();
 		}
@@ -476,15 +464,11 @@ vector<CPlayer*> CGameEndScene::SortPlayersByTicket(const std::unordered_map<int
 	// unordered_map에서 CPlayer 객체들을 추출
 	for (const auto& pair : objects) {
 		CPlayer* player = dynamic_cast<CPlayer*>(pair.second);
+		reinterpret_cast<CAnimator*>(player->GetComponent(COMPONENT_TYPE::ANIMATOR))->Play("Idle", true);
 		if (player != nullptr) {
 			players.push_back(player);
 		}
 	}
-	// m_health가 0인 객체를 제거
-	players.erase(std::remove_if(players.begin(), players.end(), [](CPlayer* player) {
-		return player->m_health == 0;
-		}), players.end());
-
 	// m_ticket을 기준으로 내림차순 정렬
 	std::sort(players.begin(), players.end(), [](CPlayer* a, CPlayer* b) {
 		return a->m_tickets > b->m_tickets;
