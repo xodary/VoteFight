@@ -58,7 +58,7 @@ public:
 
 	// 미니맵 관련 함수
 	void ImGuiRenderMiniMap();
-	virtual void DrawDamageBackGroundImGui();
+	virtual void DrawOceanDamageBackGroundImGui();
 
 
 	// 라이트 설정 함수
