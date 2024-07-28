@@ -176,7 +176,7 @@ void CGameScene::Update()
 		m_mappedGameScene->m_lights[1].m_position = object->GetPosition();
 	}
 	if (KEY_TAP(KEY::Q))
-		if (m_miniMap)m_miniMap = false;
+		if (m_miniMap) m_miniMap = false;
 		else m_miniMap = true;
 
 	Sea_level_rise(1); 
@@ -538,9 +538,6 @@ void CGameScene::RenderImGui()
 
 	}
 
-		ImGuiRenderMiniMap();
-
-	
 	rows = 3;
 	static bool selected[3] = { false };
 	const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
@@ -796,6 +793,8 @@ void CGameScene::RenderImGui()
 		}
 	}
 
+	ImGuiRenderMiniMap();
+
 	ImGui::Render();
 
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
@@ -854,84 +853,103 @@ void CGameScene::ImGuiRenderMiniMap()
 	// 다음 윈도우의 크기와 위치 설정
 	ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
 	ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+	ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.f, 0.f, 0.f, 0.f));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+	ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 3.0f);
 
 	// 윈도우 시작
 	ImGui::Begin("Mini Map Window", nullptr, window_flags);
+	{
+		// 미니맵 이미지 렌더링
+		auto assetManager = CAssetManager::GetInstance();
+		auto& iconTextures = assetManager->m_IconTextures;
+		auto& minimapTexture = m_miniMap ? iconTextures["MinimapIcons/MiniMap3"] : iconTextures["MinimapIcons/minimap4"];
+		auto& minimapHandle = minimapTexture->m_IconGPUHandle;
 
-	// 미니맵 이미지 렌더링
-	auto assetManager = CAssetManager::GetInstance();
-	auto& iconTextures = assetManager->m_IconTextures;
-	auto& minimapTexture = iconTextures["MinimapIcons/MiniMap3"];
-	auto& minimapHandle = minimapTexture->m_IconGPUHandle;
-	if(m_miniMap)ImGui::Image((void*)minimapHandle.ptr, ImVec2(windowSize.x, windowSize.y));
+		// 플레이어 객체 가져오기
+		CPlayer* player = reinterpret_cast<CPlayer*>(GetIDObject(GROUP_TYPE::PLAYER, framework->my_id));
+		CObject* focusObject = nullptr;
 
-	// 플레이어 객체 가져오기
-	CPlayer* player = reinterpret_cast<CPlayer*>(GetIDObject(GROUP_TYPE::PLAYER, framework->my_id));
-	CObject* focusObject = nullptr;
+		// 플레이어 ID로 객체 가져오기
+		focusObject = player;
 
-	// 플레이어 ID로 객체 가져오기
-	focusObject = player;
+		// 확대 여부에 따른 중심점 설정
+		ImVec2 centerPos;
+		XMFLOAT3 focusPos3D = focusObject->GetPosition();
+		float scaleFactor = m_miniMap ? 1.0f : 6.0f;
 
+		centerPos = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
 
-	// 확대 여부에 따른 중심점 설정
-	ImVec2 centerPos;
-	XMFLOAT3 focusPos3D = focusObject->GetPosition();
-	float scaleFactor = m_miniMap ? 1.0f : 3.0f;
+		//float scale = 600.f;
+		ImVec2 uv((focusPos3D.x - 200.f) / 900.f, (focusPos3D.z - 200.f) / 900.f);
+		float rotatedX = (uv.x + uv.y) * 0.7071f; // cos(-45°) = 0.7071, sin(-45°) = -0.7071
+		float rotatedY = (uv.y - uv.x) * 0.7071f;
 
-	centerPos = ImVec2(windowPos.x + windowSize.x / 2, windowPos.y + windowSize.y / 2);
-
-	for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::GROUND_ITEM); ++i) {
-		const unordered_map<int, CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
-
-		for (const auto& objectsPair : objects) {
-			CObject* object = objectsPair.second;
-			XMFLOAT3 npcPos3D = object->GetPosition();
-
-			// 확대 모드일 때 중심 객체 기준 좌표 변환
-			float mapX, mapY;
-			if (m_miniMap) {
-				mapX = (npcPos3D.x - 200.f) / 600.0f * windowSize.x;
-				mapY = (npcPos3D.z - 200.f) / 600.0f * windowSize.y; // Y축 반전
-			}
-			else {
-				mapX = (npcPos3D.x - focusPos3D.x) / 600.0f * windowSize.x * scaleFactor;
-				mapY = (npcPos3D.z - focusPos3D.z) / 600.0f * windowSize.y * scaleFactor; // Y축 반전
-			}
-
-			// 3D 좌표를 2D 미니맵 좌표로 변환 (0, 0을 중심으로 -45도 회전)
-			float rotatedX = (mapX + mapY) * 0.7071f; // cos(-45°) = 0.7071, sin(-45°) = -0.7071
-			float rotatedY = (mapY - mapX) * 0.7071f;
-
-			ImVec2 npcPos = ImVec2(centerPos.x + rotatedX, centerPos.y - rotatedY); // Y축 반전 후 적용
-			D3D12_GPU_DESCRIPTOR_HANDLE npcHandle;
-			ImVec2 npcSize;
-
-			switch (static_cast<GROUP_TYPE>(i)) {
-			case GROUP_TYPE::STRUCTURE:
-				continue;
-			case GROUP_TYPE::PLAYER:
-				npcSize = ImVec2(20, 20);
-				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/RadPlayer"]->m_IconGPUHandle;
-				break;
-			case GROUP_TYPE::NPC:
-				npcSize = ImVec2(15, 25);
-				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/GrayNPC"]->m_IconGPUHandle;
-				break;
-			case GROUP_TYPE::GROUND_ITEM:
-				npcSize = ImVec2(20, 20);
-				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/ItemIcon"]->m_IconGPUHandle;
-				break;
-			default:
-				continue;
-			}
-
-			ImGui::SetCursorPos(ImVec2(npcPos.x - windowPos.x - npcSize.x / 2, npcPos.y - windowPos.y - npcSize.y / 2));
-			ImGui::Image((void*)npcHandle.ptr, npcSize);
+		static XMFLOAT3 pos(-1, -1, -1);
+		if (m_miniMap) ImGui::Image((void*)minimapHandle.ptr, ImVec2(windowSize.x, windowSize.y));
+		else {
+			ImVec2 Size = windowSize;
+			ImVec2 uv0(0.5 + rotatedX - 1.f / 12, 0.5 - rotatedY - 1.f / 12);
+			ImVec2 uv1(0.5 + rotatedX + 1.f / 12, 0.5 - rotatedY + 1.f / 12);
+			ImGui::Image((void*)minimapHandle.ptr, Size, uv0, uv1);
 		}
-	}
 
-	// 윈도우 끝
-	ImGui::End();
+		for (int i = static_cast<int>(GROUP_TYPE::STRUCTURE); i <= static_cast<int>(GROUP_TYPE::GROUND_ITEM); ++i) {
+			const unordered_map<int, CObject*>& objects = GetGroupObject(static_cast<GROUP_TYPE>(i));
+
+			for (const auto& objectsPair : objects) {
+				CObject* object = objectsPair.second;
+				XMFLOAT3 npcPos3D = object->GetPosition();
+
+				// 확대 모드일 때 중심 객체 기준 좌표 변환
+				float mapX, mapY;
+				if (m_miniMap) {
+					mapX = (npcPos3D.x - 200.f) / 600.0f * windowSize.x;
+					mapY = (npcPos3D.z - 200.f) / 600.0f * windowSize.y; // Y축 반전
+				}
+				else {
+					mapX = (npcPos3D.x - focusPos3D.x) / 900.f * windowSize.x * scaleFactor;
+					mapY = (npcPos3D.z - focusPos3D.z) / 900.f * windowSize.y * scaleFactor; // Y축 반전
+				}
+
+				// 3D 좌표를 2D 미니맵 좌표로 변환 (0, 0을 중심으로 -45도 회전)
+				float rotatedX = (mapX + mapY) * 0.7071f; // cos(-45°) = 0.7071, sin(-45°) = -0.7071
+				float rotatedY = (mapY - mapX) * 0.7071f;
+
+				ImVec2 npcPos = ImVec2(centerPos.x + rotatedX, centerPos.y - rotatedY); // Y축 반전 후 적용
+				D3D12_GPU_DESCRIPTOR_HANDLE npcHandle;
+				ImVec2 npcSize;
+
+				switch (static_cast<GROUP_TYPE>(i)) {
+				case GROUP_TYPE::STRUCTURE:
+					continue;
+				case GROUP_TYPE::PLAYER:
+					npcSize = ImVec2(20, 20);
+					npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/RadPlayer"]->m_IconGPUHandle;
+					break;
+				case GROUP_TYPE::NPC:
+					npcSize = ImVec2(15, 25);
+					npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/GrayNPC"]->m_IconGPUHandle;
+					break;
+				case GROUP_TYPE::GROUND_ITEM:
+					npcSize = ImVec2(20, 20);
+					npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/ItemIcon"]->m_IconGPUHandle;
+					break;
+				default:
+					continue;
+				}
+
+				ImGui::SetCursorPos(ImVec2(npcPos.x - windowPos.x - npcSize.x / 2, npcPos.y - windowPos.y - npcSize.y / 2));
+				ImGui::Image((void*)npcHandle.ptr, npcSize);
+			}
+		}
+
+		ImGui::PopStyleVar();
+		ImGui::PopStyleVar();
+		ImGui::PopStyleColor();
+		// 윈도우 끝
+		ImGui::End();
+	}
 }
 
 void CGameScene::SetLightVersion(int value)

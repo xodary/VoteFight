@@ -222,7 +222,7 @@ void CAssetManager::LoadTextures(const string& fileName)
 
 	string MiniMapIconNames[] = { "MinimapIcons/GrayNPC",  "MinimapIcons/RadPlayer",
 		"MinimapIcons/WeaponIcon" , "MinimapIcons/ItemIcon" , "MinimapIcons/ItemIcon" ,
-	"MinimapIcons/MonsterIcon" , "MinimapIcons/MiniMap",  "MinimapIcons/MiniMap3" };
+	"MinimapIcons/MonsterIcon" , "MinimapIcons/MiniMap",  "MinimapIcons/MiniMap3", "MinimapIcons/minimap4"};
 
 	for (auto str : MiniMapIconNames)
 	{
