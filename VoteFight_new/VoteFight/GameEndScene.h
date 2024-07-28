@@ -43,4 +43,5 @@ public:
 	virtual void Render();
 
 	virtual void RenderImGui();
+	vector<CPlayer*> SortPlayersByTicket(const std::unordered_map<int, CObject*>& objects);
 };
