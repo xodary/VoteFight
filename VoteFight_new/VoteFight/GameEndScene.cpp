@@ -80,7 +80,7 @@ void CGameEndScene::Enter()
 	unordered_map<int, CObject*> objects = CSceneManager::GetInstance()->GetGameScene()->GetGroupObject(GROUP_TYPE::PLAYER);
 
 	// SortPlayersByTicket 함수를 사용하여 정렬된 벡터를 가져옴
-	std::vector<CPlayer*> sortedPlayers = SortPlayersByTicket(objects);
+	 sortedPlayers = SortPlayersByTicket(objects);
 
 	switch (sortedPlayers.size())
 	{
@@ -110,6 +110,7 @@ void CGameEndScene::Enter()
 		break;
 	}
 
+	CSoundManager::GetInstance()->Play(SOUND_TYPE::CHEER, 1.0f, false);
 }
 
 void CGameEndScene::Exit()

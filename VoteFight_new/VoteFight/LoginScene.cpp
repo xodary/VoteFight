@@ -60,7 +60,7 @@ void CLoginScene::Update()
 {
     if (!startSong)
     {
-        CSoundManager::GetInstance()->Play(SOUND_TYPE::TITLE_BGM, 0.3f, false);
+        CSoundManager::GetInstance()->Play(SOUND_TYPE::TITLE_BGM, 1.0f, false);
         startSong = true;
     }
 

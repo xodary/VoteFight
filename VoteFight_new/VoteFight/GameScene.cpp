@@ -30,6 +30,7 @@
 #include "SceneManager.h"
 #include "LoginScene.h"
 #include "SelectScene.h"
+#include "SoundManager.h"
 
 CGameScene* CGameScene::m_CGameScene;
 
@@ -78,11 +79,13 @@ void CGameScene::ReleaseShaderVariables()
 void CGameScene::Enter()
 {
 	CCameraManager::GetInstance()->SetGameSceneMainCamera();
+	CSoundManager::GetInstance()->Play(SOUND_TYPE::INGAME_BGM_1, 1.0f, false);
 	InitLight();
 }
 
 void CGameScene::Exit()
 {
+	CSoundManager::GetInstance()->Stop(SOUND_TYPE::INGAME_BGM_1);
 }
 
 void CGameScene::Init()
