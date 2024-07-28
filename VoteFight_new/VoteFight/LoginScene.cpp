@@ -88,17 +88,33 @@ void CLoginScene::RenderImGui()
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGuiIO& io = ImGui::GetIO();
-    
+    static bool HowToPlay = false;
     CGameFramework * framework = CGameFramework::GetInstance();
     framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
 
     XMFLOAT2 resolution = framework->GetResolution();
+    string images[3] = { "HowToPlay1","HowToPlay2", "HowToPlay3" };
+    static unsigned int idx = 0;
+    if (HowToPlay) {
+        ImVec2 window_size{ resolution.x, resolution.y };
+        ImVec2 window_pos{ 0, 0 };
+        DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+        ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(1.f, 1.f, 1.f, 1.f));
+        ImGui::Begin("HowToPlay", nullptr, window_flags);
+        auto& handle = CAssetManager::GetInstance()->m_IconTextures[images[idx]]->m_IconGPUHandle;
+        ImGui::Image((void*)handle.ptr, ImVec2(window_size.x * 5 / 6, window_size.y * 5 / 6));
+        if (ImGui::Button("Prev", ImVec2(100, 50))) idx = (idx - 1) % 3;
+        ImGui::SameLine();
+        if (ImGui::Button("Next", ImVec2(100, 50))) idx = (idx + 1) % 3;
+        ImGui::SameLine();
+        if (ImGui::Button("Back", ImVec2(100, 50))) HowToPlay = false;
+        ImGui::PopStyleColor();
+        ImGui::End();
+    }
 
     ImVec2 window_size{ resolution.x * 2 / 3, resolution.y * 2 / 3 };
     ImVec2 window_pos{ resolution.x * 1 / 6, resolution.y * 1 / 6 };
 
-    const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
     ImGui::SetNextWindowPos(window_pos, ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowSize(window_size, ImGuiCond_FirstUseEver);
 
@@ -158,12 +174,10 @@ void CLoginScene::RenderImGui()
                 PacketQueue::AddSendPacket(&send_packet);
             }
         }
-        //ImGui::SameLine();
-        //if (ImGui::Button("How to Play")) {
-        //    CGameFramework::GetInstance()->m_connect_server = true;
-        //    auto& handle = CAssetManager::GetInstance()->m_IconTextures["HowToPlay"]->m_IconGPUHandle;
-        //    ImGui::Image((void*)handle.ptr, ImVec2(resolution.x * 2 / 3, resolution.y * 2 / 3));
-        //}
+        ImGui::SameLine();
+        if (ImGui::Button("How to Play")) {
+            HowToPlay = true;
+        }
     }
     ImGui::PopFont();
     ImGui::PopStyleVar();

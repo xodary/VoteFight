@@ -243,6 +243,7 @@ void CMonsterWalkState::Update(CObject* object)
 	CMonster* monster = reinterpret_cast<CMonster*>(object);
 
 	XMFLOAT3 shift = Vector3::ScalarProduct(object->m_Vec, 0.1 * object->m_Velocity);
+	XMFLOAT3 origin_pos = object->m_Pos;
 	object->m_Pos = Vector3::Add(object->m_Pos, shift);
 	if (object->m_Pos.x < 0 || object->m_Pos.x >= 400 ||
 		object->m_Pos.z < 0 || object->m_Pos.z >= 400) {
@@ -252,6 +253,18 @@ void CMonsterWalkState::Update(CObject* object)
 	XMFLOAT4X4 matrix = Matrix4x4::Identity();
 	matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object->m_Pos));
 	object->m_origin.Transform(object->m_boundingBox, XMLoadFloat4x4(&matrix));
+
+	for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
+		if (i == (int)GROUP_TYPE::PLAYER) continue;
+		if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
+		for (auto& structure : CGameScene::m_objects[i]) {
+			if (!structure.second->m_collider) continue;
+			if (!object->m_collider) continue;
+			if (structure.second->m_boundingBox.Intersects(object->m_boundingBox)) {
+				structure.second->m_Pos = origin_pos;
+			}
+		}
+	}
 
 	for (auto& rc : RemoteClient::m_remoteClients) {
 		if (rc.second->m_player->m_dead) continue;
@@ -327,6 +340,7 @@ void CMonsterChaseState::Update(CObject* object)
 	object->m_Vec = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, look, 0)));
 
 	XMFLOAT3 shift = Vector3::ScalarProduct(object->m_Vec, 0.1 * object->m_Velocity);
+	XMFLOAT3 origin_pos = object->m_Pos;
 	object->m_Pos = Vector3::Add(object->m_Pos, shift);
 	if (object->m_Pos.x < 0 || object->m_Pos.x >= 400 ||
 		object->m_Pos.z < 0 || object->m_Pos.z >= 400) {
@@ -337,6 +351,17 @@ void CMonsterChaseState::Update(CObject* object)
 	matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object->m_Pos));
 	object->m_origin.Transform(object->m_boundingBox, XMLoadFloat4x4(&matrix));
 
+	for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
+		if (i == (int)GROUP_TYPE::PLAYER) continue;
+		if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
+		for (auto& structure : CGameScene::m_objects[i]) {
+			if (!structure.second->m_collider) continue;
+			if (!object->m_collider) continue;
+			if (structure.second->m_boundingBox.Intersects(object->m_boundingBox)) {
+				structure.second->m_Pos = origin_pos;
+			}
+		}
+	}
 
 	if (!CGameScene::can_see(object->m_Pos, monster->m_target->m_player->m_Pos, 15)) {
 		monster->m_stateMachine->ChangeState(CMonsterIdleState::GetInstance());

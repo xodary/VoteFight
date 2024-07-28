@@ -4,6 +4,8 @@
 #include "UI.h"
 #include "RigidBody.h"
 #include "Transform.h"
+#include "../Packet.h"
+#include "ImaysNet/PacketQueue.h"
 
 CCharacter::CCharacter() :
     m_health(100),

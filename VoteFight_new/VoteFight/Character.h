@@ -13,11 +13,8 @@ public:
 	CCharacter();
 	virtual ~CCharacter();
 
-	void SetHealth(int health);
+	virtual void SetHealth(int health);
 	int GetHealth();
-
-	void SetWeapon(CObject* object);
-	CObject* GetWeapon();
 
 	bool IsEquippedWeapon();
 	virtual void SwapWeapon(WEAPON_TYPE weaponType);

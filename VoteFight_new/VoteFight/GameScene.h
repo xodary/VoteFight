@@ -24,6 +24,7 @@ private:
 	//INIT_GAME_DATA		   m_InitGameData{};
 
 public:
+	bool					inven;
 	static CGameScene*		m_CGameScene;
 	vector<CPlayer*>		m_otherPlayers;
 	vector<vector<float>>	m_heights;

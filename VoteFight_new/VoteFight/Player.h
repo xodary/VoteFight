@@ -30,9 +30,9 @@ public:
 	virtual void SwapWeapon(WEAPON_TYPE weaponType);
 
 	void Punch();
-	void Shoot(CScene& currScene);
 
 	virtual void Update();
+	virtual void SetHealth(int health);
 
     WEAPON_TYPE m_Weapon;
 	int			m_FullBullets = 10;

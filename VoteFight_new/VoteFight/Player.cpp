@@ -52,8 +52,10 @@ void CPlayer::Init()
 
 void CPlayer::Attack()
 {
+	
 	if (CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene")
 	{
+		if (CSceneManager::GetInstance()->GetGameScene()->inven) return;
 		if (m_Weapon == WEAPON_TYPE::PISTOL) {
 			if(m_bullets <= 0 || reloading) return;
 		}
@@ -65,6 +67,26 @@ void CPlayer::Attack()
 		p.m_pos = FindFrame("GunPos")->GetPosition();
 		p.m_pos.y = FindFrame("GunPos")->GetPosition().y - 1.f;
 		PacketQueue::AddSendPacket(&p);
+	}
+}
+
+void CPlayer::SetHealth(int health)
+{
+	//m_health = clamp(health, 0, 100);
+	m_health = health;
+	if (m_health <= 0) {
+		m_dead = true;
+		if (m_id != CGameFramework::GetInstance()->my_id) return;
+		for (int i = 0; i < 18; ++i) {
+			if (myItems[i].m_name.empty()) continue;
+			CS_DROPED_ITEM send_packet;
+			send_packet.m_size = sizeof(send_packet);
+			send_packet.m_type = P_CS_DROPED_ITEM;
+			send_packet.m_capacity = myItems[i].m_capacity;
+			strcpy_s(send_packet.m_itemName, myItems[i].m_name.c_str());
+			myItems[i].m_name.clear();
+			PacketQueue::AddSendPacket(&send_packet);
+		}
 	}
 }
 

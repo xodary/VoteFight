@@ -596,8 +596,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
-		XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
-		//XMFLOAT3 pos[3]{ {10, 0, 10},{20, 0, 10},{30, 0, 10} };
+		//XMFLOAT3 pos[3]{ {10, 0, 10},{380, 0, 16},{388, 0, 382} };
+		XMFLOAT3 pos[3]{ {10, 0, 10},{20, 0, 10},{30, 0, 10} };
 		for (auto& rc : RemoteClient::m_remoteClients) {
 			if (!rc.second->m_ingame) continue;
 			CGameScene::m_objects[(int)GROUP_TYPE::PLAYER][rc.second->m_id] = rc.second->m_player.get();
@@ -880,32 +880,47 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 		}
 
 		// Player와 닿았을 때
-		for (auto& object : RemoteClient::m_remoteClients) {
-			if (object.second->m_player->m_dead) continue;
-			if (!object.second->m_ingame) continue;
-			if (object.second->m_id == _Client->m_id) continue;
-			if (bounding.Intersects(object.second->m_player->m_boundingBox))
+		for (auto& player : RemoteClient::m_remoteClients) {
+			if (player.second->m_player->m_dead) continue;
+			if (!player.second->m_ingame) continue;
+			if (player.second->m_id == _Client->m_id) continue;
+			if (bounding.Intersects(player.second->m_player->m_boundingBox))
 			{
-				object.second->m_player->m_Health -= damage;
-				cout << object.first << " : Health " << object.second->m_player->m_Health << endl;
+				player.second->m_player->m_Health -= damage;
+				cout << player.first << " : Health " << player.second->m_player->m_Health << endl;
 
 				SC_HEALTH_CHANGE_PACKET send_packet;
 				send_packet.m_size = sizeof(send_packet);
 				send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
-				send_packet.m_id = object.second->m_id;
+				send_packet.m_id = player.second->m_id;
 				send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
-				send_packet.m_health = object.second->m_player->m_Health;
+				send_packet.m_health = player.second->m_player->m_Health;
 				send_packet.m_damage = damage;
 				for (auto& rc : RemoteClient::m_remoteClients) {
 					if (!rc.second->m_ingame) continue;
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				}
-				if (object.second->m_player->m_Health <= 0) {
+				if (player.second->m_player->m_Health <= 0) {
+					player.second->m_player->m_Velocity = 0;
+					SC_VELOCITY_CHANGE_PACKET v_send_packet;
+					v_send_packet.m_size = sizeof(SC_VELOCITY_CHANGE_PACKET);
+					v_send_packet.m_type = PACKET_TYPE::P_SC_VELOCITY_CHANGE_PACKET;
+					v_send_packet.m_id = player.second->m_id;
+					v_send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
+					v_send_packet.m_vel = player.second->m_player->m_Velocity;
+					v_send_packet.m_pos = player.second->m_player->m_Pos;
+					v_send_packet.m_look = player.second->m_player->m_Angle;
+					for (auto& rc : RemoteClient::m_remoteClients) {
+						if (!rc.second->m_ingame) continue;
+						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
+					}
+					CGameScene::m_Rank[CGameScene::m_nowRank--] = player.second->m_id;
+					
 					SC_ANIMATION_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
 					send_packet.m_type = P_SC_ANIMATION_PACKET;
 					send_packet.m_grouptype = (int)GROUP_TYPE::PLAYER;
-					send_packet.m_id = object.second->m_id;
+					send_packet.m_id = player.second->m_id;
 					send_packet.m_loop = false;
 					send_packet.m_bone = 0;	// Root
 					send_packet.m_sound = -1;
@@ -914,8 +929,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 						if (!rc.second->m_ingame) continue;
 						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					}
-					object.second->m_player->m_dead = true;
-					CGameScene::m_Rank[CGameScene::m_nowRank--] = object.second->m_id;
+					player.second->m_player->m_dead = true;
+					CGameScene::m_Rank[CGameScene::m_nowRank--] = player.second->m_id;
 				}
 			}
 		}
@@ -1059,7 +1074,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 		}
 		if (object->m_ItemName == "election_ticket") {
-			_Client->m_player->m_tickets -= 1;
+			_Client->m_player->m_tickets -= recv_packet->m_capacity;
 			SC_TICKET_PACKET send_packet;
 			send_packet.m_size = sizeof(send_packet);
 			send_packet.m_type = P_SC_TICKET_PACKET;
@@ -1074,7 +1089,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 	break;
 
 	case PACKET_TYPE::P_CS_PICKUP_PACKET:
-	{
+	{		
 		if (_Client->m_player->m_dead) return;
 		vector<int> deleteID;
 		
@@ -1121,7 +1136,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 				}
 
 				if (reinterpret_cast<CItem*>(object.second)->m_ItemName == "election_ticket") {
-					_Client->m_player->m_tickets += 1;
+					_Client->m_player->m_tickets += reinterpret_cast<CItem*>(object.second)->m_Capacity;
 					SC_TICKET_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
 					send_packet.m_type = P_SC_TICKET_PACKET;

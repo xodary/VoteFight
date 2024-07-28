@@ -35,7 +35,8 @@ CGameScene* CGameScene::m_CGameScene;
 
 CGameScene::CGameScene() :
 	m_d3d12GameScene(),
-	m_mappedGameScene()
+	m_mappedGameScene(),
+	inven(false)
 {
 	SetName("GameScene");
 }
@@ -354,7 +355,6 @@ void CGameScene::RenderImGui()
 	static ImVec2 select = { -1, -1 };
 	static string selectStr;
 	const float itemSize = framework->GetResolution().x * 3 / 5 / 8;
-	static bool inven = false;
 	static bool option = false;
 	if (KEY_TAP(KEY::E)) inven = !inven;
 	if (KEY_TAP(KEY::ESC)) {
@@ -538,15 +538,15 @@ void CGameScene::RenderImGui()
 	}
 
 
-		// 윈도우 시작
-		ImGui::Begin("Mini Map Window", nullptr, window_flags);
-		ImGuiRenderMiniMap();
+	// 윈도우 시작
+	ImGui::Begin("Mini Map Window", nullptr, window_flags);
+	ImGuiRenderMiniMap();
 
-		// NPC 이미지 크기 설정
-		ImVec2 npcSize = ImVec2(20, 15); // NPC 아이콘 크기
+	// NPC 이미지 크기 설정
+	ImVec2 npcSize = ImVec2(20, 15); // NPC 아이콘 크기
 
-		// 윈도우 끝
-		ImGui::End();
+	// 윈도우 끝
+	ImGui::End();
 
 	rows = 3;
 	static bool selected[3] = { false };
