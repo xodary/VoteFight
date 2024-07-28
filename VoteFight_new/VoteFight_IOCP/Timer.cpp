@@ -65,8 +65,8 @@ void CTimer::do_timer()
 					bullet->m_lastTime = chrono::system_clock::now();
 
 					XMFLOAT4X4 matrix = Matrix4x4::Identity();
-					//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(client.second->m_player->m_Sca));
-					//matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(client.second->m_player->m_Rota));
+					matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Scale(object.second->m_Sca));
+					matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Rotation(object.second->m_Rota));
 					matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object.second->m_Pos));
 					object.second->m_origin.Transform(object.second->m_boundingBox, XMLoadFloat4x4(&matrix));
 
