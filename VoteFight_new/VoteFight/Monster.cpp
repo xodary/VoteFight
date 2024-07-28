@@ -34,25 +34,3 @@ void CMonster::Update()
 	if (m_bilboardUI.size() > 0 && (chrono::system_clock::now() - m_bilboardUI[0]->maketime) > 1s)
 		m_bilboardUI.clear();
 }
-
-void CMonster::PlayerDiscovery(CObject* player)
-{
-	//// 플레이어 발견 조건
-	//AimObejct = player;
-}
-
-void CMonster::OnCollisionEnter(CObject* collidedObject)
-{
-	switch (collidedObject->GetGroupType())
-	{
-	case (UINT)GROUP_TYPE::BULLET:
-		SetHealth(GetHealth()-10);
-		cout << "몬스터 히트" << endl;
-		break;
-	}
-}
-
-void CMonster::OnCollisionExit(CObject* collidedObject)
-{
-}
-

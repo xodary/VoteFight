@@ -584,7 +584,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		cout << " GameStart" << endl;
 		{
-			CGameScene::m_nowRank = 2;
+			CGameScene::m_nowRank = MAX_PLAYER - 1;
 			GameStart = true;
 			SC_GAMESTART_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_GAMESTART_PACKET);
@@ -914,7 +914,6 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 						if (!rc.second->m_ingame) continue;
 						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
 					}
-					CGameScene::m_Rank[CGameScene::m_nowRank--] = player.second->m_id;
 					
 					SC_ANIMATION_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
@@ -931,6 +930,18 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 					}
 					player.second->m_player->m_dead = true;
 					CGameScene::m_Rank[CGameScene::m_nowRank--] = player.second->m_id;
+					if (CGameScene::m_nowRank < 0) {
+						SC_GAMEEND_PACKET send_packet;
+						send_packet.m_size = sizeof(send_packet);
+						send_packet.m_type = P_SC_GAMEEND_PACKET;
+						send_packet.m_1st = CGameScene::m_Rank[0];
+						send_packet.m_2nd = CGameScene::m_Rank[1];
+						send_packet.m_3rd = CGameScene::m_Rank[2];
+						for (auto& client : RemoteClient::m_remoteClients) {
+							if (!client.second->m_ingame) continue;
+							client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+						}
+					}
 				}
 			}
 		}

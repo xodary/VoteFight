@@ -14,7 +14,7 @@
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
 // chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
-chrono::seconds phase_time[8] = { 10s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
+chrono::seconds phase_time[8] = { 5s, 20s, 5s, 20s, 5s, 20s, 5s, 20s };	// Test
 float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()
@@ -171,6 +171,18 @@ void CTimer::do_timer()
 									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
 								}
 								CGameScene::m_Rank[CGameScene::m_nowRank--] = object.second->m_id;
+								if (CGameScene::m_nowRank < 0) {
+									SC_GAMEEND_PACKET send_packet;
+									send_packet.m_size = sizeof(send_packet);
+									send_packet.m_type = P_SC_GAMEEND_PACKET;
+									send_packet.m_1st = CGameScene::m_Rank[0];
+									send_packet.m_2nd = CGameScene::m_Rank[1];
+									send_packet.m_3rd = CGameScene::m_Rank[2];
+									for (auto& client : RemoteClient::m_remoteClients) {
+										if (!client.second->m_ingame) continue;
+										client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+									}
+								}
 							}
 						}
 					}
@@ -253,6 +265,18 @@ void CTimer::do_timer()
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 							}
 							CGameScene::m_Rank[CGameScene::m_nowRank--] = client.second->m_id;
+							if (CGameScene::m_nowRank < 0) {
+								SC_GAMEEND_PACKET send_packet;
+								send_packet.m_size = sizeof(send_packet);
+								send_packet.m_type = P_SC_GAMEEND_PACKET;
+								send_packet.m_1st = CGameScene::m_Rank[0];
+								send_packet.m_2nd = CGameScene::m_Rank[1];
+								send_packet.m_3rd = CGameScene::m_Rank[2];
+								for (auto& client : RemoteClient::m_remoteClients) {
+									if (!client.second->m_ingame) continue;
+									client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+								}
+							}
 						}
 
 					}

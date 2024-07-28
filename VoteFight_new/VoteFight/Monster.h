@@ -16,7 +16,4 @@ public:
 
     virtual void Init();
     virtual void Update();
-    virtual void PlayerDiscovery(CObject* player);
-    virtual void OnCollisionEnter(CObject* collidedObject);
-    virtual void OnCollisionExit(CObject* collidedObject);
 };

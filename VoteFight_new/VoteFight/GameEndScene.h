@@ -17,17 +17,9 @@ class CGameEndScene : public CScene
 private:
 	ComPtr<ID3D12Resource> m_d3d12GameScene;
 	CB_GameEndScene* m_mappedGameScene;
-
-	CObject* m_SelectCharacter;
-	CObject* m_WaitCharacters[3];
 public:
 	static CGameEndScene* m_CGameEndScene;
-	int		m_selected_model;
-	string	m_character_names[3] = { "Sonic", "Mario", "Hugo" };
-	string	m_nicknames[3] = { "", "", "" };
-	string	m_button = "Select Your Character";
-	bool	m_ready;
-	int		m_selected_id[3] = { -1, -1, -1 };	// Sonic, Mario, Hugo
+	int m_rank[3];
 private:
 	CGameEndScene();
 
