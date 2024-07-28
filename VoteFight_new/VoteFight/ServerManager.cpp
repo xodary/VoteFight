@@ -486,6 +486,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		character->m_bilboardUI.clear();
 		character->m_bilboardUI.push_back(new CTextUI(character, to_string(-recv_packet->m_damage)));
 		character->SetHealth(recv_packet->m_health); 
+		character->m_damageType = (int)recv_packet->m_DamageType;
+		
 	}
 	break;
 
@@ -539,8 +541,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 	case PACKET_TYPE::P_SC_GAMEEND_PACKET:
 	{
 		// Game End
+		m_tcpSocket->Disconnect();
 		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::END);
-
 	}
 	break;
 

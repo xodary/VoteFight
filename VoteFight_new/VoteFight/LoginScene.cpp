@@ -43,6 +43,7 @@ void CLoginScene::ReleaseShaderVariables()
 
 void CLoginScene::Init()
 {
+   
     CCameraManager::GetInstance()->SetGameSceneMainCamera();
 
     m_focus = new CObject();
@@ -57,6 +58,12 @@ void CLoginScene::InitUI()
 
 void CLoginScene::Update()
 {
+    if (!startSong)
+    {
+        CSoundManager::GetInstance()->Play(SOUND_TYPE::TITLE_BGM, 0.3f, false);
+        startSong = true;
+    }
+
     time -= DT * 0.03f;
     if (time < 0.0f) {
         time = 1.0f;
@@ -78,6 +85,7 @@ void CLoginScene::Render()
     CSceneManager::GetInstance()->GetGameScene()->Render();
 
     RenderImGui();
+    // RenderLogo();
 }
 
 void CLoginScene::RenderImGui()

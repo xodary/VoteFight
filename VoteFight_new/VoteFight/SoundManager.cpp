@@ -35,12 +35,9 @@ void CSoundManager::Init()
     }
 
     // BGM
-    Result = m_System->createSound(GetSoundPath("AIbgm.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
-    Result = m_System->createSound(GetSoundPath("AIbgm.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::SELECT_BGM]);
-  
-    // Walk
-    Result = m_System->createSound(GetSoundPath("Walk.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::WALK]);
-    Result = m_System->createSound(GetSoundPath("Run.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::RUN]);
+   // BGM
+    Result = m_System->createSound(GetSoundPath("01_TheSimpSon_OP.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
+    Result = m_System->createSound(GetSoundPath("02_SelectBGM.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::SELECT_BGM]);
 
     // SFX
     Result = m_System->createSound(GetSoundPath("GetPistol.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GET_PISTOL]);

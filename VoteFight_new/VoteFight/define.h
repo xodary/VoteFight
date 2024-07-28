@@ -253,3 +253,10 @@ enum SOUND_TYPE
 	EXCHANGE,
 };
 
+enum class DAMAGE_TYPE
+{
+	NONE,
+	BULLET_DAMAGE,
+	DROWN_DAMAGE,
+
+};

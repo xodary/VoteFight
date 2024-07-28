@@ -182,6 +182,7 @@ struct SC_HEALTH_CHANGE_PACKET {
 	unsigned char		m_type;
 	unsigned int		m_id;
 	unsigned int		m_groupType;
+	unsigned int		m_DamageType;
 	int					m_health;
 	int					m_damage;
 };

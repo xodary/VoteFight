@@ -5,6 +5,7 @@
 #include "TitleScene.h"
 #include "SelectScene.h"
 #include "LoginScene.h"
+#include "GameEndScene.h"
 
 CSceneManager::CSceneManager() :
 	m_scenes(),
@@ -22,7 +23,6 @@ void CSceneManager::ChangeScene(SCENE_TYPE sceneType)
 	m_currentScene->Exit();
 
 	m_sceneType = sceneType;
-	//m_scenes[static_cast<int>(SCENE_TYPE(sceneType))]->Init();
 	m_currentScene = m_scenes[static_cast<int>(sceneType)];
 	m_currentScene->Enter();
 }
@@ -52,10 +52,12 @@ void CSceneManager::Init()
 	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)] = new CSelectScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)] = new CLoginScene();
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)] = new CGameScene();
+	m_scenes[static_cast<int>(SCENE_TYPE::END)] = new CGameEndScene();
 
 	m_scenes[static_cast<int>(SCENE_TYPE::GAME)]->Init();
 	m_scenes[static_cast<int>(SCENE_TYPE::SELECT)]->Init();
 	m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)]->Init();
+	m_scenes[static_cast<int>(SCENE_TYPE::END)]->Init();
 
 	m_sceneType = SCENE_TYPE::LOGIN;
 

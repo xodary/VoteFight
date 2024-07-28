@@ -24,6 +24,7 @@ public:
 
 	void SetSelectSceneMainCamera();
 	void SetGameSceneMainCamera();
+	void SetGameEndSceneMainCamera();
 
 	void Update();
 };

@@ -300,6 +300,41 @@ void Socket::SetNonblocking()
 	}
 }
 
+void Socket::Disconnect()
+{
+	try
+	{
+		// 먼저 shutdown을 통해서 데이터를 더 이상 보내지 않음을 알립니다.
+#ifdef _WIN32
+		if (shutdown(m_fd, SD_SEND) == SOCKET_ERROR)
+#else
+		if (shutdown(m_fd, SHUT_WR) < 0)
+#endif
+		{
+			stringstream ss;
+			ss << "shutdown failed:" << GetLastErrorAsString();
+			throw Exception(ss.str().c_str());
+		}
+
+		// 서버에서 연결을 종료하는 경우 상대방이 데이터를 모두 읽고 연결을 종료할 수 있도록 recv를 통해 대기합니다.
+		char buffer[1024];
+		int ret;
+		do
+		{
+			ret = recv(m_fd, buffer, sizeof(buffer), 0);
+		} while (ret > 0);
+
+		// 이제 소켓을 닫습니다.
+		Close();
+	}
+	catch (const Exception& ex)
+	{
+		// 예외가 발생하더라도 소켓을 닫아야 합니다.
+		Close();
+		throw;
+	}
+}
+
 //Returns the last Win32 error, in string format. Returns an empty string if there is no error.
 // 출처: https://stackoverflow.com/questions/1387064/how-to-get-the-error-message-from-the-error-code-returned-by-getlasterror
 std::string GetLastErrorAsString()

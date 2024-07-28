@@ -13,8 +13,8 @@
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
-chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
-//chrono::seconds phase_time[8] = { 5s, 20s,5s, 20s,5s, 20s,5s, 20s };	// Test
+// chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
+chrono::seconds phase_time[8] = { 10s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
 float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()
@@ -214,6 +214,7 @@ void CTimer::do_timer()
 						send_packet.m_type = P_SC_HEALTH_CHANGE_PACKET;
 						send_packet.m_id = client.second->m_id;
 						send_packet.m_groupType = (int)GROUP_TYPE::PLAYER;
+						send_packet.m_DamageType = (int)DAMAGE_TYPE::DROWN_DAMAGE;
 						send_packet.m_health = client.second->m_player->m_Health;
 						send_packet.m_damage = 1;
 						for (auto& rc : RemoteClient::m_remoteClients) {
