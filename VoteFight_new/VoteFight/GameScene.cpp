@@ -917,10 +917,6 @@ void CGameScene::ImGuiRenderMiniMap()
 				npcSize = ImVec2(15, 25);
 				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/GrayNPC"]->m_IconGPUHandle;
 				break;
-			case GROUP_TYPE::MONSTER:
-				//npcSize = ImVec2(20, 20);
-				//npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MonsterIcon"]->m_IconGPUHandle;
-				break;
 			case GROUP_TYPE::GROUND_ITEM:
 				npcSize = ImVec2(20, 20);
 				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/ItemIcon"]->m_IconGPUHandle;

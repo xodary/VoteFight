@@ -29,6 +29,7 @@
 #include "Monster.h"
 #include "GameScene.h"
 #include "SoundManager.h"
+#include "GameEndScene.h"
 #pragma comment(lib, "WS2_32.LIB")
 
 // 서버 IP
@@ -487,7 +488,6 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		character->m_bilboardUI.push_back(new CTextUI(character, to_string(-recv_packet->m_damage)));
 		character->SetHealth(recv_packet->m_health); 
 		character->m_damageType = (int)recv_packet->m_DamageType;
-		
 	}
 	break;
 
@@ -540,9 +540,15 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 
 	case PACKET_TYPE::P_SC_GAMEEND_PACKET:
 	{
+		SC_GAMEEND_PACKET* recv_packet = reinterpret_cast<SC_GAMEEND_PACKET*>(_Packet);
+
 		// Game End
 		m_tcpSocket->Disconnect();
 		CSceneManager::GetInstance()->ChangeScene(SCENE_TYPE::END);
+		CGameEndScene* scene = reinterpret_cast<CGameEndScene*>(CSceneManager::GetInstance()->GetScene(SCENE_TYPE::END));
+		scene->m_rank[0] = recv_packet->m_1st;
+		scene->m_rank[1] = recv_packet->m_2nd;
+		scene->m_rank[2] = recv_packet->m_3rd;
 	}
 	break;
 

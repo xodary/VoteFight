@@ -61,7 +61,7 @@ void CSceneManager::Init()
 
 	m_sceneType = SCENE_TYPE::LOGIN;
 
-	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::LOGIN)];
+	m_currentScene = m_scenes[static_cast<int>(SCENE_TYPE::END)];
 	m_currentScene->Enter();
 }
 

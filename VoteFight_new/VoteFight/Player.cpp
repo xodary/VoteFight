@@ -77,6 +77,8 @@ void CPlayer::SetHealth(int health)
 	if (m_health <= 0) {
 		m_dead = true;
 		if (m_id != CGameFramework::GetInstance()->my_id) return;
+		CSoundManager::GetInstance()->Stop(WALK);
+		CSoundManager::GetInstance()->Stop(RUN);
 		for (int i = 0; i < 18; ++i) {
 			if (myItems[i].m_name.empty()) continue;
 			CS_DROPED_ITEM send_packet;

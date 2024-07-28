@@ -8,7 +8,7 @@
 #include "StateMachine.h"
 #include "GameScene.h"
 
-unsigned int CGameScene::m_nowRank;
+int CGameScene::m_nowRank;
 unsigned int CGameScene::m_Rank[3];
 int CTimer::phase;
 
@@ -50,7 +50,6 @@ void CMonsterGoUpState::Update(CObject* object)
 			if(GoUp[CTimer::phase / 2 - 1].x < object->m_Pos.x) object->m_Angle = 270;
 			else object->m_Angle = 0;
 			object->m_Velocity = 7;
-			cout << "Go Up" << endl;
 			object->m_Vec = Vector3::TransformNormal(XMFLOAT3(0, 0, 1), Matrix4x4::Rotation(XMFLOAT3(0, object->m_Angle, 0)));
 			{
 				SC_VELOCITY_CHANGE_PACKET send_packet;
@@ -254,15 +253,11 @@ void CMonsterWalkState::Update(CObject* object)
 	matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object->m_Pos));
 	object->m_origin.Transform(object->m_boundingBox, XMLoadFloat4x4(&matrix));
 
-	for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
-		if (i == (int)GROUP_TYPE::PLAYER) continue;
-		if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
-		for (auto& structure : CGameScene::m_objects[i]) {
-			if (!structure.second->m_collider) continue;
-			if (!object->m_collider) continue;
-			if (structure.second->m_boundingBox.Intersects(object->m_boundingBox)) {
-				structure.second->m_Pos = origin_pos;
-			}
+	for (auto& structure : CGameScene::m_objects[(int)GROUP_TYPE::STRUCTURE]) {
+		if (!structure.second->m_collider) continue;
+		if (!object->m_collider) continue;
+		if (structure.second->m_boundingBox.Intersects(object->m_boundingBox)) {
+			structure.second->m_Pos = origin_pos;
 		}
 	}
 
@@ -351,15 +346,11 @@ void CMonsterChaseState::Update(CObject* object)
 	matrix = Matrix4x4::Multiply(matrix, Matrix4x4::Translation(object->m_Pos));
 	object->m_origin.Transform(object->m_boundingBox, XMLoadFloat4x4(&matrix));
 
-	for (int i = 0; i < (int)GROUP_TYPE::UI; ++i) {
-		if (i == (int)GROUP_TYPE::PLAYER) continue;
-		if (i == (int)GROUP_TYPE::ONCE_ITEM) continue;
-		for (auto& structure : CGameScene::m_objects[i]) {
-			if (!structure.second->m_collider) continue;
-			if (!object->m_collider) continue;
-			if (structure.second->m_boundingBox.Intersects(object->m_boundingBox)) {
-				structure.second->m_Pos = origin_pos;
-			}
+	for (auto& structure : CGameScene::m_objects[(int)GROUP_TYPE::STRUCTURE]) {
+		if (!structure.second->m_collider) continue;
+		if (!object->m_collider) continue;
+		if (structure.second->m_boundingBox.Intersects(object->m_boundingBox)) {
+			structure.second->m_Pos = origin_pos;
 		}
 	}
 
@@ -521,6 +512,18 @@ void CMonsterAttackState::Update(CObject* object)
 				monster->m_target->m_player->m_dead = true;
 				CGameScene::m_Rank[CGameScene::m_nowRank--] = monster->m_target->m_id;
 				monster->m_stateMachine->ChangeState(CMonsterWalkState::GetInstance());
+				if (CGameScene::m_nowRank < 0) {
+					SC_GAMEEND_PACKET send_packet;
+					send_packet.m_size = sizeof(send_packet);
+					send_packet.m_type = P_SC_GAMEEND_PACKET;
+					send_packet.m_1st = CGameScene::m_Rank[0];
+					send_packet.m_2nd = CGameScene::m_Rank[1];
+					send_packet.m_3rd = CGameScene::m_Rank[2];
+					for (auto& client : RemoteClient::m_remoteClients) {
+						if (!client.second->m_ingame) continue;
+						client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+					}
+				}
 			}
 		}
 		else
