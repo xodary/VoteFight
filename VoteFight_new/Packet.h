@@ -225,9 +225,6 @@ struct SC_PICKUP_PACKET{
 struct SC_GAMEEND_PACKET {
 	unsigned char		m_size;
 	unsigned char		m_type;
-	unsigned int		m_1st;
-	unsigned int		m_2nd;
-	unsigned int		m_3rd;
 };
 
 struct SC_RELOAD_PACKET {

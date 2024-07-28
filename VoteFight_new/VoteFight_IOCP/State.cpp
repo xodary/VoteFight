@@ -8,8 +8,7 @@
 #include "StateMachine.h"
 #include "GameScene.h"
 
-int CGameScene::m_nowRank;
-unsigned int CGameScene::m_Rank[3];
+int CGameScene::alive;
 int CTimer::phase;
 
 XMFLOAT2 GoUp[4] = { {398, 7.5}, {278, 114.5}, {193.7, 207.3}, {0, 0} };
@@ -510,20 +509,8 @@ void CMonsterAttackState::Update(CObject* object)
 					rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 				}
 				monster->m_target->m_player->m_dead = true;
-				CGameScene::m_Rank[CGameScene::m_nowRank--] = monster->m_target->m_id;
 				monster->m_stateMachine->ChangeState(CMonsterWalkState::GetInstance());
-				if (CGameScene::m_nowRank < 0) {
-					SC_GAMEEND_PACKET send_packet;
-					send_packet.m_size = sizeof(send_packet);
-					send_packet.m_type = P_SC_GAMEEND_PACKET;
-					send_packet.m_1st = CGameScene::m_Rank[0];
-					send_packet.m_2nd = CGameScene::m_Rank[1];
-					send_packet.m_3rd = CGameScene::m_Rank[2];
-					for (auto& client : RemoteClient::m_remoteClients) {
-						if (!client.second->m_ingame) continue;
-						client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					}
-				}
+				CGameScene::alive -= 1;
 			}
 		}
 		else

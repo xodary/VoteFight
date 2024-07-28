@@ -13,8 +13,8 @@
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
-//chrono::seconds phase_time[8] = { 5s, 5s,150s, 90s,120s, 60s,120s, 60s };
-chrono::seconds phase_time[8] = {10s, 5s,2s, 2s,2s, 2s,2s, 2s };
+chrono::seconds phase_time[8] = { 5s, 5s,150s, 90s,120s, 60s,120s, 60s };
+//chrono::seconds phase_time[8] = {10s, 5s,2s, 2s,2s, 2s,2s, 2s };
 float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()
@@ -170,19 +170,7 @@ void CTimer::do_timer()
 									if (!rc.second->m_ingame) continue;
 									rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&v_send_packet));
 								}
-								CGameScene::m_Rank[CGameScene::m_nowRank--] = object.second->m_id;
-								if (CGameScene::m_nowRank < 0) {
-									SC_GAMEEND_PACKET send_packet;
-									send_packet.m_size = sizeof(send_packet);
-									send_packet.m_type = P_SC_GAMEEND_PACKET;
-									send_packet.m_1st = CGameScene::m_Rank[0];
-									send_packet.m_2nd = CGameScene::m_Rank[1];
-									send_packet.m_3rd = CGameScene::m_Rank[2];
-									for (auto& client : RemoteClient::m_remoteClients) {
-										if (!client.second->m_ingame) continue;
-										client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-									}
-								}
+								CGameScene::alive -= 1;
 							}
 						}
 					}
@@ -264,19 +252,6 @@ void CTimer::do_timer()
 								if (!rc.second->m_ingame) continue;
 								rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 							}
-							CGameScene::m_Rank[CGameScene::m_nowRank--] = client.second->m_id;
-							if (CGameScene::m_nowRank < 0) {
-								SC_GAMEEND_PACKET send_packet;
-								send_packet.m_size = sizeof(send_packet);
-								send_packet.m_type = P_SC_GAMEEND_PACKET;
-								send_packet.m_1st = CGameScene::m_Rank[0];
-								send_packet.m_2nd = CGameScene::m_Rank[1];
-								send_packet.m_3rd = CGameScene::m_Rank[2];
-								for (auto& client : RemoteClient::m_remoteClients) {
-									if (!client.second->m_ingame) continue;
-									client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-								}
-							}
 						}
 
 					}
@@ -313,17 +288,10 @@ void CTimer::do_timer()
 					}
 				}
 
-				if (CGameScene::m_nowRank < 0) {
-					SC_GAMEEND_PACKET send_packet;
-					send_packet.m_size = sizeof(send_packet);
-					send_packet.m_type = P_SC_GAMEEND_PACKET;
-					send_packet.m_1st = CGameScene::m_Rank[0];
-					send_packet.m_2nd = CGameScene::m_Rank[1];
-					send_packet.m_3rd = CGameScene::m_Rank[2];
-					for (auto& client : RemoteClient::m_remoteClients) {
-						if (!client.second->m_ingame) continue;
-						client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-					}
+				if (CGameScene::alive <= 0) {
+					TIMER_EVENT ev2{ chrono::system_clock::now() + 2s, EV_END };
+					CTimer::timer_queue.push(ev2);
+					continue;
 				}
 
 				ev.wakeup_time = chrono::system_clock::now() + 100ms;
@@ -336,9 +304,6 @@ void CTimer::do_timer()
 					SC_GAMEEND_PACKET send_packet;
 					send_packet.m_size = sizeof(send_packet);
 					send_packet.m_type = P_SC_GAMEEND_PACKET;
-					send_packet.m_1st = CGameScene::m_Rank[0];
-					send_packet.m_2nd = CGameScene::m_Rank[1];
-					send_packet.m_3rd = CGameScene::m_Rank[2];
 					for (auto& client : RemoteClient::m_remoteClients) {
 						if (!client.second->m_ingame) continue;
 						client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
@@ -390,7 +355,19 @@ void CTimer::do_timer()
 			}
 			break;
 
+			case EV_END:
+			{
+				SC_GAMEEND_PACKET send_packet;
+				send_packet.m_size = sizeof(send_packet);
+				send_packet.m_type = P_SC_GAMEEND_PACKET;
+				for (auto& client : RemoteClient::m_remoteClients) {
+					if (!client.second->m_ingame) continue;
+					client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
+				}
 			}
+			break;
+			}
+
 			continue;		// 즉시 다음 작업 꺼내기
 		}
 		this_thread::sleep_for(1ms);   // timer_queue가 비어 있으니 잠시 기다렸다가 다시 시작

@@ -584,7 +584,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 
 		cout << " GameStart" << endl;
 		{
-			CGameScene::m_nowRank = MAX_PLAYER - 1;
+			CGameScene::alive = MAX_PLAYER - 1;
 			GameStart = true;
 			SC_GAMESTART_PACKET send_packet;
 			send_packet.m_size = sizeof(SC_GAMESTART_PACKET);
@@ -879,6 +879,8 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 			}
 		}
 
+		if (_Client->m_player->m_Weapon == 1) return;
+
 		// Player와 닿았을 때
 		for (auto& player : RemoteClient::m_remoteClients) {
 			if (player.second->m_player->m_dead) continue;
@@ -929,19 +931,7 @@ void PacketProcess(shared_ptr<RemoteClient>& _Client, char* _Packet)
 						rc.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
 					}
 					player.second->m_player->m_dead = true;
-					CGameScene::m_Rank[CGameScene::m_nowRank--] = player.second->m_id;
-					if (CGameScene::m_nowRank < 0) {
-						SC_GAMEEND_PACKET send_packet;
-						send_packet.m_size = sizeof(send_packet);
-						send_packet.m_type = P_SC_GAMEEND_PACKET;
-						send_packet.m_1st = CGameScene::m_Rank[0];
-						send_packet.m_2nd = CGameScene::m_Rank[1];
-						send_packet.m_3rd = CGameScene::m_Rank[2];
-						for (auto& client : RemoteClient::m_remoteClients) {
-							if (!client.second->m_ingame) continue;
-							client.second->m_tcpConnection.SendOverlapped(reinterpret_cast<char*>(&send_packet));
-						}
-					}
+					CGameScene::alive -= 1;
 				}
 			}
 		}
