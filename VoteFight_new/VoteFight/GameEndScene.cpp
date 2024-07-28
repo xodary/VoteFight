@@ -66,16 +66,14 @@ void CGameEndScene::ReleaseShaderVariables()
 
 void CGameEndScene::Enter()
 {
-	// 카메라의 타겟 설정
-	CCameraManager::GetInstance()->SetSelectSceneMainCamera();
-
-	CObject* focus = new CObject();
-	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
-	targetTransform->SetPosition(XMFLOAT3(4, -1.5, 0.3));
-	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(focus);
-	CSoundManager::GetInstance()->Play(SOUND_TYPE::SELECT_BGM, 0.1f, false);
-
 	InitLight();
+
+	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(nullptr);
+	CCameraManager::GetInstance()->GetMainCamera()->SetPosition(XMFLOAT3(45,48,354));
+	CCameraManager::GetInstance()->GetMainCamera()->SetRotate(XMFLOAT3(-1.5,-80,0));
+	CCameraManager::GetInstance()->GetMainCamera()->SetOffset(XMFLOAT3(0, 0, 0));
+	CSoundManager::GetInstance()->Play(SOUND_TYPE::SELECT_BGM, 0.2f, false);
+
 }
 
 void CGameEndScene::Exit()
@@ -85,25 +83,15 @@ void CGameEndScene::Exit()
 
 void CGameEndScene::Init()
 {
+
+	CObject* object = new CSkyBox(1000, 200);
+	AddObject(GROUP_TYPE::SKYBOX, object, 0);
+
 	// 씬 로드
-	Load("SelectScene.bin");
-	Load("VictoryStandScene.bin");
+	Load("GameEndObjectScene.bin");
+	Load("GameEndCharters.bin");
 
 	CreateShaderVariables();
-
-	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
-	unordered_map<int, CObject*> structers = GetGroupObject(GROUP_TYPE::STRUCTURE);
-	
-	structers[2]->SetPosition(XMFLOAT3(4, -2.5, 0.3));
-
-	for (size_t i = 0; i < 3; i++)
-	{
-		m_WaitCharacters[i] = objects[i];
-		m_WaitCharacters[i]->SetPosition(XMFLOAT3(4 + i * 2, -2.5, 0.3));
-		m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
-		cout << m_WaitCharacters[i]->GetName() << endl;
-	}
-
 }
 
 void CGameEndScene::InitLight()

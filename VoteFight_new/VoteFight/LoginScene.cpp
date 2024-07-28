@@ -181,6 +181,7 @@ void CLoginScene::RenderImGui()
                 strcpy_s(send_packet.m_name, user_name);
                 PacketQueue::AddSendPacket(&send_packet);
             }
+            
         }
         ImGui::SameLine();
         if (ImGui::Button("How to Play")) {
