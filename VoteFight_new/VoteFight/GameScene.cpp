@@ -79,7 +79,7 @@ void CGameScene::ReleaseShaderVariables()
 void CGameScene::Enter()
 {
 	CCameraManager::GetInstance()->SetGameSceneMainCamera();
-	CSoundManager::GetInstance()->Play(SOUND_TYPE::INGAME_BGM_1, 1.0f, true);
+	CSoundManager::GetInstance()->Play(SOUND_TYPE::INGAME_BGM_1, 0.5f, true);
 	InitLight();
 }
 

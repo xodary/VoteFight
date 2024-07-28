@@ -330,7 +330,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 				if (recv_packet->m_id == CGameFramework::GetInstance()->my_id) {
 					CSoundManager::GetInstance()->Stop(WALK);
 					if (!CSoundManager::GetInstance()->IsPlaying(RUN))
-						CSoundManager::GetInstance()->Play(RUN, 0.2f, true);
+						CSoundManager::GetInstance()->Play(RUN, 2.f, true);
 				}
 				animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 2);
 			}
@@ -338,7 +338,7 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 				if (recv_packet->m_id == CGameFramework::GetInstance()->my_id) {
 					CSoundManager::GetInstance()->Stop(RUN);
 					if (!CSoundManager::GetInstance()->IsPlaying(WALK))
-						CSoundManager::GetInstance()->Play(WALK, 0.2f, true);
+						CSoundManager::GetInstance()->Play(WALK, 2.f, true);
 				}
 				animator->SetSpeed(animator->m_animationMask[LOWER].m_upAnimation, 1);
 			}
@@ -389,8 +389,8 @@ void CServerManager::PacketProcess(char* _Packet)	// 패킷 처리 함수
 		animator->Play(recv_packet->m_key, recv_packet->m_loop, (ANIMATION_BONE)recv_packet->m_bone, true);
 		if(recv_packet->m_sound == SOUND_TYPE::PISTOL_SHOT) reinterpret_cast<CPlayer*>(object)->m_bullets -= 1;
 
-		if (recv_packet->m_id == CGameFramework::GetInstance()->my_id) {
-			CSoundManager::GetInstance()->Play((SOUND_TYPE)recv_packet->m_sound, 0.2f, true);
+		if (recv_packet->m_id == CGameFramework::GetInstance()->my_id && recv_packet->m_grouptype == (int)GROUP_TYPE::PLAYER) {
+			CSoundManager::GetInstance()->Play((SOUND_TYPE)recv_packet->m_sound, 1.f, true);
 			if (recv_packet->m_sound == IDLE) {
 				CSoundManager::GetInstance()->Stop(WALK);
 				CSoundManager::GetInstance()->Stop(RUN);
