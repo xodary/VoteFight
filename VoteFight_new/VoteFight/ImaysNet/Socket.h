@@ -121,6 +121,7 @@ public:
 #endif
 	void	SetNonblocking();
 	
+	void Disconnect();
 };
 
 std::string	 GetLastErrorAsString();

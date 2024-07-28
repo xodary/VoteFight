@@ -40,6 +40,7 @@ public:
 	virtual void PreRender();
 	virtual void Render();
 	virtual void RenderImGui();
+	virtual void RenderLogo();
 
 	bool startSong = false;
 };

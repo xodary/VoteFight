@@ -339,6 +339,7 @@ void CGameScene::Render()
 	}
 
 	if(CSceneManager::GetInstance()->GetCurrentScene()->GetName() == "GameScene") RenderImGui();
+	
 }
 
 void CGameScene::RenderImGui()
@@ -366,7 +367,7 @@ void CGameScene::RenderImGui()
 	ImGui_ImplDX12_NewFrame();
 	ImGui_ImplWin32_NewFrame();
 	ImGui::NewFrame();
-
+	
 	if (inven) {
 		static bool hovered[3][6] = { false };
 		const ImVec4 hoverColor = ImVec4(0.0f, 1.0f, 0.0f, 1.0f); // 외곽선 색상 (빨강)
@@ -507,16 +508,7 @@ void CGameScene::RenderImGui()
 
 	}
 
-
-		// 윈도우 시작
-		ImGui::Begin("Mini Map Window", nullptr, window_flags);
 		ImGuiRenderMiniMap();
-
-		// NPC 이미지 크기 설정
-		ImVec2 npcSize = ImVec2(20, 15); // NPC 아이콘 크기
-
-		// 윈도우 끝
-		ImGui::End();
 
 	rows = 3;
 	static bool selected[3] = { false };
@@ -791,6 +783,20 @@ void CGameScene::RenderImGui()
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }
 
+void CGameScene::DrawDamageBackGroundImGui()
+{
+	CGameFramework* framework = CGameFramework::GetInstance();
+	// 화면 해상도 가져오기
+	ImVec2 resolution = ImVec2(framework->GetResolution().x, framework->GetResolution().y);
+
+	ImU32 backgroundColor = IM_COL32(0, 0, 0, 128); // RGBA (0, 0, 0, 128) - 반투명 검은색
+	ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(0, 0), resolution, backgroundColor);
+
+	// 윈도우 플래그 설정
+	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+
+}
+
 #include <cmath> // for sin function
 
 void CGameScene::Sea_level_rise(float a)
@@ -894,8 +900,8 @@ void CGameScene::ImGuiRenderMiniMap()
 				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/GrayNPC"]->m_IconGPUHandle;
 				break;
 			case GROUP_TYPE::MONSTER:
-				npcSize = ImVec2(20, 20);
-				npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MonsterIcon"]->m_IconGPUHandle;
+				//npcSize = ImVec2(20, 20);
+				//npcHandle = CAssetManager::GetInstance()->m_IconTextures["MinimapIcons/MonsterIcon"]->m_IconGPUHandle;
 				break;
 			case GROUP_TYPE::GROUND_ITEM:
 				npcSize = ImVec2(20, 20);

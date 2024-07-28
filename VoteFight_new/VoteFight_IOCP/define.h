@@ -216,3 +216,11 @@ enum class SOUND_TYPE
 	GET_PISTOL,
 	GET_KEY,
 };
+
+enum class DAMAGE_TYPE
+{
+	NONE,
+	BULLET_DAMAGE,
+	DROWN_DAMAGE,
+
+};

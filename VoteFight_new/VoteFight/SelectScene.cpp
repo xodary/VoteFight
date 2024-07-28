@@ -87,7 +87,6 @@ void CSelectScene::Init()
 {
 	// ¾À ·Îµå
 	Load("SelectScene.bin");
-	//Load("Character_Scene.bin");
 
 	CreateShaderVariables();
 

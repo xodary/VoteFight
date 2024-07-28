@@ -173,6 +173,7 @@
     <ClInclude Include="Collider.h" />
     <ClInclude Include="CollisionManager.h" />
     <ClInclude Include="Component.h" />
+    <ClInclude Include="GameEndScene.h" />
     <ClInclude Include="ImGUI\implot.h" />
     <ClInclude Include="ImGUI\implot_internal.h" />
     <ClInclude Include="Monster.h">
@@ -297,6 +298,7 @@
     <ClCompile Include="Collider.cpp" />
     <ClCompile Include="CollisionManager.cpp" />
     <ClCompile Include="Component.cpp" />
+    <ClCompile Include="GameEndScene.cpp" />
     <ClCompile Include="ImGUI\implot.cpp" />
     <ClCompile Include="ImGUI\implot_demo.cpp" />
     <ClCompile Include="ImGUI\implot_items.cpp" />

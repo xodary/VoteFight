@@ -208,7 +208,7 @@ void CAssetManager::LoadTextures(const string& fileName)
 	string itemName[] = { "axe", "wood", "punch", "money",
 		"election_ticket", "fish_meet", "potato", "trash",
 		"icecream", "carrot", "drug", "gun", "flower", 
-		"arrow", "space", "letter_f", "letter_e", "letter_q" };
+		"arrow", "space", "letter_f", "letter_e", "letter_q" , "VoteFightLogo"};
 
 	for (auto str : itemName)
 	{

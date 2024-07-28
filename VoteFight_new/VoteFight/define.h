@@ -258,3 +258,10 @@ enum SOUND_TYPE
 	PISTOL_SHOT = 8,
 };
 
+enum class DAMAGE_TYPE
+{
+	NONE,
+	BULLET_DAMAGE,
+	DROWN_DAMAGE,
+
+};

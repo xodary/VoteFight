@@ -35,7 +35,7 @@ void CSoundManager::Init()
     }
 
     // BGM
-    Result = m_System->createSound(GetSoundPath("01_LoginBGM.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
+    Result = m_System->createSound(GetSoundPath("01_TheSimpSon_OP.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
     Result = m_System->createSound(GetSoundPath("02_SelectBGM.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::SELECT_BGM]);
   
     // SFX

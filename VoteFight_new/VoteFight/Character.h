@@ -8,6 +8,7 @@ class CCharacter : public CObject
 public:
 	int      m_health;
 	bool	 m_dead;
+	unsigned int		 m_damageType;
 
 	
 	CCharacter();

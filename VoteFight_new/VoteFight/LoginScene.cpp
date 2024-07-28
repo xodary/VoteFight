@@ -11,6 +11,8 @@
 #include "Camera.h"
 #include "TimeManager.h"
 #include "SoundManager.h"
+#include "AssetManager.h"
+#include "Texture.h"
 
 CLoginScene::CLoginScene()
 {
@@ -41,6 +43,7 @@ void CLoginScene::ReleaseShaderVariables()
 
 void CLoginScene::Init()
 {
+   
     CCameraManager::GetInstance()->SetGameSceneMainCamera();
 
     m_focus = new CObject();
@@ -55,6 +58,12 @@ void CLoginScene::InitUI()
 
 void CLoginScene::Update()
 {
+    if (!startSong)
+    {
+        CSoundManager::GetInstance()->Play(SOUND_TYPE::TITLE_BGM, 0.3f, false);
+        startSong = true;
+    }
+
     time -= DT * 0.03f;
     if (time < 0.0f) {
         time = 1.0f;
@@ -76,6 +85,7 @@ void CLoginScene::Render()
     CSceneManager::GetInstance()->GetGameScene()->Render();
 
     RenderImGui();
+    // RenderLogo();
 }
 
 void CLoginScene::RenderImGui()
@@ -170,6 +180,41 @@ void CLoginScene::RenderImGui()
     ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }
 
+void CLoginScene::RenderLogo()
+{
+    ImGui_ImplDX12_NewFrame();
+    ImGui_ImplWin32_NewFrame();
+    ImGui::NewFrame();
+    CGameFramework* framework = CGameFramework::GetInstance();
+    // 화면 해상도 가져오기
+    ImVec2 resolution = ImVec2(framework->GetResolution().x, framework->GetResolution().y);
+
+    // 윈도우 사이즈 및 위치 설정
+    ImVec2 windowSize = ImVec2(500,400);
+    ImVec2 windowPos = ImVec2(framework->GetResolution().x/2 - windowSize.x /2,40);
+
+
+    // 윈도우 플래그 설정
+    DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
+
+    // 다음 윈도우의 크기와 위치 설정
+    ImGui::SetNextWindowSize(windowSize, ImGuiCond_Always);
+    ImGui::SetNextWindowPos(windowPos, ImGuiCond_Always);
+
+    // 윈도우 시작
+    ImGui::Begin("Logo Window", nullptr, window_flags);
+
+    // 미니맵 이미지 렌더링
+    auto assetManager = CAssetManager::GetInstance();
+    auto& iconTextures = assetManager->m_IconTextures;
+    auto& minimapTexture = iconTextures["VoteFightLogo"];
+    auto& logoHandle = minimapTexture->m_IconGPUHandle;
+    ImGui::Image((void*)logoHandle.ptr, ImVec2(windowSize.x, windowSize.y));
+    // 윈도우 끝
+    ImGui::End();
+    ImGui::Render();
+    ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
+}
 
 
 

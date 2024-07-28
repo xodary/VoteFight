@@ -48,7 +48,6 @@ public:
 	virtual void PreRender();
 	virtual void Render();
 	virtual void RenderImGui();
-
 	virtual void Sea_level_rise(float newPhaseHeight);
 
 	bool is_OceanRise = false;
@@ -58,6 +57,8 @@ public:
 
 	// 미니맵 관련 함수
 	void ImGuiRenderMiniMap();
+	virtual void DrawDamageBackGroundImGui();
+
 
 	// 라이트 설정 함수
 	void SetLightVersion(int value);
