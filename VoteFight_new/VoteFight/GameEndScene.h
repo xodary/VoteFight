@@ -19,6 +19,7 @@ private:
 	CB_GameEndScene* m_mappedGameScene;
 public:
 	static CGameEndScene* m_CGameEndScene;
+	std::vector<CPlayer*> sortedPlayers;
 	int m_rank[3];
 private:
 	CGameEndScene();

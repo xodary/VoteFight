@@ -79,7 +79,7 @@ void CSelectScene::Enter()
 	CTransform* targetTransform = static_cast<CTransform*>(focus->GetComponent(COMPONENT_TYPE::TRANSFORM));
 	targetTransform->SetPosition(XMFLOAT3(4, -1.5, 0.3));
 	CCameraManager::GetInstance()->GetMainCamera()->SetTarget(focus);
-	CSoundManager::GetInstance()->Play(SOUND_TYPE::SELECT_BGM, 0.1f, false);
+	CSoundManager::GetInstance()->Play(SOUND_TYPE::SELECT_BGM, 1.0f, false);
 
 	InitLight();
 }

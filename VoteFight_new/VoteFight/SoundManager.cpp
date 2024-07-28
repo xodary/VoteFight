@@ -38,6 +38,7 @@ void CSoundManager::Init()
    // BGM
     Result = m_System->createSound(GetSoundPath("01_TheSimpSon_OP.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::TITLE_BGM]);
     Result = m_System->createSound(GetSoundPath("02_SelectBGM.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::SELECT_BGM]);
+    Result = m_System->createSound(GetSoundPath("03_GameSceneBgm.mp3").data(), FMOD_LOOP_NORMAL, nullptr, &m_Sounds[SOUND_TYPE::INGAME_BGM_1]);
 
     // SFX
     Result = m_System->createSound(GetSoundPath("GetPistol.wav").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::GET_PISTOL]);
@@ -47,6 +48,7 @@ void CSoundManager::Init()
     Result = m_System->createSound(GetSoundPath("Punch.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::PUNCH]);
     Result = m_System->createSound(GetSoundPath("takeout.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::TAKEOUT]);
     Result = m_System->createSound(GetSoundPath("exchange.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::EXCHANGE]);
+    Result = m_System->createSound(GetSoundPath("cheerAndclap.mp3").data(), FMOD_LOOP_OFF, nullptr, &m_Sounds[SOUND_TYPE::CHEER]);
 }
 
 bool CSoundManager::IsPlaying(SOUND_TYPE SoundType)
