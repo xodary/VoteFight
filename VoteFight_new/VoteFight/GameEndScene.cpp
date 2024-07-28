@@ -93,10 +93,8 @@ void CGameEndScene::Init()
 
 	unordered_map<int, CObject*> objects = GetGroupObject(GROUP_TYPE::PLAYER);
 	unordered_map<int, CObject*> structers = GetGroupObject(GROUP_TYPE::STRUCTURE);
-	structers[0]->SetPosition(XMFLOAT3(0, -3.5, 0));
-	structers[0]->SetRotate(XMFLOAT3(-95, -90, 0));
-	structers[0]->SetScale(XMFLOAT3(1.6, 1.6, 1.6));
-	structers[1]->SetPosition(XMFLOAT3(0, -1, 0));
+	
+	structers[2]->SetPosition(XMFLOAT3(4, -2.5, 0.3));
 
 	for (size_t i = 0; i < 3; i++)
 	{
@@ -105,6 +103,7 @@ void CGameEndScene::Init()
 		m_WaitCharacters[i]->SetRotate(XMFLOAT3(0, 180, 0));
 		cout << m_WaitCharacters[i]->GetName() << endl;
 	}
+
 }
 
 void CGameEndScene::InitLight()

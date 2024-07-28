@@ -13,13 +13,8 @@
 //const int					numWorkerTHREAD{ 1 };	// Worker Thread Count
 Iocp Iocp::iocp;
 concurrency::concurrent_priority_queue<TIMER_EVENT> CTimer::timer_queue;
-<<<<<<< HEAD
 // chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
-chrono::seconds phase_time[8] = { 5s, 5s,5s, 5s,2s, 5s,2s, 2s };	// Test
-=======
-chrono::seconds phase_time[8] = { 150s, 90s,150s, 90s,120s, 60s,120s, 60s };
-//chrono::seconds phase_time[8] = { 5s, 20s,5s, 20s,5s, 20s,5s, 20s };	// Test
->>>>>>> origin/main
+chrono::seconds phase_time[8] = { 10s, 5s,5s, 5s,5s, 5s,5s, 5s };	// Test
 float phase_height[8] = { 0, 0, 15, 15, 34, 34, 41, 41 };
 
 void CTimer::do_timer()

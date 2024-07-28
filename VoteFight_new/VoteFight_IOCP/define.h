@@ -207,8 +207,11 @@ enum SOUND_TYPE
 	// SFX
 	BUTTON_OVER,
 	GET_PISTOL,
-<<<<<<< HEAD
 	GET_KEY,
+	PUNCH,
+	PISTOL_SHOT,
+	SWING,
+	TREE
 };
 
 enum class DAMAGE_TYPE
@@ -217,12 +220,10 @@ enum class DAMAGE_TYPE
 	BULLET_DAMAGE,
 	DROWN_DAMAGE,
 
-=======
 	PISTOL_SHOT, 
 	TREE,
 	SWING,
 	PUNCH,
 	TAKEOUT,
 	EXCHANGE,
->>>>>>> origin/main
 };
