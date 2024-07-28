@@ -861,7 +861,7 @@ void CGameScene::ImGuiRenderMiniMap()
 	// ¹Ì´Ï¸Ê ÀÌ¹ÌÁö ·»´õ¸µ
 	auto assetManager = CAssetManager::GetInstance();
 	auto& iconTextures = assetManager->m_IconTextures;
-	auto& minimapTexture = iconTextures["MinimapIcons/MiniMap"];
+	auto& minimapTexture = iconTextures["MinimapIcons/MiniMap3"];
 	auto& minimapHandle = minimapTexture->m_IconGPUHandle;
 	if(m_miniMap)ImGui::Image((void*)minimapHandle.ptr, ImVec2(windowSize.x, windowSize.y));
 
