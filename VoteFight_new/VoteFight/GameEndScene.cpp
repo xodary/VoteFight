@@ -75,8 +75,6 @@ void CGameEndScene::Enter()
 	CCameraManager::GetInstance()->GetMainCamera()->SetPosition(XMFLOAT3(45,48,354));
 	CCameraManager::GetInstance()->GetMainCamera()->SetRotate(XMFLOAT3(-1.5,-80,0));
 	CCameraManager::GetInstance()->GetMainCamera()->SetOffset(XMFLOAT3(0, 0, 0));
-	CSoundManager::GetInstance()->Play(SOUND_TYPE::SELECT_BGM, 0.2f, false);
-
 	unordered_map<int, CObject*> objects = CSceneManager::GetInstance()->GetGameScene()->GetGroupObject(GROUP_TYPE::PLAYER);
 
 	// SortPlayersByTicket 함수를 사용하여 정렬된 벡터를 가져옴
@@ -92,7 +90,7 @@ void CGameEndScene::Enter()
 	case 2:
 		sortedPlayers[0]->SetPosition(XMFLOAT3(37.5f, 47.75f, 360.f));
 		sortedPlayers[0]->SetRotate(XMFLOAT3(0.f, 127.0f, 0.f));
-		sortedPlayers[1]->SetPosition(XMFLOAT3(34.2, 44.3, 360.8f));
+		sortedPlayers[1]->SetPosition(XMFLOAT3(36.4f, 46.75f, 357.81f));
 		sortedPlayers[1]->SetRotate(XMFLOAT3(0.f, 127.0f, 0.f));
 		AddObject(GROUP_TYPE::PLAYER, sortedPlayers[0]);
 		AddObject(GROUP_TYPE::PLAYER, sortedPlayers[1]);
@@ -100,7 +98,7 @@ void CGameEndScene::Enter()
 	case 3:
 		sortedPlayers[0]->SetPosition(XMFLOAT3(37.5f, 47.75f, 360.f));
 		sortedPlayers[0]->SetRotate(XMFLOAT3(0.f, 127.0f, 0.f));
-		sortedPlayers[1]->SetPosition(XMFLOAT3(34.2, 44.3, 360.8f));
+		sortedPlayers[1]->SetPosition(XMFLOAT3(36.4f, 46.75f, 357.81f));
 		sortedPlayers[1]->SetRotate(XMFLOAT3(0.f, 127.0f, 0.f));
 		sortedPlayers[2]->SetPosition(XMFLOAT3(39.24, 46.55, 361.09f));
 		sortedPlayers[2]->SetRotate(XMFLOAT3(0.f, 127.0f, 0.f));

@@ -352,7 +352,6 @@ void CGameScene::RenderImGui()
 	CPlayer* player = reinterpret_cast<CPlayer*>(GetIDObject(GROUP_TYPE::PLAYER, framework->my_id));
 	if (player->myItems.size() == 0) return;
 	framework->GetGraphicsCommandList()->SetDescriptorHeaps(1, &framework->m_GUISrvDescHeap);
-
 	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
 	int rows = 3;
 	int cols = 6;
@@ -798,23 +797,25 @@ void CGameScene::RenderImGui()
 
 	ImGuiRenderMiniMap();
 
+
+	if (m_Ocean->GetPosition().y >= player->GetPosition().y)DrawOceanDamageBackGroundImGui();
 	ImGui::Render();
 
 	ImGui_ImplDX12_RenderDrawData(ImGui::GetDrawData(), framework->GetGraphicsCommandList());
 }
 
-void CGameScene::DrawDamageBackGroundImGui()
+void CGameScene::DrawOceanDamageBackGroundImGui( )
 {
 	CGameFramework* framework = CGameFramework::GetInstance();
 	// 화면 해상도 가져오기
 	ImVec2 resolution = ImVec2(framework->GetResolution().x, framework->GetResolution().y);
 
-	ImU32 backgroundColor = IM_COL32(0, 0, 0, 128); // RGBA (0, 0, 0, 128) - 반투명 검은색
+	// 그릴 때 필요한 함수
+	ImGui::Begin("DamageWindow", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+	// 배경색 설정 (반투명 밝은 파랑색)
+	ImU32 backgroundColor = IM_COL32(0, 30, 225, 68); // RGBA (0, 0, 255, 128) - 반투명 밝은 파랑색
 	ImGui::GetBackgroundDrawList()->AddRectFilled(ImVec2(0, 0), resolution, backgroundColor);
-
-	// 윈도우 플래그 설정
-	DWORD window_flags = ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar;
-
 }
 
 #include <cmath> // for sin function
